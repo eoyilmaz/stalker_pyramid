@@ -33,49 +33,17 @@
 
     {% include 'page_header.jinja2' %}
     <!--/.page-header-->
-    <div class="row-fluid">
-        <div class="span12">
-            <!--PAGE CONTENT BEGINS-->
-            <div class="row-fluid">
-                <div class="span6">
-                    <div id="calendar"></div>
-                </div>
-                <div class="span6">
-                    <div class="row-fluid">
-                        <select id='project_cb' class='span6 input-block-level'>
-                        </select>
-                    </div>
-                    <div class="space"></div>
-                    <div class="hr hr8 hr-double"></div>
-                    <div class="space"></div>
-                    <div id="infobox"
-                         class="center">
-                        {% include 'components/infobtn.jinja2' %}
-{#                        <div class="infobox infobox-black infobox-small">#}
-{#                            <div class="infobox-icon">#}
-{#                                <i class="icon-bullhorn bigger-230"></i>#}
-{#                            </div>#}
-{#                            <div class="infobox-data">#}
-{#                                <div class="infobox-data-number">#}
-{#                                    <a data-target="#html_template"#}
-{#                                       data-toggle="modal"#}
-{#                                       data-keyboard=false#}
-{#                                       href="/entities/{{ entity.id }}/tasks/filter/-1/list"#}
-{#                                       class="grey">Black List</a>#}
-{#                                </div>#}
-{#                            </div>#}
-{#                        </div>#}
-                    </div>
-                    <div class="space"></div>
-                    <div class="hr hr8 hr-double"></div>
 
-                    {% include 'task/list/list_user_tasks_by_filter.jinja2' %}
-                </div>
-            </div>
+    <div class="row-fluid">
+        <div class="span7">
+            {% include 'task/list/list_user_tasks_by_filter.jinja2' %}
+        </div>
+        <div class="span5">
+            <div id="calendar"></div>
         </div>
     </div>
-    <!--PAGE CONTENT ENDS-->
 
+    <!--PAGE CONTENT ENDS-->
 {% endblock page_content %}
 
 {#EXTRA-SCRIPTS#}
@@ -86,74 +54,11 @@
             {% set event_type='TimeLog' %}
         {% endif %}
     {% endif %}
-
-
     {% include 'calendar/calendar.jinja2' %}
-    {% include 'charts/pie_chart.jinja2' %}
-    <script class="include" type="text/javascript"
-        src='{{ request.static_url("stalker_pyramid:static/jqPlot/jquery.jqplot.min.js") }}'></script>
-{##}
-{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/flot/jquery.flot.min.js") }}'></script>#}
-{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/flot/jquery.flot.pie.min.js") }}'></script>#}
 
     <script type="text/javascript">
 
-     $(document).ready(function () {
-
-            var project_id = localStorage.getItem("project_id");
-            var status_code = '';
-
-            {% raw %}
-                var option_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
-            {% endraw %}
-
-            var project_cb = $('#project_cb');
-
-
-            project_cb.chosen({
-                search_contains: true,
-                enable_split_word_search: true
-            });
-
-            $.getJSON('/entities/{{ entity.id }}/projects/').then(function(data){
-
-                project_cb.find('option').remove();
-
-                var data_count = data.length;
-
-                for (var i=0; i < data_count; i++){
-                    project_cb.append(option_template(data[i]));
-                }
-
-
-                if (project_id){
-                    project_cb.val(project_id)
-                }
-                else{
-                    project_id = project_cb.val();
-                }
-
-                // update the chosen fields
-                project_cb.trigger('liszt:updated');
-                project_id = project_cb.val();
-
-                clear_html_modal();
-                initInfoBtn('/entities/{{ entity.id }}/tasks_stats/?project_id='+project_id);
-
-
-                project_cb.on('change', function () {
-                    project_id = $(this).val();
-                    localStorage.setItem("project_id", project_id);
-                    localStorage.setItem("status_code", '');
-
-                    clear_html_modal();
-                    initInfoBtn('/entities/{{ entity.id }}/tasks_stats/?project_id='+project_id);
-
-                });
-            });
-
-
-
+        $(document).ready(function () {
             $.getJSON('/users/{{ entity.id }}/events/?keys=time_log&keys=vacation').then(function (data) {
                 var events = [];
 
@@ -174,10 +79,15 @@
 
                     }
 
+                    var title = data[i].title;
+                    if(data[i].entity_type == 'timelogs'){
+                        title =  end_date.format('HH:MM') +' '+ data[i].title;
+                    }
+
                     var event = {
                         eId: data[i].id,
                         entity_type: data[i].entity_type,
-                        title: data[i].title,
+                        title: title,
                         start: start_date,
                         end: end_date,
                         className: data[i].className,
@@ -186,9 +96,10 @@
 
                     events.push(event);
                 }
-
+                drawCalendar('calendar', events);
+});
                 $(document).ready(function () {
-                    drawCalendar('calendar', events);
+
 
     {#                var placeholder = $('#piechart-placeholder').css({'width':'90%' , 'min-height':'150px'});#}
     {#                  var data = [#}
@@ -219,7 +130,7 @@
     {#            drawCalendar('calendar', events);#}
 
             });
-     });
+
     </script>
 
 {% endblock extrascripts %}

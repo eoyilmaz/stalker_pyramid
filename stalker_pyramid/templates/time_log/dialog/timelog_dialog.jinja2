@@ -2,7 +2,23 @@
 
 <div class='row-fluid'>
     <div class="row-fluid">
-        <div id="information" class="infobox-content"></div>
+        <div class="span8">
+            <div id="information" class="infobox-content"></div>
+        </div>
+        <div class="span4">
+            <div id="task_status_info" class="pull-right infobox infobox-small infobox-dark hide">
+                <div class="infobox-progress">
+                    <div id="pie_chart" class="easy-pie-chart percentage" data-percent="0" data-size="39">
+                        <span id="pie_chart_text" class="percent">0</span>
+                        %
+                    </div>
+                </div>
+
+                <div class="infobox-data">
+                    <div id="task_status_name" class="infobox-content"></div>
+                </div>
+            </div>
+        </div>
     </div>
     <div class="hr dotted"></div>
     <form id='time_log_form'
@@ -15,11 +31,15 @@
                 <label class='span2 control-label'
                        for='time_log_task'>Task</label>
 
-                <div class='span10'>
+                <div class='span9'>
                     <select id='time_log_task'
                             name='task_id'
                             class='input-block-level'
                             data-placeholder='Task'></select>
+                </div>
+                <div class='span1'>
+                    <a target="_blank" id="task_view_page_btn" class="btn btn-mini btn-info">View
+                            </a>
                 </div>
             </div>
 
@@ -28,12 +48,17 @@
                 <label class='span2 control-label'
                        for='time_log_resource'>Resource</label>
 
-                <div class='span10'>
+                <div class='span9'>
                     <select id='time_log_resource'
                             class='input-block-level'
                             name='resource_id'
                             required></select>
                 </div>
+
+{#                <div class='span1'>#}
+{#                    <a target="_blank" id="user_view_page_btn" class="btn btn-mini btn-info">View#}
+{#                            </a>#}
+{#                </div>#}
             </div>
 
             {# Start & End Dates #}
@@ -99,11 +124,6 @@
                 <label class='span2 control-label'>
                 </label>
                 <div id="alert_information" class="infobox-content span10"></div>
-                <div class="space-2"></div>
-                <div id="percent_bar_container" class="progress progress progress-success span10" data-percent="0%">
-                    <div id="percent_bar" class="bar" style="width: 0;" ></div>
-                </div>
-
             </div>
 
 
@@ -135,7 +155,7 @@
                 </div>
             </div>
 
-            <div class="control-group">
+            <div class="control-group" id="selection_rb">
                 <label class="span2 control-label">Select</label>
                 <div index="final_action_rb" class="span10 controls">
 
@@ -155,88 +175,13 @@
                     </label>
                 </div>
             </div>
-
         </div>
-
     </form>
 
     <div class="space-5"></div>
     <div class="hr dotted"></div>
     <div class="space-5"></div>
 
-{#    <form id='finalize_task_form'#}
-{#          class='form-horizontal hide'#}
-{#          role='form'#}
-{#          method='post' >#}
-{#        <div id="" class="alert alert-danger bigger-110">#}
-{#            <span class="pull_left ">You have to select one of the following alternatives !</span>#}
-{#        </div>#}
-{#        <div class="control-group">#}
-{#                <label class="span2 control-label" for="task_review_mode">Request Type</label>#}
-{##}
-{#                <div class="span10">#}
-{#                    <select id='task_review_mode'#}
-{#                            class='input-block-level'>#}
-{#                            <option value="request_review">Request Review</option>#}
-{#                            <option value="request_extra_time">Request Extra Time</option>#}
-{#                    </select>#}
-{#                </div>#}
-{#        </div>#}
-        {# Schedule Timing #}
-{#        <div class='control-group hide' id="revision_controls">#}
-{#            <label class='span2 control-label'#}
-{#                   for='task_schedule_timing'>Schedule Timing</label>#}
-{##}
-{#            <div class='span10'>#}
-{#                <div class='span2'>#}
-{#                    <input id='task_schedule_timing'#}
-{#                           class='input-block-level'#}
-{#                           name='schedule_timing'#}
-{#                           type='text'#}
-{#                           value=1#}
-{#                           min=1#}
-{#                           required>#}
-{#                </div>#}
-{#                <div class='span2'>#}
-{#                    <select id='task_schedule_unit'#}
-{#                            class='input-block-level'#}
-{#                            name='schedule_unit'>#}
-{#                        <option value='min'>Minutes</option>#}
-{#                        <option value='h'>Hours</option>#}
-{#                        <option value='d'>Days</option>#}
-{#                        <option value='w'>Weeks</option>#}
-{#                        <option value='m'>Months</option>#}
-{#                        <option value='y'>Years</option>#}
-{#                    </select>#}
-{#                </div>#}
-{#                <div class='span2'>#}
-{#                    <select id='task_schedule_model'#}
-{#                            class='input-block-level'#}
-{#                            name='schedule_model'>#}
-{#                        <option value='effort'>Effort</option>#}
-{#                        <option value='duration'>Duration</option>#}
-{#                    <option value='length'>Length</option>#}
-{#                    </select>#}
-{#                </div>#}
-{#            </div>#}
-{#        </div>#}
-{##}
-{#        <div class='control-group hide' id="revision_controls_2">#}
-{#            <label class='span2 control-label'#}
-{#                   for='review_note'>Description</label>#}
-{##}
-{#            <div class='span10'>#}
-{#                <textarea id="review_note"#}
-{#                      name='description'#}
-{#                      class="autosize-transition span12"#}
-{#                      style="overflow: hidden;#}
-{#                             word-wrap: break-word;#}
-{#                             resize: horizontal;#}
-{#                             height: 150px;"#}
-{#                    ></textarea>#}
-{#            </div>#}
-{#        </div>#}
-{#    </form>#}
     <div class='row-fluid'>
         {% if time_log %}
         <p>This timelog is created by <a href="/users/{{ time_log.created_by.id }}/view "> {{ time_log.created_by.name }}</a> and updated by  <a href="/users/{{ time_log.updated_by.id }}/view "> {{ time_log.updated_by.name }}</a>
@@ -253,15 +198,30 @@
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.autosize-min.js") }}'></script>
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.inputlimiter.1.3.1.min.js") }}'></script>
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.validate.min.js") }}'></script>
-{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.easy-pie-chart.min.js") }}'></script>#}
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.easy-pie-chart.min.js") }}'></script>
 
 
 <script>
 function init_dialog() {
     console.debug('starting to initialize time_log dialog!!!');
 
-{#    console.log('mode {{ mode }}')#}
     var completed_percent;
+    var time_log_form = $("#time_log_form");
+    var time_log_task = $('#time_log_task');
+    var time_log_resource = $('#time_log_resource');
+    {# ***************************************************************** #}
+    {# Date Time Objects #}
+    var start_end_date_range_picker = $('#start_end_date_range_picker');
+    var start_time = $('#start_time');
+    var end_time = $('#end_time');
+    {# ***************************************************************** #}
+    {# Schedule Unit and Model #}
+    var task_schedule_unit = $('#task_schedule_unit');
+    var task_schedule_timing = $('#task_schedule_timing');
+
+    var time_log_description = $('#time_log_description');
+    var parent_name = '';
+    var parent = '';
 
     var dialog_template_label = $('#dialog_template_label');
     dialog_template_label.find('span').remove();
@@ -269,9 +229,15 @@ function init_dialog() {
 
     var submit_button = $('#dialog_template_submit_button');
     var information = $('#information');
+    var alert_information = $('#alert_information');
+    var task_status_info = $('#task_status_info');
+    var task_view_page_btn = $('#task_view_page_btn');
+    task_status_info.hide();
+    task_view_page_btn.hide();
+
+    submit_button.attr('disabled', false);
 
     var submit_finalize_form_url = null;
-    var status_code = '';
     var remaining_minutes_after_this_time_log_string = "";
 
     {# ***************************************************************** #}
@@ -297,10 +263,36 @@ function init_dialog() {
         end_time_value.setHours(19);
         end_time_value.setMinutes(0);
     }
+
     {# ***************************************************************** #}
-    {# Schedule Unit and Model #}
-    var task_schedule_unit = $('#task_schedule_unit');
-    var task_schedule_timing = $('#task_schedule_timing');
+    {# Get Start End  #}
+    var get_start_end = function () {
+
+        var date_string = start_end_date_range_picker.datepicker().val().split('-');
+
+        var start_time_string = start_time.val().split(':');
+        var end_time_string = end_time.val().split(':');
+
+        var start = new Date(
+            parseInt(date_string[2]),
+            parseInt(date_string[1]) - 1,
+            parseInt(date_string[0]),
+            parseInt(start_time_string[0]),
+            parseInt(start_time_string[1]),
+            0, 0
+        );
+
+        var end = new Date(
+            parseInt(date_string[2]),
+            parseInt(date_string[1]) - 1,
+            parseInt(date_string[0]),
+            parseInt(end_time_string[0]),
+            parseInt(end_time_string[1]),
+            0, 0
+        );
+
+        return [start, end];
+    };
 
     {# ***************************************************************** #}
     {# Update Remaining Hours #}
@@ -315,6 +307,12 @@ function init_dialog() {
 
             var sch_unit  = 'h';
 
+            $('#task_status_name').text(data[0].status_name);
+            task_status_info.show();
+            task_status_info.attr('class', 'pull-right infobox infobox-small infobox-dark infobox-status_'+data[0].status);
+            task_view_page_btn.show();
+
+            task_view_page_btn.attr('href', "/tasks/"+task_id+"/view");
             var schedule_unit_seconds = seconds_in_unit(sch_unit);
 
             var bid_seconds = to_seconds(parseFloat(data[0].bid_timing), data[0].bid_unit);
@@ -376,7 +374,7 @@ function init_dialog() {
                 );
             }
 
-            var alert_information = $('#alert_information');
+
             alert_information.find('span').remove();
 
             if (remaining_minutes_after_this_time_log >= 0) {
@@ -385,7 +383,6 @@ function init_dialog() {
                     remaining_minutes_after_this_time_log_string +
                     "</strong> will remain to complete this task.</span>"
                 );
-                $('#percent_bar_container').show();
                 $('#revision_type_cg').hide();
                 completed_percent = (100 - ((remaining_seconds_after_this_time_log / parseFloat(data[0].schedule_seconds)) * 100)).toFixed(1);
             } else {
@@ -398,21 +395,32 @@ function init_dialog() {
                 alert_information.append(exceeding_message);
                 completed_percent = 100;
 
-                $('#percent_bar_container').hide();
                 $('#revision_type_cg').show();
             }
 
-            $('#percent_bar').attr('style', 'width:' + completed_percent + '%');
-            $('#percent_bar_container').attr('data-percent', completed_percent + '%');
-        });
 
+            $('#pie_chart').attr('data-percent', completed_percent);
+            $('#pie_chart_text').text(parseInt(completed_percent));
+
+            $('.easy-pie-chart.percentage').each(function(){
+                var $box = $(this).closest('.infobox');
+                var barColor = $(this).data('color') || (!$box.hasClass('infobox-dark') ? $box.css('color') : 'rgba(255,255,255,0.95)');
+                var trackColor = barColor == 'rgba(255,255,255,0.95)' ? 'rgba(255,255,255,0.25)' : '#E2E2E2';
+                var size = parseInt($(this).data('size')) || 50;
+                $(this).easyPieChart({
+                    barColor: barColor,
+                    trackColor: trackColor,
+                    scaleColor: false,
+                    lineCap: 'butt',
+                    lineWidth: parseInt(size/10),
+                    animate: /msie\s*(8|7|6)/.test(navigator.userAgent.toLowerCase()) ? false : 1000,
+                    size: size
+                });
+            });
+        });
     };
 
-    var time_log_form = $("#time_log_form");
-    var time_log_task = $('#time_log_task');
-    var time_log_resource = $('#time_log_resource');
-    var parent_name = '';
-    var parent = '';
+
 
     {% if mode == 'create' %}
         time_log_form.attr("action", "{{ request.route_url('create_time_log') }}");
@@ -459,7 +467,7 @@ function init_dialog() {
             });
 
         {% elif entity.entity_type == 'Task'%}
-             information.append(
+            information.append(
                 '<span class="pull_left"><div id="message" class="alert alert-info bigger-110">' +
                 '<i class="icon-exclamation-sign bigger-120 red"></i> Please select a user' +
                 '</div></span>'
@@ -478,9 +486,9 @@ function init_dialog() {
             {# ***************************************************************** #}
             {# Resource #}
             {% raw %}
-            var user_option_template = doT.template(
-                '<option value={{=it.id}}>{{=it.name}}</option>'
-            );
+                var user_option_template = doT.template(
+                    '<option value={{=it.id}}>{{=it.name}}</option>'
+                );
             {% endraw %}
 
             time_log_resource.find('option').remove();
@@ -501,10 +509,14 @@ function init_dialog() {
 
     {% elif mode == 'update' %}
 
+{#        $('#task_status_name').text('{{ time_log.task.status.name }}');#}
+{#        console.log('{{time_log.task.status.code.lower()}}');#}
+{#        $('#task_status_info').attr('class', 'pull-right infobox infobox-small infobox-dark infobox-status_{{time_log.task.status.code.lower()}}');#}
+
         time_log_form.attr("action", "{{ request.route_url('update_time_log', id=time_log.id) }}");
         time_log_resource.append('<option value={{ time_log.resource.id }} selected>{{ time_log.resource.name }}</option>');
 
-        $('#time_log_description').text("{{ time_log.description }}");
+        time_log_description.text("{{ time_log.description }}");
 
         parent_name = '{{ entity.project.code }}';
         {% for parent in time_log.task.parents %}
@@ -519,7 +531,20 @@ function init_dialog() {
         start_time_value = start_date_value;
         end_time_value = end_date_value;
 
-        console.log('information.append');
+        {% if time_log.task.status.code in ['PREV','CMPL'] %}
+            var selection_rb = $('#selection_rb');
+            selection_rb.hide();
+
+            alert_information.hide();
+
+            start_end_date_range_picker.attr('disabled', 'true');
+            start_time.attr('disabled', true);
+            end_time.attr('disabled', true);
+            submit_button.attr('disabled', true);
+            time_log_description.attr('disabled', true);
+
+        {% endif %}
+
         information.append(
                 '<span class="pull_left"><div id="message" class="alert alert-warning bigger-110">' +
                 '<strong>Created By: </strong> {{ time_log.created_by.name }}'+
@@ -529,9 +554,11 @@ function init_dialog() {
 
         update_hours_to_complete();
 
-        {% if has_permission('Delete_TimeLog') %}
-            $('#dialog_template_delete_button').show();
-            $('#dialog_template_delete_button').on('click', function (e) {
+        {% if has_permission('Delete_TimeLog') and time_log.task.status.code not in ['PREV','CMPL'] %}
+            var dialog_template_delete_button = $('#dialog_template_delete_button');
+            dialog_template_delete_button.show();
+
+            dialog_template_delete_button.on('click', function (e) {
                 e.stopPropagation();
                 e.preventDefault();
 
@@ -566,41 +593,7 @@ function init_dialog() {
     {% endif %}
 
     {# ***************************************************************** #}
-    {# Get Start End  #}
-
-    var get_start_end = function () {
-        console.log("get_start_end");
-        console.log($('#start_end_date_range_picker').datepicker().val());
-        var date_string = $('#start_end_date_range_picker').datepicker().val().split('-');
-
-        var start_time_string = $('#start_time').val().split(':');
-        var end_time_string = $('#end_time').val().split(':');
-
-        var start = new Date(
-            parseInt(date_string[2]),
-            parseInt(date_string[1]) - 1,
-            parseInt(date_string[0]),
-            parseInt(start_time_string[0]),
-            parseInt(start_time_string[1]),
-            0, 0
-        );
-
-        var end = new Date(
-            parseInt(date_string[2]),
-            parseInt(date_string[1]) - 1,
-            parseInt(date_string[0]),
-            parseInt(end_time_string[0]),
-            parseInt(end_time_string[1]),
-            0, 0
-        );
-
-        return [start, end];
-    };
-
-    {# ***************************************************************** #}
     {# Start & End Date Picker #}
-    // initialize date picker
-    var start_end_date_range_picker = $('#start_end_date_range_picker').datepicker();
     start_end_date_range_picker.datepicker('setDate', start_date_value);
 
     $('.date-picker').datepicker().next().on(ace.click_event, function(){
@@ -618,7 +611,7 @@ function init_dialog() {
 
     {# ***************************************************************** #}
     {# Start Time #}
-    var start_time = $('#start_time');
+
     start_time.val(start_time_value.format('HH:MM'));
     start_time.timepicker({
         minuteStep: 10,
@@ -633,7 +626,7 @@ function init_dialog() {
 
     {# ***************************************************************** #}
     {# End Time #}
-    var end_time = $('#end_time');
+
     end_time.val(end_time_value.format('HH:MM'));
     end_time.timepicker({
         minuteStep: 10,
@@ -677,7 +670,7 @@ function init_dialog() {
         ).done(function (response_text) {
             refresh_page();
         }).fail(function (jqXHR) {
-{#            bootbox.alert('<div id="message" class="alert alert-danger bigger-110">'+jqXHR.responseText+'</div>');#}
+            bootbox.alert('<div id="message" class="alert alert-danger bigger-110">'+jqXHR.responseText+'</div>');
             refresh_page();
 {#            submit_button.button('reset');#}
         });
@@ -715,18 +708,6 @@ function init_dialog() {
         var form_is_valid, error_messages;
         error_messages = [];
         form_is_valid = true;
-
-{#        if (completed_percent == 100 && submit_finalize_form_url && $('#task_review_mode').val() === 'request_extra_time') {#}
-{#            var schedule_unit_value = task_schedule_unit.val();#}
-{#            var current_timing_value = parseInt(task_schedule_timing.val());#}
-{##}
-{#            var validation_result = validate_timing_value({#}
-{#                value: current_timing_value,#}
-{#                unit: schedule_unit_value#}
-{#            });#}
-{#            form_is_valid = validation_result.is_valid;#}
-{#            error_messages = error_messages.concat(validation_result.errors);#}
-{#        }#}
 
         if (form_is_valid) {
             $.post(
@@ -822,12 +803,15 @@ function init_dialog() {
     function destruct_dialog() {
         console.debug('started un-initializing the time_log dialog!');
 
+        $('#submit_button').unbind();
         $('#time_log_task').unbind();
         $('#time_log_resource').unbind();
         $('#start_end_date_range_picker').unbind();
         $('#start_time').unbind();
         $('#end_time').unbind();
         $('#dialog_template_submit_button').unbind();
+        $('#dialog_template_delete_button').hide();
+        $('#dialog_template_delete_button').unbind();
 
         $('#dialog_template').data('modal', null);
 

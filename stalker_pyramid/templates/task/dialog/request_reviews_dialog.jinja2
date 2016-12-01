@@ -21,43 +21,6 @@
                             ></textarea>
                 </div>
             </div>
-            {# Schedule Timing #}
-            <div class='control-group'>
-                <label class='span3 control-label'
-                       for='task_schedule_timing'>Schedule Timing</label>
-                <div class='span9'>
-                    <div class='span2'>
-                        <input id='task_schedule_timing'
-                               class='input-block-level'
-                               name='schedule_timing'
-                               type='text'
-                               value=1
-                               min=1
-                               required>
-                    </div>
-                    <div class='span3'>
-                        <select id='task_schedule_unit'
-                                class='input-block-level'
-                                name='schedule_unit'>
-                            <option value='min'>Minutes</option>
-                            <option value='h'>Hours</option>
-                            <option value='d'>Days</option>
-                            <option value='w'>Weeks</option>
-                            <option value='m'>Months</option>
-                            <option value='y'>Years</option>
-                        </select>
-                    </div>
-                    <div class='span3'>
-                        <select id='task_schedule_model'
-                                class='input-block-level'
-                                name='schedule_model'>
-                            <option value='effort'>Effort</option>
-                            <option value='duration'>Duration</option>
-                            <option value='length'>Length</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
         </form>
     </div>
 </div>
@@ -68,12 +31,12 @@
 <script type="text/javascript">
 
     function init_dialog() {
-        console.debug('starting to initialize add_task_user_dialog dialog  sadasdad!!!');
+        console.debug('starting to initialize add_task_user_dialog dialog!!!');
 
         $(function () {
             var label = $('#dialog_template_label');
             label.find('span').remove();
-            label.append('<span>Request Revisions</span>');
+            label.append('<span>Request Review</span>');
             $('#dialog_template_body').attr('style', "height: auto");
 
             var url= '{{ action | safe}}';

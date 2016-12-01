@@ -47,7 +47,7 @@ from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
                                    convert_seconds_to_time_range,
                                    dummy_email_address, local_to_utc,
                                    get_path_converter, invalidate_all_caches,
-                                   measure_time)
+                                   measure_time, get_date, get_user_os)
 from stalker_pyramid.views.link import (replace_img_data_with_links,
                                         MediaManager)
 from stalker_pyramid.views.note import create_simple_note
@@ -763,6 +763,7 @@ def convert_to_dgrid_gantt_task_format(tasks):
             'start': milliseconds_since_epoch(
                 task.computed_start if task.computed_start else task.start),
             'status': task.status.code.lower(),
+            'status_name': task.status.name,
             'total_logged_seconds': task.total_logged_seconds,
             'type': task.entity_type,
             'date_created': milliseconds_since_epoch(task.date_created),
@@ -1086,7 +1087,6 @@ def update_task(request):
 
     priority = int(request.params.get('priority', 500))
 
-
     entity_type = request.params.get('entity_type', None)
     code = request.params.get('code', None)
     asset_type = request.params.get('asset_type', None)
@@ -1217,9 +1217,9 @@ def update_task(request):
         # update parent statuses
         if prev_parent:
             prev_parent.update_status_with_children_statuses()
-
         if task.parent:
             task.parent.update_status_with_children_statuses()
+
     if good_id:
         good = Good.query.filter_by(id=good_id).first()
         if good:
@@ -1230,8 +1230,6 @@ def update_task(request):
 
     # invalidate all caches
     invalidate_all_caches()
-
-
 
     return Response('Task updated successfully')
 
@@ -1792,6 +1790,7 @@ def cached_query_tasks(
             (extract(epoch from coalesce("Tasks".computed_end::timestamp AT TIME ZONE 'UTC', "Tasks".end::timestamp AT TIME ZONE 'UTC')) * 1000)::bigint as "end",
 
             lower("Statuses".code) as status,
+            "Status_SimpleEntities".name as status_name,
             tasks.type_names
 
         from (
@@ -1832,6 +1831,7 @@ def cached_query_tasks(
 
         -- Task Status
         join "Statuses" on "Tasks".status_id = "Statuses".id
+        join "SimpleEntities" as "Status_SimpleEntities" on "Statuses".id = "Status_SimpleEntities".id
 
         -- Task Type
         left join (
@@ -1906,11 +1906,13 @@ def cached_query_tasks(
             (extract(epoch from coalesce("Projects".computed_end::timestamp AT TIME ZONE 'UTC', "Projects".end::timestamp AT TIME ZONE 'UTC')) * 1000)::bigint as "end",
 
             lower("Statuses".code) as status,
+            "Status_SimpleEntities".name as status_name,
             '' as type_names
 
         from "Projects"
         join "SimpleEntities" as "Project_SimpleEntities" on "Projects".id = "Project_SimpleEntities".id
         join "Statuses" on "Projects".status_id = "Statuses".id
+        join "SimpleEntities" as "Status_SimpleEntities" on "Statuses".id = "Status_SimpleEntities".id
         join (
             select
                 "Tasks".project_id as project_id,
@@ -1993,7 +1995,8 @@ def cached_query_tasks(
             'start': r[26],
             'end': r[27],
             'status': r[28],
-            'type_names': r[29]
+            'status_name': r[29],
+            'type_names': r[30]
         }
         for r in result.fetchall()
     ]
@@ -2541,7 +2544,10 @@ def get_user_tasks_simple(request):
         coalesce(
             "Tasks".total_logged_seconds,
             coalesce("Task_TimeLogs".duration, 0.0)
-        ) as total_logged_seconds
+        ) as total_logged_seconds,
+
+        "Tasks".start,
+        "Tasks".end
 
         from (
 
@@ -2593,7 +2599,6 @@ def get_user_tasks_simple(request):
         -- Task Status
         join "Statuses" on "Tasks".status_id = "Statuses".id
 
-
         where (
                 "Tasks".project_id = %(project_id)s
                 and exists (
@@ -2611,7 +2616,7 @@ def get_user_tasks_simple(request):
                 )
             )
 
-order by tasks.name"""
+    order by tasks.name"""
 
     sql_query = sql_query % {
         'project_id': project.id,
@@ -2638,7 +2643,9 @@ order by tasks.name"""
             'schedule_timing': r[8],
             'schedule_unit': r[9],
             'schedule_model': r[10],
-            'total_logged_seconds': r[11]
+            'total_logged_seconds': r[11],
+            'start': milliseconds_since_epoch(r[12]),
+            'end': milliseconds_since_epoch(r[13])
         }
         for r in result.fetchall()
     ]
@@ -2991,6 +2998,92 @@ def get_entity_tasks_stats(request):
     logger.debug('get_entity_tasks_stats is starts')
 
     return_data = get_cached_entity_tasks_stats(entity, entity_id, project)
+
+    resp = Response(
+        json_body=return_data
+    )
+    # resp.content_range = content_range
+    return resp
+
+
+@cache_region('long_term', 'load_tasks')
+def get_cached_tasks_stats(entity, entity_id, project):
+    sql_query = """
+        select
+            count("Tasks".id) as count,
+            "Statuses".id as status_id,
+            "Statuses".code as status_code,
+            "Statuses_SimpleEntities".name as status_name,
+            "Statuses_SimpleEntities".html_class as status_color
+
+        from "Statuses"
+            join "Tasks" on "Statuses".id = "Tasks".status_id
+            join "SimpleEntities" as "Statuses_SimpleEntities" on "Statuses_SimpleEntities".id = "Statuses".id
+
+        %(where_clause_for_entity)s
+
+        and not (
+            exists (
+                select 1
+                from (
+                    select "Tasks".parent_id from "Tasks"
+                ) AS all_tasks
+                where all_tasks.parent_id = "Tasks".id
+            )
+        )
+
+        group by
+           "Statuses".code,
+           "Statuses".id,
+           "Statuses_SimpleEntities".name,
+           "Statuses_SimpleEntities".html_class
+    """
+    where_clause_for_entity = ''
+    if isinstance(entity, User):
+        where_clause_for_entity = \
+            'join "Task_Resources" on "Task_Resources".task_id = "Tasks".id ' \
+            'where "Task_Resources".resource_id =%s' % entity_id
+        if project:
+            where_clause_for_entity += ' and "Tasks".project_id = %s' % project.id
+    elif isinstance(entity, Project):
+        where_clause_for_entity = 'where "Tasks".project_id =%s' % entity_id
+    sql_query = sql_query % {
+        'where_clause_for_entity': where_clause_for_entity
+    }
+
+    logger.debug("sql_query: %s" % sql_query)
+    # convert to dgrid format right here in place
+    result = db.DBSession.connection().execute(sql_query)
+    return_data = [
+        {
+            'tasks_count': r[0],
+            'status_id': r[1],
+            'status_code': r[2],
+            'status_name': r[3],
+            'status_color': r[4],
+            'status_icon': ''
+        }
+        for r in result.fetchall()
+    ]
+    return return_data
+
+
+@view_config(
+    route_name='get_tasks_stats',
+    renderer='json'
+)
+def get_tasks_stats(request):
+    """runs when viewing an task
+    """
+    entity_id = request.matchdict.get('id', -1)
+    entity = Entity.query.filter_by(id=entity_id).first()
+
+    project_id = request.params.get('project_id', -1)
+    project = Project.query.filter_by(id=project_id).first()
+
+    logger.debug('get_cached_tasks_stats is starts')
+
+    return_data = get_cached_tasks_stats(entity, entity_id, project)
 
     resp = Response(
         json_body=return_data
@@ -4294,7 +4387,10 @@ def request_revision(request):
             )
             review.date_updated = utc_now
 
-            add_note_to_dependent_of_tasks(task, description, logged_in_user,utc_now)
+            add_note_to_dependent_of_tasks(task,
+                                           description,
+                                           logged_in_user,
+                                           utc_now)
 
         except StatusError as e:
                 return Response('StatusError: %s' % e, 500)
@@ -4385,6 +4481,7 @@ def request_revision(request):
 
     return Response(response_message)
 
+
 @view_config(
     route_name='request_revisions_dialog',
     renderer='templates/task/dialog/request_revisions_dialog.jinja2'
@@ -4412,6 +4509,7 @@ def request_revisions_dialog(request):
         'came_from': came_from,
         'action': action
     }
+
 
 @view_config(
     route_name='request_revisions'
@@ -4456,8 +4554,10 @@ def request_revisions(request):
                                       utc_now)
         result_message =[]
         for task in tasks:
-            if task.status.code != 'CMPL':
-                result_message.append('%s/%s is  %s. You can not request revision!' % (task.parent.name, task.name, task.status.name))
+            if task.status.code not in ['CMPL', 'PREV']:
+                result_message.append('%s/%s is  %s. You can not request revision!' % (task.parent.name,
+                                                                                       task.name,
+                                                                                       task.status.name))
                 continue
 
             task.request_revision(
@@ -4470,7 +4570,10 @@ def request_revisions(request):
             task.updated_by = logged_in_user
             task.date_updated = utc_now
 
-            add_note_to_dependent_of_tasks(task, description, logged_in_user,utc_now)
+            add_note_to_dependent_of_tasks(task,
+                                           description,
+                                           logged_in_user,
+                                           utc_now)
     else:
         request.session.flash('error:You dont have permission!')
         return Response("You don't have permission", 500)
@@ -4622,6 +4725,33 @@ def request_review(request):
 
     return request_review_action(request, task, logged_in_user, description, send_email, request_review_mode)
 
+@view_config(
+    route_name='request_reviews_dialog',
+    renderer='templates/task/dialog/request_reviews_dialog.jinja2'
+)
+def request_reviews_dialog(request):
+    """request_reviews_dialog
+    """
+    logger.debug('request_reviews_dialog is starts')
+
+    came_from = request.params.get('came_from', '/')
+
+    selected_task_list = get_multi_integer(request, 'task_ids', 'GET')
+    logger.debug('selected_task_list: %s' % selected_task_list)
+
+    _query_buffer = []
+    for task_id in selected_task_list:
+        _query_buffer.append("""task_ids=%s""" % task_id)
+    _query = '&'.join(_query_buffer)
+
+    action = '/tasks/request_reviews?%s' % (_query)
+
+    logger.debug('action: %s' % action)
+
+    return {
+        'came_from': came_from,
+        'action': action
+    }
 
 @view_config(
     route_name='request_reviews',
@@ -4642,7 +4772,7 @@ def request_reviews(request):
             transaction.abort()
             return Response('Can not find any Task', 500)
 
-    request_review_mode = request.params.get('request_review_mode', 'Progress')
+    request_review_mode = request.params.get('request_review_mode', 'Final')
 
     for task in tasks:
         # check if the user is one of the resources of this task or the responsible
@@ -6347,6 +6477,69 @@ def change_task_users_dialog(request):
 
 
 @view_config(
+    route_name='set_task_start_end_date_dialog',
+    renderer='templates/task/dialog/set_task_start_end_date_dialog.jinja2'
+)
+def set_task_start_end_date_dialog(request):
+    """set_task_start_end_date_dialog
+    """
+    logger.debug('set_task_start_end_date_dialog is starts')
+
+    came_from = request.params.get('came_from', '/')
+
+    selected_task_list = get_multi_integer(request, 'task_ids', 'GET')
+    logger.debug('selected_task_list: %s' % selected_task_list)
+
+    _query_buffer = []
+    for task_id in selected_task_list:
+        _query_buffer.append("""task_ids=%s""" % task_id)
+    _query = '&'.join(_query_buffer)
+
+    action = '/tasks/set_start_end_date?%s' % (_query)
+
+    logger.debug('action: %s' % action)
+
+    return {
+        'came_from': came_from,
+        'action': action
+    }
+
+
+@view_config(
+    route_name='set_task_start_end_date',
+    permission='Update_Task'
+)
+def set_task_start_end_date(request):
+    """sets task start end date with the data
+    """
+    logged_in_user = get_logged_in_user(request)
+    utc_now = local_to_utc(datetime.datetime.now())
+
+    selected_task_list = get_multi_integer(request, 'task_ids', 'GET')
+    tasks = Task.query.filter(Task.id.in_(selected_task_list)).all()
+
+    if not tasks:
+        transaction.abort()
+        return Response('Can not find any Task', 500)
+
+    start_date = get_date(request, 'start')
+    end_date = get_date(request, 'end')
+
+    if not start_date:
+        transaction.abort()
+        return Response('Please supply date range', 500)
+
+    for task in tasks:
+        task.start = start_date
+        task.end = end_date
+
+        task.updated_by = logged_in_user
+        task.date_updated = utc_now
+
+    return Response('Success: New date range is set for selected tasks')
+
+
+@view_config(
     route_name='change_task_users',
     permission='Update_Task'
 )
@@ -6521,6 +6714,30 @@ def watch_task(request):
 
 
 @view_config(
+    route_name='watch_tasks'
+)
+def watch_tasks(request):
+    """add task to the logged in users watch list
+    """
+    logged_in_user = get_logged_in_user(request)
+    selected_task_list = get_multi_integer(request, 'task_ids', 'GET')
+    tasks = Task.query.filter(Task.id.in_(selected_task_list)).all()
+
+    if not tasks:
+        transaction.abort()
+        return Response('Can not find any Task', 500)
+
+    for task in tasks:
+        if logged_in_user not in task.watchers:
+            task.watchers.append(logged_in_user)
+
+    # invalidate all caches
+    invalidate_all_caches()
+
+    return Response('Tasks successfully added to watch list')
+
+
+@view_config(
     route_name='unwatch_task'
 )
 def unwatch_task(request):
@@ -6537,6 +6754,30 @@ def unwatch_task(request):
     invalidate_all_caches()
 
     return Response('Task successfully removed from watch list')
+
+
+@view_config(
+    route_name='unwatch_tasks'
+)
+def unwatch_tasks(request):
+    """remove task from the logged in users watch list
+    """
+    logged_in_user = get_logged_in_user(request)
+    selected_task_list = get_multi_integer(request, 'task_ids', 'GET')
+    tasks = Task.query.filter(Task.id.in_(selected_task_list)).all()
+
+    if not tasks:
+        transaction.abort()
+        return Response('Can not find any Task', 500)
+
+    for task in tasks:
+        if logged_in_user in task.watchers:
+            task.watchers.remove(logged_in_user)
+
+    # invalidate all caches
+    invalidate_all_caches()
+
+    return Response('Tasks successfully removed from watch list')
 
 
 def fix_task_computed_time(task):
@@ -6643,4 +6884,37 @@ def get_actual_end_time(task):
 
 
 
+@view_config(
+    route_name='get_task_absolute_full_path',
+    renderer='json'
+)
+def get_task_absolute_full_path(request):
 
+    task_id = request.matchdict.get('id')
+    task = Task.query.filter(Task.id == task_id).first()
+
+    if not task:
+        transaction.abort()
+        return Response('Can not find a Task with id: %s' % task_id, 500)
+
+
+    version = Version.query.filter(Version.task == task).first()
+
+    if not version:
+        transaction.abort()
+        return Response('Can not find a Version for task : %s' % task.name, 500)
+
+
+    repo = task.project.repository
+    user_os = get_user_os(request)
+    path_converter = lambda x: x
+
+    if repo:
+        if user_os == 'windows':
+            path_converter = repo.to_windows_path
+        elif user_os == 'linux':
+            path_converter = repo.to_linux_path
+        elif user_os == 'osx':
+            path_converter = repo.to_osx_path
+
+    return  path_converter(version.absolute_full_path)

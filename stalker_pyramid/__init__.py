@@ -760,6 +760,7 @@ def main(global_config, **settings):
 
     config.add_route('get_tasks',                   'tasks/')
     config.add_route('get_tasks_count',             'tasks/count/')
+    config.add_route('get_tasks_stats',             'tasks/stats/')
 
     config.add_route('get_task',                        'tasks/{id}/')
     config.add_route('get_task_events',                 'tasks/{id}/events/')  #json
@@ -778,7 +779,9 @@ def main(global_config, **settings):
 
     config.add_route('request_review',                  'tasks/{id}/request_review')
     config.add_route('request_reviews',                  'tasks/request_reviews')
+    config.add_route('request_reviews_dialog',      'tasks/request_review/dialog')
     config.add_route('request_review_task_dialog',      'tasks/{id}/request_review/dialog')
+
 
     config.add_route('approve_task',   'tasks/{id}/approve')
     config.add_route('request_revision',   'tasks/{id}/request_revision')
@@ -816,6 +819,12 @@ def main(global_config, **settings):
 
     config.add_route('watch_task',   'tasks/{id}/watch')
     config.add_route('unwatch_task', 'tasks/{id}/unwatch')
+    config.add_route('watch_tasks',   'tasks/watch')
+    config.add_route('unwatch_tasks', 'tasks/unwatch')
+
+    config.add_route('get_task_absolute_full_path',  'tasks/{id}/absolute_full_path/')
+    config.add_route('set_task_start_end_date',  'tasks/set_start_end_date')
+    config.add_route('set_task_start_end_date_dialog',  'tasks/set_start_end_date/dialog')
 
     # *************************************************************************
     # TimeLog

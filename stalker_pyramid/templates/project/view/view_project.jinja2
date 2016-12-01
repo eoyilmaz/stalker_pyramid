@@ -263,9 +263,8 @@
                                 <h5 id="items_header" class="smaller">{{ filter.name }}</h5>
                             {% endif %}
                                 <div class="widget-toolbar">
-                                    <a href="#" data-action="collapse">
-                                        <i class="icon-chevron-down"></i>
-                                    </a>
+                                    <div id="button_list">
+                                    </div>
                                 </div>
                             </div>
                             <div class="widget-body">
@@ -289,6 +288,12 @@
     {% raw %}
     <script id="tmpl_itemThead" type="text/x-dot-template">
         <tr>
+            <th class="center">
+                <label>
+                    <input type="checkbox" class="ace"/>
+                    <span class="lbl"></span>
+                </label>
+            </th>
             <th>Start</th>
             <th>Name</th>
             <th>Resource</th>
@@ -307,6 +312,15 @@
     {% raw %}
     <script id="tmpl_itemRow" type="text/x-dot-template">
         <tr>
+            <td class="center">
+                <label>
+                    <input id="{{=it.id}}"
+                           type="checkbox"
+                           class="ace ace-checkbox-2"
+                    >
+                    <span class="lbl"></span>
+                </label>
+            </td>
             <td>{{=it.start}}</td>
             <td style="width:300px;" ><a href='/tasks/{{=it.id}}/view'>{{=it.full_path}}</a></td>
             <td>{{ for(var i=0;i<it.resources.length;i++){ }}<a href='/users/{{=it.resources[i].id}}/view'>{{=it.resources[i].name}}</a><br/>{{ } }}</td>
@@ -416,7 +430,20 @@
 
     <script>
         $(document).ready(function () {
-            init_html_modal(-1);
+            init_html_modal({"aoColumns": [
+                                                            { "bSortable": false },
+                                                                null,
+                                                                null,
+                                                                null,
+                                                                null,
+                                                                null,
+                                                                null,
+                                                                null,
+                                                                null,
+                                                                null,
+                                                            { "bSortable": false }
+                                                            ]
+                });
             initInfoBox('/entities/{{ entity.id }}/tasks_stats/');
         });
     </script>
