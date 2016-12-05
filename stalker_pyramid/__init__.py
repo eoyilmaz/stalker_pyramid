@@ -841,7 +841,7 @@ def main(global_config, **settings):
     config.add_route('create_time_log', 'time_logs/create')
     config.add_route('update_time_log', 'time_logs/{id}/update')
 
-
+    config.add_route('user_general_time_log_dialog',     'users/{id}/general_timelogs/create/dialog')
     config.add_route('user_multi_timelog_dialog',     'users/{id}/multi_timelogs/create/dialog')
     config.add_route('create_multi_timelog', 'timelogs/multi/create')
 

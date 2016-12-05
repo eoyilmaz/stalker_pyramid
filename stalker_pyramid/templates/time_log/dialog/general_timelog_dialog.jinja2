@@ -1,11 +1,413 @@
-<div class="widget-box">
-        <div class="widget-header widget-header-small header-color-shot">
-            <h5 class="smaller"></h5>
-        </div>
-        <div class="widget-body">
-            <div class="widget-main no-padding">
+<script class="dialog_loaded"></script>
 
+<div class='row-fluid'>
 
+    <form id='time_log_form'
+          class='form-horizontal'
+          role='form'
+          method='post'>
+        <div class='row-fluid'>
+            {# Project #}
+            <div class='control-group'>
+                <label class='span2 control-label'
+                       for='all_projects'>Project</label>
+
+                <div class='span9'>
+                    <select id='all_projects'
+                            name='all_projects'
+                            class='input-block-level'
+                            data-placeholder='Project'></select>
+                </div>
             </div>
+
+            {# Task #}
+            <div class='control-group'>
+                <label class='span2 control-label'
+                       for='time_log_task'>Task</label>
+
+                <div class='span9'>
+                    <select id='time_log_task'
+                            name='task_id'
+                            class='input-block-level'
+                            data-placeholder='Task'></select>
+                </div>
+                <div class='span1'>
+                    <a target="_blank" id="task_view_page_btn" class="btn btn-mini btn-info">View
+                            </a>
+                </div>
+            </div>
+            {# Start & End Dates #}
+            <div class="control-group">
+                <label for="start_end_date_range_picker"
+                       class="span2 control-label">Date</label>
+
+                <div class="span10 input-prepend">
+                    <input class="date-picker"
+                           id='start_end_date_range_picker'
+                           name='start_and_end_dates'
+                           type="text"
+                           data-date-format="dd-mm-yyyy"
+                           placeholder="Start & End Dates"
+                            >
+                    <span class="add-on">
+                        <i class="icon-calendar"></i>
+                    </span>
+                </div>
+            </div>
+            <div class='control-group'>
+                <label class='span2 control-label'
+                       for='task_schedule_timing'>Schedule Timing</label>
+
+                <div class='span10'>
+                    <div class='span2'>
+                        <input id='task_schedule_timing'
+                               class='input-block-level'
+                               name='schedule_timing'
+                               type='text'
+                               value=10
+                               min=1
+                               required>
+                    </div>
+                    <div class='span4'>
+                        <select id='task_schedule_unit'
+                                class='input-block-level'
+                                name='schedule_unit'>
+                            <option value='min'>Minutes</option>
+                            <option value='h'>Hours</option>
+                            <option value='d'>Days</option>
+                            <option value='w'>Weeks</option>
+                            <option value='m'>Months</option>
+                            <option value='y'>Years</option>
+                        </select>
+                    </div>
+                    <div class='span4'>
+                        <select id='task_schedule_model'
+                                class='input-block-level'
+                                name='schedule_model'>
+                            <option value='effort'>Effort</option>
+                            <option value='duration'>Duration</option>
+                        <option value='length'>Length</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div id="revision_type_cg" class='control-group hide'>
+                <label class='span2 control-label' for='revision_type'>Revision Type</label>
+                <div class='span10'>
+                    <select id='revision_type'
+                            class='input-block-level'
+                            name='revision_type'
+                            required>
+                        <option value="Ajans">Ajans</option>
+                        <option value="Yonetmen">Yonetmen</option>
+                        <option value="Ic_Revizyon">Ic Revizyon</option>
+                        <option value="Yetistiremedim">Yetistiremedim</option>
+                    </select>
+                </div>
+            </div>
+
+            {# Description #}
+            <div class="control-group">
+                <label class="span2 control-label" for="time_log_description">
+                    Description
+                </label>
+
+                <div class="span10">
+                    <textarea id="time_log_description"
+                              name="description" rows="3"
+                              style="width: inherit"></textarea>
+                </div>
+            </div>
+
+
         </div>
+    </form>
+
+    <div class="space-5"></div>
+    <div class="hr dotted"></div>
+    <div class="space-5"></div>
+
+    <div class='row-fluid'>
+        {% if time_log %}
+        <p>This timelog is created by <a href="/users/{{ time_log.created_by.id }}/view "> {{ time_log.created_by.name }}</a> and updated by  <a href="/users/{{ time_log.updated_by.id }}/view "> {{ time_log.updated_by.name }}</a>
+                </p>
+        {% endif %}
     </div>
+
+</div>
+
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/chosen.jquery.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/daterangepicker.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-timepicker.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.autosize-min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.inputlimiter.1.3.1.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.validate.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.easy-pie-chart.min.js") }}'></script>
+
+
+<script>
+function init_dialog() {
+    console.debug('starting to initialize time_log dialog!!!');
+
+    var completed_percent;
+    var time_log_form = $("#time_log_form");
+    var time_log_resource = $('#time_log_resource');
+    {# ***************************************************************** #}
+    {# Date Time Objects #}
+    var start_end_date_range_picker = $('#start_end_date_range_picker');
+    {# ***************************************************************** #}
+    {# Schedule Unit and Model #}
+    var task_schedule_unit = $('#task_schedule_unit');
+    var task_schedule_timing = $('#task_schedule_timing');
+
+    var time_log_description = $('#time_log_description');
+    var parent = '';
+
+    var dialog_template_label = $('#dialog_template_label');
+    dialog_template_label.find('span').remove();
+    dialog_template_label.append('<span>Timelog</span>');
+
+    var submit_button = $('#dialog_template_submit_button');
+    submit_button.attr('disabled', false);
+    {# ***************************************************************** #}
+    {# Get Start End  #}
+    var get_start_end = function () {
+
+        var date_string = start_end_date_range_picker.datepicker().val().split('-');
+
+        var start_time_string = start_time.val().split(':');
+        var end_time_string = end_time.val().split(':');
+
+        var start = new Date(
+            parseInt(date_string[2]),
+            parseInt(date_string[1]) - 1,
+            parseInt(date_string[0]),
+            parseInt(start_time_string[0]),
+            parseInt(start_time_string[1]),
+            0, 0
+        );
+
+        var end = new Date(
+            parseInt(date_string[2]),
+            parseInt(date_string[1]) - 1,
+            parseInt(date_string[0]),
+            parseInt(end_time_string[0]),
+            parseInt(end_time_string[1]),
+            0, 0
+        );
+
+        return [start, end];
+    };
+
+    var getProjectTasks = function(project_id){
+        console.log(project_id);
+        {# ***************************************************************** #}
+        {# Task #}
+        {% raw %}
+            var task_option_template = doT.template(
+                '<option value={{=it.id}}>{{=it.name}}</option>'
+            );
+        {% endraw %}
+
+        var time_log_task = $('#time_log_task');
+        time_log_task.find('option').remove();
+
+        $.getJSON('/projects/'+project_id+'/tasks/?status=RTS&status=WIP&status=HREV&status=DREV').then(function (data) {
+            // append an empty one first
+            time_log_task.append('<option value="-1">&nbsp;</option>');
+            for (var i = 0; i < data.length; i++) {
+                time_log_task.append(task_option_template(data[i]));
+            }
+
+            time_log_task.chosen({
+                search_contains: true,
+                enable_split_word_search: true,
+                allow_single_deselect: true
+            });
+        });
+
+    }
+
+    time_log_form.attr("action", "{{ request.route_url('create_time_log') }}");
+
+    {# ***************************************************************** #}
+    {# Project #}
+    {% raw %}
+        var project_option_template = doT.template(
+            '<option value={{=it.id}}>{{=it.name}}</option>'
+        );
+    {% endraw %}
+
+    var all_projects = $('#all_projects');
+    all_projects.find('option').remove();
+
+    $.getJSON('/projects/').then(function (data) {
+        // append an empty one first
+        all_projects.append('<option value="-1">&nbsp;</option>');
+        for (var i = 0; i < data.length; i++) {
+            all_projects.append(project_option_template(data[i]));
+        }
+
+        all_projects.chosen({
+            search_contains: true,
+            enable_split_word_search: true,
+            allow_single_deselect: true
+        });
+
+        all_projects.on('change', function () {
+                    getProjectTasks($(this).val());
+                });
+    });
+
+    {# ***************************************************************** #}
+    {# Start & End Date Picker #}
+    start_end_date_range_picker.datepicker('setDate', start_date_value);
+
+    $('.date-picker').datepicker().next().on(ace.click_event, function(){
+                $(this).prev().focus();
+            });
+
+    start_end_date_range_picker.on('shown', function (e) {
+        e.stopPropagation();
+    });
+    start_end_date_range_picker.on('hidden', function (e) {
+        e.stopPropagation();
+    });
+
+
+
+
+    var refresh_page = function(){
+
+        setTimeout(function () { // wait for hide event to finish
+            window.location.reload();
+        }, 0);
+        submit_button.button('reset');
+        $('#dialog_template').modal('hide');
+
+    };
+
+    {# ***************************************************************** #}
+    {# Submit Button #}
+    submit_button.on('click', function (e) {
+        e.stopPropagation();
+        e.preventDefault();
+
+        // disable the submit_button
+        var time_log_form = $('#time_log_form');
+        submit_button.button('loading');
+        // merge end_date and end_time
+        var start_end = get_start_end();
+        var start = start_end[0];
+        var end = start_end[1];
+
+        // validate the data first
+        var form_is_valid, error_messages;
+        error_messages = [];
+        form_is_valid = true;
+
+        if (form_is_valid) {
+            $.post(
+                time_log_form.attr('action'),
+                time_log_form.serialize() + '&' +
+                $.param({
+                    'start': start.toUTCString(),
+                    'end': end.toUTCString()
+                })
+            ).done(function (response_text) {
+
+                refresh_page();
+
+            }).fail(function (jqXHR) {
+                bootbox.alert('<div id="message" class="alert alert-danger bigger-110">'+jqXHR.responseText+'</div>');
+                submit_button.button('reset');
+            });
+        } else {
+            var combined_error_messages = '';
+            for (var i=0; i < error_messages.length; i++){
+                combined_error_messages += error_messages[i] + '<br/>';
+            }
+
+            bootbox.alert('<div id="message" class="alert alert-danger bigger-110">' + combined_error_messages + '</div>');
+            submit_button.button('reset');
+        }
+
+    });
+
+    $('#time_log_form').validate({
+        errorElement: 'span',
+        errorClass: 'help-inline',
+        focusInvalid: true,
+        rules: {
+            resource_id: {
+                required: true
+            },
+            task_id: {
+                required: true
+            },
+            comment: {
+                required: true
+            }
+        },
+
+        messages: {
+        },
+
+        invalidHandler: function (event, validator) { //display error alert on form submit
+            $('.alert-error', $('.login-form')).show();
+        },
+
+        highlight: function (e) {
+            $(e).closest('.control-group').removeClass('info').addClass('error');
+        },
+
+        success: function (e) {
+            $(e).closest('.control-group').removeClass('error').addClass('info');
+            $(e).remove();
+        },
+
+        errorPlacement: function (error, element) {
+            if (element.is(':checkbox') || element.is(':radio')) {
+                var controls = element.closest('.controls');
+                if (controls.find(':checkbox,:radio').length > 1) controls.append(error);
+                else error.insertAfter(element.nextAll('.lbl:eq(0)').eq(0));
+            }
+            else if (element.is('.select2')) {
+                error.insertAfter(element.siblings('[class*="select2-container"]:eq(0)'));
+            }
+            else if (element.is('.chosen-select')) {
+                error.insertAfter(element.siblings('[class*="chosen-container"]:eq(0)'));
+            }
+            else error.insertAfter(element);
+        },
+
+        submitHandler: function (form) {
+            form.submit();
+        }
+
+    });
+
+    console.debug('finished initializing the time_log dialog!')
+}
+</script>
+
+<script type="text/javascript">
+    function destruct_dialog() {
+        console.debug('started un-initializing the time_log dialog!');
+
+        $('#submit_button').unbind();
+        $('#time_log_task').unbind();
+        $('#time_log_resource').unbind();
+        $('#start_end_date_range_picker').unbind();
+        $('#start_time').unbind();
+        $('#end_time').unbind();
+        $('#dialog_template_submit_button').unbind();
+        $('#dialog_template_delete_button').hide();
+        $('#dialog_template_delete_button').unbind();
+
+        $('#dialog_template').data('modal', null);
+
+        console.debug('finished un-initializing the time_log dialog!');
+    }
+</script>

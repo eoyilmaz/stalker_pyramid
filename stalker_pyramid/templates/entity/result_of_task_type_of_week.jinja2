@@ -29,6 +29,10 @@
         <select id='select_week_cb' class='input-block-level'>
         </select>
     </div>
+    <div class="span2">
+        <select id='select_seq_cb' class='input-block-level'>
+        </select>
+    </div>
 
 
 </div>
@@ -52,9 +56,11 @@
 
 <script type="text/javascript">
     var select_week_cb_data=[''];
+    var select_seq_cb_data=[''];
     function loadShotTaskData(t_type, p_id){
         console.log('loadShotTaskData: '+t_type+' : ' +p_id);
         select_week_cb_data=[''];
+        select_seq_cb_data=[''];
 
         var result_table = $('#result_table');
         result_table.find("#table_container").remove();
@@ -123,8 +129,32 @@
                         select_week_cb_data[select_week_cb_data.length-1]['sum_of_total_seconds'] += data[i]['total_seconds'];
                         select_week_cb_data[select_week_cb_data.length-1]['sum_of_total_shots'] += data[i]['total_shots'];
                     }
+
+                    console.log("s_data['scene_name']: "+s_data['scene_name']);
+                    var seq_name = s_data['scene_name'].split("_")[0];
+
+                    if (seq_name !=select_seq_cb_data[select_seq_cb_data.length-1]['sequence_name']){
+                        select_seq_cb_data.push({  index:select_seq_cb_data.length,
+                                                    'sequence_name':seq_name,
+                                                    'sum_of_approved_seconds': data[i]['approved_seconds'],
+                                                    'sum_of_approved_shots': data[i]['approved_shots'],
+                                                    'sum_of_total_seconds': data[i]['total_seconds'],
+                                                    'sum_of_total_shots': data[i]['total_shots']
+                                                });
+
+                    }
+                    else{
+                        select_seq_cb_data[select_seq_cb_data.length-1]['sum_of_approved_seconds'] += data[i]['approved_seconds'];
+                        select_seq_cb_data[select_seq_cb_data.length-1]['sum_of_approved_shots'] += data[i]['approved_shots'];
+                        select_seq_cb_data[select_seq_cb_data.length-1]['sum_of_total_seconds'] += data[i]['total_seconds'];
+                        select_seq_cb_data[select_seq_cb_data.length-1]['sum_of_total_shots'] += data[i]['total_shots'];
+                    }
+
                     shot_data.push(s_data);
                 }
+
+                /*---------------------------------------------*/
+                /*WEEK CB*/
                 var select_week_cb = $('#select_week_cb');
 
                 {% raw %}
@@ -153,6 +183,44 @@
                     index = select_week_cb_data.length-index;
                     var cb_data = select_week_cb_data;
                     jQuery(grid_selector).jqGrid('filterInput', cb_data[index]['start_date']);
+                    jQuery(grid_selector).jqGrid("footerData", "set", {resource_ids: 'TOTAL',
+                                                           approved_seconds: cb_data[index]['sum_of_approved_seconds'].toFixed(2)+' s ',
+                                                           total_seconds: cb_data[index]['sum_of_total_seconds'].toFixed(2)+' s ',
+                                                           approved_shots:cb_data[index]['sum_of_approved_shots'].toFixed(2) +' shots',
+                                                           total_shots:cb_data[index]['sum_of_total_shots'].toFixed(2) +' shots'
+                                                           });
+                });
+
+                 /*---------------------------------------------*/
+                /*Sequence CB*/
+                var select_seq_cb = $('#select_seq_cb');
+
+                {% raw %}
+                    var option_template = doT.template('<option value={{=it.index}}>{{=it.sequence_name}}</option>');
+                {% endraw %}
+                select_seq_cb.chosen({
+                    search_contains: true,
+                    enable_split_word_search: true
+                });
+
+                select_seq_cb.find('option').remove();
+
+                select_seq_cb_data.reverse();
+                select_seq_cb_data.pop();
+
+                for (var j=0; j <select_seq_cb_data.length; j++){
+                    select_seq_cb.append(option_template(select_seq_cb_data[j]));
+                }
+
+                // update the chosen fields
+                select_seq_cb.trigger('liszt:updated');
+
+                select_seq_cb.on('change', function () {
+
+                    var index = $(this).val();
+                    index = select_seq_cb_data.length-index;
+                    var cb_data = select_seq_cb_data;
+                    jQuery(grid_selector).jqGrid('filterInput', cb_data[index]['sequence_name']);
                     jQuery(grid_selector).jqGrid("footerData", "set", {resource_ids: 'TOTAL',
                                                            approved_seconds: cb_data[index]['sum_of_approved_seconds'].toFixed(2)+' s ',
                                                            total_seconds: cb_data[index]['sum_of_total_seconds'].toFixed(2)+' s ',

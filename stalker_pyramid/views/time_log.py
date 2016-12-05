@@ -46,16 +46,20 @@ logger.setLevel(logging.DEBUG)
 
 
 @view_config(
+    route_name='user_general_time_log_dialog',
+    renderer='templates/time_log/dialog/general_timelog_dialog.jinja2'
+)
+@view_config(
     route_name='task_time_log_dialog',
-    renderer='templates/time_log/dialog/timelog_dialog.jinja2',
+    renderer='templates/time_log/dialog/timelog_dialog.jinja2'
 )
 @view_config(
     route_name='user_time_log_dialog',
-    renderer='templates/time_log/dialog/timelog_dialog.jinja2',
+    renderer='templates/time_log/dialog/timelog_dialog.jinja2'
 )
 @view_config(
     route_name='entity_time_log_dialog',
-    renderer='templates/time_log/dialog/timelog_dialog.jinja2',
+    renderer='templates/time_log/dialog/timelog_dialog.jinja2'
 )
 def create_time_log_dialog(request):
     """creates a create_time_log_dialog by using the given task
