@@ -97,14 +97,7 @@
             var grid_selector = "#grid-table";
             var grid = jQuery(grid_selector);
 
-            function findArrayElement(array, attr_name, attr_value) {
-                for(var i=0;i<array.length;i++){
-                    if(array[i][attr_name] == attr_value){
-                        return i;
-                    }
-                }
-                return -1;
-            }
+
 
             function unitFmatter (cellvalue, options, rowObject){
                 var index = findArrayElement(grid_data,'id', options.rowId);

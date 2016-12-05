@@ -567,3 +567,13 @@ var validate_timing_value = function(options) {
 
     return {is_valid: is_valid, errors: errors}
 };
+
+
+function findArrayElement(array, attr_name, attr_value) {
+                for(var i=0;i<array.length;i++){
+                    if(array[i][attr_name] == attr_value){
+                        return i;
+                    }
+                }
+                return -1;
+            }

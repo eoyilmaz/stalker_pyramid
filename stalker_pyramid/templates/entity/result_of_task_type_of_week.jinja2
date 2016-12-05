@@ -57,6 +57,14 @@
 <script type="text/javascript">
     var select_week_cb_data=[''];
     var select_seq_cb_data=[''];
+    var sum_of_approved_seconds = 0;
+    var sum_of_approved_shots = 0;
+    var sum_of_total_seconds = 0;
+    var sum_of_total_shots = 0;
+    var shot_data = [];
+    var grid_selector = "#grid-table";
+    var pager_selector = "#grid-pager";
+
     function loadShotTaskData(t_type, p_id){
         console.log('loadShotTaskData: '+t_type+' : ' +p_id);
         select_week_cb_data=[''];
@@ -65,21 +73,13 @@
         var result_table = $('#result_table');
         result_table.find("#table_container").remove();
         result_table.find("#grid-pager").remove();
-        var grid_selector = "#grid-table";
-        var pager_selector = "#grid-pager";
+
 
 
         $.getJSON('/entities/{{ entity.id }}/'+t_type+'/result?project_id='+p_id).then(function (data) {
 
             if (data.length>0){
-                var shot_data = [];
-
-                var sum_of_approved_seconds = 0;
-                var sum_of_approved_shots = 0;
-                var sum_of_total_seconds = 0;
-                var sum_of_total_shots = 0;
-
-
+                shot_data = [];
 
                 for (var i=0; i<data.length; i+=1){
                     var s_data = {}
@@ -132,8 +132,9 @@
 
                     console.log("s_data['scene_name']: "+s_data['scene_name']);
                     var seq_name = s_data['scene_name'].split("_")[0];
-
-                    if (seq_name !=select_seq_cb_data[select_seq_cb_data.length-1]['sequence_name']){
+                    var seq_name_index = findArrayElement(select_seq_cb_data, 'sequence_name', seq_name);;
+                    console.log("seq_name_index: "+seq_name_index);
+                    if (seq_name_index == -1){
                         select_seq_cb_data.push({  index:select_seq_cb_data.length,
                                                     'sequence_name':seq_name,
                                                     'sum_of_approved_seconds': data[i]['approved_seconds'],
@@ -141,13 +142,13 @@
                                                     'sum_of_total_seconds': data[i]['total_seconds'],
                                                     'sum_of_total_shots': data[i]['total_shots']
                                                 });
-
+                        console.log("seq_name_index: "+select_seq_cb_data.indexOf(seq_name));
                     }
                     else{
-                        select_seq_cb_data[select_seq_cb_data.length-1]['sum_of_approved_seconds'] += data[i]['approved_seconds'];
-                        select_seq_cb_data[select_seq_cb_data.length-1]['sum_of_approved_shots'] += data[i]['approved_shots'];
-                        select_seq_cb_data[select_seq_cb_data.length-1]['sum_of_total_seconds'] += data[i]['total_seconds'];
-                        select_seq_cb_data[select_seq_cb_data.length-1]['sum_of_total_shots'] += data[i]['total_shots'];
+                        select_seq_cb_data[seq_name_index]['sum_of_approved_seconds'] += data[i]['approved_seconds'];
+                        select_seq_cb_data[seq_name_index]['sum_of_approved_shots'] += data[i]['approved_shots'];
+                        select_seq_cb_data[seq_name_index]['sum_of_total_seconds'] += data[i]['total_seconds'];
+                        select_seq_cb_data[seq_name_index]['sum_of_total_shots'] += data[i]['total_shots'];
                     }
 
                     shot_data.push(s_data);
@@ -170,6 +171,7 @@
                 select_week_cb_data.reverse();
                 select_week_cb_data.pop();
 
+                select_week_cb.append(option_template({'index':-1, 'start_date':"ALL"}));
                 for (var j=0; j < select_week_cb_data.length; j++){
                     select_week_cb.append(option_template(select_week_cb_data[j]));
                 }
@@ -180,15 +182,22 @@
                 select_week_cb.on('change', function () {
 
                     var index = $(this).val();
-                    index = select_week_cb_data.length-index;
-                    var cb_data = select_week_cb_data;
-                    jQuery(grid_selector).jqGrid('filterInput', cb_data[index]['start_date']);
-                    jQuery(grid_selector).jqGrid("footerData", "set", {resource_ids: 'TOTAL',
-                                                           approved_seconds: cb_data[index]['sum_of_approved_seconds'].toFixed(2)+' s ',
-                                                           total_seconds: cb_data[index]['sum_of_total_seconds'].toFixed(2)+' s ',
-                                                           approved_shots:cb_data[index]['sum_of_approved_shots'].toFixed(2) +' shots',
-                                                           total_shots:cb_data[index]['sum_of_total_shots'].toFixed(2) +' shots'
-                                                           });
+                    if(index == -1){
+                        jQuery(grid_selector).jqGrid('filterInput', "");
+                        setFooterInitialValue();
+                    }
+                    else{
+                        index = select_week_cb_data.length-index;
+                        var cb_data = select_week_cb_data;
+                        jQuery(grid_selector).jqGrid('filterInput', cb_data[index]['start_date']);
+                        jQuery(grid_selector).jqGrid("footerData", "set", {resource_ids: 'TOTAL',
+                                                               approved_seconds: cb_data[index]['sum_of_approved_seconds'].toFixed(2)+' s ',
+                                                               total_seconds: cb_data[index]['sum_of_total_seconds'].toFixed(2)+' s ',
+                                                               approved_shots:cb_data[index]['sum_of_approved_shots'].toFixed(2) +' shots',
+                                                               total_shots:cb_data[index]['sum_of_total_shots'].toFixed(2) +' shots'
+                                                               });
+                    }
+
                 });
 
                  /*---------------------------------------------*/
@@ -208,6 +217,7 @@
                 select_seq_cb_data.reverse();
                 select_seq_cb_data.pop();
 
+                select_seq_cb.append(option_template({'index':-1, 'sequence_name':"ALL"}));
                 for (var j=0; j <select_seq_cb_data.length; j++){
                     select_seq_cb.append(option_template(select_seq_cb_data[j]));
                 }
@@ -218,15 +228,21 @@
                 select_seq_cb.on('change', function () {
 
                     var index = $(this).val();
-                    index = select_seq_cb_data.length-index;
-                    var cb_data = select_seq_cb_data;
-                    jQuery(grid_selector).jqGrid('filterInput', cb_data[index]['sequence_name']);
-                    jQuery(grid_selector).jqGrid("footerData", "set", {resource_ids: 'TOTAL',
-                                                           approved_seconds: cb_data[index]['sum_of_approved_seconds'].toFixed(2)+' s ',
-                                                           total_seconds: cb_data[index]['sum_of_total_seconds'].toFixed(2)+' s ',
-                                                           approved_shots:cb_data[index]['sum_of_approved_shots'].toFixed(2) +' shots',
-                                                           total_shots:cb_data[index]['sum_of_total_shots'].toFixed(2) +' shots'
-                                                           });
+                    if(index == -1){
+                        jQuery(grid_selector).jqGrid('filterInput', "");
+                        setFooterInitialValue();
+                    }
+                    else{
+                        index = select_seq_cb_data.length-index;
+                        var cb_data = select_seq_cb_data;
+                        jQuery(grid_selector).jqGrid('filterInput', cb_data[index]['sequence_name']);
+                        jQuery(grid_selector).jqGrid("footerData", "set", {resource_ids: 'TOTAL',
+                                                               approved_seconds: cb_data[index]['sum_of_approved_seconds'].toFixed(2)+' s ',
+                                                               total_seconds: cb_data[index]['sum_of_total_seconds'].toFixed(2)+' s ',
+                                                               approved_shots:cb_data[index]['sum_of_approved_shots'].toFixed(2) +' shots',
+                                                               total_shots:cb_data[index]['sum_of_total_shots'].toFixed(2) +' shots'
+                                                               });
+                    }
                 });
 
                 result_table.append('<div id="table_container"><table id="grid-table"></table></div><div id="grid-pager"></div>');
@@ -261,29 +277,11 @@
                         var $self = $(this);
 
 {#                        var total_seconds= $self.jqGrid('getCol', 'total_seconds', false, 'sum');#}
-                        var approved_minutes = (sum_of_approved_seconds/60).toFixed(2);
-                        var total_minutes = (sum_of_total_seconds/60).toFixed(2);
-                        var average_seconds = (sum_of_total_seconds/shot_data.length).toFixed(2);
-                        $self.jqGrid("footerData", "set", {resource_ids: 'TOTAL',
-                                                           approved_seconds: sum_of_approved_seconds.toFixed(2)+'s = '+approved_minutes+' m',
-                                                           total_seconds: sum_of_total_seconds.toFixed(2)+'s = '+total_minutes+' m',
-{#                                                           start_date: 'AVERAGE',#}
-{#                                                           shot_names: average_seconds+' s',#}
-                                                           approved_shots:sum_of_approved_shots.toFixed(2) +' shots',
-                                                           total_shots:sum_of_total_shots.toFixed(2) +' shots'
-                                                           });
+
+                        setFooterInitialValue();
 
 
-                        var total = total_minutes +' m';
-                        var approved_total = approved_minutes +' m';
-                        if(t_type!='Animation'){
-                            total = sum_of_total_shots.toFixed(2) +' shots';
-                            approved_total = sum_of_approved_shots.toFixed(2) +' shots';
-                        }
 
-                        $('#total').text(total);
-                        $('#approved_total').text(approved_total);
-                        $('#info_box').show();
 
                         setTimeout(function(){
                             updatePagerIcons(grid_selector);
@@ -322,6 +320,32 @@
                 });
             }
         });
+    }
+
+    function setFooterInitialValue(){
+        var approved_minutes = (sum_of_approved_seconds/60).toFixed(2);
+        var total_minutes = (sum_of_total_seconds/60).toFixed(2);
+        var average_seconds = (sum_of_total_seconds/shot_data.length).toFixed(2);
+        jQuery(grid_selector).jqGrid("footerData", "set", {resource_ids: 'TOTAL',
+                                           approved_seconds: sum_of_approved_seconds.toFixed(2)+'s = '+approved_minutes+' m',
+                                           total_seconds: sum_of_total_seconds.toFixed(2)+'s = '+total_minutes+' m',
+{#                                                           start_date: 'AVERAGE',#}
+{#                                                           shot_names: average_seconds+' s',#}
+                                           approved_shots:sum_of_approved_shots.toFixed(2) +' shots',
+                                           total_shots:sum_of_total_shots.toFixed(2) +' shots'
+                                           });
+
+{#        var total = total_minutes +' m';#}
+{#        var approved_total = approved_minutes +' m';#}
+{#        if(t_type!='Animation'){#}
+{#            total = sum_of_total_shots.toFixed(2) +' shots';#}
+{#            approved_total = sum_of_approved_shots.toFixed(2) +' shots';#}
+{#        }#}
+{##}
+{#        $('#total').text(total);#}
+{#        $('#approved_total').text(approved_total);#}
+{#        $('#info_box').show();#}
+
     }
     function updatePagerIcons(table) {
         var replacement =
