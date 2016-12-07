@@ -74,13 +74,13 @@
             get_icon('report'),
             ''
         );
-{#        menu_of(#}
-{#            'Results',#}
-{#            "{%- if request.current_route_path() == request.route_path('view_entity_result', id=user.id) -%}'active',{%- else -%},{%- endif -%}",#}
-{#            '{{ request.route_url('view_entity_result', id=user.id) }}',#}
-{#            get_icon('report'),#}
-{#            ''#}
-{#        );#}
+        menu_of(
+            'Results',
+            "{%- if request.current_route_path() == request.route_path('view_entity_result', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('view_entity_result', id=user.id) }}',
+            get_icon('report'),
+            ''
+        );
         menu_of(
             'Authlogs',
             "{%- if request.current_route_path() == request.route_path('list_entity_authlogs', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
