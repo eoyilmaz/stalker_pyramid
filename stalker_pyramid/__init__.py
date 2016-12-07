@@ -985,6 +985,7 @@ def main(global_config, **settings):
     config.add_route('remove_related_asset_dialog', 'entities/{id}/assets/{a_id}/remove/dialog')
     config.add_route('remove_related_asset', 'entities/{id}/assets/{a_id}/remove')
     config.add_route('get_entity_task_type_result', 'entities/{id}/{task_type}/result')
+    config.add_route('get_entity_task_type_assigned', 'entities/{id}/{task_type}/assigned')
     config.add_route('list_entity_related_assets',  'entities/{id}/related/{e_type}/{d_type}/list')
     config.add_route('get_related_assets',  'entities/{id}/related/assets')
 

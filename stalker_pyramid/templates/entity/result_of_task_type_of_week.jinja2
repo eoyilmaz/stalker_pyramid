@@ -1,18 +1,6 @@
 
 <div class="row-fluid">
-    <div class="span9 alert alert-info">
-        <button type="button" class="close" data-dismiss="alert">
-            <i class="icon-remove"></i>
-        </button>
-        Please select a task type to display the results.
-        <br />
-    </div>
-</div>
-<div class="row-fluid">
-    <div class="span2">
-        <select id='project_cb' class='input-block-level'>
-        </select>
-    </div>
+
     <div class="span2">
         <select id='task_type' class='input-block-level'>
                 <option value="Animation">Animation</option>
@@ -33,9 +21,12 @@
         <select id='select_seq_cb' class='input-block-level'>
         </select>
     </div>
-
-
+    <div class="span2 pull-right">
+        <select id='project_cb' class='input-block-level'>
+        </select>
+    </div>
 </div>
+
 
 <div class="row-fluid">
     <div class="span12" id="result_table">
@@ -51,6 +42,17 @@
 <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/i18n/grid.locale-en.js") }}'></script>
 <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/jquery.jqGrid.min.js") }}'></script>
 <script src='{{ request.static_url("stalker_pyramid:static/moment/moment.min.js") }}'></script>
+<STYLE>
+        .columnClass {
+            background-color: #808080;
+            color:white
+        }
+</STYLE>
+<script>
+    $.jgrid.defaults.autowidth = true;
+    $.jgrid.defaults.responsive = true;
+    $.jgrid.defaults.styleUI = 'Bootstrap';
+</script>
 
 
 
@@ -61,30 +63,163 @@
     var sum_of_approved_shots = 0;
     var sum_of_total_seconds = 0;
     var sum_of_total_shots = 0;
+    var sum_of_total_assigned_shots = 0;
+    var sum_of_total_assigned_number = 0;
     var shot_data = [];
+    var seq_list = [];
     var grid_selector = "#grid-table";
     var pager_selector = "#grid-pager";
+
+    function add_cb_data(array, filter_value, data){
+
+        var c_array = array;
+        var index = findArrayElement(c_array, "filter_name", filter_value);
+        if (index == -1){
+            var new_data = {
+                'index':c_array.length,
+                'filter_name': filter_value,
+                'sum_of_approved_seconds': data['approved_seconds'],
+                'sum_of_approved_shots': data['approved_shots'],
+                'sum_of_total_seconds': data['total_seconds'],
+                'sum_of_total_shots': data['total_shots'],
+                'sum_of_total_assigned_shot_seconds': data['total_assigned_shot_seconds'],
+                'sum_of_total_assigned_shot_number': data['total_assigned_shot_number']
+            };
+            c_array.push(new_data);
+        }
+        else{
+            c_array[index]['sum_of_approved_seconds'] += data['approved_seconds'];
+            c_array[index]['sum_of_approved_shots'] += data['approved_shots'];
+            c_array[index]['sum_of_total_seconds'] += data['total_seconds'];
+            c_array[index]['sum_of_total_shots'] += data['total_shots'];
+            c_array[index]['sum_of_total_assigned_shot_seconds'] += data['total_assigned_shot_seconds'];
+            c_array[index]['sum_of_total_assigned_shot_number'] += data['total_assigned_shot_number'];
+        }
+        return c_array;
+    }
+
+    function initiate_cb(field_name, data_array, op_template, func){
+        var current_cb = $(field_name);
+        current_cb.chosen({
+            search_contains: true,
+            enable_split_word_search: true
+        });
+
+        current_cb.find('option').remove();
+        current_cb.append(op_template({'index':-1, 'filter_name':"ALL"}));
+        for (var j=0; j < data_array.length; j++){
+            current_cb.append(op_template(data_array[j]));
+        }
+        current_cb.trigger('liszt:updated');
+        current_cb.on('change', func);
+    }
+
+    function setSequenceFilter(){
+        var index = $(this).val();
+        if(index == -1){
+            jQuery(grid_selector).jqGrid('filterInput', "");
+            setFooterInitialValue();
+        }
+        else{
+
+            index = select_seq_cb_data.length-index;
+            var cb_data = select_seq_cb_data[index];
+
+            var seq_index = findArrayElement(seq_list, 'sequence_name', cb_data['filter_name']);
+            var total_assigned_shot_seconds = seq_list[seq_index]["total_assigned_shot_seconds"].toFixed(2);
+            var total_assigned_shot_number = seq_list[seq_index]["total_assigned_shot_number"].toFixed(2);
+
+            var sum_of_approved_seconds = (cb_data.sum_of_approved_seconds).toFixed(2);
+            var sum_of_total_seconds = (cb_data.sum_of_total_seconds).toFixed(2);
+            var sum_of_approved_shots = (cb_data.sum_of_approved_shots).toFixed(2);
+            var sum_of_total_shots = (cb_data.sum_of_total_shots).toFixed(2);
+
+            var sum_of_approved_seconds_str = sum_of_approved_seconds+' s';
+            var sum_of_total_seconds_str = sum_of_total_seconds+ ' s';
+            var sum_of_approved_shots_str = sum_of_approved_shots +' shots';
+            var sum_of_total_shots_str = sum_of_total_shots +' shots';
+            var total_assigned_shot_seconds_str = total_assigned_shot_seconds +' s';
+            var total_assigned_shot_number_str = total_assigned_shot_number +' shots';
+
+            if(total_assigned_shot_seconds == sum_of_approved_seconds){
+                sum_of_approved_seconds_str = '<span class="green"><b>'+sum_of_approved_seconds+' s </b><i class="icon-ok"></i></span>'
+            }
+            if(total_assigned_shot_seconds == sum_of_total_seconds){
+                sum_of_total_seconds_str = '<span class="green"><b>'+sum_of_total_seconds+' s </b><i class="icon-ok"></i></span>'
+            }
+            if(total_assigned_shot_number == sum_of_approved_shots){
+                sum_of_approved_shots_str = '<span class="green"><b>'+sum_of_approved_shots+' s </b><i class="icon-ok"></i></span>'
+            }
+            if(total_assigned_shot_number == sum_of_total_shots){
+                sum_of_total_shots_str = '<span class="green"><b>'+sum_of_total_shots+' s </b><i class="icon-ok"></i></span>'
+            }
+
+
+            jQuery(grid_selector).jqGrid('filterInput', cb_data['filter_name']);
+            jQuery(grid_selector).jqGrid("footerData", "set", {
+                                                                   resource_names: 'TOTAL',
+                                                                   approved_seconds: sum_of_approved_seconds_str,
+                                                                   total_seconds: sum_of_total_seconds_str,
+                                                                   approved_shots:sum_of_approved_shots_str,
+                                                                   total_shots:sum_of_total_shots_str,
+                                                                   total_assigned_shot_seconds:total_assigned_shot_seconds_str,
+                                                                   total_assigned_shot_number:total_assigned_shot_number_str
+                                                               }
+            );
+        }
+    }
+
+    function setStartDateFilter(){
+        var index = $(this).val();
+        if(index == -1){
+            jQuery(grid_selector).jqGrid('filterInput', "");
+            setFooterInitialValue();
+        }
+        else{
+
+            index = select_week_cb_data.length-index;
+            var cb_data = select_week_cb_data[index];
+
+            jQuery(grid_selector).jqGrid('filterInput', cb_data['filter_name']);
+            jQuery(grid_selector).jqGrid("footerData", "set", {
+                                                                   resource_names: 'TOTAL',
+                                                                   approved_seconds: (cb_data.sum_of_approved_seconds).toFixed(2)+' s ',
+                                                                   total_seconds: (cb_data.sum_of_total_seconds).toFixed(2)+' s ',
+                                                                   approved_shots:(cb_data.sum_of_approved_shots).toFixed(2) +' shots',
+                                                                   total_shots:(cb_data.sum_of_total_shots).toFixed(2) +' shots',
+                                                                   total_assigned_shot_seconds:'',
+                                                                   total_assigned_shot_number:''
+                                                   }
+            );
+        }
+    }
 
     function loadShotTaskData(t_type, p_id){
         console.log('loadShotTaskData: '+t_type+' : ' +p_id);
         select_week_cb_data=[''];
         select_seq_cb_data=[''];
+        sum_of_approved_seconds = 0;
+        sum_of_approved_shots = 0;
+        sum_of_total_seconds = 0;
+        sum_of_total_shots = 0;
+        sum_of_total_assigned_shots = 0;
+        sum_of_total_assigned_number = 0;
+        shot_data = [];
+        seq_list = [];
 
         var result_table = $('#result_table');
         result_table.find("#table_container").remove();
         result_table.find("#grid-pager").remove();
 
-
-
         $.getJSON('/entities/{{ entity.id }}/'+t_type+'/result?project_id='+p_id).then(function (data) {
 
             if (data.length>0){
-                shot_data = [];
 
                 for (var i=0; i<data.length; i+=1){
-                    var s_data = {}
+                    var s_data = {};
                     {#SCENE NAME#}
                     s_data['scene_name'] = data[i]['scene_name'];
+
                     {#SHOT NAMES#}
                     var shot_names = '';
                     for (var m=0; m < data[i]['shot_names'].length; m+=1){
@@ -92,8 +227,11 @@
                     }
                     s_data['shot_names'] = shot_names;
 
-                    {#RESOURCES NAMES#}
-                    s_data['resource_ids'] = "<a href='/users/"+data[i]['resource_ids']+"/view'>"+get_user_name(data[i]['resource_ids'])+"</a><br/>";
+                    s_data['resource_names']  = "";
+                    for (var m=0; m < data[i]['resource_ids'].length; m+=1){
+                        var r_id = data[i]['resource_ids'][m];
+                        s_data['resource_names']  += "<a href='/users/"+r_id+"/view'>"+get_user_name(r_id)+"</a><br/>";
+                    }
 
                     {#SECONDS#}
                     sum_of_approved_seconds += data[i]['approved_seconds'];
@@ -101,222 +239,147 @@
                     sum_of_total_seconds += data[i]['total_seconds'];
                     sum_of_total_shots += data[i]['total_shots'];
 
+                    {#TOTALS#}
                     s_data['approved_seconds'] = data[i]['approved_seconds'].toFixed(2);
                     s_data['approved_shots'] = data[i]['approved_shots'].toFixed(2);
                     s_data['total_seconds'] = data[i]['total_seconds'].toFixed(2);
                     s_data['total_shots'] = data[i]['total_shots'].toFixed(2);
+                    s_data['total_assigned_shot_seconds'] = data[i]['total_assigned_shot_seconds'].toFixed(2);
+                    s_data['total_assigned_shot_number'] = data[i]['shot_names'].length;
+                    data[i]['total_assigned_shot_number'] = s_data['total_assigned_shot_number']
 
                     {# DATE #}
-
                     var start_date_ms = moment(data[i]['start_date']*1000);
                     var week_day = start_date_ms.isoWeekday() - 1;
                     var current_week = start_date_ms.isoWeek();
                     start_date_ms = start_date_ms.subtract(week_day, 'day');
                     s_data['start_date'] = start_date_ms.format('YYYY-MM-DD').toString();
 
-                    if (s_data['start_date'] !=select_week_cb_data[select_week_cb_data.length-1]['start_date']){
-                        select_week_cb_data.push({  index:select_week_cb_data.length,
-                                                    'start_date':s_data['start_date'],
-                                                    'sum_of_approved_seconds': data[i]['approved_seconds'],
-                                                    'sum_of_approved_shots': data[i]['approved_shots'],
-                                                    'sum_of_total_seconds': data[i]['total_seconds'],
-                                                    'sum_of_total_shots': data[i]['total_shots']
-                                                });
-                    }
-                    else{
-                        select_week_cb_data[select_week_cb_data.length-1]['sum_of_approved_seconds'] += data[i]['approved_seconds'];
-                        select_week_cb_data[select_week_cb_data.length-1]['sum_of_approved_shots'] += data[i]['approved_shots'];
-                        select_week_cb_data[select_week_cb_data.length-1]['sum_of_total_seconds'] += data[i]['total_seconds'];
-                        select_week_cb_data[select_week_cb_data.length-1]['sum_of_total_shots'] += data[i]['total_shots'];
-                    }
-
-                    console.log("s_data['scene_name']: "+s_data['scene_name']);
-                    var seq_name = s_data['scene_name'].split("_")[0];
-                    var seq_name_index = findArrayElement(select_seq_cb_data, 'sequence_name', seq_name);;
-                    console.log("seq_name_index: "+seq_name_index);
-                    if (seq_name_index == -1){
-                        select_seq_cb_data.push({  index:select_seq_cb_data.length,
-                                                    'sequence_name':seq_name,
-                                                    'sum_of_approved_seconds': data[i]['approved_seconds'],
-                                                    'sum_of_approved_shots': data[i]['approved_shots'],
-                                                    'sum_of_total_seconds': data[i]['total_seconds'],
-                                                    'sum_of_total_shots': data[i]['total_shots']
-                                                });
-                        console.log("seq_name_index: "+select_seq_cb_data.indexOf(seq_name));
-                    }
-                    else{
-                        select_seq_cb_data[seq_name_index]['sum_of_approved_seconds'] += data[i]['approved_seconds'];
-                        select_seq_cb_data[seq_name_index]['sum_of_approved_shots'] += data[i]['approved_shots'];
-                        select_seq_cb_data[seq_name_index]['sum_of_total_seconds'] += data[i]['total_seconds'];
-                        select_seq_cb_data[seq_name_index]['sum_of_total_shots'] += data[i]['total_shots'];
-                    }
-
                     shot_data.push(s_data);
+                    select_week_cb_data = add_cb_data(select_week_cb_data, s_data['start_date'], data[i]);
+                    select_seq_cb_data = add_cb_data(select_seq_cb_data, s_data['scene_name'].split("_")[0], data[i]);
                 }
-
                 /*---------------------------------------------*/
                 /*WEEK CB*/
-                var select_week_cb = $('#select_week_cb');
-
-                {% raw %}
-                    var option_template = doT.template('<option value={{=it.index}}>{{=it.start_date}}</option>');
-                {% endraw %}
-                select_week_cb.chosen({
-                    search_contains: true,
-                    enable_split_word_search: true
-                });
-
-                select_week_cb.find('option').remove();
-
                 select_week_cb_data.reverse();
                 select_week_cb_data.pop();
-
-                select_week_cb.append(option_template({'index':-1, 'start_date':"ALL"}));
-                for (var j=0; j < select_week_cb_data.length; j++){
-                    select_week_cb.append(option_template(select_week_cb_data[j]));
-                }
-
-                // update the chosen fields
-                select_week_cb.trigger('liszt:updated');
-
-                select_week_cb.on('change', function () {
-
-                    var index = $(this).val();
-                    if(index == -1){
-                        jQuery(grid_selector).jqGrid('filterInput', "");
-                        setFooterInitialValue();
-                    }
-                    else{
-                        index = select_week_cb_data.length-index;
-                        var cb_data = select_week_cb_data;
-                        jQuery(grid_selector).jqGrid('filterInput', cb_data[index]['start_date']);
-                        jQuery(grid_selector).jqGrid("footerData", "set", {resource_ids: 'TOTAL',
-                                                               approved_seconds: cb_data[index]['sum_of_approved_seconds'].toFixed(2)+' s ',
-                                                               total_seconds: cb_data[index]['sum_of_total_seconds'].toFixed(2)+' s ',
-                                                               approved_shots:cb_data[index]['sum_of_approved_shots'].toFixed(2) +' shots',
-                                                               total_shots:cb_data[index]['sum_of_total_shots'].toFixed(2) +' shots'
-                                                               });
-                    }
-
-                });
-
-                 /*---------------------------------------------*/
-                /*Sequence CB*/
-                var select_seq_cb = $('#select_seq_cb');
-
-                {% raw %}
-                    var option_template = doT.template('<option value={{=it.index}}>{{=it.sequence_name}}</option>');
-                {% endraw %}
-                select_seq_cb.chosen({
-                    search_contains: true,
-                    enable_split_word_search: true
-                });
-
-                select_seq_cb.find('option').remove();
 
                 select_seq_cb_data.reverse();
                 select_seq_cb_data.pop();
 
-                select_seq_cb.append(option_template({'index':-1, 'sequence_name':"ALL"}));
-                for (var j=0; j <select_seq_cb_data.length; j++){
-                    select_seq_cb.append(option_template(select_seq_cb_data[j]));
-                }
+                {% raw %}
+                    var option_template = doT.template('<option value={{=it.index}} >{{=it.filter_name}}</option>');
+                {% endraw %}
 
-                // update the chosen fields
-                select_seq_cb.trigger('liszt:updated');
+                initiate_cb(
+                            '#select_week_cb',
+                            select_week_cb_data,
+                            option_template,
+                            setStartDateFilter
+                );
 
-                select_seq_cb.on('change', function () {
+                initiate_cb(
+                            '#select_seq_cb',
+                            select_seq_cb_data,
+                            option_template,
+                            setSequenceFilter
+                );
 
-                    var index = $(this).val();
-                    if(index == -1){
-                        jQuery(grid_selector).jqGrid('filterInput', "");
-                        setFooterInitialValue();
+                $.getJSON('/entities/{{ entity.id }}/'+t_type+'/assigned?project_id='+p_id).then(function (s_data) {
+
+                    if (s_data.length>0){
+                        seq_list = [];
+                        for (var i=0; i<s_data.length; i+=1){
+
+                            var seq_data = {};
+                            var seq_name_split = s_data[i]["seq_name"].split("_");
+                            seq_data['sequence_name'] = seq_name_split[0];
+
+                            var shot_names = '';
+                            for (var m=0; m < s_data[i]['shot_names'].length; m+=1){
+                                shot_names += s_data[i]['shot_names'][m]+'<br/>';
+                            }
+                            seq_data['shot_names'] = shot_names;
+
+                            seq_data['total_assigned_shot_seconds'] = s_data[i]['total_assigned_shot_seconds'];
+                            seq_data['total_assigned_shot_number'] = s_data[i]['shot_names'].length;
+                            sum_of_total_assigned_shots += seq_data['total_assigned_shot_seconds'];
+                            sum_of_total_assigned_number += seq_data['total_assigned_shot_number'];
+
+                            seq_list.push(seq_data);
+                        }
                     }
-                    else{
-                        index = select_seq_cb_data.length-index;
-                        var cb_data = select_seq_cb_data;
-                        jQuery(grid_selector).jqGrid('filterInput', cb_data[index]['sequence_name']);
-                        jQuery(grid_selector).jqGrid("footerData", "set", {resource_ids: 'TOTAL',
-                                                               approved_seconds: cb_data[index]['sum_of_approved_seconds'].toFixed(2)+' s ',
-                                                               total_seconds: cb_data[index]['sum_of_total_seconds'].toFixed(2)+' s ',
-                                                               approved_shots:cb_data[index]['sum_of_approved_shots'].toFixed(2) +' shots',
-                                                               total_shots:cb_data[index]['sum_of_total_shots'].toFixed(2) +' shots'
-                                                               });
-                    }
-                });
 
-                result_table.append('<div id="table_container"><table id="grid-table"></table></div><div id="grid-pager"></div>');
+                    result_table.append('<div id="table_container"><table id="grid-table"></table></div><div id="grid-pager"></div>');
 
-                jQuery(grid_selector).jqGrid({
-                    data: shot_data,
-                    datatype: "local",
-                    colModel: [
-{#                        { label: 'Month', name: 'month', width: 150 },#}
-                        { label: 'Start Date', name: 'start_date', width: 150 },
-                        { label: 'Scene Name', name: 'scene_name', key: true, width: 150 },
-                        { label: 'Shot Name', name: 'shot_names', key: true, width: 200 },
-                        { label: 'Resource Name', name: 'resource_ids', key: true, width: 250 },
-                        { label: 'Approved Seconds', name: 'approved_seconds', width: 150 },
-                        { label: 'Total Seconds', name: 'total_seconds', width: 150 },
-                        { label: 'Approved Shots', name: 'approved_shots', width: 150 },
-                        { label: 'Total Shots', name: 'total_shots', width: 150 }
-                    ],
-                    loadonce:true, // just for demo purpose
-{#                    width: 780,#}
-                    height: 'auto',
-                    rowNum: 10,
-                    rowList:[10,25,50],
-                    pager: pager_selector,
-                    viewrecords: true,
-                    sortname: 'start_date',
-                    sortorder: "desc",
-                    footerrow: true, // set a footer row
-                    userDataOnFooter: true,
-                    grouping: false,
-                    loadComplete : function() {
-                        var $self = $(this);
+                    jQuery(grid_selector).jqGrid({
+                        data: shot_data,
+                        datatype: "local",
+                        colModel: [
+    {#                        { label: 'Month', name: 'month', width: 150 },#}
+                            { label: 'Start Date', name: 'start_date', width: 150 },
+                            { label: 'Scene Name', name: 'scene_name', key: true, width: 150 },
+                            { label: 'Shot Name', name: 'shot_names', key: true, width: 200 },
+                            { label: 'Resource Name', name: 'resource_names', key: true, width: 150 },
+                            { label: 'Approved Seconds', name: 'approved_seconds', width: 150 },
+                            { label: 'Total Seconds', name: 'total_seconds', width: 150 },
+                            { label: 'Total Assinged Seconds', name: 'total_assigned_shot_seconds', width: 150, classes:'columnClass'},
+                            { label: 'Approved Shots', name: 'approved_shots', width: 150 },
+                            { label: 'Total Shots', name: 'total_shots', width: 150 },
+                            { label: 'Total Assinged Shots', name: 'total_assigned_shot_number', width: 150, classes:'columnClass'}
+                        ],
+                        loadonce:true, // just for demo purpose
+    {#                    width: 780,#}
+                        height: 'auto',
+                        rowNum: 10,
+                        rowList:[10,25,50],
+                        pager: pager_selector,
+                        viewrecords: true,
+                        sortname: 'start_date',
+                        autowidth: true,
+                        sortorder: "desc",
+                        footerrow: true, // set a footer row
+                        userDataOnFooter: true,
+                        grouping: false,
+                        loadComplete : function() {
+                            var $self = $(this);
+    {#                        var total_seconds= $self.jqGrid('getCol', 'total_seconds', false, 'sum');#}
+                            setFooterInitialValue();
+                            setTimeout(function(){
+                                updatePagerIcons(grid_selector);
+                                $('#lui_grid-table').hide();
 
-{#                        var total_seconds= $self.jqGrid('getCol', 'total_seconds', false, 'sum');#}
+                            }, 0);
 
-                        setFooterInitialValue();
+                        }
+                    });
+                    //navButtons
+                    jQuery(grid_selector).jqGrid('navGrid',pager_selector,
+                        { 	//navbar options
+                            edit: false,
+                            editicon : 'icon-pencil blue',
+                            add: false,
+                            addicon : 'icon-plus-sign purple',
+                            del: false,
+                            delicon : 'icon-trash red',
+                            search: false,
+                            searchicon : 'icon-search orange',
+                            refresh: false,
+                            refreshicon : 'icon-refresh green',
+                            view: false,
+                            viewicon : 'icon-zoom-in grey'
+                        },
 
+                        {
+                            //search form
+                            recreateForm: true,
 
-
-
-                        setTimeout(function(){
-                            updatePagerIcons(grid_selector);
-                            $('#lui_grid-table').hide();
-
-                        }, 0);
-
-                    }
-                });
-                //navButtons
-                jQuery(grid_selector).jqGrid('navGrid',pager_selector,
-                    { 	//navbar options
-                        edit: false,
-                        editicon : 'icon-pencil blue',
-                        add: false,
-                        addicon : 'icon-plus-sign purple',
-                        del: false,
-                        delicon : 'icon-trash red',
-                        search: false,
-                        searchicon : 'icon-search orange',
-                        refresh: false,
-                        refreshicon : 'icon-refresh green',
-                        view: false,
-                        viewicon : 'icon-zoom-in grey'
-                    },
-
-                    {
-                        //search form
-                        recreateForm: true,
-
-                        multipleSearch: false
-                        /**
-                        multipleGroup:true,
-                        showQuery: true
-                        */
+                            multipleSearch: false
+                            /**
+                            multipleGroup:true,
+                            showQuery: true
+                            */
+                    });
                 });
             }
         });
@@ -326,13 +389,15 @@
         var approved_minutes = (sum_of_approved_seconds/60).toFixed(2);
         var total_minutes = (sum_of_total_seconds/60).toFixed(2);
         var average_seconds = (sum_of_total_seconds/shot_data.length).toFixed(2);
-        jQuery(grid_selector).jqGrid("footerData", "set", {resource_ids: 'TOTAL',
+        jQuery(grid_selector).jqGrid("footerData", "set", {resource_names: 'TOTAL',
                                            approved_seconds: sum_of_approved_seconds.toFixed(2)+'s = '+approved_minutes+' m',
                                            total_seconds: sum_of_total_seconds.toFixed(2)+'s = '+total_minutes+' m',
 {#                                                           start_date: 'AVERAGE',#}
 {#                                                           shot_names: average_seconds+' s',#}
                                            approved_shots:sum_of_approved_shots.toFixed(2) +' shots',
-                                           total_shots:sum_of_total_shots.toFixed(2) +' shots'
+                                           total_shots:sum_of_total_shots.toFixed(2) +' shots',
+                                           total_assigned_shot_seconds:(sum_of_total_assigned_shots).toFixed(2) +' s',
+                                           total_assigned_shot_number:(sum_of_total_assigned_number).toFixed(2) +' shots'
                                            });
 
 {#        var total = total_minutes +' m';#}
@@ -363,11 +428,19 @@
         })
     }
     $(document).ready(function () {
-        var task_type = $('#task_type');
-        var project_cb = $('#project_cb');
 
-        var project_id = project_cb.val();
-        var task_type_str = task_type.val();
+        var project_cb = $('#project_cb');
+        var project_id = localStorage.getItem("result_project_id");
+        console.log("project_id: "+project_id);
+        var task_type = $('#task_type');
+        var task_type_str = localStorage.getItem("result_task_type");
+        if (task_type_str){
+            task_type.val(task_type_str)
+        }
+        else{
+            task_type_str = task_type.val()
+        }
+
         {% if entity.entity_type != 'Project' %}
             {% raw %}
                 var option_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
@@ -392,14 +465,19 @@
                     project_cb.append(option_template(data[i]));
                 }
 
-                // update the chosen fields
+                if (project_id){
+                    project_cb.val(project_id)
+                }
+                else{
+                    project_id = project_cb.val();
+                }
                 project_cb.trigger('liszt:updated');
 
-                project_id = project_cb.val();
                 loadShotTaskData(task_type_str, project_id);
                 project_cb.on('change', function () {
 {#                    task_type_str = task_type.val();#}
                     project_id = $(this).val();
+                    localStorage.setItem("result_project_id", project_id);
                     loadShotTaskData(task_type_str, project_id);
                 });
             });
@@ -411,6 +489,7 @@
 
         task_type.on('change', function () {
             task_type_str = $(this).val();
+            localStorage.setItem("result_task_type", task_type_str);
             loadShotTaskData(task_type_str, project_id);
         });
 

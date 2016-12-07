@@ -350,21 +350,26 @@ def get_entity_task_type_result(request):
     sql_query = """
 select
         min(extract(epoch from results.start::timestamp AT TIME ZONE 'UTC')) as start,
+        min(extract(epoch from results.scheduled_start::timestamp AT TIME ZONE 'UTC')) as scheduled_start,
         array_agg(distinct(results.shot_name)) as shot_names,
         results.resource_id as resource_ids,
+        results.scheduled_resource_id as scheduled_resource_ids,
         sum(results.approved_shot_seconds*results.timelog_duration/results.schedule_seconds) as approved_shot_seconds,
         sum(results.shot_seconds*results.timelog_duration/results.schedule_seconds) as shot_seconds,
         sum(results.approved_timelog_duration/results.schedule_seconds) as approved_percent,
         sum(results.timelog_duration/results.schedule_seconds) as percent,
+        sum(results.shot_seconds*1.00) as total_assigned_shot_seconds,
         results.scene_name as scene_name
 
 from (
         select
             "TimeLogs".start as start,
+            tasks.start as scheduled_start,
             tasks.shot_name as shot_name,
             tasks.scene_name as scene_name,
             tasks.status_code as shot_status,
             "TimeLogs".resource_id as resource_id,
+            resource_info.resource_id as scheduled_resource_id,
             tasks.seconds as shot_seconds,
             (case tasks.status_code
                         when 'CMPL' then tasks.seconds
@@ -372,14 +377,14 @@ from (
                     end) as approved_shot_seconds,
 
             tasks.schedule_seconds,
-             (case tasks.status_code
+            (case tasks.status_code
                         when 'CMPL' then (extract(epoch from "TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC'))
                         else 0
                     end) as approved_timelog_duration,
             (extract(epoch from "TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC')) as timelog_duration
 
-        from "TimeLogs"
-        join (
+
+        from (
                 select "Tasks".id as id,
                        "Tasks".schedule_timing *(case "Tasks".schedule_unit
                                                     when 'min' then 60
@@ -393,7 +398,8 @@ from (
                         "Shot_SimpleEntities".name as shot_name,
                         ("Shots".cut_out - "Shots".cut_in)/%(project_fps)s as seconds,
                         "Statuses".code as status_code,
-                        "Scene_SimpleEntities".name as scene_name
+                        "Scene_SimpleEntities".name as scene_name,
+                        "Tasks".start as start
 
                 from "Tasks"
                 join "SimpleEntities" as "Task_SimpleEntities" on "Task_SimpleEntities".id = "Tasks".id
@@ -407,31 +413,47 @@ from (
                 join "SimpleEntities" as "Scene_SimpleEntities" on "Scene_SimpleEntities".id = "Scenes".id
 
                 where "Type_SimpleEntities".name = '%(task_type)s' %(project_query)s
-            ) as tasks on tasks.id = "TimeLogs".task_id
-        where %(where_conditions)s
+            ) as tasks
+        left outer join (
+            select
+                "Tasks".id as task_id,
+                array_agg("Task_Resources".resource_id) as resource_id
+            from "Tasks"
+            join "Task_Resources" on "Tasks".id = "Task_Resources".task_id
+            group by "Tasks".id
+        ) as resource_info on tasks.id = resource_info.task_id
+
+        left outer join "TimeLogs" on tasks.id = "TimeLogs".task_id
+        where exists (
+                    select * from (
+                        select unnest(resource_info.resource_id)
+                    ) x(resource_id)
+                    where %(resource_where_conditions)s
+                )
     ) as results
 group by  date_trunc('week', results.start),
           results.resource_id,
+          results.scheduled_resource_id,
           results.scene_name
 order by start,
     resource_ids
 """
 
-    where_conditions = ''
+    resource_where_conditions = ''
     if entity.entity_type == 'User':
-        where_conditions = """"TimeLogs".resource_id = %(resource_id)s """ % {'resource_id': entity_id}
+        resource_where_conditions = """x.resource_id = %(resource_id)s """ % {'resource_id': entity_id}
     elif entity.entity_type == 'Department' or entity.entity_type == 'Project':
         temp_buffer = ["""("""]
         for i, resource in enumerate(entity.users):
             if i > 0:
                 temp_buffer.append(' or')
-            temp_buffer.append(""" "TimeLogs".resource_id='%s'""" % resource.id)
+            temp_buffer.append(""" x.resource_id='%s'""" % resource.id)
         temp_buffer.append(' )')
-        where_conditions = ''.join(temp_buffer)
+        resource_where_conditions = ''.join(temp_buffer)
 
     project_query = """ and "Tasks".project_id = %(project_id)s""" % {'project_id': project.id}
     logger.debug('project_query:  %s' % project_query)
-    sql_query = sql_query % {'where_conditions': where_conditions,
+    sql_query = sql_query % {'resource_where_conditions': resource_where_conditions,
                              'task_type': task_type,
                              'project_query': project_query,
                              'project_fps': project.fps
@@ -441,15 +463,250 @@ order by start,
     result = DBSession.connection().execute(sql_query).fetchall()
 
     return [{
-        'start_date': r[0],
-        'shot_names': r[1],
-        'resource_ids': r[2],
-        'approved_seconds': r[3],
-        'total_seconds': r[4],
-        'approved_shots':r[5],
-        'total_shots':r[6],
-        'scene_name':r[7]
-
+        'start_date': r[0] if r[0] else r[1],
+        'scheduled_start_date': r[1],
+        'shot_names': r[2],
+        'resource_ids': [r[3]] if r[3] else r[4],
+        'scheduled_resource_ids': r[4],
+        'approved_seconds': r[5] if r[5] else 0,
+        'total_seconds': r[6] if r[6] else 0,
+        'approved_shots':r[7] if r[7] else 0,
+        'total_shots':r[8] if r[8] else 0,
+        'total_assigned_shot_seconds':float(r[9]),
+        'scene_name':r[10]
     } for r in result]
 
+
+@view_config(
+    route_name='get_entity_task_type_assigned',
+    renderer='json'
+)
+def get_entity_task_type_assigned(request):
+    """gives get_entity_task_type_result
+    """
+    logger.debug('get_entity_task_type_result starts')
+    entity_id = request.matchdict.get('id')
+    entity = Entity.query.filter_by(id=entity_id).first()
+
+    task_type = request.matchdict.get('task_type')
+    project_id = request.params.get('project_id', -1)
+
+    logger.debug('project_id %s' % project_id)
+    project = Project.query.filter_by(id=project_id).first()
+    if not project:
+        return 'There is no project with id %s' % project_id
+
+    sql_query = """
+select
+            results.seq_name as seq_name,
+            array_agg(distinct(results.shot_name)) as shot_names,
+            sum(results.shot_seconds*1.00) as total_assigned_shot_seconds
+
+    from (
+            select
+                tasks.start as scheduled_start,
+                tasks.shot_name as shot_name,
+                tasks.seq_name as seq_name,
+                tasks.status_code as shot_status,
+                resource_info.resource_id as scheduled_resource_id,
+                tasks.seconds as shot_seconds
+
+            from (
+                    select "Tasks".id as id,
+                            "Shot_SimpleEntities".name as shot_name,
+                            ("Shots".cut_out - "Shots".cut_in)/%(project_fps)s as seconds,
+                            "Statuses".code as status_code,
+                            "Sequence_SimpleEntities".name as seq_name,
+                            "Tasks".start as start
+
+                    from "Tasks"
+                    join "SimpleEntities" as "Task_SimpleEntities" on "Task_SimpleEntities".id = "Tasks".id
+                    join "SimpleEntities" as "Type_SimpleEntities" on "Type_SimpleEntities".id = "Task_SimpleEntities".type_id
+                    join "Shots" on "Shots".id = "Tasks".parent_id
+                    join "SimpleEntities" as "Shot_SimpleEntities" on "Shot_SimpleEntities".id = "Shots".id
+                    join "Statuses" on "Statuses".id = "Tasks".status_id
+                    join "Tasks" as "Shot_Tasks" on "Shot_Tasks".id = "Shots".id
+                    join "Tasks" as "Shot_Folders" on "Shot_Folders".id = "Shot_Tasks".parent_id
+                    join "Tasks" as "Scenes" on "Scenes".id = "Shot_Folders".parent_id
+                    join "Tasks" as "Sequences" on "Sequences".id = "Scenes".parent_id
+                    join "SimpleEntities" as "Sequence_SimpleEntities" on "Sequence_SimpleEntities".id = "Sequences".id
+
+                    where "Type_SimpleEntities".name = '%(task_type)s'  %(project_query)s
+                ) as tasks
+
+            left outer join (
+                select
+                    "Tasks".id as task_id,
+                    array_agg("Task_Resources".resource_id) as resource_id
+                from "Tasks"
+                join "Task_Resources" on "Tasks".id = "Task_Resources".task_id
+                group by "Tasks".id
+            ) as resource_info on tasks.id = resource_info.task_id
+
+            where exists (
+                select * from (
+                    select unnest(resource_info.resource_id)
+                ) x(resource_id)
+                where %(resource_where_conditions)s
+            )
+        ) as results
+    group by
+              results.seq_name
+    order by seq_name
+"""
+
+    resource_where_conditions = ''
+    if entity.entity_type == 'User':
+        resource_where_conditions = """x.resource_id = %(resource_id)s """ % {'resource_id': entity_id}
+    elif entity.entity_type == 'Department' or entity.entity_type == 'Project':
+        temp_buffer = ["""("""]
+        for i, resource in enumerate(entity.users):
+            if i > 0:
+                temp_buffer.append(' or')
+            temp_buffer.append(""" x.resource_id='%s'""" % resource.id)
+        temp_buffer.append(' )')
+        resource_where_conditions = ''.join(temp_buffer)
+
+    project_query = """ and "Tasks".project_id = %(project_id)s""" % {'project_id': project.id}
+    logger.debug('project_query:  %s' % project_query)
+    sql_query = sql_query % {'resource_where_conditions': resource_where_conditions,
+                             'task_type': task_type,
+                             'project_query': project_query,
+                             'project_fps': project.fps
+                             }
+
+    logger.debug('sql_query:  %s' % sql_query)
+    result = DBSession.connection().execute(sql_query).fetchall()
+
+    return [{
+        'seq_name': r[0],
+        'shot_names': r[1],
+        'total_assigned_shot_seconds': float(r[2])
+    } for r in result]
+
+
+# @view_config(
+#     route_name='get_entity_task_type_result',
+#     renderer='json'
+# )
+# def get_entity_task_type_result(request):
+#     """gives get_entity_task_type_result
+#     """
+#     logger.debug('get_entity_task_type_result starts')
+#     entity_id = request.matchdict.get('id')
+#     entity = Entity.query.filter_by(id=entity_id).first()
+#
+#     task_type = request.matchdict.get('task_type')
+#     project_id = request.params.get('project_id', -1)
+#
+#     logger.debug('project_id %s' % project_id)
+#     project = Project.query.filter_by(id=project_id).first()
+#     if not project:
+#         return 'There is no project with id %s' % project_id
+#
+#     sql_query = """
+# select
+#         min(extract(epoch from results.start::timestamp AT TIME ZONE 'UTC')) as start,
+#         array_agg(distinct(results.shot_name)) as shot_names,
+#         results.resource_id as resource_ids,
+#         sum(results.approved_shot_seconds*results.timelog_duration/results.schedule_seconds) as approved_shot_seconds,
+#         sum(results.shot_seconds*results.timelog_duration/results.schedule_seconds) as shot_seconds,
+#         sum(results.approved_timelog_duration/results.schedule_seconds) as approved_percent,
+#         sum(results.timelog_duration/results.schedule_seconds) as percent,
+#         results.scene_name as scene_name
+#
+# from (
+#         select
+#             "TimeLogs".start as start,
+#             tasks.shot_name as shot_name,
+#             tasks.scene_name as scene_name,
+#             tasks.status_code as shot_status,
+#             "TimeLogs".resource_id as resource_id,
+#             tasks.seconds as shot_seconds,
+#             (case tasks.status_code
+#                         when 'CMPL' then tasks.seconds
+#                         else 0
+#                     end) as approved_shot_seconds,
+#
+#             tasks.schedule_seconds,
+#              (case tasks.status_code
+#                         when 'CMPL' then (extract(epoch from "TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC'))
+#                         else 0
+#                     end) as approved_timelog_duration,
+#             (extract(epoch from "TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC')) as timelog_duration
+#
+#         from "TimeLogs"
+#         join (
+#                 select "Tasks".id as id,
+#                        "Tasks".schedule_timing *(case "Tasks".schedule_unit
+#                                                     when 'min' then 60
+#                                                     when 'h' then 3600
+#                                                     when 'd' then 32400
+#                                                     when 'w' then 147600
+#                                                     when 'm' then 590400
+#                                                     when 'y' then 7696277
+#                                                     else 0
+#                                                 end) as schedule_seconds,
+#                         "Shot_SimpleEntities".name as shot_name,
+#                         ("Shots".cut_out - "Shots".cut_in)/%(project_fps)s as seconds,
+#                         "Statuses".code as status_code,
+#                         "Scene_SimpleEntities".name as scene_name
+#
+#                 from "Tasks"
+#                 join "SimpleEntities" as "Task_SimpleEntities" on "Task_SimpleEntities".id = "Tasks".id
+#                 join "SimpleEntities" as "Type_SimpleEntities" on "Type_SimpleEntities".id = "Task_SimpleEntities".type_id
+#                 join "Shots" on "Shots".id = "Tasks".parent_id
+#                 join "SimpleEntities" as "Shot_SimpleEntities" on "Shot_SimpleEntities".id = "Shots".id
+#                 join "Statuses" on "Statuses".id = "Tasks".status_id
+#                 join "Tasks" as "Shot_Tasks" on "Shot_Tasks".id = "Shots".id
+#                 join "Tasks" as "Shot_Folders" on "Shot_Folders".id = "Shot_Tasks".parent_id
+#                 join "Tasks" as "Scenes" on "Scenes".id = "Shot_Folders".parent_id
+#                 join "SimpleEntities" as "Scene_SimpleEntities" on "Scene_SimpleEntities".id = "Scenes".id
+#
+#                 where "Type_SimpleEntities".name = '%(task_type)s' %(project_query)s
+#             ) as tasks on tasks.id = "TimeLogs".task_id
+#         where %(where_conditions)s
+#     ) as results
+# group by  date_trunc('week', results.start),
+#           results.resource_id,
+#           results.scene_name
+# order by start,
+#     resource_ids
+# """
+#
+#     where_conditions = ''
+#     if entity.entity_type == 'User':
+#         where_conditions = """"TimeLogs".resource_id = %(resource_id)s """ % {'resource_id': entity_id}
+#     elif entity.entity_type == 'Department' or entity.entity_type == 'Project':
+#         temp_buffer = ["""("""]
+#         for i, resource in enumerate(entity.users):
+#             if i > 0:
+#                 temp_buffer.append(' or')
+#             temp_buffer.append(""" "TimeLogs".resource_id='%s'""" % resource.id)
+#         temp_buffer.append(' )')
+#         where_conditions = ''.join(temp_buffer)
+#
+#     project_query = """ and "Tasks".project_id = %(project_id)s""" % {'project_id': project.id}
+#     logger.debug('project_query:  %s' % project_query)
+#     sql_query = sql_query % {'where_conditions': where_conditions,
+#                              'task_type': task_type,
+#                              'project_query': project_query,
+#                              'project_fps': project.fps
+#                              }
+#
+#     logger.debug('sql_query:  %s' % sql_query)
+#     result = DBSession.connection().execute(sql_query).fetchall()
+#
+#     return [{
+#         'start_date': r[0],
+#         'shot_names': r[1],
+#         'resource_ids': r[2],
+#         'approved_seconds': r[3],
+#         'total_seconds': r[4],
+#         'approved_shots':r[5],
+#         'total_shots':r[6],
+#         'scene_name':r[7]
+#
+#     } for r in result]
+#
 
