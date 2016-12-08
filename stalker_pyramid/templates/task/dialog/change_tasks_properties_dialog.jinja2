@@ -337,24 +337,30 @@
                 e.stopPropagation();
                 e.preventDefault();
                 submit_button.button('loading');
+
                 var task_ids = jQuery('#grid-table').jqGrid('getGridParam','selarrrow');
                 var _query = "?project_id={{ tasks[0].project.id }}";
                 for (var i=0; i<task_ids.length; i++){
-                    _query += "&task_ids="+task_ids[i]
+                    _query += "&task_ids="+task_ids[i];
                 }
-                var start_end = get_start_end();
-                var start = start_end[0];
-                var end = start_end[1];
 
-                if (start && end){
-                    _query += "&start="+start.toUTCString()+"&end="+end.toUTCString();
-                }
-                else{
-                    if (submit_url_list.indexOf('/tasks/set_start_end_date') > -1) {
+
+                console.log("_query: "+ _query);
+                console.log("submit_url_list[0]: "+ submit_url_list);
+
+
+                if (submit_url_list.indexOf('/tasks/set_start_end_date') > -1) {
+                    var start_end = get_start_end();
+                    var start = start_end[0];
+                    var end = start_end[1];
+                    if (start && end){
+                        _query += "&start="+start.toUTCString()+"&end="+end.toUTCString();
+                    }
+                    else{
                         bootbox.alert("Hooop ! Start End Date girmedin!");
                         submit_button.button('reset');
+                        return;
                     }
-                    return;
                 }
 
                 post_actions(_query);

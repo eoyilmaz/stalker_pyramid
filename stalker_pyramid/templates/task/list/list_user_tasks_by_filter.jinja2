@@ -4,6 +4,8 @@
             id="{{=it.id}}"
             class="btn btn-mini btn-white tooltip-success"
             title="{{=it.title}}"
+            url="{{=it.url}}"
+            modal="{{=it.modal}}"
             >
         <i class="{{=it.icon}}"></i>
     </button>
@@ -209,6 +211,27 @@
         return _query;
     }
 
+    function submit_action(url, modal){
+        var _query = generateQuery();
+
+        console.log("modal: "+ modal)
+
+        if(modal == 'true'){
+            var event_dialog = $('#dialog_template');
+            event_dialog.modal({
+                'remote': url+_query
+            });
+        }
+        else{
+            $.post(url+_query).done(function (response_text) {
+                window.location.reload();
+            }).fail(function (jqXHR) {
+                bootbox.alert(jqXHR.responseText);
+            });
+        }
+
+    }
+
 
     function get_task_absoulute_path(task_id){
 
@@ -323,37 +346,57 @@
         var remove_task_btn_info = {
                                         'id':'remove_resource_btn',
                                         'title':'Remove Task',
-                                        'icon':'icon-trash'
+                                        'icon':'icon-trash',
+                                        'url':'/tasks/remove/resources/{{ entity.id }}/dialog',
+                                        'modal':true
         };
 
         var enter_timelog_btn_info = {
                                         'id':'timelog_btn',
                                         'title':'Enter Timelog',
-                                        'icon':'icon-calendar'
+                                        'icon':'icon-calendar',
+                                        'url':'/users/{{ entity.id }}/multi_timelogs/create/dialog',
+                                        'modal':true
         };
 
         var force_complete_btn_info = {
                                         'id':'force_complete_btn',
                                         'title':'Force Complete',
-                                        'icon':'icon-ok'
+                                        'icon':'icon-ok',
+                                        'url': '/tasks/force_status/CMPL/dialog',
+                                        'modal':true
         };
 
         var request_revisions_btn_info = {
                                         'id':'request_revisions_btn',
                                         'title':'Request Revisions',
-                                        'icon':'icon-comment-alt'
+                                        'icon':'icon-comment-alt',
+                                        'url': '/tasks/request_revisions/dialog',
+                                        'modal':true
         };
 
         var request_review_btn_info = {
                                         'id':'request_review_btn',
                                         'title':'Request Review',
-                                        'icon':'icon-comment'
+                                        'icon':'icon-comment',
+                                        'url':'/tasks/request_review/dialog',
+                                        'modal':true
         };
 
         var set_start_end_date_btn_info = {
                                         'id':'set_start_end_date_btn',
                                         'title':'Set Start End Date',
-                                        'icon':'icon-edit'
+                                        'icon':'icon-edit',
+                                        'url':'/tasks/set_start_end_date/dialog',
+                                        'modal':true
+        };
+
+        var fix_btn_info = {
+                                        'id':'fix_task_btn',
+                                        'title':'Fix Tasks',
+                                        'icon':'icon-cogs',
+                                        'url':'/tasks/fix/statuses/',
+                                        'modal':false
         };
 
 
@@ -391,6 +434,15 @@
                 button_list.append(btn_template(set_start_end_date_btn_info));
             }
         {% endif %}
+
+        button_list.append(btn_template(fix_btn_info));
+        $('.btn-mini').on('click', function(e){
+            e.preventDefault();
+            e.stopPropagation();
+
+
+            submit_action($(this).attr("url"), $(this).attr("modal"));
+        });
 
 
         var items_header = $('#items_header');
@@ -460,7 +512,7 @@
                                            );
 {#                data[i].actions = '<span class="btn btn-danger btn-small tooltip-error" data-rel="popover" data-placement="top" data-original-title=" Top Danger" data-content="Oh snap! Change a few things up and try submitting again.">Top</span>'#}
                if (status_code == 'HREV' || status_code == 'DREV' || status_code == 'WIP' || status_code == 'CMPL' || status_code == 'PREV'){
-                     data[i].actions = '<button class="green" onclick="get_task_absoulute_path('+data[i].id+')"><i class="icon-copy bigger-130"></i></button>';
+                     data[i].actions = '<button class="green" title="Copy Path" onclick="get_task_absoulute_path('+data[i].id+')"><i class="icon-copy bigger-130"></i></button>';
                 }
                 else{
                    data[i].actions = "";
@@ -515,83 +567,74 @@
             $('[data-rel=popover]').popover({html:true});
         });
 
-        function endDateFormatter(cellvalue, options, rowObject){
-                var val = cellvalue.format('yyyy-mm-dd');
-                if (cellvalue< new Date()){
-                    val = '<span class="red">'+cellvalue.format('yyyy-mm-dd')+'</span>'
-                }
-                return val;
-        }
+{#        function endDateFormatter(cellvalue, options, rowObject){#}
+{#                var val = cellvalue.format('yyyy-mm-dd');#}
+{#                if (cellvalue< new Date()){#}
+{#                    val = '<span class="red">'+cellvalue.format('yyyy-mm-dd')+'</span>'#}
+{#                }#}
+{#                return val;#}
+{#        }#}
 
-        function taskLabelFormatter(cellvalue, options, rowObject){
+{#        function taskLabelFormatter(cellvalue, options, rowObject){#}
+{##}
+{#                return '<a href="/tasks/'+rowObject.id+'/view">'+cellvalue+'</a>';#}
+{#        }#}
+{##}
+{##}
+{#        function bidFormatter(cellvalue, options, rowObject){#}
+{#                return '<span style="background-color: '+rowObject.bid_stat+'; opacity:0.8;">'+cellvalue+'</span>';#}
+{#        }#}
 
-                return '<a href="/tasks/'+rowObject.id+'/view">'+cellvalue+'</a>';
-        }
+{#        var submit_form_url = '/tasks/force_status/CMPL/dialog';#}
+{#        var force_complete_btn = $('#force_complete_btn');#}
+{#        if(force_complete_btn){#}
+{#            force_complete_btn.on('click', function(){#}
+{#                submit_form_url = '/tasks/force_status/CMPL/dialog';#}
+{#                submit_action()#}
+{#            });#}
+{#        }#}
+{##}
+{#        var request_revisions_btn = $('#request_revisions_btn');#}
+{#        if(request_revisions_btn){#}
+{#            request_revisions_btn.on('click', function(){#}
+{#                submit_form_url = '/tasks/request_revisions/dialog';#}
+{#                submit_action()#}
+{#            });#}
+{#        }#}
+{##}
+{#        var remove_resource_btn = $('#remove_resource_btn');#}
+{#        if(remove_resource_btn){#}
+{#            remove_resource_btn.on('click', function(){#}
+{#                submit_form_url = '/tasks/remove/resources/{{ entity.id }}/dialog';#}
+{#                submit_action()#}
+{#            });#}
+{#        }#}
+{##}
+{#        var timelog_btn = $('#timelog_btn');#}
+{#        if(timelog_btn){#}
+{#            timelog_btn.on('click', function(){#}
+{#                submit_form_url = '/users/{{ entity.id }}/multi_timelogs/create/dialog?';#}
+{#                submit_action();#}
+{#            });#}
+{#        }#}
+{##}
+{#        var set_start_end_date_btn = $('#set_start_end_date_btn');#}
+{#        if(set_start_end_date_btn){#}
+{#            set_start_end_date_btn.on('click', function(){#}
+{#                submit_form_url = '/tasks/set_start_end_date/dialog';#}
+{#                submit_action()#}
+{#            });#}
+{#        }#}
+{##}
+{#        var request_review_btn = $('#request_review_btn');#}
+{#        if(request_review_btn){#}
+{#            request_review_btn.on('click', function(){#}
+{#                submit_form_url = '/tasks/request_review/dialog';#}
+{#                submit_action()#}
+{#            });#}
+{#        }#}
 
 
-        function bidFormatter(cellvalue, options, rowObject){
-                return '<span style="background-color: '+rowObject.bid_stat+'; opacity:0.8;">'+cellvalue+'</span>';
-        }
-
-        var submit_form_url = '/tasks/force_status/CMPL/dialog';
-        var force_complete_btn = $('#force_complete_btn');
-        if(force_complete_btn){
-            force_complete_btn.on('click', function(){
-                submit_form_url = '/tasks/force_status/CMPL/dialog';
-                submit_action()
-            });
-        }
-
-        var request_revisions_btn = $('#request_revisions_btn');
-        if(request_revisions_btn){
-            request_revisions_btn.on('click', function(){
-                submit_form_url = '/tasks/request_revisions/dialog';
-                submit_action()
-            });
-        }
-
-        var remove_resource_btn = $('#remove_resource_btn');
-        if(remove_resource_btn){
-            remove_resource_btn.on('click', function(){
-                submit_form_url = '/tasks/remove/resources/{{ entity.id }}/dialog';
-                submit_action()
-            });
-        }
-
-        var timelog_btn = $('#timelog_btn');
-        if(timelog_btn){
-            timelog_btn.on('click', function(){
-                submit_form_url = '/users/{{ entity.id }}/multi_timelogs/create/dialog?';
-                submit_action();
-            });
-        }
-
-        var set_start_end_date_btn = $('#set_start_end_date_btn');
-        if(set_start_end_date_btn){
-            set_start_end_date_btn.on('click', function(){
-                submit_form_url = '/tasks/set_start_end_date/dialog';
-                submit_action()
-            });
-        }
-
-        var request_review_btn = $('#request_review_btn');
-        if(request_review_btn){
-            request_review_btn.on('click', function(){
-                submit_form_url = '/tasks/request_review/dialog';
-                submit_action()
-            });
-        }
-
-        function submit_action(){
-
-            var event_dialog = $('#dialog_template');
-
-            var _query = generateQuery();
-
-            event_dialog.modal({
-                'remote': submit_form_url+_query
-            });
-        }
         console.debug('finished initializing the init_html_modal dialog!')
     }
 </script>

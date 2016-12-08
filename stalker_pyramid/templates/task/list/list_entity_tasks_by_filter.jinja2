@@ -4,6 +4,8 @@
             id="{{=it.id}}"
             class="btn btn-mini btn-white tooltip-success"
             title="{{=it.title}}"
+            url="{{=it.url}}"
+            modal="{{=it.modal}}"
             >
         <i class="{{=it.icon}}"></i>
     </button>
@@ -53,16 +55,25 @@
         return _query;
     }
 
-    function submit_action(url){
+    function submit_action(url, modal){
+        var _query = generateQuery();
 
+        console.log("modal: "+ modal)
+
+        if(modal == 'true'){
             var event_dialog = $('#dialog_template');
-
-            var _query = generateQuery();
-
             event_dialog.modal({
                 'remote': url+_query
             });
         }
+        else{
+            $.post(url+_query).done(function (response_text) {
+                window.location.reload();
+            }).fail(function (jqXHR) {
+                bootbox.alert(jqXHR.responseText);
+            });
+        }
+    }
 
     function init_html_modal(params) {
 
@@ -77,25 +88,41 @@
         var force_complete_btn_info = {
                                         'id':'force_complete_btn',
                                         'title':'Force Complete',
-                                        'icon':'icon-ok'
+                                        'icon':'icon-ok',
+                                        'url':'/tasks/force_status/CMPL/dialog',
+                                        'modal':true
         };
 
         var request_revisions_btn_info = {
                                         'id':'request_revisions_btn',
                                         'title':'Request Revisions',
-                                        'icon':'icon-comment-alt'
+                                        'icon':'icon-comment-alt',
+                                        'url':'/tasks/request_revisions/dialog',
+                                        'modal':true
         };
 
         var request_review_btn_info = {
                                         'id':'request_review_btn',
                                         'title':'Request Review',
-                                        'icon':'icon-comment'
+                                        'icon':'icon-comment',
+                                        'url':'/tasks/request_review/dialog',
+                                        'modal':true
         };
 
         var set_start_end_date_btn_info = {
                                         'id':'set_start_end_date_btn',
                                         'title':'Set Start End Date',
-                                        'icon':'icon-edit'
+                                        'icon':'icon-edit',
+                                        'url':'/tasks/set_start_end_date/dialog',
+                                        'modal':true
+        };
+
+        var fix_btn_info = {
+                                        'id':'fix_task_btn',
+                                        'title':'Fix Tasks',
+                                        'icon':'icon-cogs',
+                                        'url':'/tasks/fix/statuses/',
+                                        'modal':false
         };
 
 
@@ -106,31 +133,41 @@
             button_list.append(btn_template(request_review_btn_info));
             button_list.append(btn_template(request_revisions_btn_info));
             button_list.append(btn_template(set_start_end_date_btn_info));
+            button_list.append(btn_template(fix_btn_info));
 
+            $('.btn-mini').on('click', function(e){
+                e.preventDefault();
+                e.stopPropagation();
 
-            $('#force_complete_btn').on('click', function(){
-                submit_form_url = '/tasks/force_status/CMPL/dialog';
-                submit_action(submit_form_url);
+                console.log($(this).attr("url"));
+                submit_action($(this).attr("url"), $(this).attr("modal"));
             });
-
-            $('#request_revisions_btn').on('click', function(){
-                submit_form_url = '/tasks/request_revisions/dialog';
-                submit_action(submit_form_url);
-            });
-
-            $('#set_start_end_date_btn').on('click', function(){
-                submit_form_url = '/tasks/set_start_end_date/dialog';
-                submit_action(submit_form_url);
-            });
-
-            $('#request_review_btn').on('click', function(){
-                submit_form_url = '/tasks/request_review/dialog';
-                submit_action(submit_form_url);
-            });
+{#            $('#force_complete_btn').on('click', function(){#}
+{#                submit_form_url = '/tasks/force_status/CMPL/dialog';#}
+{#                submit_action(submit_form_url);#}
+{#            });#}
+{##}
+{#            $('#request_revisions_btn').on('click', function(){#}
+{#                submit_form_url = '/tasks/request_revisions/dialog';#}
+{#                submit_action(submit_form_url);#}
+{#            });#}
+{##}
+{#            $('#set_start_end_date_btn').on('click', function(){#}
+{#                submit_form_url = '/tasks/set_start_end_date/dialog';#}
+{#                submit_action(submit_form_url);#}
+{#            });#}
+{##}
+{#            $('#request_review_btn').on('click', function(){#}
+{#                submit_form_url = '/tasks/request_review/dialog';#}
+{#                submit_action(submit_form_url);#}
+{#            });#}
+{##}
+{#            $('#fix_task_btn').on('click', function(){#}
+{#                submit_form_url = '/tasks/fix/statuses/';#}
+{#                submit_action(submit_form_url);#}
+{#            });#}
 
         {% endif %}
-
-
 
         var query_str = '';
 
