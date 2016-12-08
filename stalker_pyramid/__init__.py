@@ -236,6 +236,7 @@ def main(global_config, **settings):
     config.add_route('list_entity_versions',           'entities/{id}/versions/list')  # html
     config.add_route('list_entity_resources',          'entities/{id}/resources/list')  # html
     config.add_route('list_entity_notes',              'entities/{id}/notes/list') #html
+    config.add_route('list_entity_notes_inmodal',      'entities/{id}/notes/list/inmodal') #html
     config.add_route('list_entity_authlogs',           'entities/{id}/authlogs/list')  # html
 
     config.add_route('append_entities_to_entity_dialog',  'entities/{id}/{entities}/append/dialog')

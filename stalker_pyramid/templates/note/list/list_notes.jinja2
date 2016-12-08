@@ -142,7 +142,7 @@
 {% endraw %}
 <script type="text/javascript">
 
-    $.getJSON('/entities/{{ entity.id }}/notes/').then(function (data) {
+    $.getJSON('/entities/{{ entity.id }}/notes/').then(function (n_data) {
         $(function () {
             var logged_in_user_id = '{{ logged_in_user.id }}';
             var notes = $('#notes');
@@ -150,34 +150,37 @@
             var note_activity_template = doT.template($('#tmpl_note_activity').html());
             var note_daily_template = doT.template($('#tmpl_note_daily').html());
 
-            for (var i = 0; i < data.length; i++) {
+            var html_template_label = $('#html_template_label');
+            html_template_label.text("{{ entity.name }} Notes");
 
-                data[i].created_date = new Date(parseInt(data[i].created_date));
+            for (var i = 0; i < n_data.length; i++) {
 
-                if (data[i].created_by_thumbnail == null) {
-                    data[i].created_by_thumbnail = '{{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_0.png") }}';
+                n_data[i].created_date = new Date(parseInt(n_data[i].created_date));
+
+                if (n_data[i].created_by_thumbnail == null) {
+                    n_data[i].created_by_thumbnail = '{{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_0.png") }}';
                 }
                 else {
-                    data[i].created_by_thumbnail = '/' + data[i].created_by_thumbnail;
+                    n_data[i].created_by_thumbnail = '/' + n_data[i].created_by_thumbnail;
                 }
 
                 {% if has_permission('Delete_Note') %}
 
-                   data[i].delete_note_action = "/notes/"+data[i].note_id+"/delete/dialog?came_from="+data[i].came_from;
+                   n_data[i].delete_note_action = "/notes/"+n_data[i].note_id+"/delete/dialog?came_from="+n_data[i].came_from;
 
                 {% endif %}
 
-                if (data[i].note_type_name == 'Simple Text' || !data[i].note_type_name) {
+                if (n_data[i].note_type_name == 'Simple Text' || !n_data[i].note_type_name) {
 
-                    notes.append(note_simple_template(data[i]));
+                    notes.append(note_simple_template(n_data[i]));
                 }
-                else if (data[i].note_type_name == 'Daily_Note') {
+                else if (n_data[i].note_type_name == 'Daily_Note') {
 
-                        notes.append(note_daily_template(data[i]));
+                        notes.append(note_daily_template(n_data[i]));
                 }
                 else {
 
-                    notes.append(note_activity_template(data[i]));
+                    notes.append(note_activity_template(n_data[i]));
                 }
             }
 

@@ -212,10 +212,8 @@
     }
 
     function submit_action(url, modal){
+
         var _query = generateQuery();
-
-        console.log("modal: "+ modal)
-
         if(modal == 'true'){
             var event_dialog = $('#dialog_template');
             event_dialog.modal({
@@ -229,7 +227,14 @@
                 bootbox.alert(jqXHR.responseText);
             });
         }
+    }
 
+    function get_task_notes(id){
+
+        var event_dialog = $('#html_template');
+        event_dialog.modal({
+            'remote': '/entities/'+id+'/notes/list/inmodal'
+        });
     }
 
 
@@ -299,7 +304,7 @@
                         var status_code = $(this).attr('id').split('_')[1];
                         localStorage.setItem("status_code", status_code);
                         localStorage.setItem("status_name", $(this).attr('status_name'));
-                        init_html_modal(status_code, $(this).attr('status_name'), $('#project_cb').val());
+                        init_table_data(status_code, $(this).attr('status_name'), $('#project_cb').val());
 
                     });
                 }
@@ -307,7 +312,7 @@
             if (first_status != ''){
                 var tab = $('#tab_'+first_status);
                 tab.attr('class','active');
-                init_html_modal(first_status, first_status_name, $('#project_cb').val());
+                init_table_data(first_status, first_status_name, $('#project_cb').val());
             }
         });
     }
@@ -332,10 +337,10 @@
     }
 
 
-    function init_html_modal(status_code, status_name, project_id) {
+    function init_table_data(status_code, status_name, project_id) {
         clear_html_modal();
 
-        console.debug('starting to initialize init_html_modal dialog!!!');
+        console.debug('starting to initialize init_table_data dialog!!!');
 
 
 
@@ -512,7 +517,7 @@
                                            );
 {#                data[i].actions = '<span class="btn btn-danger btn-small tooltip-error" data-rel="popover" data-placement="top" data-original-title=" Top Danger" data-content="Oh snap! Change a few things up and try submitting again.">Top</span>'#}
                if (status_code == 'HREV' || status_code == 'DREV' || status_code == 'WIP' || status_code == 'CMPL' || status_code == 'PREV'){
-                     data[i].actions = '<button class="green" title="Copy Path" onclick="get_task_absoulute_path('+data[i].id+')"><i class="icon-copy bigger-130"></i></button>';
+                     data[i].actions = '<button class="green" title="Copy Path" onclick="get_task_absoulute_path('+data[i].id+')"><i class="icon-copy bigger-130"></i></button><button class="purple" title="Notes" onclick="get_task_notes('+data[i].id+')"><i class="icon-list bigger-130"></i></button>';
                 }
                 else{
                    data[i].actions = "";
@@ -556,13 +561,6 @@
                             });
                 });
 
-{#            loadTableData(#}
-{#                    data,#}
-{#                    "grid-table",#}
-{#                    colNames,#}
-{#                    colModel,#}
-{#                    footerData#}
-{#                );#}
 
             $('[data-rel=popover]').popover({html:true});
         });
@@ -635,7 +633,7 @@
 {#        }#}
 
 
-        console.debug('finished initializing the init_html_modal dialog!')
+        console.debug('finished initializing the init_table_data dialog!')
     }
 </script>
 

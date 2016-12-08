@@ -352,6 +352,10 @@ logger.setLevel(logging.DEBUG)
     renderer='templates/note/list/list_entity_notes.jinja2'
 )
 @view_config(
+    route_name='list_entity_notes_inmodal',
+    renderer='templates/note/list/list_notes.jinja2'
+)
+@view_config(
     route_name='list_project_notes',
     renderer='templates/note/list/list_project_notes.jinja2'
 )
