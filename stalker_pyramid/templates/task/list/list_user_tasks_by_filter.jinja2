@@ -516,12 +516,10 @@
                                                data[i].total_logged_seconds
                                            );
 {#                data[i].actions = '<span class="btn btn-danger btn-small tooltip-error" data-rel="popover" data-placement="top" data-original-title=" Top Danger" data-content="Oh snap! Change a few things up and try submitting again.">Top</span>'#}
-               if (status_code == 'HREV' || status_code == 'DREV' || status_code == 'WIP' || status_code == 'CMPL' || status_code == 'PREV'){
-                     data[i].actions = '<button class="green" title="Copy Path" onclick="get_task_absoulute_path('+data[i].id+')"><i class="icon-copy bigger-130"></i></button><button class="purple" title="Notes" onclick="get_task_notes('+data[i].id+')"><i class="icon-list bigger-130"></i></button>';
+                data[i].actions = '<span><a class="purple" title="Notes" onclick="get_task_notes('+data[i].id+')"><i class="icon-list bigger-130"></i></a></span>';
+                if (status_code == 'HREV' || status_code == 'DREV' || status_code == 'WIP' || status_code == 'CMPL' || status_code == 'PREV'){
+                     data[i].actions += '<span><a class="green"  title="Copy Path" onclick="get_task_absoulute_path('+data[i].id+')"><i class="icon-copy bigger-130"></i></a></span>';
                 }
-                else{
-                   data[i].actions = "";
-               }
 
                 if(bid_seconds < data[i].total_logged_seconds){
                      data[i].bid_stat = '#ff0000'

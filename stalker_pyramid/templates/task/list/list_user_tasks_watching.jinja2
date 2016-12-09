@@ -93,18 +93,8 @@
             </td>
             <td>
                 <div class="hidden-phone visible-desktop action-buttons">
-                    <a class="blue" href='/tasks/{{=it.id}}/view'>
-                        <i class="icon-zoom-in bigger-130"></i>
-                    </a>
 
-                    <a id='update_task_item'
-                       data-target="#dialog_template"
-                       data-toggle="modal"
-                       data-keyboard=false
-                       href="/tasks/{{=it.id}}/update/dialog"
-                       tabindex="-1">
-                        <i class="icon-pencil bigger-120">&nbsp</i>
-                    </a>
+                    {{=it.actions }}
 
                     {{ if (it.request_extra_time)  { }}
                         <a
@@ -157,7 +147,7 @@
 
     <script>
         $(function () {
-            init_html_modal({"aoColumns": [
+            init_table_data({"aoColumns": [
                                                             { "bSortable": false },
                                                                 null,
                                                                 null,

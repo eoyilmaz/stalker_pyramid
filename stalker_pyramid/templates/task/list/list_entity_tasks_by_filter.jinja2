@@ -75,9 +75,25 @@
         }
     }
 
-    function init_html_modal(params) {
+    function get_task_notes(id){
 
-        console.debug('starting to initialize init_html_modal dialog!!!');
+        var event_dialog = $('#html_template');
+        event_dialog.modal({
+            'remote': '/entities/'+id+'/notes/list/inmodal'
+        });
+    }
+
+
+    function get_task_absoulute_path(task_id){
+
+        $.getJSON('/tasks/' + task_id + '/absolute_full_path/').then(function (absolute_full_path) {
+            window.prompt("Copy to clipboard: Ctrl+C, Enter", absolute_full_path);
+        });
+    }
+
+    function init_table_data(params) {
+
+        console.debug('starting to initialize init_table_data dialog!!!');
         var oTable1;
         var button_list = $('#button_list');
         button_list.find('button').remove();
@@ -258,6 +274,11 @@
                          data[i].bid_stat = '#ff0000'
                     }
 
+                    data[i].actions = '<span><a class="purple" data-target="#html_template" data-toggle="modal" data-keyboard=false href="/entities/'+data[i].id+'/notes/list/inmodal" tabindex="-1"> <i class="icon-list bigger-120">&nbsp</i></a></span>';
+                    if (data[i].status == 'hrev' || data[i].status == 'drev' || data[i].status == 'wip' || data[i].status == 'cmpl' || data[i].status == 'prev'){
+                         data[i].actions += '<span><a class="green"  title="Copy Path" onclick="get_task_absoulute_path('+data[i].id+')"><i class="icon-copy bigger-130"></i></a></span>';
+                    }
+
                     var r, resources, responsible;
                     if(data[i].status === 'wip') {
                         resources = data[i].resources;
@@ -324,7 +345,7 @@
              });
         });
 
-        console.debug('finished initializing the init_html_modal dialog!')
+        console.debug('finished initializing the init_table_data dialog!')
     }
 </script>
 

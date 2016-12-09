@@ -340,9 +340,7 @@
             <td>{{=it.priority}}</td>
             <td>
                 <div class="hidden-phone visible-desktop action-buttons">
-                    <a class="blue" href='/tasks/{{=it.id}}/view'>
-                        <i class="icon-zoom-in bigger-130"></i>
-                    </a>
+                    {{=it.actions }}
 
                     <a id='update_task_item'
                        data-target="#dialog_template"
@@ -430,7 +428,7 @@
 
     <script>
         $(document).ready(function () {
-            init_html_modal({"aoColumns": [
+            init_table_data({"aoColumns": [
                                                             { "bSortable": false },
                                                                 null,
                                                                 null,

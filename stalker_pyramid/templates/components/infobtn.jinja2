@@ -54,12 +54,12 @@
                         btn.on('click', function(){
                             var status_code = $(this).attr('id').split('_')[1];
                             localStorage.setItem("status_code", status_code);
-                            init_html_modal(status_code, $('#project_cb').val());
+                            init_table_data(status_code, $('#project_cb').val());
                         });
                     }
                 }
                 if (first_status != ''){
-                    init_html_modal(first_status, $('#project_cb').val());
+                    init_table_data(first_status, $('#project_cb').val());
                 }
             });
         }

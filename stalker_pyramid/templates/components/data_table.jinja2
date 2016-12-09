@@ -21,9 +21,11 @@
                 &nbsp&nbsp
 
             {% endif %}
-            <a href="#" data-action="collapse">
-                <i class="icon-chevron-down"></i>
-            </a>
+            <div id="button_list">
+                </div>
+{#            <a href="#" data-action="collapse">#}
+{#                <i class="icon-chevron-down"></i>#}
+{#            </a>#}
         </div>
 
     </div>
@@ -118,17 +120,17 @@
 
                     table_object.show();
                     $('#loading_spinner').hide();
+                    $('table th input:checkbox').on('click', function () {
+                        var that = this;
+                        $(this).closest('table').find('tr > td:first-child input:checkbox')
+                                .each(function () {
+                                    this.checked = that.checked;
+                                    $(this).closest('tr').toggleClass('selected');
+                                });
+                    });
                 });
 
-                $('table th input:checkbox').on('click', function () {
-                    var that = this;
-                    $(this).closest('table').find('tr > td:first-child input:checkbox')
-                            .each(function () {
-                                this.checked = that.checked;
-                                $(this).closest('tr').toggleClass('selected');
-                            });
 
-                });
 
             });
 
