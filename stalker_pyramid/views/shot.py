@@ -158,16 +158,18 @@ def get_shots_children_task_type(request):
     entity_id = request.params.get('entity_id', -1)
     entity = Entity.query.filter(Entity.id == entity_id).first()
 
-
     where_condition = ""
     if entity:
-        if entity.type.name == "Scene":
-            where_condition = """ join "Tasks" as "Shots_as_Task" on "Shots_as_Task".id = "Tasks".parent_id
-                                    join "Tasks" as "Parent_Tasks" on "Parent_Tasks".id = "Shots_as_Task".parent_id
-                                    join "Tasks" as "Scene_Tasks" on "Scene_Tasks".id = "Parent_Tasks".parent_id
-                                    where "Scene_Tasks".id = %(scene_id)s and "Tasks".schedule_model='effort' """% {'scene_id': entity.id}
-
-
+        if entity.entity_type == "Sequence":
+            where_condition = """join "Shot_Sequences" on "Shot_Sequences".shot_id = "Shots".id
+                                 where "Shot_Sequences".sequence_id = %(seq_id)s""" % {'seq_id': entity.id }
+        else:
+            if entity.type:
+                if entity.type.name == "Scene":
+                    where_condition = """ join "Tasks" as "Shots_as_Task" on "Shots_as_Task".id = "Tasks".parent_id
+                                            join "Tasks" as "Parent_Tasks" on "Parent_Tasks".id = "Shots_as_Task".parent_id
+                                            join "Tasks" as "Scene_Tasks" on "Scene_Tasks".id = "Parent_Tasks".parent_id
+                                            where "Scene_Tasks".id = %(scene_id)s and "Tasks".schedule_model='effort' """% {'scene_id': entity.id}
 
     sql_query = """select
         "SimpleEntities".id as type_id,
@@ -181,7 +183,7 @@ def get_shots_children_task_type(request):
     order by "SimpleEntities".name"""
 
     sql_query = sql_query % {'where_condition': where_condition}
-
+    logger.debug('get_shots_children_task_type sql_query: %s' % sql_query)
     result = DBSession.connection().execute(sql_query)
 
     return [

@@ -213,15 +213,12 @@
                     {{ } }}
                     {{ if (it.review_count > 0) { }}
                         <!--{{=it.status}}-->
-                        <span class="white">
-                            <a class="purple"
+                        <span class="label label-large label-pink arrowed-right"><a
                                data-target="#html_template"
                                data-toggle="modal"
                                data-keyboard=false href="/entities/{{=it.id }}/notes/list/inmodal"
                                tabindex="-1">
-                                <i class="icon-list bigger-150">&nbsp</i></a>
-                        </span>
-
+                               HREV</a></span>
                     {{ } }}
 
                 </span>
@@ -342,6 +339,12 @@
                 });
             });
         });
+    </script>
+    <script type="text/javascript">
+        function destruct_html_modal() {
+            $('#items_table').unbind();
+            $('#html_template').data('modal', null);
+        }
     </script>
 
 
