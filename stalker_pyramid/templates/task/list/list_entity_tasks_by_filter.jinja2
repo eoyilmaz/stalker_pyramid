@@ -140,6 +140,21 @@
                                         'url':'/tasks/fix/statuses/',
                                         'modal':false
         };
+        var watch_task_btn_info = {
+                                        'id':'watch_task_btn',
+                                        'title':'Watch Tasks',
+                                        'icon':'icon-eye-open',
+                                        'url':'/tasks/watch',
+                                        'modal':false
+        };
+
+        var unwatch_task_btn_info = {
+                                        'id':'unwatch_task_btn_info',
+                                        'title':'Unwatch Tasks',
+                                        'icon':'icon-eye-close',
+                                        'url':'/tasks/unwatch',
+                                        'modal':false
+        };
 
 
 
@@ -150,6 +165,8 @@
             button_list.append(btn_template(request_revisions_btn_info));
             button_list.append(btn_template(set_start_end_date_btn_info));
             button_list.append(btn_template(fix_btn_info));
+            button_list.append(btn_template(watch_task_btn_info));
+            button_list.append(btn_template(unwatch_task_btn_info));
 
             $('.btn-mini').on('click', function(e){
                 e.preventDefault();
