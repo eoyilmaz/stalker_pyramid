@@ -211,6 +211,19 @@
                         <!--{{=it.status}}-->
 
                     {{ } }}
+                    {{ if (it.review_count > 0) { }}
+                        <!--{{=it.status}}-->
+                        <span class="white">
+                            <a class="purple"
+                               data-target="#html_template"
+                               data-toggle="modal"
+                               data-keyboard=false href="/entities/{{=it.id }}/notes/list/inmodal"
+                               tabindex="-1">
+                                <i class="icon-list bigger-150">&nbsp</i></a>
+                        </span>
+
+                    {{ } }}
+
                 </span>
             </div>
         </td>
@@ -231,7 +244,7 @@
         // fill shots table with dynamic data
         // first get all the children task types
         // to define the columns
-        $.getJSON('/shots/children/task_type/').then(function (types_data) {
+        $.getJSON('/shots/children/task_type/?entity_id={{ entity.id }}').then(function (types_data) {
 
             var types = types_data;
 
@@ -240,7 +253,6 @@
                 var k;
                 var table_column = $('#shots_table_column');
                 for (k = 0; k < types_data.length; k++) {
-                    // append it to the table
                     table_column.append(column_template(types[k]));
                 }
 
@@ -248,8 +260,6 @@
 
                     var shots = data;
                     var shot_template = doT.template($('#tmpl_shotRow').html());
-
-
                     // wait until document is ready
                     $(function () {
                         var i;
@@ -296,7 +306,8 @@
                                             'schedule_timing':task.schedule_timing,
                                             'schedule_unit':task.schedule_unit,
                                             'resource_name':task.resource_name,
-                                            'resource_id':task.resource_id
+                                            'resource_id':task.resource_id,
+                                            'review_count': task.review_count
                                         })
                                     );
                                 } else {

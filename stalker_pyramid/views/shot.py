@@ -155,6 +155,20 @@ def get_shots_children_task_type(request):
     """returns the Task Types defined under the Shot container
     """
 
+    entity_id = request.params.get('entity_id', -1)
+    entity = Entity.query.filter(Entity.id == entity_id).first()
+
+
+    where_condition = ""
+    if entity:
+        if entity.type.name == "Scene":
+            where_condition = """ join "Tasks" as "Shots_as_Task" on "Shots_as_Task".id = "Tasks".parent_id
+                                    join "Tasks" as "Parent_Tasks" on "Parent_Tasks".id = "Shots_as_Task".parent_id
+                                    join "Tasks" as "Scene_Tasks" on "Scene_Tasks".id = "Parent_Tasks".parent_id
+                                    where "Scene_Tasks".id = %(scene_id)s and "Tasks".schedule_model='effort' """% {'scene_id': entity.id}
+
+
+
     sql_query = """select
         "SimpleEntities".id as type_id,
         "SimpleEntities".name as type_name
@@ -162,8 +176,11 @@ def get_shots_children_task_type(request):
     join "SimpleEntities" as "Task_SimpleEntities" on "SimpleEntities".id = "Task_SimpleEntities".type_id
     join "Tasks" on "Task_SimpleEntities".id = "Tasks".id
     join "Shots" on "Tasks".parent_id = "Shots".id
+    %(where_condition)s
     group by "SimpleEntities".id, "SimpleEntities".name
     order by "SimpleEntities".name"""
+
+    sql_query = sql_query % {'where_condition': where_condition}
 
     result = DBSession.connection().execute(sql_query)
 
@@ -332,7 +349,8 @@ def get_shots(request):
     array_agg("Resources_SimpleEntities".name) as resource_name,
     array_agg("Resources_SimpleEntities".id) as resource_id,
     "Shots".cut_in as cut_in,
-    "Shots".cut_out as cut_out
+    "Shots".cut_out as cut_out,
+    array_agg(coalesce(reviews.rev_count, 0)) as review_num
 
 from "Tasks"
 join "Shots" on "Shots".id = "Tasks".parent_id
@@ -373,6 +391,15 @@ left outer join (
             group by task_id
         ) as "Task_TimeLogs" on "Task_TimeLogs".task_id = "Tasks".id
 
+left outer join (
+        select  count("Statuses".code) as rev_count,
+                "Tasks".id as task_id
+        from "Reviews"
+        join "Tasks" on "Reviews".task_id = "Tasks".id
+        join "Statuses" on "Statuses".id = "Reviews".status_id
+        where "Statuses".code = 'RREV'
+        group by "Tasks".id) as reviews on reviews.task_id = "Tasks".id
+
 left outer join "Task_Resources" on "Tasks".id = "Task_Resources".task_id
 join "SimpleEntities" as "Resources_SimpleEntities" on "Resources_SimpleEntities".id = "Task_Resources".resource_id
 
@@ -397,13 +424,15 @@ order by "Shot_SimpleEntities".name
 
     if entity.entity_type == 'Sequence':
         where_condition = 'where "Shot_Sequences".sequence_id = %s' % entity_id
+
     elif entity.entity_type == 'Project':
         where_condition = 'where "Tasks".project_id = %s' % entity_id
+
     elif entity.entity_type == 'Task':
         if entity.type.name == 'Scene':
             where_condition = """join "Tasks" as "Parent_Tasks" on "Parent_Tasks".id = "Distinct_Shot_Statuses".shot_parent
-    join "Tasks" as "Scene_Tasks" on "Scene_Tasks".id = "Parent_Tasks".parent_id
-    where "Scene_Tasks".id = %s""" % entity_id
+                                 join "Tasks" as "Scene_Tasks" on "Scene_Tasks".id = "Parent_Tasks".parent_id
+                                 where "Scene_Tasks".id = %s""" % entity_id
 
     if shot_id:
         where_condition = 'where "Shots".id = %(shot_id)s' % ({'shot_id': shot_id})
@@ -450,28 +479,29 @@ order by "Shot_SimpleEntities".name
         task_schedule_unit = r[17]
         task_resource_name = r[18]
         task_resource_id = r[19]
+        task_review_count = r[22]
 
         r_data['nulls'] = []
 
         for index1 in range(len(task_types_names)):
 
             if task_types_names[index1]:
-
                 r_data[task_types_names[index1]]= []
 
         for index in range(len(task_types_names)):
             task = {
-                     'id':task_ids[index],
-                     'name':task_names[index],
-                     'status':task_statuses[index],
-                     'percent':task_percent_complete[index],
-                     'bid_timing':task_bid_timing[index],
-                     'bid_unit':task_bid_unit[index],
-                     'schedule_timing':task_schedule_timing[index],
-                     'schedule_unit':task_schedule_unit[index],
-                     'resource_name':task_resource_name[index],
-                     'resource_id':task_resource_id[index]
-                    }
+                     'id': task_ids[index],
+                     'name': task_names[index],
+                     'status': task_statuses[index],
+                     'percent': task_percent_complete[index],
+                     'bid_timing': task_bid_timing[index],
+                     'bid_unit': task_bid_unit[index],
+                     'schedule_timing': task_schedule_timing[index],
+                     'schedule_unit': task_schedule_unit[index],
+                     'resource_name': task_resource_name[index],
+                     'resource_id': task_resource_id[index],
+                     'review_count': task_review_count[index]
+            }
             if task_types_names[index]:
                 r_data[task_types_names[index]].append(task)
             else:
