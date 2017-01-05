@@ -1,0 +1,250 @@
+{% extends "base.jinja2" %}
+
+{# PRE-HEADER#}
+{% block pre_header %}
+
+    {% include 'charts/chart_preheader.jinja2' %}
+
+{% endblock pre_header %}
+
+{# BREADCRUMBS #}
+{% block breadcrumbs %}
+
+    {% set page_title='Dashboard' %}
+    {% include 'breadcrumb/breadcrumbs.jinja2' %}
+
+{% endblock breadcrumbs %}
+
+{# SIDEBAR #}
+{% block sidebar %}
+
+    {% include 'sidebar.jinja2' %}
+
+{% endblock sidebar %}
+
+{# PAGE-CONTENT #}
+{% block page_content %}
+
+{#    {% set page_title='Dashboard' %}#}
+{#    {% include 'page_header.jinja2' %}#}
+
+
+    <div class="widget-box transparent invoice-box">
+        <div class="widget-header widget-heade  r-large ">
+            <h4 class="position-relative ">{{entity.name}}</h4>
+            <div class="widget-toolbar no-border invoice-info">
+
+                <span class="invoice-info-label">Status:</span>
+                <span class="label label-status_{{ entity.status.code.lower() }}">{{ entity.status.name }}</span>
+                <div class="inline position-relative">
+                    <button class="btn btn-minier bigger dropdown-toggle"
+                            data-toggle="dropdown">
+                        <i class="icon-angle-down icon-only bigger-120"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-icon-only dropdown-yellow pull-right dropdown-caret dropdown-close">
+                        {% if entity.status.code == 'NEW'%}
+                            <li>
+                                <a href="/projects/{{entity.id}}/status/PREV/dialog?came_from={{ request.current_route_path() }}"
+                                   class="tooltip-success"
+                                   data-target="#dialog_template"
+                                   data-toggle="modal"
+                                   data-keyboard=false
+                                   data-placement="top">
+                                       <span class="blue">
+                                           <i class="icon-comment bigger-110"></i>PREV
+                                       </span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/projects/{{entity.id}}/status/PSD/dialog?came_from={{ request.current_route_path() }}"
+                                   class="tooltip-success"
+                                   data-target="#dialog_template"
+                                   data-toggle="modal"
+                                   data-keyboard=false
+                                   data-placement="top">
+                                       <span class="status_cls-text">
+                                           <i class="icon-pause bigger-110"></i>Paused
+                                       </span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/projects/{{entity.id}}/status/CNCLD/dialog?came_from={{ request.current_route_path() }}"
+                                   class="tooltip-success"
+                                   data-target="#dialog_template"
+                                   data-toggle="modal"
+                                   data-keyboard=false
+                                   data-placement="top">
+                                       <span class="red">
+                                           <i class="icon-remove bigger-110"></i>Canceled
+                                       </span>
+                                </a>
+                            </li>
+                        {% elif entity.status.code == 'PREV'%}
+                            <li>
+                                <a href="/projects/{{entity.id}}/status/APP/dialog?came_from={{ request.current_route_path() }}"
+                                   class="tooltip-success"
+                                   data-target="#dialog_template"
+                                   data-toggle="modal"
+                                   data-keyboard=false
+                                   data-placement="top">
+                                       <span class="green">
+                                           <i class="icon-ok bigger-110"></i>Approved
+                                       </span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/projects/{{entity.id}}/status/HREV/dialog?came_from={{ request.current_route_path() }}"
+                                   class="tooltip-success"
+                                   data-target="#dialog_template"
+                                   data-toggle="modal"
+                                   data-keyboard=false
+                                   data-placement="top">
+                                       <span class="purple">
+                                           <i class="icon-comment-alt bigger-110"></i>Request Revision
+                                       </span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/projects/{{entity.id}}/status/RJD/dialog?came_from={{ request.current_route_path() }}"
+                                   class="tooltip-success"
+                                   data-target="#dialog_template"
+                                   data-toggle="modal"
+                                   data-keyboard=false
+                                   data-placement="top">
+                                        <span class="red">
+                                           <i class="icon-remove bigger-110"></i>Rejected
+                                       </span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/projects/{{entity.id}}/status/BCN/dialog?came_from={{ request.current_route_path() }}"
+                                   class="tooltip-success"
+                                   data-target="#dialog_template"
+                                   data-toggle="modal"
+                                   data-keyboard=false
+                                   data-placement="top">
+                                       <span class="status_closed-text">
+                                           <i class="icon-stop bigger-110"></i>Closed
+                                       </span>
+                                </a>
+                            </li>
+                        {% elif entity.status.code == 'APP'%}
+                            <li>
+                                <a href="/projects/{{entity.id}}/status/WIP/dialog?came_from={{ request.current_route_path() }}"
+                                   class="tooltip-success"
+                                   data-target="#dialog_template"
+                                   data-toggle="modal"
+                                   data-keyboard=false
+                                   data-placement="top">
+                                       <span class="orange">
+                                           <i class="icon-play bigger-110"></i>Work In Progress
+                                       </span>
+                                </a>
+                            </li>
+                        {% elif entity.status.code == 'WIP' or entity.status.code == 'HREV'%}
+                            <li>
+                                <a href="/projects/{{entity.id}}/status/CMPL/dialog?came_from={{ request.current_route_path() }}"
+                                   class="tooltip-success"
+                                   data-target="#dialog_template"
+                                   data-toggle="modal"
+                                   data-keyboard=false
+                                   data-placement="top">
+                                       <span class="status_cmpl-text">
+                                           <i class="icon-stop bigger-110"></i>Completed
+                                       </span>
+                                </a>
+                            </li>
+                        {% elif entity.status.code == 'CMPL'%}
+                            <li>
+                                <a href="/projects/{{entity.id}}/status/HREV/dialog?came_from={{ request.current_route_path() }}"
+                                   class="tooltip-success"
+                                   data-target="#dialog_template"
+                                   data-toggle="modal"
+                                   data-keyboard=false
+                                   data-placement="top">
+                                       <span class="purple">
+                                           <i class="icon-comment-alt bigger-110"></i>Request Revision"
+                                       </span>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </div>
+                <br>
+
+                <div class="progress progress-mini progress-success progress-striped {% if entity.status.code == 'WIP' %}active{% endif %}"
+                     style="width: 120px;"
+                     data-percent="{{ "%2.2f" | format(entity.percent_complete) }}%">
+                    <div class="bar"
+                         style="width: {{ entity.percent_complete }}%;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="widget-body">
+            <div class="widget-main">
+                <div class="row-fluid">
+                    <div class="span5">
+                        {% include 'client/view/client_card.jinja2' %}
+
+                        <div class="space"></div>
+                        <div class="hr hr8 hr-double"></div>
+                        <div class="space"></div>
+
+                        <div class="widget-box transparent">
+                            <div class="widget-header widget-header-small">
+                                <h4 class="smaller">
+                                    <i class="icon-check bigger-110"></i>
+                                    Notes
+                                </h4>
+                            </div>
+                            <div class="widget-body">
+                                <div class="widget-main">
+                                    {% include 'note/list/list_notes.jinja2' %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="span9">
+                        <div class="row-fluid">
+                            <div class="span10">
+                                {% include 'client/view/client_card.jinja2' %}
+
+                                <div class="space"></div>
+                                <div class="widget-box transparent">
+                                    <div class="widget-header widget-header-small">
+                                        <h4 class="smaller">
+                                            <i class="icon-check bigger-110"></i>
+                                            Description
+                                        </h4>
+                                    </div>
+                                    <div class="widget-body">
+                                        <div class="widget-main">
+                                            <span id="editable_entity_description">{{ entity.description | replace('\n', '<br/>') | safe }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="span2">
+                                {% include 'project/view/project_timing.jinja2' %}
+                            </div>
+                        </div>
+
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+{% endblock page_content %}
+
+{% block extrascripts %}
+    <script>
+        $(document).ready(function () {
+
+        });
+    </script>
+
+{% endblock extrascripts %}

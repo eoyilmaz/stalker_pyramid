@@ -1,0 +1,149 @@
+<div class="widget-header widget-header-large ">
+    <h4 class="position-relative ">{{entity.name}}</h4>
+    <div class="widget-toolbar no-border invoice-info">
+        <span class="invoice-info-label">Status:</span>
+        <span class="label label-status_{{ entity.status.code.lower() }}">{{ entity.status.name }}</span>
+        <div class="inline position-relative">
+            <button class="btn btn-minier bigger dropdown-toggle"
+                    data-toggle="dropdown">
+                <i class="icon-angle-down icon-only bigger-120"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-icon-only dropdown-yellow pull-right dropdown-caret dropdown-close">
+                {% if entity.status.code == 'PLN'%}
+                    <li>
+                        <a href="/projects/{{entity.id}}/status/PREV/dialog?came_from={{ request.current_route_path() }}"
+                           class="tooltip-success"
+                           data-target="#dialog_template"
+                           data-toggle="modal"
+                           data-keyboard=false
+                           data-placement="top">
+                               <span class="blue">
+                                   <i class="icon-comment bigger-110"></i>PREV
+                               </span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/projects/{{entity.id}}/status/PSD/dialog?came_from={{ request.current_route_path() }}"
+                           class="tooltip-success"
+                           data-target="#dialog_template"
+                           data-toggle="modal"
+                           data-keyboard=false
+                           data-placement="top">
+                               <span class="status_cls-text">
+                                   <i class="icon-pause bigger-110"></i>Paused
+                               </span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/projects/{{entity.id}}/status/CNCLD/dialog?came_from={{ request.current_route_path() }}"
+                           class="tooltip-success"
+                           data-target="#dialog_template"
+                           data-toggle="modal"
+                           data-keyboard=false
+                           data-placement="top">
+                               <span class="red">
+                                   <i class="icon-remove bigger-110"></i>Canceled
+                               </span>
+                        </a>
+                    </li>
+                {% elif entity.status.code == 'PREV'%}
+                    <li>
+                        <a href="/projects/{{entity.id}}/status/APP/dialog?came_from={{ request.current_route_path() }}"
+                           class="tooltip-success"
+                           data-target="#dialog_template"
+                           data-toggle="modal"
+                           data-keyboard=false
+                           data-placement="top">
+                               <span class="green">
+                                   <i class="icon-ok bigger-110"></i>Approved
+                               </span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/projects/{{entity.id}}/status/HREV/dialog?came_from={{ request.current_route_path() }}"
+                           class="tooltip-success"
+                           data-target="#dialog_template"
+                           data-toggle="modal"
+                           data-keyboard=false
+                           data-placement="top">
+                               <span class="purple">
+                                   <i class="icon-comment-alt bigger-110"></i>Request Revision
+                               </span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/projects/{{entity.id}}/status/RJD/dialog?came_from={{ request.current_route_path() }}"
+                           class="tooltip-success"
+                           data-target="#dialog_template"
+                           data-toggle="modal"
+                           data-keyboard=false
+                           data-placement="top">
+                                <span class="red">
+                                   <i class="icon-remove bigger-110"></i>Rejected
+                               </span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/projects/{{entity.id}}/status/BCN/dialog?came_from={{ request.current_route_path() }}"
+                           class="tooltip-success"
+                           data-target="#dialog_template"
+                           data-toggle="modal"
+                           data-keyboard=false
+                           data-placement="top">
+                               <span class="status_closed-text">
+                                   <i class="icon-stop bigger-110"></i>Closed
+                               </span>
+                        </a>
+                    </li>
+                {% elif entity.status.code == 'APP'%}
+                    <li>
+                        <a href="/projects/{{entity.id}}/status/WIP/dialog?came_from={{ request.current_route_path() }}"
+                           class="tooltip-success"
+                           data-target="#dialog_template"
+                           data-toggle="modal"
+                           data-keyboard=false
+                           data-placement="top">
+                               <span class="orange">
+                                   <i class="icon-play bigger-110"></i>Work In Progress
+                               </span>
+                            </a>
+                        </li>
+                    {% elif entity.status.code == 'WIP' or entity.status.code == 'HREV'%}
+                        <li>
+                            <a href="/projects/{{entity.id}}/status/CMPL/dialog?came_from={{ request.current_route_path() }}"
+                               class="tooltip-success"
+                               data-target="#dialog_template"
+                               data-toggle="modal"
+                               data-keyboard=false
+                               data-placement="top">
+                                   <span class="status_cmpl-text">
+                                       <i class="icon-stop bigger-110"></i>Completed
+                                   </span>
+                            </a>
+                        </li>
+                    {% elif entity.status.code == 'CMPL'%}
+                        <li>
+                            <a href="/projects/{{entity.id}}/status/HREV/dialog?came_from={{ request.current_route_path() }}"
+                               class="tooltip-success"
+                               data-target="#dialog_template"
+                               data-toggle="modal"
+                               data-keyboard=false
+                               data-placement="top">
+                                   <span class="purple">
+                                       <i class="icon-comment-alt bigger-110"></i>Request Revision"
+                                   </span>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+            <br>
+
+            <div class="progress progress-mini progress-success progress-striped {% if entity.status.code == 'WIP' %}active{% endif %}"
+                 style="width: 120px;"
+                 data-percent="{{ "%2.2f" | format(entity.percent_complete) }}%">
+                <div class="bar"
+                     style="width: {{ entity.percent_complete }}%;"></div>
+            </div>
+    </div>
+</div>

@@ -419,9 +419,12 @@ def append_user_to_client(request):
     logger.debug(client.users)
 
     return Response(
-        'success:%s is added to %s.'
-        % (user.name, client.name)
+        'Successfully %s is appended to %s as %s' % (user.name,
+                                                     client.name,
+                                                     role_name
+                                                   )
     )
+
 
 @view_config(
     route_name='get_client_users',

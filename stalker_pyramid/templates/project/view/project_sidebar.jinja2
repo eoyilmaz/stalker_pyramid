@@ -1,5 +1,6 @@
 {# Render Project Side Bar #}
 
+
 <ul id="sidebar_list" class='nav nav-list'>
 
 
@@ -22,6 +23,15 @@
             get_icon('dashboard'),
             ''
         );
+        {% if project.get_generic_text_attr('active_budget_id') %}
+            menu_of(
+                'Calendar',
+                "{%- if request.current_route_path() == request.route_path('view_budget_calendar', id=project.get_generic_text_attr('active_budget_id')) -%}'active',{%- else -%},{%- endif -%}",
+                '{{ request.route_url('view_budget_calendar', id=project.get_generic_text_attr('active_budget_id')) }}',
+                get_icon('timelog'),
+                ''
+            );
+        {% endif %}
 
         menu_of(
             'Tickets',
@@ -31,13 +41,24 @@
             {{ project.open_tickets | count }}
         );
 
-        menu_of(
-            'Tasks',
-            "{%- if request.current_route_path() == request.route_path('list_entity_tasks', id=project.id) -%}'active',{%- else -%},{%- endif -%}",
-            '{{ request.route_url('list_entity_tasks', id=project.id) }}',
-            get_icon('task'),
-            '/projects/{{ project.id }}/tasks/count/?leaf=1'
-        );
+        menus_under_title('Tasks',
+                              'task',
+                              [
+                               {'name': 'Gantt',
+                                'link':'{{ request.route_url('list_entity_tasks', id=project.id) }}',
+                                'state':"{%- if request.current_route_path() == request.route_path('list_entity_tasks', id=project.id) -%}'active',{%- else -%},{%- endif -%}"},
+                              {'name': 'List',
+                                'link':'{{ request.route_url('view_project_tasks', id=project.id) }}',
+                                'state':"{%- if request.current_route_path() == request.route_path('view_project_tasks', id=project.id) -%}'active',{%- else -%},{%- endif -%}"}
+            ]);
+
+{#        menu_of(#}
+{#            'Tasks',#}
+{#            "{%- if request.current_route_path() == request.route_path('list_entity_tasks', id=project.id) -%}'active',{%- else -%},{%- endif -%}",#}
+{#            '{{ request.route_url('list_entity_tasks', id=project.id) }}',#}
+{#            get_icon('task'),#}
+{#            '/projects/{{ project.id }}/tasks/count/?leaf=1'#}
+{#        );#}
 
         menu_of(
             'Assets',

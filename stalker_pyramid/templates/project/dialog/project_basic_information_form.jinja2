@@ -112,9 +112,9 @@
                         <input id='project_fps'
                                class='input-block-level'
                                name='fps'
-                               min=1
-                               max=1000
-                               {% if mode=='Update' %} value='{{ project.fps }}'{% endif %}
+                               {% if mode == 'Update' %}
+                                value={{ (project.fps) }}
+                             {% endif %}
                                required />
                     </div>
                 </div>
@@ -242,7 +242,7 @@
 
             {% for client in project.clients %}
                 client_type_name = '{{ client.type.name }}';
-                console.log("client_type_name: "+ client_type_name)
+                console.log("client_type_name: "+ client_type_name);
                 if (client_type_name == client_type ){
                     client_id = '{{ client.id }}';
                     client_name = '{{ client.name }}';
@@ -300,18 +300,17 @@
             var start_date = new Date({{ milliseconds_since_epoch(project.start) }});
             var end_date = new Date({{ milliseconds_since_epoch(project.end) }});
             start_end_date_range_picker.val(
-                    start_date.format('mm/dd/yyyy') + ' - ' + end_date.format('mm/dd/yyyy')
+                    start_date.format('dd/mm/yyyy') + ' - ' + end_date.format('dd/mm/yyyy')
             );
             start_end_date_range_picker.data().daterangepicker.updateFromControl();
 
         {% endif %}
 
-
         {# FPS Spinner #}
         var fps = 25;
         console.log('{{ project.fps }}');
         {% if mode == 'Update' %}
-            fps = '{{ project.fps }}';
+            fps = {{ project.fps }};
         {% endif %}
         $('#project_fps').ace_spinner({
             value:fps,

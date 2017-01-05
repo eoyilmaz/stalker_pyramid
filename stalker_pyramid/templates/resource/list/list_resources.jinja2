@@ -377,7 +377,7 @@ require({
         var start_date = moment().subtract(1, 'month').startOf('day');
         var end_date = moment().add(11, 'month').endOf('day');
         start_end_date_range_picker.val(
-            start_date.format('MM/DD/YYYY') + ' - ' + end_date.format('MM/DD/YYYY')
+                start_date.format('dd/mm/yyyy') + ' - ' + end_date.format('dd/mm/yyyy')
         );
 
         start_end_date_range_picker.data().daterangepicker.updateFromControl();

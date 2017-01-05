@@ -30,7 +30,7 @@ from pyramid.view import view_config
 from stalker.db import DBSession
 from stalker import (db, ImageFormat, Repository, Structure, Status,
                      StatusList, Project, Entity, Studio, defaults, Client,
-                     Budget, BudgetEntry, Good, User, Type)
+                     Budget, BudgetEntry, Good, User, Type, SimpleEntity)
 from stalker.models import local_to_utc
 from stalker.models.project import ProjectUser
 import transaction
@@ -90,7 +90,7 @@ def create_project(request):
         # transaction.abort()
         # return Response('Can not find a structure with code: %s' % structure_id, 500)
 
-    status = Status.query.filter_by(name='New').first()
+    status = Status.query.filter_by(code='PLN').first()
     if not status:
         transaction.abort()
         return Response('Can not find a status with code: %s' % status.id, 500)
@@ -125,6 +125,7 @@ def create_project(request):
     logger.debug('generic_text  : %s' % generic_text)
     logger.debug('type_id     : %s' % type_id)
     new_project_id = ""
+
     if name and code and start and end and type_id:
         # status is always New
         # lets create the project
@@ -264,7 +265,7 @@ def update_project(request):
         project.repositories = [repo]
         project.updated_by = logged_in_user
         project.date_updated = datetime.datetime.now()
-        project.fps = fps
+        project.fps = float(fps)
         project.structure = structure
         project.status = status
         project.start = start
@@ -341,6 +342,9 @@ def inline_update_project(request):
     return Response(
         'Project updated successfully %s %s' % (attr_name, attr_value)
     )
+
+
+
 
 
 @view_config(
@@ -783,7 +787,7 @@ def get_project_tasks_today(request):
         'working_seconds_per_year': ws_per_year
     }
 
-    logger.debug('sql_query : %s' % sql_query)
+    # logger.debug('sql_query : %s' % sql_query)
 
     result = DBSession.connection().execute(sql_query)
 
@@ -808,7 +812,10 @@ def get_project_tasks_today(request):
 
     return data
 
-
+@view_config(
+    route_name='view_project_tasks',
+    renderer='templates/project/view/view_project_tasks.jinja2'
+)
 @view_config(
     route_name='view_project',
     renderer='templates/project/view/view_project.jinja2'

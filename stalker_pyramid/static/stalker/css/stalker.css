@@ -256,6 +256,19 @@ tr .odd > td .ticket_BLOCKER {
 .status_pln a {
   color: white;
 }
+.label-status_pln {
+  background-color: #abbac3 !important;
+}
+.infobox-status_app > .infobox-icon > [class*="icon-"] {
+  background-color: #abbac3;
+}
+.header-color-status_pln {
+  background: #abbac3;
+  border-color: #abbac3;
+}
+.header-color-status_pln + .widget-body {
+  border-color: #abbac3;
+}
 .status_new {
   background-color: #6fb3e0;
   color: white;
@@ -549,6 +562,26 @@ tr .odd > td .ticket_BLOCKER {
 }
 .header-color-status_cmpl + .widget-body {
   border-color: #82af6f;
+}
+.status_atv {
+  background-color: #ffc657;
+  color: white;
+}
+.status_atv a {
+  color: white;
+}
+.label-status_atv {
+  background-color: #ffc657 !important;
+}
+.infobox-status_atv > .infobox-icon > [class*="icon-"] {
+  background-color: #ffc657;
+}
+.header-color-status_atv {
+  background: #ffc657;
+  border-color: #ffc657;
+}
+.header-color-status_atv + .widget-body {
+  border-color: #ffc657;
 }
 .status_open {
   background-color: #ffc657;

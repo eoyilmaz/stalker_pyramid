@@ -10,20 +10,20 @@
 
         <div class='row-fluid'>
             <div class='control-group'>
-                <label class='span3 control-label' for='dup_budget_name'>Duplicated Budget Name</label>
+                <label class='span3 control-label' for='budget_name'>Duplicated Budget Name</label>
                 <div class='span9'>
                         <input type='text'
-                               id='dup_budget_name'
+                               id='budget_name'
                                class='input-block-level'
-                               name='dup_budget_name'
+                               name='name'
                                value='{{ budget.name }}' required>
                 </div>
             </div>
             <div class='control-group'>
-                <label class='span3 control-label' for='dup_budget_description'>Duplicated Budget Description</label>
+                <label class='span3 control-label' for='budget_description'>Duplicated Budget Description</label>
                 <div class='span9'>
-                        <textarea id='dup_budget_description'
-                                  name='dup_budget_description'
+                        <textarea id='budget_description'
+                                  name='description'
                                   class='autosize-transition span12'
                                   style='overflow: hidden; word-wrap: break-word;resize: horizontal;height: 150px;'></textarea>
                 </div>
@@ -72,15 +72,15 @@ function init_dialog() {
 
 
 
-        form_data['dup_budget_description'] = $('#dup_budget_description').val();
-        form_data['dup_budget_name'] = $('#dup_budget_name').val();
+        form_data['description'] = $('#dup_budget_description').val();
+        form_data['name'] = $('#dup_budget_name').val();
 
         if (dup_budget_form.validate()) {
             // merge end_date and end_time
 
             $.post(
                 dup_budget_form.attr('action'),
-                form_data
+                dup_budget_form.serialize()
             ).done(function () {
                 window.location.reload();
                 // close the dialog

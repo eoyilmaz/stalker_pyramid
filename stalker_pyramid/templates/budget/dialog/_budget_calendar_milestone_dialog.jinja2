@@ -114,9 +114,9 @@
             var sdate = start.getTime();
 
             var calendar_milestone_form = $('#calendar_milestone_form');
-            var task_id = -1;
-            if(event_dialog.attr('task_id')){
-                    task_id = event_dialog.attr('task_id');
+            var milestone_id = -1;
+            if(event_dialog.attr('milestone_id')){
+                    milestone_id = event_dialog.attr('milestone_id');
             }
 
             var url = '/budgets/{{ budget.id }}/calendar/milestone/action';
@@ -125,7 +125,7 @@
                 calendar_milestone_form.serialize()+"&"+
                 $.param({
                     'start_date': sdate,
-                    'task_id': task_id,
+                    'milestone_id': milestone_id,
                     'mode': '{{ mode }}'
                 })
             ).done(function (jqXHR) {
@@ -138,7 +138,7 @@
         });
         {# ***************************************************************** #}
         {# Delete Button #}
-        if(event_dialog.attr('task_id')){
+        if(event_dialog.attr('milestone_id')){
             $('#dialog_template_delete_button').show();
             $('#dialog_template_delete_button').on('click', function (e) {
                 e.stopPropagation();
@@ -157,9 +157,13 @@
 
                 bootbox.confirm(confirm_message, function (result) {
                     if (result) {
-                        var id = event_dialog.attr('task_id');
+                        var milestone_id = event_dialog.attr('milestone_id');
                         $.post(
-                            '/budgetentries/'+id+'/delete?dataSource=Calendar'
+                            '/budgets/{{ budget.id }}/calendar/milestone/delete',
+                             $.param({
+                                    'dataSource': 'Calendar',
+                                    'milestone_id': milestone_id
+                            })
                         ).done(function (jqXHR) {
                             gantt.deleteTask(id);
                             $('#dialog_template').modal('hide');

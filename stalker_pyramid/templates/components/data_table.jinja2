@@ -64,7 +64,7 @@
 
 
 <script>
-    $(function () {
+    $(document).ready(function () {
 
         var icon_name = get_icon('{{ list_item_type.lower() }}');
         var items_header = $('#items_header');
@@ -91,6 +91,9 @@
                     var table_body = $('#' + tableId + '>tbody');
                     for (i = 0; i < data.length; i++) {
 
+                        if (data[i].status_code) {
+                            data[i].status_code = data[i].status_code.toLowerCase();
+                        }
                         if (data[i].date_created) {
                             data[i].date_created = new Date(data[i].date_created).format('yyyy-mm-dd HH:MM');
                         }
@@ -100,6 +103,15 @@
                         if (data[i].end) {
                             data[i].end = new Date(data[i].end).format('yyyy-mm-dd HH:MM');
                         }
+                        if (data[i].generic_data){
+                            if (data[i].generic_data.start_date) {
+                                data[i].start_date = new Date(data[i].generic_data.start_date).format('yyyy-mm-dd HH:MM');
+                            }
+                            if (data[i].generic_data.end_date) {
+                                data[i].end_date = new Date(data[i].generic_data.end_date).format('yyyy-mm-dd HH:MM');
+                            }
+                        }
+
 
                         if (data[i].thumbnail_full_path == null) {
                             data[i].thumbnail_full_path = '{{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}';
@@ -128,13 +140,11 @@
                                     $(this).closest('tr').toggleClass('selected');
                                 });
                     });
+
+{#                    callBackFunction(data)#}
+
                 });
-
-
-
             });
-
-
         };
 
         loadTableData(

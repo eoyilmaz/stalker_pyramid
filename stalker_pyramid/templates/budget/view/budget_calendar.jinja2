@@ -1,0 +1,961 @@
+<div class="row-fluid">
+    <button id='export_button'
+                    class="btn btn-small btn-info"
+                    data-placement="bottom"
+                    title="Export"
+                    data-keyboard="false"
+                    onclick='gantt.exportToExcel()'
+                    >
+
+            <i class="icon-save bigger-130"></i> Export</button>
+    <button id='milestone_button'
+                    class="btn btn-small btn-success"
+                    data-placement="bottom"
+                    title="MileStone"
+                    data-keyboard="false"
+                    href="#"
+                    >
+            <i class="icon-plus bigger-130"></i> MileStone</button>
+    <button id='folder_button'
+                    class="btn btn-small btn-warning"
+                    data-placement="bottom"
+                    title="New Folder"
+                    data-keyboard="false"
+                    href="#"
+                    >
+            <i class="icon-plus bigger-130"></i> Folder</button>
+    <button id='forward_button'
+            class="btn btn-small btn-danger pull-right"
+            data-placement="bottom"
+            data-keyboard="false"
+            href="#"
+            >
+     <i class="icon-arrow-right bigger-130"></i></button>
+    <button id='back_button'
+                class="btn btn-small btn-info pull-right"
+                data-placement="bottom"
+                data-keyboard="false"
+                href="#"
+                >
+        <i class="icon-arrow-left bigger-130"></i></button>
+</div>
+<div class="space-6"></div>
+<div class="row-fluid">
+    <div id="gantt_here" style='width:100%; height:700px;'></div>
+</div>
+
+<style type="text/css">
+        html, body{ height:100%; padding:0px; margin:0px; overflow: hidden;}
+
+        .milestone{
+            border:2px solid #db2536;
+            color: #db2536;
+            background: #db2536;
+        }
+        .milestone .gantt_task_progress{
+            background: #db2536;
+        }
+
+        .folder{
+            border:2px solid #ff5404;
+            color: #FF5404;
+            background: #FF5404;
+        }
+        .folder .gantt_task_progress{
+            background: #FF5404;
+        }
+
+        .project{
+            border:2px solid #34c461;
+            color:#34c461;
+            background: #34c461;
+        }
+
+        .project .gantt_task_progress{
+        background: #23964d;
+    }
+
+        .task{
+            border:2px solid #6ba8e3;
+            color:#6ba8e3;
+            background: #6ba8e3;
+        }
+        .task .gantt_task_progress{
+            background: #547dab;
+        }
+
+        .weekend{
+            background: #f4f7f4;
+        }
+
+        .gantt_task_cell.week_end{
+            background-color: #d6dce4;
+        }
+        .gantt_task_row.gantt_selected .gantt_task_cell.week_end{
+            background-color: #F8EC9C;
+        }
+        .fa{
+            cursor: pointer;
+            font-size: 14px;
+            text-align: center;
+            opacity: 0.2;
+            padding: 5px;
+        }
+        .fa:hover{
+            opacity: 1;
+        }
+        .fa-pencil{
+            color: #ffa011;
+        }
+        .fa-plus{
+            color: #328EA0;
+        }
+        .fa-times{
+            color: red;
+        }
+
+    .status_line{
+		background-color: #0ca30a;
+	}
+
+</style>
+    <script type="text/javascript">
+        if("ontouchend" in document) document.write("<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.mobile.custom.min.js") }}'>"+"<"+"/script>");
+    </script>
+    <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/i18n/grid.locale-en.js") }}'></script>
+
+    <script src='{{ request.static_url("stalker_pyramid:static/dhtmlx/dhtmlxSuite/dhtmlx.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/dhtmlx/dhtmlxgantt.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/dhtmlx/ext/dhtmlxgantt_marker.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/dhtmlx/api.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/moment/moment.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/dhtmlx/ext/dhtmlxgantt_multiselect.js") }}' type='text/javascript' charset='utf-8'></script>
+{#    <script src="http://export.dhtmlx.com/gantt/api.js"></script>#}
+    <script type="text/javascript">
+        var budget_start = moment({{ budget.get_generic_text_attr('start_date') }});
+        var budget_end = moment({{ budget.get_generic_text_attr('end_date') }});
+        var duration = budget_end.diff(budget_start, 'days');
+        var project_id = "{{ budget.project.id }}";
+        var project_name = "{{ budget.project.name }}";
+        var links = [];
+        var target_tasks = [];
+        var items = {data:[]};
+
+        $(document).ready(function () {
+
+            doOnLoad();
+            $('#back_button').on('click', function (e) {
+
+                e.preventDefault();
+                e.stopPropagation();
+
+                gantt.eachSelectedTask(function(task_id){
+                    shiftTask(task_id, -1)
+                });
+
+            });
+
+            $('#forward_button').on('click', function (e) {
+
+                e.preventDefault();
+                e.stopPropagation();
+
+                gantt.eachSelectedTask(function(task_id){
+                    shiftTask(task_id, 1)
+                });
+
+            });
+
+            $('#export_button').on('click', function (e) {
+{#                console.log(gantt.getLinks())#}
+                e.preventDefault();
+                e.stopPropagation();
+
+                gantt.exportToPNG();
+
+            });
+
+            $('#milestone_button').on('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                createItemDialog('milestone');
+            });
+
+            $('#folder_button').on('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                createItemDialog('folder');
+            });
+
+        });
+
+        function doOnLoad() {
+            initGantt(gantt);
+            {% if has_permission('Update_Budget') and budget.status.code in ['PLN', 'ATV']  %}
+                initToolbar();
+            {% else %}
+                disableToolbar();
+            {% endif %}
+        }
+
+        function initGantt(gantt){
+            gantt.config.order_branch = true;
+            gantt.init("gantt_here");
+
+            $.getJSON('/entities/{{ studio.id }}/events/?keys=vacation').then(function (v_data) {
+
+                dhtmlx.message("Following holidays are excluded from working time:");
+
+                for (var i = 0; i < v_data.length; i++) {
+                    var start_date = new Date(parseInt(v_data[i].start));
+                    var end_date = new Date(parseInt(v_data[i].end));
+                    end_date.setHours(0);
+                    start_date.setHours(0);
+
+                    var total_day = (end_date.getTime()-start_date.getTime())/1000/3600/24 + 1;
+
+                    for (var k=0; k<total_day;k++){
+                        var vacation = addDays(start_date,k);
+                        gantt.setWorkTime({
+                            date:vacation,
+                            hours:false
+                        });
+                    }
+                }
+
+                gantt.config.work_time = true;
+                gantt.config.scale_unit = "day";
+                gantt.config.date_scale = "%D, %d";
+                gantt.config.xml_date = "%Y-%m-%d %H:%i:%s";
+                gantt.config.min_column_width = 45;
+                gantt.config.column_width = 45;
+                gantt.config.duration_unit = "day";
+                gantt.config.scale_height = 20*2;
+                gantt.config.row_height = 24;
+                gantt.config.grid_width = 300;
+
+                gantt.setWorkTime({day : 6, hours : [8,12]});
+
+                var weekScaleTemplate = function(date){
+                    var dateToStr = gantt.date.date_to_str("%d %M");
+                    var weekNum = gantt.date.date_to_str("(week %W)");
+                    var endDate = gantt.date.add(gantt.date.add(date, 1, "week"), -1, "day");
+                    return dateToStr(date) + " - " + dateToStr(endDate) + " " + weekNum(date);
+                };
+
+                gantt.config.subscales = [
+                    {unit:"week", step:1, template:weekScaleTemplate}
+                ];
+
+                gantt.templates.task_cell_class = function(task, date){
+                    if(!gantt.isWorkTime(date))
+                        return "week_end";
+                    return "";
+                };
+
+                var colHeader = '<div class="gantt_grid_head_cell gantt_grid_head_add" onclick="createTaskDialog(-1)"></div>',
+                    colContent = function(item){
+                            if(item.type=='folder'){
+                                return ('<div class="gantt_cell gantt_add" onclick="createTaskDialog(\''+item.id+'\')"></div>');
+                            }
+                            return '';
+                        };
+
+                gantt.config.columns = [
+                    {name:"text", label:"Task Name", width:150, tree:true },
+                    {name:"duration", label:"Duration", align:"center", width:55},
+                    {name:"resources", label:"Resource", align:"center", width:65},
+                    {
+                        name:"buttons",
+                        label:colHeader,
+                        resize:true,
+                        template:colContent,
+                        width:40
+                    }
+                ];
+
+                $.getJSON('/budgets/{{ budget.id }}/entries/').then(function (entry_data) {
+                    var total_number_of_items = 1;
+                    var total_items = [];
+                    var budget_entries = entry_data;
+                    var folder_list = [];
+                    var project = {
+                                            id:project_id,
+                                            text:project_name,
+                                            start_date:budget_start.format('DD MM YYYY'),
+                                            end_date:budget_end.format('DD MM YYYY'),
+                                            resources:'-',
+                                            type:'project',
+                                            open:true
+                                        };
+
+                    if(budget_entries.length != 0){
+                        project = {
+                                            id:project_id,
+                                            text:project_name,
+                                            resources:'-',
+                                            type:'project',
+                                            open:true
+                                        };
+
+                        for(var j=0; j<budget_entries.length; j++ ){
+                            if(budget_entries[j].generic_data.dataSource == "Calendar"){
+                                var secondaryFactor = budget_entries[j].generic_data.secondaryFactor;
+                                total_number_of_items += secondaryFactor.length;
+                            }
+                        }
+                    }
+                    items.data.push(project);
+                    total_items.push(project);
+
+                    $.getJSON('/budgets/{{ budget.id }}/calendar/items/?item_type=folders').then(function (f_data) {
+                        var folders = f_data;
+                        total_number_of_items += folders.length;
+
+                        $.getJSON('/budgets/{{ budget.id }}/calendar/items/?item_type=milestones').then(function (m_data) {
+                            var milestones = m_data;
+                            total_number_of_items += milestones.length;
+
+                            for(var j=0; j<budget_entries.length; j++ ){
+                                total_items.push(null);
+                            }
+
+                            for(var j=0; j<budget_entries.length; j++ ){
+                                if(budget_entries[j].generic_data.dataSource == "Calendar"){
+                                    var secondaryFactor = budget_entries[j].generic_data.secondaryFactor;
+                                    for(var t=0; t<secondaryFactor.length; t++){
+                                        var task = {
+                                            id:budget_entries[j].id+"_"+t,
+                                            index: secondaryFactor[t].gantt_index,
+                                            text: secondaryFactor[t].task_name,
+                                            name:secondaryFactor[t].task_name,
+                                            description:secondaryFactor[t].description,
+                                            start_date:(moment(parseInt(secondaryFactor[t].start_date))).format('DD MM YYYY'),
+                                            duration:secondaryFactor[t].amount,
+                                            resources:secondaryFactor[t].second_amount,
+                                            parent: secondaryFactor[t].folder_id,
+                                            good_id: budget_entries[j].good_id,
+                                            type: 'task',
+                                            open:false
+                                        };
+                                        console.log(secondaryFactor[t].task_name+" : "+secondaryFactor[t].gantt_index);
+                                        folder_list.push(secondaryFactor[t].folder_id);
+                                        total_items[secondaryFactor[t].gantt_index] = task;
+                                        items.data.push(task);
+                                    }
+                                }
+                            }
+                            for(var f=0; f<folders.length; f++){
+                                var f_idex = folder_list.indexOf(folders[f].id);
+                                var folder = {
+                                    id:folders[f].id,
+                                    text:folders[f].name,
+                                    name:folders[f].name,
+                                    index: folders[f].gantt_index,
+                                    description:folders[f].description,
+                                    start_date:f_idex>-1?null:(moment(parseInt(folders[f].start_date))).format('DD MM YYYY'),
+{#                                    start_date:(moment(parseInt(folders[f].start_date))).format('DD MM YYYY'),#}
+{#                                    duration:f_idex>-1?null:1,#}
+                                    resources:'-',
+                                    parent: project_id,
+                                    type: 'folder',
+                                    open:true
+                                };
+                                total_items[folders[f].gantt_index] = folder;
+                                items.data.push(folder);
+                            }
+                            for(var k=0; k<milestones.length; k++){
+                                var milestone = {
+                                    id:milestones[k].id,
+                                    text:milestones[k].name,
+                                    name:milestones[k].name,
+                                    index: milestones[k].gantt_index,
+                                    description:milestones[k].description,
+                                    start_date:(moment(parseInt(milestones[k].start_date))).format('DD MM YYYY'),
+                                    duration:1,
+                                    resources:1,
+                                    parent: project_id,
+                                    type: 'milestone',
+                                    open:false
+                                };
+                                total_items[milestones[k].gantt_index] = milestone;
+                                items.data.push(milestone);
+                            }
+
+                            gantt.templates.task_class = function (start, end, task) {
+                                    return task.type;
+                            };
+                            gantt.templates.grid_row_class = gantt.templates.task_row_class = function (start, end, task) {
+                                    if (gantt.isSelectedTask(task.id))
+                                        return "gantt_selected";
+                            };
+
+                            items.data = total_items;
+
+                            gantt.parse(items);
+
+                            $.getJSON('/budgets/{{ budget.id }}/calendar/items/?item_type=links').then(function (l_data) {
+                                var budget_links = l_data;
+                                for(var i=0; i<budget_links.length; i++){
+                                    gantt.addLink(budget_links[i]);
+                                    convertLinkData(budget_links[i]);
+                                }
+                            });
+                        });
+                    });
+                });
+            });
+        }
+
+        function disableToolbar(){
+            gantt.config.readonly = true;
+        }
+
+        function initToolbar(){
+            var drag_id = null;
+
+            gantt.attachEvent("onRowDragStart", function(id, target, e) {
+                drag_id = id;
+                return true;
+            });
+
+            gantt.attachEvent("onRowDragEnd", function(id, target) {
+                drag_id = null;
+                gantt.render();
+            });
+
+            gantt.templates.grid_row_class = function(start, end, task){
+                if(drag_id && task.id != drag_id){
+                    if(task.$level != gantt.getTask(drag_id).$level)
+                        return "cant-drop";
+                    }
+                return "";
+            };
+
+            gantt.attachEvent("onTaskDblClick", function(id, e){
+                var item = gantt.getTask(id);
+
+                switch(item.type){
+                    case "project":
+                        updateBudgetDialog(id);
+                        break;
+                    case "task":
+                        updateTaskDialog(id);
+                        break;
+                    default:
+                        updateItemDialog(id);
+                        break;
+                }
+            });
+
+            gantt.attachEvent("onLinkClick", function(id,e){
+
+                var confirm_message =
+                    '<h3 class="header red"><i class="icon-warning-sign">' +
+                    '</i> Warning</h3>' +
+                    '<div id="message" class="alert alert-info bigger-110">' +
+                    'Are you sure you want to  delete this link?' +
+                    '</div>';
+
+                bootbox.confirm(confirm_message, function (result) {
+                    if (result) {
+                        gantt.deleteLink(id);
+                        deleteLinkAction(id);
+                    }
+                });
+            });
+
+            gantt.attachEvent("onTaskDrag", function(id, mode, task, original, e){
+
+{#                var parent = task.parent ? gantt.getTask(task.parent) : null,#}
+{#                    children = gantt.getChildren(id),#}
+{#                    modes = gantt.config.drag_mode;#}
+{##}
+{#                var limitLeft = null,#}
+{#                    limitRight = null;#}
+{##}
+{#                if(!(mode == modes.move || mode == modes.resize)) return;#}
+{##}
+{#                if(mode == modes.move){#}
+{#                    limitLeft = limitMoveLeft;#}
+{#                    limitRight = limitMoveRight;#}
+{#                }#}
+{#                else if(mode == modes.resize){#}
+{#                    limitLeft = limitResizeLeft;#}
+{#                    limitRight = limitResizeRight;#}
+{#                }#}
+{##}
+{#                //check parents constraints#}
+{#                if(parent && +parent.end_date < +task.end_date){#}
+{#                    limitLeft(task, parent);#}
+{#                }#}
+{#                if(parent && +parent.start_date > +task.start_date){#}
+{#                    limitRight(task, parent);#}
+{#                }#}
+{##}
+{#                //check children constraints#}
+{#                for(var i=0; i < children.length; i++){#}
+{#                    var child = gantt.getTask(children[i]);#}
+{#                    if(+task.end_date < +child.end_date){#}
+{#                        limitLeft(task, child);#}
+{#                    }#}
+{#                    else if(+task.start_date > +child.start_date){#}
+{#                        limitRight(task, child);#}
+{#                    }#}
+{#                }#}
+                checkLinkedTasks(task);
+            });
+
+            gantt.attachEvent("onAfterTaskDrag", function(id, mode, e){
+
+                console.log('onAfterTaskDrag');
+
+                var task = gantt.getTask(id);
+                checkLinkedTasks(task);
+                updateEventAction(id);
+                if(task.type == 'milestone'){
+
+                    for (var i=0; i<target_tasks.length;i++){
+                        updateTaskAction(target_tasks[i]);
+                    }
+                    target_tasks = [];
+                }
+            });
+
+            gantt.attachEvent("onAfterLinkAdd", function(id,item){
+                console.log('onAfterLinkAdd');
+
+                convertLinkData(item);
+                createLinkAction(item);
+            });
+
+            gantt.attachEvent("onRowDragEnd", function(id, target) {
+                console.log('onRowDragEnd');
+                updateAllItemsGanntIndex();
+
+                gantt.render();
+            });
+        }
+
+        function updateAllItemsGanntIndex() {
+
+{#            var project = gantt.getTask(project_id);#}
+
+            var all_items = [];
+            for(var i=0;i<items.data.length;i++){
+                var data = items.data[i];
+                var item = {
+                            'id':data.id,
+                            'type':data.type,
+                            'gantt_index':gantt.getGlobalTaskIndex(data.id)
+                };
+                console.log(item);
+                all_items.push(item);
+            }
+
+            var all_items_text =  JSON.stringify(all_items);
+
+            $.post(
+                '/budgets/{{ budget.id }}/calendar/list_order?items='+all_items_text
+            ).done(function (jqXHR) {
+
+            }).fail(function (jqXHR) {
+                bootbox.alert(jqXHR.responseText);
+            });
+
+        }
+
+        function updateEventAction(id) {
+
+            var item = gantt.getTask(id);
+            if(item.type == 'task'){
+                updateTaskAction(id);
+            }
+            else{
+                updateItemAction(id);
+            }
+        }
+        {# ITEM : FOLDER, MILESTONE  ------------------------------------------------      #}
+
+        function createItemDialog(iType) {
+
+            var project = gantt.getTask(project_id);
+
+            var _query = "?mode=Create";
+            _query += "&id="+(new Date()).getTime();
+            _query += "&start_date="+(project.start_date).getTime();
+            _query += "&index="+items.data.length;
+
+            _query += "&end_date="+(project.end_date).getTime();
+            _query += "&type="+iType;
+
+            var event_dialog = $('#dialog_template');
+            event_dialog.attr("name", "");
+            event_dialog.attr("description", "");
+            event_dialog.modal({
+                'remote': "/budgets/{{ budget.id }}/calendar/"+iType+"/dialog"+_query
+            });
+
+        }
+
+        function updateItemDialog(id) {
+
+            var item = gantt.getTask(id);
+
+            var _query = "?mode=Update";
+            _query += "&id="+item.id;
+            _query += "&start_date="+(item.start_date).getTime();
+            _query += "&end_date="+(item.end_date).getTime();
+            _query += "&type="+item.type;
+            _query += "&index="+gantt.getGlobalTaskIndex(id);
+
+            var event_dialog = $('#dialog_template');
+            event_dialog.attr("name", item.name);
+            console.log("Event: "+ event_dialog.attr('name'));
+            event_dialog.attr("description", item.description);
+            event_dialog.modal({
+                'remote': "/budgets/{{ budget.id }}/calendar/"+item.type+"/dialog"+_query
+            });
+        }
+
+        function updateItemAction(id) {
+
+            console.log("updateItemAction");
+            if (id != project_id){
+                var item = gantt.getTask(id);
+                var index = gantt.getGlobalTaskIndex(id);
+                $.post(
+                    '/budgets/{{ budget.id }}/calendar/'+item.type+'/action',
+                    $.param({
+                        'id': item.id,
+                        'index':index,
+                        'start_date': (item.start_date).getTime(),
+                        'end_date': (item.end_date).getTime(),
+                        'mode':"Update"
+                    })
+                ).done(function (jqXHR) {
+                    updateBudgetStartEndDate(project_id);
+                }).fail(function (jqXHR) {
+                    bootbox.alert(jqXHR.responseText);
+                });
+            }
+
+        }
+
+        {# TASK ---------------------------------------------------------------------      #}
+
+        function createTaskDialog(f_id) {
+
+            var project = gantt.getTask(project_id);
+
+            var _query = "?mode=Create";
+            _query += "&id=-1";
+            _query += "&start_date="+(project.start_date).getTime();
+            _query += "&end_date="+(project.end_date).getTime();
+            _query += "&index="+items.data.length;
+            _query += "&type=task";
+            if(f_id == -1){
+                _query += "&folder_id="+project_id;
+            }
+            else{
+                _query += "&folder_id="+f_id;
+            }
+
+            console.log("_query: "+ _query);
+
+            var event_dialog = $('#dialog_template');
+            event_dialog.modal({
+                'remote': "/budgets/{{ budget.id }}/calendar/task/dialog"+_query
+            });
+        }
+
+        function updateTaskDialog(id) {
+
+            var task = gantt.getTask(id);
+
+            var _query = "?mode=Update";
+            _query += "&id="+task.id;
+            _query += "&start_date="+(task.start_date).getTime();
+            _query += "&end_date="+(task.end_date).getTime();
+            _query += "&good_id="+task.good_id;
+            _query += "&amount="+task.duration;
+            _query += "&second_amount="+task.resources;
+            _query += "&folder_id="+task.parent;
+            _query += "&type="+task.type;
+            _query += "&index="+gantt.getGlobalTaskIndex(id);
+
+            var event_dialog = $('#dialog_template');
+            event_dialog.attr("name", task.name);
+            event_dialog.attr("description", task.description);
+            event_dialog.modal({
+                'remote': "/budgets/{{ budget.id }}/calendar/task/dialog"+_query
+            });
+        }
+
+        function updateTaskAction(id) {
+            var task = gantt.getTask(id);
+            var index = gantt.getGlobalTaskIndex(id);
+            if(task.type == "task"){
+                if(task.duration > 0){
+                    $.post(
+                        '/budgets/{{ budget.id }}/calendar/task/action',
+                        $.param({
+                                    'id': task.id,
+                                    'start_date': (task.start_date).getTime(),
+                                    'end_date': (task.end_date).getTime(),
+                                    'folder_id': task.parent,
+                                    'good_id': task.good_id,
+                                    'amount': task.duration,
+                                    'second_amount': task.resources,
+                                    'index': index,
+                                    'mode':"Update"
+                        })
+                    ).done(function (jqXHR) {
+                        updateBudgetStartEndDate(project_id);
+                        updateItemAction(task.parent)
+                    }).fail(function (jqXHR) {
+                        bootbox.alert(jqXHR.responseText);
+                    });
+                }
+            }
+        }
+
+        function deleteTaskAction(id) {
+            var budgetEntry_id = id.split("_")[0];
+            $.post(
+                '/budgetentries/'+budgetEntry_id+'/delete'
+            ).done(function (jqXHR) {
+
+            }).fail(function (jqXHR) {
+                bootbox.alert(jqXHR.responseText);
+            });
+        }
+
+        {# LINK  ---------------------------------------------------------------------      #}
+
+        function createLinkAction(l_item) {
+            console.log('createLinkAction');
+            $.post(
+                '/budgets/{{ budget.id }}/calendar/link/create',
+                $.param(l_item)
+            ).done(function (jqXHR) {
+
+            }).fail(function (jqXHR) {
+                bootbox.alert(jqXHR.responseText);
+            });
+        }
+
+        function deleteLinkAction(id) {
+            $.post(
+                '/budgets/{{ budget.id }}/calendar/link/delete',
+                $.param({'link_id': id})
+            ).done(function (jqXHR) {
+
+            }).fail(function (jqXHR) {
+                bootbox.alert(jqXHR.responseText);
+            });
+        }
+
+        function convertLinkData(item){
+{#            console.log('item.id: '+ item.id);#}
+
+            var source_task = gantt.getTask(item.source);
+            var target_task = gantt.getTask(item.target);
+            var new_link_item;
+
+            if (source_task.type == "milestone" && item.type == '3'){
+                new_link_item = {'milestone': item.source, 'task':item.target, 'type': '1'};
+            }
+            if (target_task.type == "milestone" && item.type == '0'){
+                new_link_item = {'milestone': item.target, 'task':item.source, 'type': '1'};
+            }
+            if (source_task.type == "milestone" && item.type == '0'){
+                new_link_item = {'milestone': item.source, 'task':item.target, 'type': '2'};
+            }
+            if (target_task.type == "milestone" && item.type == '3'){
+                new_link_item = {'milestone': item.target, 'task':item.source, 'type': '2'};
+            }
+            if (source_task.type == "milestone" && item.type == '1' ){
+                new_link_item = {'milestone': item.source, 'task':item.target, 'type': '3'};
+            }
+            if (target_task.type == "milestone" && item.type == '1'){
+                new_link_item = {'milestone': item.target, 'task':item.source, 'type': '3'};
+            }
+            if (source_task.type == "milestone" && item.type == '2'){
+                new_link_item = {'milestone': item.source, 'task':item.target, 'type': '4'};
+            }
+            if (target_task.type == "milestone" && item.type == '2'){
+                new_link_item = {'milestone': item.target, 'task':item.source, 'type': '4'};
+            }
+            new_link_item['id'] = item.id;
+            links.push(new_link_item);
+        }
+
+        function checkLinkedTasks(task){
+            var project = gantt.getTask(project_id);
+            var budget_start = project.start_date;
+            var budget_end = project.end_date;
+
+            for(var i=0; i < links.length; i++){
+
+                var item = links[i];
+                var target_task;
+
+                if (item.task == task.id){
+                    target_task = task;
+                }
+                if (item.milestone == task.id){
+                    target_task = gantt.getTask(item.task);
+                }
+
+                if(target_task){
+                    var milestone = gantt.getTask(item.milestone);
+                    switch (item.type){
+                        case "1":
+                                if( +milestone.start_date < +target_task.end_date){
+                                    target_task.end_date = new Date(milestone.start_date);
+
+                                    var min_start_day = addDays(target_task.end_date,-1);
+                                    if(target_task.start_date > min_start_day){
+                                        target_task.start_date = min_start_day;
+                                    }
+                                }
+                            break;
+                        case "2":
+                                if( +target_task.start_date < +milestone.end_date ){
+                                    target_task.start_date = new Date(milestone.end_date);
+
+                                    var min_end_day = addDays(target_task.start_date, 1);
+                                    if(target_task.end_date < min_end_day){
+                                        target_task.end_date = min_end_day;
+                                    }
+                                }
+                            break;
+                        case "3":
+                                if( +target_task.start_date < +milestone.start_date ){
+                                    target_task.start_date = new Date(milestone.start_date);
+
+                                    var min_end_day = addDays(target_task.start_date, 1);
+                                    if(target_task.end_date < min_end_day){
+                                        target_task.end_date = min_end_day;
+                                    }
+                                }
+                            break;
+                        case "4":
+                                if( +target_task.end_date > +milestone.end_date ){
+                                    target_task.end_date = new Date(milestone.end_date);
+
+                                    var min_start_day = addDays(target_task.end_date,-1);
+                                    if(target_task.start_date > min_start_day){
+                                        target_task.start_date = min_start_day;
+                                    }
+                                }
+                            break;
+                    }
+
+                    target_task.duration = gantt.calculateDuration(target_task.start_date, target_task.end_date);
+                    if (target_task.duration == 0){
+                        target_task.duration = 1;
+                    }
+
+                    gantt.updateTask(target_task.id);
+                    target_tasks.push(target_task.id);
+                }
+                target_task = null;
+            }
+
+        }
+
+         {# BUDGET  ---------------------------------------------------------------------      #}
+
+        function updateBudgetDialog(id) {
+            var event_dialog = $('#dialog_template');
+            event_dialog.modal({
+                        'remote': "/budgets/{{ budget.id }}/update/dialog?mode=Update"
+                    });
+        }
+
+        function updateBudgetStartEndDate(id){
+
+            var project = gantt.getTask(id);
+            var start = project.start_date;
+            var end = project.end_date;
+
+            var budget_start = '{{ budget.get_generic_text_attr('start_date') }}';
+            var budget_end = '{{ budget.get_generic_text_attr('end_date') }}';
+
+            console.log("budget_start : "+budget_start);
+            console.log("budget_end : "+budget_end);
+
+            console.log("start : "+start.getTime());
+            console.log("end : "+end.getTime());
+
+            if(parseInt(budget_start) != start.getTime() || parseInt(budget_end) != end.getTime()){
+                var params = $.param({
+                    attr_name: 'start_and_end_dates',
+                    attr_value: start.getTime() + ' - ' + end.getTime()
+                });
+
+                $.post(
+                    "/budgets/{{ budget.id}}/update/inline", params
+                ).done(function () {
+                    console.log('updateBudgetStartEndDate done');
+                }).fail(function (jqXHR) {
+                    bootbox.alert('<div id="message" class="alert alert-danger bigger-110">' + jqXHR.responseText + '</div>');
+                });
+            }
+
+        }
+
+        function shiftTask(task_id, direction) {
+
+            console.log('direction: '+direction);
+            var task = gantt.getTask(task_id);
+            var new_start_date = gantt.date.add(task.start_date, direction, "day");
+            var new_end_date = gantt.calculateEndDate(new_start_date, task.duration);
+
+            task.start_date = new_start_date;
+            task.end_date = new_end_date;
+
+            gantt.updateTask(task.id);
+
+            if(task.type == "task"){
+                updateTaskAction(task.id);
+            }
+        }
+
+        function limitMoveLeft(task, limit){
+
+            console.log('limitMoveLeft');
+            var dur = task.end_date - task.start_date;
+            task.end_date = new Date(limit.end_date);
+            task.start_date = new Date(+task.end_date - dur);
+
+        }
+
+        function limitMoveRight(task, limit){
+
+            console.log('limitMoveRight');
+            var dur = task.end_date - task.start_date;
+            task.start_date = new Date(limit.start_date);
+            task.end_date = new Date(+task.start_date + dur);
+
+        }
+
+        function limitResizeLeft(task, limit){
+            console.log('limitResizeLeft');
+            task.end_date = new Date(limit.end_date);
+        }
+
+        function limitResizeRight(task, limit){
+            console.log('limitResizeRight');
+            task.start_date = new Date(limit.start_date);
+        }
+
+        function addDays(date, days) {
+            var result = new Date(date);
+            result.setDate(result.getDate() + days);
+            return result;
+        }
+
+    </script>

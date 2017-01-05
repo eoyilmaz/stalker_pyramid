@@ -98,13 +98,13 @@
                     <div class='span3'>
                         <select id='task_schedule_unit'
                                 class='input-block-level'
-                                name='schedule_unit'>
-                            <option value='min'>Minutes</option>
+                                name='schedule_unit'
+                                value='h'>
                             <option value='h'>Hours</option>
+                            <option value='min'>Minutes</option>
                             <option value='d'>Days</option>
                             <option value='w'>Weeks</option>
                             <option value='m'>Months</option>
-                            <option value='y'>Years</option>
                         </select>
                     </div>
                     <div class='span3'>
@@ -344,13 +344,11 @@
                     _query += "&task_ids="+task_ids[i];
                 }
 
-
                 console.log("_query: "+ _query);
                 console.log("submit_url_list[0]: "+ submit_url_list);
 
-
                 if (submit_url_list.indexOf('/tasks/set_start_end_date') > -1) {
-                    var start_end = get_start_end();
+                    var start_end = get_date_range('start_end_date_range_picker');
                     var start = start_end[0];
                     var end = start_end[1];
                     if (start && end){
@@ -405,33 +403,7 @@
                 return '<span class="label label-large label-status_'+cellvalue.toLowerCase()+'">'+cellvalue+'</span>';
             }
 
-            var get_start_end = function () {
 
-                var date_range_val = $('#start_end_date_range_picker').daterangepicker().val();
-                if (date_range_val){
-                    var date_range = date_range_val.split(' - ');
-                    var start_date_string = date_range[0].split('/');
-                    var end_date_string = date_range[1].split('/');
-
-                    var start = new Date(
-                        parseInt(start_date_string[2]),
-                        parseInt(start_date_string[0]) - 1,
-                        parseInt(start_date_string[1]),
-                        10,0,0, 0
-                    );
-
-                    var end = new Date(
-                        parseInt(end_date_string[2]),
-                        parseInt(end_date_string[0]) - 1,
-                        parseInt(end_date_string[1]),
-                        19,0,0, 0
-                    );
-
-                    return [start, end];
-                }
-                return [null, null];
-
-            };
 
 
 

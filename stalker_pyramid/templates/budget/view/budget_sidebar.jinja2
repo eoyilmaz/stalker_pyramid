@@ -1,41 +1,39 @@
 {# Render Budget Side Bar #}
 
-
-
 <ul id="sidebar_list" class='nav nav-list'></ul>
 
 <script>
     $(function () {
-        page_of('{{ budget.name }}',
-                '{{ budget.project.name }}',
+        page_of('{{ entity.name }}',
+                '{{ entity.project.name }}',
                 '',
-                '{%- if has_permission('Update_Budget')-%}/budgets/{{ budget.id }}/update/dialog{%- endif -%}'
+                '{%- if has_permission('Update_Budget')-%}/budgets/{{ entity.id }}/update/dialog{%- endif -%}'
         )
         menu_of(
             'Dashboard',
-            "{%- if request.current_route_path() == request.route_path('view_budget', id=budget.id) -%}'active',{%- else -%},{%- endif -%}",
-            '{{ request.route_url('view_budget', id=budget.id) }}',
+            "{%- if request.current_route_path() == request.route_path('view_budget', id=entity.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('view_budget', id=entity.id) }}',
             get_icon('dashboard'),
             ''
         );
         menu_of(
             'Calendar',
-            "{%- if request.current_route_path() == request.route_path('view_budget_calendar', id=budget.id) -%}'active',{%- else -%},{%- endif -%}",
-            '{{ request.route_url('view_budget_calendar', id=budget.id) }}',
+            "{%- if request.current_route_path() == request.route_path('view_budget_calendar', id=entity.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('view_budget_calendar', id=entity.id) }}',
             get_icon('timelog'),
             ''
         );
         menu_of(
             'Table',
-            "{%- if request.current_route_path() == request.route_path('view_budget_table', id=budget.id) -%}'active',{%- else -%},{%- endif -%}",
-            '{{ request.route_url('view_budget_table', id=budget.id) }}',
+            "{%- if request.current_route_path() == request.route_path('view_budget_table', id=entity.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('view_budget_table', id=entity.id) }}',
             get_icon('budget'),
             ''
         );
         menu_of(
             'Invoices',
-            "{%- if request.current_route_path() == request.route_path('list_budget_invoices', id=budget.id) -%}'active',{%- else -%},{%- endif -%}",
-            '{{ request.route_url('list_budget_invoices', id=budget.id) }}',
+            "{%- if request.current_route_path() == request.route_path('list_budget_invoices', id=entity.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('list_budget_invoices', id=entity.id) }}',
             get_icon('budget'),
             ''
         );

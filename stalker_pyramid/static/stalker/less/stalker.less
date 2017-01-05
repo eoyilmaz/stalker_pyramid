@@ -354,12 +354,26 @@ tr {
 // Task Statuses
 // *********************************
 
+
 .status_pln {
-    // planning
     background-color: @grey;
     color: white;
     a {
         color: white;
+    }
+}
+.label-status_pln {
+    background-color: @grey !important;
+}
+.infobox-status_app>.infobox-icon>[class*="icon-"] {
+    background-color: @grey
+}
+
+.header-color-status_pln {
+    background: @grey;
+    border-color: @grey;
+    + .widget-body {
+        border-color: @grey;
     }
 }
 
@@ -670,6 +684,27 @@ tr {
     border-color: @green;
     + .widget-body {
         border-color: @green;
+    }
+}
+.status_atv {
+    background-color: @orange;
+    color: white;
+    a {
+        color: white;
+    }
+}
+.label-status_atv {
+    background-color: @orange !important;
+}
+.infobox-status_atv>.infobox-icon>[class*="icon-"] {
+    background-color: @orange
+}
+
+.header-color-status_atv {
+    background: @orange;
+    border-color: @orange;
+    + .widget-body {
+        border-color: @orange;
     }
 }
 

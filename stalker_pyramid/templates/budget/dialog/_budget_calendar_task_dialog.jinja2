@@ -22,6 +22,21 @@
                 </div>
             </div>
 
+            {# Name #}
+            <div class="control-group">
+                <label class="span3 control-label"
+                       for="task_name">Task Name</label>
+                <div class="span9">
+                    <input id="task_name"
+                           name='task_name'
+                           type="text"
+                           class="form-control"
+                           placeholder="Name"
+
+                           required>
+                </div>
+            </div>
+
             {#Start Date #}
             <div class='control-group'>
                 <label class='span3 control-label'
@@ -122,6 +137,10 @@
             }
         });
 
+        if(event_dialog.attr('task_name')){
+                $('#task_name').val(event_dialog.attr('task_name'));
+            }
+
 
         {# Start Date ******************************************************* #}
         $('.date-picker').datepicker().next().on(ace.click_event, function(){
@@ -183,12 +202,18 @@
             );
 
             var sdate = start.getTime();
-
             var calendar_task_form = $('#calendar_task_form');
             var task_id = -1;
             if(event_dialog.attr('task_id')){
-                    task_id = event_dialog.attr('task_id');
+                task_id = event_dialog.attr('task_id');
             }
+
+            var folder_id = -1;
+            if(event_dialog.attr('folder_id')){
+                folder_id = event_dialog.attr('folder_id');
+            }
+
+            console.log("folder_id: "+ folder_id);
 
             var url = '/budgets/{{ budget.id }}/calendar/task/action';
             $.post(
@@ -197,7 +222,8 @@
                 $.param({
                     'start_date': sdate,
                     'task_id': task_id,
-                    'mode': '{{ mode }}'
+                    'mode': '{{ mode }}',
+                    'folder_id':folder_id
                 })
             ).done(function (jqXHR) {
                 //$('#new_outputs_storage').text(JSON.stringify(jqXHR));

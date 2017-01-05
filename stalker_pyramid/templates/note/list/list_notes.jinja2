@@ -150,8 +150,9 @@
             var note_activity_template = doT.template($('#tmpl_note_activity').html());
             var note_daily_template = doT.template($('#tmpl_note_daily').html());
 
+            var event_dialog = $('#html_template');
             var html_template_label = $('#html_template_label');
-            html_template_label.text("{{ entity.name }} Notes");
+            html_template_label.text(event_dialog.attr('title'));
 
             for (var i = 0; i < n_data.length; i++) {
 

@@ -2,6 +2,17 @@
 
 <div class="row-fluid">
 
+    {% if status_code=='ATV' %}
+        <div class="hr dotted"></div>
+
+    <div id="information" class="alert alert-danger bigger-110">
+        <span>
+            Butceyi active ettiginizde, butce takviminde olusturdugunuz tasklar sisteme tanimlanacaktir.
+        </span>
+    </div>
+    <div class="hr dotted"></div>
+    {% endif %}
+
     <form id='budget_form'
           class='form-horizontal'
           role='form'
@@ -26,19 +37,40 @@
                 </div>
             {% endif %}
 
+            {% if status_code=='HREV' %}
+                <div class="control-group">
+                    <label class="span3 control-label"
+                           for="save_as_btn">Save As</label>
+                    <div class="span9">
+
+                        <input id="save_as_btn"  type="checkbox" class="span9 ace ace-switch ace-switch-5" />
+                        <span class="lbl"></span>
+                    </div>
+                </div>
+
+                <div class='control-group hide' id="save_as_form" >
+                    <label class='span3 control-label' for='budget_name'>Duplicated Budget Name</label>
+                    <div class='span9'>
+                            <input type='text'
+                                   id='budget_name'
+                                   class='input-block-level'
+                                   name='name'
+                                   value='{{ budget.name }}'
+                                   required>
+                    </div>
+                </div>
+            {% endif %}
+
             {#Description #}
             <div class="control-group'">
-                <label for="budget_note"
+                <label for="budget_description"
                        class="span3 control-label">Note</label>
-                <div class="span9">
-                    <textarea id="budget_note"
-                              name='note'
-                              class="autosize-transition"
-                              style="overflow: hidden;
-                                         word-wrap: break-word;
-                                         resize: horizontal;
-                                         height: 50px;"
-                            >{{ budget.description }}</textarea>
+
+                <div class='span9'>
+                        <textarea id='budget_description'
+                                  name='description'
+                                  class='autosize-transition span12'
+                                  style='overflow: hidden; word-wrap: break-word;resize: horizontal;height: 150px;'></textarea>
                 </div>
             </div>
 
@@ -58,6 +90,36 @@
         dialog_label.find('span').remove();
         dialog_label.append('<span>{{ type_name}} BUDGET</span>');
 
+        var status_code = '{{ status_code }}';
+        var save_as_btn = $('#save_as_btn');
+
+        var first_post_url = '/budgets/{{ budget.id }}/status/'+status_code;
+        var second_post_url = "";
+
+        {% if status_code == 'ATV' %}
+            status_code = 'APP';
+            first_post_url = '/budgets/{{ budget.id }}/calendar/tasks_into_project';
+            second_post_url = '/budgets/{{ budget.id }}/duplicate?status_code=ATV&name={{ budget.name }}_Active';
+{#            first_post_url= '/budgets/{{ budget.id }}/duplicate?status_code=ATV&name={{ budget.name }}_Active';#}
+        {% endif %}
+
+        if(save_as_btn){
+            save_as_btn.on('click', function () {
+                if(this.checked){
+                    status_code = 'CNCLD';
+                    first_post_url = '/budgets/{{ budget.id }}/status/'+status_code;
+                    second_post_url = '/budgets/{{ budget.id }}/duplicate?status_code=HREV';
+                    $('#save_as_form').show();
+                } else {
+                    status_code = 'HREV';
+                    first_post_url = '/budgets/{{ budget.id }}/status/'+status_code;
+                    second_post_url = '';
+                    $('#save_as_form').hide();
+                }
+            });
+        }
+
+
         {# ***************************************************************** #}
         {# Submit Button #}
         var submit_button = $('#dialog_template_submit_button');
@@ -68,17 +130,32 @@
             submit_button.button('loading');
             var budget_form = $('#budget_form');
 
-            var url = '/budgets/{{ budget.id }}/status/{{ status_code }}';
-
             $.post(
-                url,
+                first_post_url,
                 budget_form.serialize()+ '&' +
                 $.param({
                     'total_price': {{ budget_total_price }}
                 })
             ).done(function (jqXHR) {
-                //$('#new_outputs_storage').text(JSON.stringify(jqXHR));
-                window.location.reload();
+                if (second_post_url != ""){
+                    setTimeout(function () {
+                        submit_button.button('loading');
+                        $.post(
+                            second_post_url, budget_form.serialize()
+                        ).done(function (response_text) {
+                            window.location.reload();
+                            submit_button.button('reset');
+                            $('#dialog_template').modal('hide');
+                        }).fail(function (jqXHR) {
+                            bootbox.alert('<div id="message" class="alert alert-danger bigger-110">'+jqXHR.responseText+'</div>');
+                            submit_button.button('reset');
+                        });
+                    }, 0);
+                } else {
+                    window.location.reload();
+                    submit_button.button('reset');
+                    $('#dialog_template').modal('hide');
+                }
             }).fail(function (jqXHR) {
                 bootbox.alert(jqXHR.responseText);
                 submit_button.button('reset');

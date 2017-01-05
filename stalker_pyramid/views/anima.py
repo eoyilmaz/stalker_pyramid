@@ -459,7 +459,7 @@ order by start,
                              'project_fps': project.fps
                              }
 
-    logger.debug('sql_query:  %s' % sql_query)
+    # logger.debug('sql_query:  %s' % sql_query)
     result = DBSession.connection().execute(sql_query).fetchall()
 
     return [{
@@ -575,7 +575,7 @@ select
                              'project_fps': project.fps
                              }
 
-    logger.debug('sql_query:  %s' % sql_query)
+    # logger.debug('sql_query:  %s' % sql_query)
     result = DBSession.connection().execute(sql_query).fetchall()
 
     return [{

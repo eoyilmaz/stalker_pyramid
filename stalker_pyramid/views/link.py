@@ -578,7 +578,7 @@ limit {limit}
     # if offset and limit:
     #     sql_query += "offset %s limit %s" % (offset, limit)
 
-    logger.debug('sql_query: %s' % sql_query)
+    # logger.debug('sql_query: %s' % sql_query)
 
     from sqlalchemy import text  # to be able to use "%" sign use this function
     result = DBSession.connection().execute(text(sql_query))
@@ -906,7 +906,7 @@ limit %(limit)s
         'limit': limit
     }
 
-    logger.debug('sql_query: %s' % sql_query)
+    # logger.debug('sql_query: %s' % sql_query)
 
     from sqlalchemy import text  # to be able to use "%" sign use this function
     result = DBSession.connection().execute(text(sql_query))

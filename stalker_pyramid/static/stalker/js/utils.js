@@ -577,3 +577,52 @@ function findArrayElement(array, attr_name, attr_value) {
                 }
                 return -1;
             }
+
+
+var get_date_range = function (field_name) {
+
+    var date_range_val = $('#'+field_name).daterangepicker().val();
+    if (date_range_val){
+        var date_range = date_range_val.split(' - ');
+        var start_date_string = date_range[0].split('/');
+        var end_date_string = date_range[1].split('/');
+
+        var start = new Date(
+            parseInt(start_date_string[2]),
+            parseInt(start_date_string[1]) - 1,
+            parseInt(start_date_string[0]),
+            0,0,0, 0
+        );
+
+        var end = new Date(
+            parseInt(end_date_string[2]),
+            parseInt(end_date_string[1]) - 1,
+            parseInt(end_date_string[0]),
+            0,0,0, 0
+        );
+
+        return [start, end];
+    }
+    return [null, null];
+
+};
+
+var get_date_picker = function (field_name) {
+
+    console.log("get_date_picker: "+field_name);
+
+    var date_picker_val = $('#'+field_name).datepicker().val();
+    if (date_picker_val){
+        var date_arr = date_picker_val.split('/');
+        var date_obj = new Date(
+            parseInt(date_arr[2]),
+            parseInt(date_arr[1]) - 1,
+            parseInt(date_arr[0]),
+            0,0,0, 0
+        );
+
+        return date_obj;
+    }
+    return null;
+
+};

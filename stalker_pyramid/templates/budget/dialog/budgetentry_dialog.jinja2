@@ -21,6 +21,7 @@
                 </div>
             </div>
 
+
             {#Amount #}
             <div class='control-group'>
                 <label class='span3 control-label'
@@ -36,19 +37,35 @@
                     <span id="good_unit"> Hour</span>
                 </div>
             </div>
+            {# Cost #}
+            <div class="control-group">
+                <label class="span3 control-label"
+                       for="budgetentry_cost">Cost</label>
+                <div class="span9">
+                    <input id="budgetentry_cost"
+                           class='input-block-level'
+                           name='cost'
+                           type="number"
+                           step="100"
+                           placeholder="Cost"
+                           required>
+                </div>
+            </div>
             {#Price #}
             <div class="control-group">
                 <label class="span3 control-label"
                        for="budgetentry_price">Price</label>
                 <div class="span9">
                     <input id="budgetentry_price"
+                           class='input-block-level'
                            name='price'
-                           type="text"
-                           class="input-mini"
+                           step="100"
+                           type="number"
                            placeholder="Price"
                            required>
                 </div>
             </div>
+
             {#Description #}
             <div class="control-group'">
                 <label for="budgetentry_description"
@@ -56,11 +73,11 @@
                 <div class="span9">
                     <textarea id="budgetentry_description"
                               name='description'
-                              class="autosize-transition"
+                              class="autosize-transition"price
                               style="overflow: hidden;
-                                         word-wrap: break-word;
-                                         resize: horizontal;
-                                         height: 50px;"
+                                     word-wrap: break-word;
+                                     resize: horizontal;
+                                     height: 50px;"
 
                             ></textarea>
                 </div>
@@ -89,7 +106,15 @@
             );
         {% endraw %}
         var budgetentry_good = $('#budgetentry_good');
-        var deferred = chosen_searchable_field_creator(budgetentry_good,'/goods/', good_option_template);
+        $.getJSON('/goods/').then(function (g_data) {
+            var filtered_goods= [];
+            for (var i=0;i<g_data.length;i++){
+                if(g_data[i].type_name == "Custom"){
+                    filtered_goods.push(g_data[i]);
+                }
+            }
+            chosen_searchable_field_creator_by_data(budgetentry_good, good_option_template, filtered_goods);
+        });
 
         {# Amount ******************************************************* #}
         $('#budgetentry_amount').ace_spinner({
@@ -107,13 +132,7 @@
 
         {# Price ******************************************************* #}
 
-        $('#budgetentry_price').ace_spinner({
-            value:0,
-            min:100,
-            step:100,
-            icon_up:'icon-caret-up',
-            icon_down:'icon-caret-down'
-        });
+
 
 
         {# ***************************************************************** #}
@@ -125,18 +144,20 @@
 
             submit_button.button('loading');
             var budgetentry_form = $('#budgetentry_form');
-
+            var msrp = $('#budgetentry_cost').val();
+            console.log("msrp: "+ msrp);
             var url = '/budgetentries/create';
             $.post(
                 url,
                 budgetentry_form.serialize() + '&' +
                 $.param({
                     'budget_id': {{ budget.id }},
-                    'good_id':budgetentry_good.val().split('_')[0]
+                    'good_id':budgetentry_good.val().split('_')[0],
+                    'msrp': msrp
                 })
             ).done(function (jqXHR) {
                 //$('#new_outputs_storage').text(JSON.stringify(jqXHR));
-                window.location.reload();
+{#                window.location.reload();#}
             }).fail(function (jqXHR) {
                 bootbox.alert(jqXHR.responseText);
                 submit_button.button('reset');

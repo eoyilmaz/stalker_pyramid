@@ -30,7 +30,7 @@ __version__ = '0.1.11'
 
 # before anything about stalker create the defaults
 from stalker.config import defaults
-from stalker import SimpleEntity
+from stalker import SimpleEntity, Project, Status, Budget
 
 import logging
 
@@ -67,6 +67,9 @@ def set_generic_text_attr(self, attr, value):
 
 SimpleEntity.get_generic_text_attr = get_generic_text_attr
 SimpleEntity.set_generic_text_attr = set_generic_text_attr
+
+
+
 
 
 def main(global_config, **settings):
@@ -341,6 +344,7 @@ def main(global_config, **settings):
     config.add_route('change_project_status',        'projects/{id}/status/{status_code}')
 
     config.add_route('view_project',               'projects/{id}/view')
+    config.add_route('view_project_tasks',         'projects/{id}/view/tasks')
     config.add_route('view_project_reports',       'projects/{id}/view/reports')
     config.add_route('view_project_cost_sheet',    'projects/{id}/view/cost_sheet') #json
 
@@ -420,26 +424,30 @@ def main(global_config, **settings):
     config.add_route('view_budget_calendar', 'budgets/{id}/view/calendar')
     config.add_route('view_budget_table',    'budgets/{id}/view/table')
     config.add_route('view_budget_report',   'budgets/{id}/view/report')
-    config.add_route('save_budget_calendar', 'budgets/{id}/save/calendar')
     config.add_route('budget_calendar_task_dialog', 'budgets/{id}/calendar/task/dialog')
     config.add_route('budget_calendar_task_action', 'budgets/{id}/calendar/task/action')
+    config.add_route('budget_calendar_item_action', 'budgets/{id}/calendar/{item_type}/action')
+    config.add_route('budget_calendar_list_order', 'budgets/{id}/calendar/list_order')
+    config.add_route('create_budget_tasks_into_project', 'budgets/{id}/calendar/tasks_into_project')
+
     config.add_route('budget_calendar_milestone_dialog', 'budgets/{id}/calendar/milestone/dialog')
-    config.add_route('budget_calendar_milestone_action', 'budgets/{id}/calendar/milestone/action')
+    config.add_route('budget_calendar_folder_dialog', 'budgets/{id}/calendar/folder/dialog')
     config.add_route('budget_calendar_link_create', 'budgets/{id}/calendar/link/create')
-    config.add_route('budget_calendar_link_delete', 'budgets/{id}/calendar/link/delete')
+    config.add_route('budget_calendar_item_delete', 'budgets/{id}/calendar/{item_type}/delete')
+    config.add_route('set_budget_totals', 'budgets/{id}/set/totals')
     # config.add_route('update_budget_calendar_task', 'budgets/{id}/calendar/update_task')
 
     config.add_route('duplicate_budget_dialog',   'budgets/{id}/duplicate/dialog')
     config.add_route('duplicate_budget',   'budgets/{id}/duplicate')
-    config.add_route('change_budget_type_dialog',   'budgets/{id}/type/{type_name}/dialog')
-    config.add_route('change_budget_type',   'budgets/{id}/type/{type_name}')
 
     config.add_route('change_budget_status_dialog',   'budgets/{id}/status/{status_code}/dialog')
     config.add_route('change_budget_status',   'budgets/{id}/status/{status_code}')
 
     config.add_route('get_budget_entries',   'budgets/{id}/entries/')
-    config.add_route('get_budget_calendar_milestones',   'budgets/{id}/calendar/milestones/')
-    config.add_route('get_budget_calendar_links',   'budgets/{id}/calendar/links/')
+    config.add_route('get_budget_calendar_items',   'budgets/{id}/calendar/items/')
+    # config.add_route('get_budget_calendar_milestones',   'budgets/{id}/calendar/milestones/')
+    # config.add_route('get_budget_calendar_folders',   'budgets/{id}/calendar/folders/')
+    # config.add_route('get_budget_calendar_links',   'budgets/{id}/calendar/links/')
     config.add_route('generate_report',   'budgets/{id}/generate/report')
 
     # *************************************************************************

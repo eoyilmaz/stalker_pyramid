@@ -1,13 +1,10 @@
 <script class="dialog_loaded"></script>
-
 <div class="row-fluid">
-
     <form id='budget_form'
           class='form-horizontal'
           role='form'
           method="post"
             >
-
         <div class="row-fluid">
             {# Name #}
             <div class="control-group">
@@ -26,36 +23,37 @@
                            required>
                 </div>
             </div>
-
             {#Type #}
-{#            {% if mode=='Update' %}#}
             <div class='control-group'>
                 <label class='span3 control-label'
                        for='budget_type'>Type</label>
                 <div class="span5">
                     <select id='budget_type'
                             class='input'
-                            name='type_name'
+                            name='type_id'
                             required>
                     </select>
                 </div>
             </div>
-{#            {% endif %}#}
         {% if mode=='Update' %}
-            {# Start & End Dates #}
+            {# Start Date #}
             <div class="control-group">
-                <label for="start_end_date_range_picker"
+                <label for="start_date_picker"
                        class="span3 control-label">Date</label>
-
                 <div class="span9 input-prepend">
-                    <input id='start_end_date_range_picker'
+                    <input class="date-picker"
+                           id='start_date_picker'
                            name='start_and_end_dates'
                            type="text"
-                           data-date-format="yyyy-mm-dd"
-                           placeholder="Start & End Dates">
-                        <span class="add-on">
-                            <i class="icon-calendar"></i>
-                        </span>
+                           data-date-format="dd/mm/yyyy"
+                           placeholder="Start & End Dates"
+                            >
+                    <span class="add-on">
+                        <i class="icon-calendar"></i>
+                    </span>
+
+                    <span id="duration" class="add-on">
+                    </span>
                 </div>
             </div>
         {% endif %}
@@ -71,7 +69,6 @@
                                      word-wrap: break-word;
                                      resize: horizontal;
                                      height: 50px;"
-
                             >{% if mode=='Update' %}{{ budget.description }}{% endif %}</textarea>
                 </div>
             </div>
@@ -90,9 +87,12 @@
         dialog_label.find('span').remove();
         dialog_label.append('<span>{{ mode}} Budget</span>');
 
+        var duration = 0;
+
+        {#Type ----------------------------------------------------------------#}
         {% raw %}
             var budget_type_option_template = doT.template(
-                '<option value={{=it.name}}>{{=it.name}}</option>'
+                '<option value={{=it.id}}>{{=it.name}}</option>'
             );
         {% endraw %}
 
@@ -109,35 +109,33 @@
                 allow_single_deselect: true
             });
             {% if mode=='Update' %}
-                budget_type.val({{ budget.type.name }});
+                budget_type.val('{{ budget.type.id }}');
             {% endif %}
             budget_type.trigger('liszt:updated');
         });
 
-        var start_end_date_range_picker = $('#start_end_date_range_picker').daterangepicker();
-        start_end_date_range_picker.next().on('click', function () {
-            $(this).prev().focus();
-        });
-
-        // fix z-index of the container
-{#            start_end_date_range_picker.data().daterangepicker.container.css({'z-index': 1060});#}
-        start_end_date_range_picker.on('shown', function (e) {
-            e.stopPropagation();
-        });
-        start_end_date_range_picker.on('hidden', function (e) {
-            e.stopPropagation();
-        });
-
-        // fill data if mode is update
+        {#Start Date ----------------------------------------------------------#}
         {% if mode == 'Update' %}
+            var start_date_picker = $('#start_date_picker').datepicker();
 
-            var start_date = new Date({{ budget.get_generic_text_attr('start') }});
-            var end_date = new Date({{ budget.get_generic_text_attr('end') }});
-            start_end_date_range_picker.val(
-                    start_date.format('mm/dd/yyyy') + ' - ' + end_date.format('mm/dd/yyyy')
-            );
-            start_end_date_range_picker.data().daterangepicker.updateFromControl();
+            $('.date-picker').datepicker().next().on(ace.click_event, function(){
+                        $(this).prev().focus();
+                    });
 
+            start_date_picker.on('shown', function (e) {
+                e.stopPropagation();
+            });
+            start_date_picker.on('hidden', function (e) {
+                e.stopPropagation();
+            });
+
+            var start_date = moment({{ budget.get_generic_text_attr('start_date') }});
+            var end_date = moment({{ budget.get_generic_text_attr('end_date') }});
+            duration = end_date.diff(start_date, 'days');
+
+            $('#duration').text(duration+ " Days");
+            start_date_picker.val(start_date.format('DD/MM/YYYY'));
+;
         {% endif %}
 
         {# ***************************************************************** #}
@@ -151,17 +149,30 @@
             var budget_form = $('#budget_form');
 
             var url = '/budgets/create';
+            var params = null;
             {% if mode=='Update' %}
                 url='/budgets/{{ budget.id }}/update';
-                {% set project = budget.project %}
+
+                var start_date = get_date_picker('start_date_picker');
+                start_date.setDate(start_date.getDate() + 1);
+                var end_date = new Date(start_date);
+                end_date.setDate(end_date.getDate() + duration);
+
+                params = {
+                    'project_id': {{ budget.project.id }},
+                    'start_date':start_date.getTime(),
+                    'end_date':end_date.getTime()
+                }
+            {% else %}
+                params = {
+                    'project_id': {{ project.id }}
+                }
             {% endif %}
 
             $.post(
                 url,
                 budget_form.serialize() + '&' +
-                $.param({
-                    'project_id': {{ project.id }}
-                })
+                $.param(params)
             ).done(function (jqXHR) {
                 //$('#new_outputs_storage').text(JSON.stringify(jqXHR));
                 window.location.reload();
@@ -178,6 +189,8 @@
 <script type="text/javascript">
     function destruct_dialog() {
         $('#budget_name').unbind();
+        $('#budget_type').unbind();
+        $('#start_date_picker').unbind();
         $('#budget_description').unbind();
         $('#dialog_template_submit_button').unbind();
 

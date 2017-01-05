@@ -626,7 +626,7 @@ def get_entity_users(request):
             ] if r[6] else [],
             'tasksCount': r[8] or 0,
             'ticketsCount': r[9] or 0,
-            'thumbnail_full_path': r[10] if r[has_read_rate_permission] else None,
+            'thumbnail_full_path': r[10] if has_read_rate_permission else None,
             'studio_rate': r[11] if has_read_rate_permission else r[11],
             'type_name': r[12],
             'update_user_action':'/users/%s/update/dialog' % r[0]
@@ -1432,7 +1432,11 @@ def update_entity_user(request):
             user.date_updated = utc_now
             user.updated_by = logged_in_user
 
-    return Response('Successfully updated user: %s' % user.name)
+    return Response(
+        'Successfully %s role is given to %s in %s' % (role_name,
+                                                       user.name,
+                                                       entity.name)
+    )
 
 
 @view_config(
@@ -1516,8 +1520,10 @@ def append_user_to_entity(request):
     logger.debug(entity.users)
 
     return Response(
-        'success:%s is added to %s.'
-        % (user.name, entity.name)
+        'Successfully %s is appended to %s as %s' % (user.name,
+                                                     entity.name,
+                                                     role_name
+                                                   )
     )
 
 

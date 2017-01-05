@@ -143,7 +143,6 @@
         var project_id = localStorage.getItem("project_id");
         var status_code = '';
 
-
         {% raw %}
             var option_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
         {% endraw %}
@@ -229,9 +228,11 @@
         }
     }
 
-    function get_task_notes(id){
+    function get_task_notes(id, name){
 
         var event_dialog = $('#html_template');
+        event_dialog.attr('title', name);
+{#        console.log('get_task_notes ' + name);#}
         event_dialog.modal({
             'remote': '/entities/'+id+'/notes/list/inmodal'
         });
@@ -341,8 +342,6 @@
         clear_html_modal();
 
         console.debug('starting to initialize init_table_data dialog!!!');
-
-
 
         var button_list = $('#button_list');
         button_list.find('button').remove();
@@ -516,9 +515,12 @@
                                                data[i].total_logged_seconds
                                            );
 {#                data[i].actions = '<span class="btn btn-danger btn-small tooltip-error" data-rel="popover" data-placement="top" data-original-title=" Top Danger" data-content="Oh snap! Change a few things up and try submitting again.">Top</span>'#}
-                data[i].actions = '<span><a class="purple" title="Notes" onclick="get_task_notes('+data[i].id+')"><i class="icon-list bigger-130"></i></a></span>';
+                data[i].actions = '<div class="hidden-phone visible-desktop action-buttons"><a class="purple" title="Notes" onclick="get_task_notes('+data[i].id+', \''+data[i].name+'\')"><i class="icon-list bigger-130"></i></a>';
                 if (status_code == 'HREV' || status_code == 'DREV' || status_code == 'WIP' || status_code == 'CMPL' || status_code == 'PREV'){
-                     data[i].actions += '<span><a class="green"  title="Copy Path" onclick="get_task_absoulute_path('+data[i].id+')"><i class="icon-copy bigger-130"></i></a></span>';
+                     data[i].actions += '<a class="green"  title="Copy Path" onclick="get_task_absoulute_path('+data[i].id+')"><i class="icon-copy bigger-130"></i></a></div>';
+                }
+                else{
+                    data[i].actions += '</div>';
                 }
 
                 if(bid_seconds < data[i].total_logged_seconds){

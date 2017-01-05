@@ -337,7 +337,7 @@
         <input id='task_start_end_date_range_picker'
                name='start_and_end_dates'
                type="text"
-               data-date-format="yyyy-mm-dd"
+               data-date-format="dd/mm/yyyy"
                placeholder="Start & End Dates">
                             <span class="add-on">
                                 <i class="icon-calendar"></i>
@@ -1033,8 +1033,8 @@ require([
         // update date values
         var start_and_end_dates_as_string = $('#task_start_end_date_range_picker').val();
         var dates = start_and_end_dates_as_string.split(' - ');
-        var start_date = moment(dates[0], 'MM-DD-YYYY').startOf('day');
-        var end_date = moment(dates[1], 'MM-DD-YYYY').endOf('day');
+        var start_date = moment(dates[0], 'DD-MM-YYYY').startOf('day');
+        var end_date = moment(dates[1], 'DD-MM-YYYY').endOf('day');
 
         // get zoom level
         var zoom_level = $('#zoom_level').val();
@@ -1226,8 +1226,8 @@ require([
             var zoom_level = gantt_column.guess_zoom_level(zoomed_dates.start, zoomed_dates.end);
 
             // update interface elements
-            var formatted_start_date = moment(zoomed_dates.start).format('MM/DD/YYYY');
-            var formatted_end_date = moment(zoomed_dates.end).format('MM/DD/YYYY');
+            var formatted_start_date = moment(zoomed_dates.start).format('DD/MM/YYYY');
+            var formatted_end_date = moment(zoomed_dates.end).format('DD/MM/YYYY');
             var start_end_date_range_picker = $('#task_start_end_date_range_picker');
             start_end_date_range_picker.val(formatted_start_date + ' - ' + formatted_end_date);
             start_end_date_range_picker.data().daterangepicker.updateFromControl();
@@ -1272,7 +1272,7 @@ require([
         var start_date = moment().subtract(6, 'month').startOf('day');
         var end_date = moment().add(6, 'month').endOf('day');
         start_end_date_range_picker.val(
-            start_date.format('MM/DD/YYYY') + ' - ' + end_date.format('MM/DD/YYYY')
+                start_date.format('dd/mm/yyyy') + ' - ' + end_date.format('dd/mm/yyyy')
         );
 
         start_end_date_range_picker.data().daterangepicker.updateFromControl();

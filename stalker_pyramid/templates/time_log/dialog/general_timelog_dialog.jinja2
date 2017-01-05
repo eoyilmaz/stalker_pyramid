@@ -212,6 +212,7 @@ function init_dialog() {
 
         var time_log_task = $('#time_log_task');
         time_log_task.find('option').remove();
+        console.log(time_log_task.find('option'));
 
         $.getJSON('/projects/'+project_id+'/tasks/?status=RTS&status=WIP&status=HREV&status=DREV').then(function (data) {
             // append an empty one first
@@ -226,7 +227,6 @@ function init_dialog() {
                 allow_single_deselect: true
             });
         });
-
     }
 
     time_log_form.attr("action", "{{ request.route_url('create_time_log') }}");
@@ -242,7 +242,7 @@ function init_dialog() {
     var all_projects = $('#all_projects');
     all_projects.find('option').remove();
 
-    $.getJSON('/projects/').then(function (data) {
+    $.getJSON('/entities/{{ logged_in_user.id }}/projects/').then(function (data) {
         // append an empty one first
         all_projects.append('<option value="-1">&nbsp;</option>');
         for (var i = 0; i < data.length; i++) {
@@ -256,13 +256,13 @@ function init_dialog() {
         });
 
         all_projects.on('change', function () {
-                    getProjectTasks($(this).val());
-                });
+            getProjectTasks($(this).val());
+        });
     });
 
     {# ***************************************************************** #}
     {# Start & End Date Picker #}
-    start_end_date_range_picker.datepicker('setDate', start_date_value);
+{#    start_end_date_range_picker.datepicker('setDate', start_date_value);#}
 
     $('.date-picker').datepicker().next().on(ace.click_event, function(){
                 $(this).prev().focus();

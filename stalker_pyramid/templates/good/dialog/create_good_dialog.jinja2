@@ -92,11 +92,13 @@
                            for='good_type'>Type</label>
                     <div class="span5">
 
-                        <select id='good_type'
-                                class='input'
-                                name='type_name'
-                                required>
-                        </select>
+                        <input id='good_type'
+                               class='input-block-level'
+                               name='type_name'
+                               type='text'
+                               placeholder='Type'
+                               >
+
                     </div>
                 </div>
 
@@ -108,19 +110,15 @@
                         <textarea id="good_description"
                                   name='description'
                                   class='input-block-level'
-
                                   style="overflow: hidden;
                                              word-wrap: break-word;
                                              resize: horizontal;
                                              height: 50px;"
-
                                 ></textarea>
                     </div>
                 </div>
             </div>
         </form>
-
-
     </div>
 </div>
 
@@ -138,7 +136,6 @@
 
         $.getJSON('/goods/').then(function (data) {
             var good_unit = $('#good_unit');
-
 
             var available_good_units_as_list = [];
             for (var i=0; i < data.length; i++){
@@ -185,15 +182,26 @@
         $.getJSON('/types/?target_entity_type=Good').then(function (data) {
             var good_type = $('#good_type');
 
-            for (var i = 0; i < data.length; i++) {
-                good_type.append(good_type_option_template(data[i]));
+            var available_types_list = [];
+            for (var i=0; i < data.length; i++){
+                available_types_list.push(data[i].name);
             }
 
-            good_type.chosen({
-                search_contains: true,
-                enable_split_word_search: true,
-                allow_single_deselect: true
+            good_type.autocomplete({
+                delay: 0,
+                source: available_types_list,
+                minLength: 0
             });
+
+{#            for (var i = 0; i < data.length; i++) {#}
+{#                good_type.append(good_type_option_template(data[i]));#}
+{#            }#}
+{##}
+{#            good_type.chosen({#}
+{#                search_contains: true,#}
+{#                enable_split_word_search: true,#}
+{#                allow_single_deselect: true#}
+{#            });#}
 
         });
         {# ***************************************************************** #}

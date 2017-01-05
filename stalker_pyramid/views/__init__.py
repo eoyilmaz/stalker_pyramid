@@ -293,8 +293,8 @@ def get_date_range(request, date_range_attr):
     """
     date_range_string = request.params.get(date_range_attr)
     start_str, end_str = date_range_string.split(' - ')
-    start = datetime.datetime.strptime(start_str, '%m/%d/%Y')
-    end = datetime.datetime.strptime(end_str, '%m/%d/%Y')
+    start = datetime.datetime.strptime(start_str, '%d/%m/%Y')
+    end = datetime.datetime.strptime(end_str, '%d/%m/%Y')
     return start, end
 
 

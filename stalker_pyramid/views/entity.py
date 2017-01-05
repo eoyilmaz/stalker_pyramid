@@ -929,7 +929,7 @@ def submit_search(request):
             )
         sql_query = '\n'.join(sql_query_buffer)
 
-        logger.debug('sql_query:  %s' % sql_query)
+        # logger.debug('sql_query:  %s' % sql_query)
 
         from sqlalchemy import text
         result = DBSession.connection().execute(text(sql_query))
@@ -1329,8 +1329,7 @@ def get_entity_authlogs(request):
                                 'attributes': attributes
     }
 
-    logger.debug('sql_query: %s' % sql_query)
-    logger.debug('sql_query: %s' % sql_query)
+    # logger.debug('sql_query: %s' % sql_query)
 
     from sqlalchemy import text  # to be able to use "%" sign use this function
     result = DBSession.connection().execute(text(sql_query))

@@ -1,0 +1,403 @@
+{% extends "base.jinja2" %}
+
+{# PRE-HEADER#}
+{% block pre_header %}
+
+    {% include 'charts/chart_preheader.jinja2' %}
+
+{% endblock pre_header %}
+
+{# BREADCRUMBS #}
+{% block breadcrumbs %}
+
+    {% set page_title='Dashboard' %}
+    {% include 'breadcrumb/breadcrumbs.jinja2' %}
+
+{% endblock breadcrumbs %}
+
+{# SIDEBAR #}
+{% block sidebar %}
+
+    {% include 'sidebar.jinja2' %}
+
+{% endblock sidebar %}
+
+{# PAGE-CONTENT #}
+{% block page_content %}
+
+{#    {% set page_title='Dashboard' %}#}
+{#    {% include 'page_header.jinja2' %}#}
+
+
+    <div class="widget-box transparent invoice-box">
+        <div class="widget-header widget-heade  r-large ">
+            <h4 class="position-relative ">{{entity.name}}</h4>
+            <div class="widget-toolbar no-border invoice-info">
+
+                <span class="invoice-info-label">Status:</span>
+                <span class="label label-status_{{ entity.status.code.lower() }}">{{ entity.status.name }}</span>
+                <div class="inline position-relative">
+                    <button class="btn btn-minier bigger dropdown-toggle"
+                            data-toggle="dropdown">
+                        <i class="icon-angle-down icon-only bigger-120"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-icon-only dropdown-yellow pull-right dropdown-caret dropdown-close">
+                        {% if entity.status.code == 'NEW'%}
+                            <li>
+                                <a href="/projects/{{entity.id}}/status/PREV/dialog?came_from={{ request.current_route_path() }}"
+                                   class="tooltip-success"
+                                   data-target="#dialog_template"
+                                   data-toggle="modal"
+                                   data-keyboard=false
+                                   data-placement="top">
+                                       <span class="blue">
+                                           <i class="icon-comment bigger-110"></i>PREV
+                                       </span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/projects/{{entity.id}}/status/PSD/dialog?came_from={{ request.current_route_path() }}"
+                                   class="tooltip-success"
+                                   data-target="#dialog_template"
+                                   data-toggle="modal"
+                                   data-keyboard=false
+                                   data-placement="top">
+                                       <span class="status_cls-text">
+                                           <i class="icon-pause bigger-110"></i>Paused
+                                       </span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/projects/{{entity.id}}/status/CNCLD/dialog?came_from={{ request.current_route_path() }}"
+                                   class="tooltip-success"
+                                   data-target="#dialog_template"
+                                   data-toggle="modal"
+                                   data-keyboard=false
+                                   data-placement="top">
+                                       <span class="red">
+                                           <i class="icon-remove bigger-110"></i>Canceled
+                                       </span>
+                                </a>
+                            </li>
+                        {% elif entity.status.code == 'PREV'%}
+                            <li>
+                                <a href="/projects/{{entity.id}}/status/APP/dialog?came_from={{ request.current_route_path() }}"
+                                   class="tooltip-success"
+                                   data-target="#dialog_template"
+                                   data-toggle="modal"
+                                   data-keyboard=false
+                                   data-placement="top">
+                                       <span class="green">
+                                           <i class="icon-ok bigger-110"></i>Approved
+                                       </span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/projects/{{entity.id}}/status/HREV/dialog?came_from={{ request.current_route_path() }}"
+                                   class="tooltip-success"
+                                   data-target="#dialog_template"
+                                   data-toggle="modal"
+                                   data-keyboard=false
+                                   data-placement="top">
+                                       <span class="purple">
+                                           <i class="icon-comment-alt bigger-110"></i>Request Revision
+                                       </span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/projects/{{entity.id}}/status/RJD/dialog?came_from={{ request.current_route_path() }}"
+                                   class="tooltip-success"
+                                   data-target="#dialog_template"
+                                   data-toggle="modal"
+                                   data-keyboard=false
+                                   data-placement="top">
+                                        <span class="red">
+                                           <i class="icon-remove bigger-110"></i>Rejected
+                                       </span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/projects/{{entity.id}}/status/BCN/dialog?came_from={{ request.current_route_path() }}"
+                                   class="tooltip-success"
+                                   data-target="#dialog_template"
+                                   data-toggle="modal"
+                                   data-keyboard=false
+                                   data-placement="top">
+                                       <span class="status_closed-text">
+                                           <i class="icon-stop bigger-110"></i>Closed
+                                       </span>
+                                </a>
+                            </li>
+                        {% elif entity.status.code == 'APP'%}
+                            <li>
+                                <a href="/projects/{{entity.id}}/status/WIP/dialog?came_from={{ request.current_route_path() }}"
+                                   class="tooltip-success"
+                                   data-target="#dialog_template"
+                                   data-toggle="modal"
+                                   data-keyboard=false
+                                   data-placement="top">
+                                       <span class="orange">
+                                           <i class="icon-play bigger-110"></i>Work In Progress
+                                       </span>
+                                </a>
+                            </li>
+                        {% elif entity.status.code == 'WIP' or entity.status.code == 'HREV'%}
+                            <li>
+                                <a href="/projects/{{entity.id}}/status/CMPL/dialog?came_from={{ request.current_route_path() }}"
+                                   class="tooltip-success"
+                                   data-target="#dialog_template"
+                                   data-toggle="modal"
+                                   data-keyboard=false
+                                   data-placement="top">
+                                       <span class="status_cmpl-text">
+                                           <i class="icon-stop bigger-110"></i>Completed
+                                       </span>
+                                </a>
+                            </li>
+                        {% elif entity.status.code == 'CMPL'%}
+                            <li>
+                                <a href="/projects/{{entity.id}}/status/HREV/dialog?came_from={{ request.current_route_path() }}"
+                                   class="tooltip-success"
+                                   data-target="#dialog_template"
+                                   data-toggle="modal"
+                                   data-keyboard=false
+                                   data-placement="top">
+                                       <span class="purple">
+                                           <i class="icon-comment-alt bigger-110"></i>Request Revision"
+                                       </span>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </div>
+                <br>
+
+                <div class="progress progress-mini progress-success progress-striped {% if entity.status.code == 'WIP' %}active{% endif %}"
+                     style="width: 120px;"
+                     data-percent="{{ "%2.2f" | format(entity.percent_complete) }}%">
+                    <div class="bar"
+                         style="width: {{ entity.percent_complete }}%;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="widget-body">
+            <div class="widget-main">
+                <div class="row-fluid">
+
+                    <div class="span9">
+
+
+                        <div id="infobox"
+                             address='/entities/{{ entity.id }}/tasks_stats/'
+                             class="infobox-container">
+                            {% include 'components/infobox.jinja2' %}
+
+                            <div class="infobox infobox-black infobox-small">
+                                <div class="infobox-icon">
+                                    <i class="icon-bullhorn bigger-230"></i>
+                                </div>
+                                <div class="infobox-data">
+                                    <div class="infobox-data-number">
+                                        <a href="/projects/{{ entity.id }}/view" class="grey">
+                                            Black List
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space"></div>
+
+                        <div class="widget-box">
+                            {% if is_warning_list %}
+                            <div class="widget-header widget-header-small header-color-dark">
+                                <h4 id="items_header" class="smaller">Black List<small> !! these tasks should have been sent to review or an extra time request should have been made for them !!</small></h4>
+                            {% else %}
+                            <div class="widget-header widget-header-small header-color-status_{{ filter.code.lower() }}">
+                                <h5 id="items_header" class="smaller">{{ filter.name }}</h5>
+                            {% endif %}
+                                <div class="widget-toolbar">
+                                    <div id="button_list">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="widget-body">
+                                <div class="widget-main no-padding">
+                                    {% include 'task/list/list_entity_tasks_by_filter.jinja2' %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+{% endblock page_content %}
+
+{% block extrascripts %}
+    {% raw %}
+    <script id="tmpl_itemThead" type="text/x-dot-template">
+        <tr>
+            <th class="center">
+                <label>
+                    <input type="checkbox" class="ace"/>
+                    <span class="lbl"></span>
+                </label>
+            </th>
+            <th>Start</th>
+            <th>Name</th>
+            <th>Resource</th>
+            <th>Responsible</th>
+            <th>Type</th>
+            <th>Completed</th>
+            <th>Hours Based on Bid</th>
+            <th>Hours to Complete</th>
+            <th>Priority</th>
+            <th></th>
+        </tr>
+    </script>
+    {% endraw %}
+
+
+    {% raw %}
+    <script id="tmpl_itemRow" type="text/x-dot-template">
+        <tr>
+            <td class="center">
+                <label>
+                    <input id="{{=it.id}}"
+                           type="checkbox"
+                           class="ace ace-checkbox-2"
+                    >
+                    <span class="lbl"></span>
+                </label>
+            </td>
+            <td>{{=it.start}}</td>
+            <td style="width:300px;" ><a href='/tasks/{{=it.id}}/view'>{{=it.full_path}}</a></td>
+            <td>{{ for(var i=0;i<it.resources.length;i++){ }}<a href='/users/{{=it.resources[i].id}}/view'>{{=it.resources[i].name}}</a><br/>{{ } }}</td>
+            <td>{{ for(var j=0;j<it.responsible.length;j++){ }}<a href='/users/{{=it.responsible[j].id}}/view'>{{=it.responsible[j].name}}</a><br/>{{ } }}</td>
+
+            <td>{{=it.task_type}}</td>
+            <td data-sType="num-html">
+                <div class="progress progress-success">
+                    <div style="width:{{=it.completed}}%"
+                         class="bar">
+                        <span class="pull-left">{{= it.completed.toFixed(0) }}%</span>
+                    </div>
+                </div>
+            </td>
+            <td style="width:50px;">{{=it.hour_based_on_bid}}{{ if (it.bid_stat){ }} <i class="icon-exclamation-sign bigger-130 red"></i>{{ } }}</td>
+            <td style="width:40px;">{{=it.hour_to_complete}}</td>
+            <td>{{=it.priority}}</td>
+            <td>
+                <div class="hidden-phone visible-desktop action-buttons">
+                    {{=it.actions }}
+
+                    <a id='update_task_item'
+                       data-target="#dialog_template"
+                       data-toggle="modal"
+                       data-keyboard=false
+                       href="/tasks/{{=it.id}}/update/dialog"
+                       tabindex="-1">
+                        <i class="icon-pencil bigger-120">&nbsp</i>
+                    </a>
+
+                    {{ if (it.request_extra_time)  { }}
+                        <a
+                            class="red"
+                            data-target="#dialog_template"
+                            data-toggle="modal"
+                            data-keyboard=false
+                            data-rel="tooltip"
+                            data-placement="top"
+                            title="Request Extra Time"
+                            href="{{=it.request_extra_time}}">
+                            <i class="icon-time bigger-130"></i>
+                        </a>
+                    {{ } }}
+
+                    {{ if (it.request_review) { }}
+                        <a
+                            class="green"
+                            data-target="#dialog_template"
+                            data-toggle="modal"
+                            data-keyboard=false
+                            data-rel="tooltip"
+                            data-placement="top"
+                            title="Request Review"
+                            href="{{=it.request_review}}">
+                            <i class="icon-comment-alt bigger-130"></i>
+                        </a>
+                    {{ } }}
+                    {{ if (it.review) { }}
+                        <a
+                            class="purple"
+                            data-target="#dialog_template"
+                            data-toggle="modal"
+                            data-keyboard=false
+                            data-rel="tooltip"
+                            data-placement="top"
+                            title="Review"
+                            href="{{=it.review }}">
+                            <i class="icon-comments bigger-130"></i>
+                        </a>
+                    {{ } }}
+                    {{ if(it.poke_user){ }}
+                        <a
+                            class="red"
+                            data-target="#dialog_template"
+                            data-toggle="modal"
+                            data-keyboard=false
+                            data-rel="tooltip"
+                            data-placement="top"
+                            title="Send Ticket"
+                            href="/tickets/-1/create/dialog?project_id={{=it.project_id}}&owner_id={{=it.resources[0].id}}&task_id={{=it.id}}">
+                            <i class="icon-bullhorn bigger-130"></i>
+                        </a>
+                    {{ } }}
+                </div>
+            </td>
+        </tr>
+    </script>
+    {% endraw %}
+    {% raw %}
+<script id="tmpl_itemFooterRow" type="text/x-dot-template">
+    <tr>
+        <td>TOTAL</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td><b>TOTAL:</b></td>
+        <td>{{=it.total_hours}}</td>
+        <td></td>
+        <td></td>
+    </tr>
+</script>
+{% endraw %}
+
+    <script>
+        $(document).ready(function () {
+            init_table_data({"aoColumns": [
+                                                            { "bSortable": false },
+                                                                null,
+                                                                null,
+                                                                null,
+                                                                null,
+                                                                null,
+                                                                null,
+                                                                null,
+                                                                null,
+                                                                null,
+                                                            { "bSortable": false }
+                                                            ]
+                });
+            initInfoBox('/entities/{{ entity.id }}/tasks_stats/');
+        });
+    </script>
+
+{% endblock extrascripts %}
