@@ -18,7 +18,6 @@
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #}
 
-
 {% extends "base.jinja2" %}
 
 {% block pre_header %}
@@ -48,8 +47,8 @@
             <div class="widget-main padding-24">
                 <div class="row-fluid">
                     <div class="span6">
-                        {% set client=budget.project.client %}
-                        {% include 'client/view/client_info.jinja2' %}
+{#                        {% set client=budget.project.client %}#}
+{#                        {% include 'client/view/client_info.jinja2' %}#}
                     </div>
                     <div class="span6">
                         <h4 class="pull-right">
@@ -101,8 +100,6 @@
     <script type="text/javascript">
         $(document).ready(function () {
 
-
-
             $('#add_project_entries_to_budget_button').hide();
             var total_cost = 0;
             var total_msrp = 0;
@@ -112,10 +109,6 @@
 
             var grid_selector = "#grid-table";
             var grid = jQuery(grid_selector);
-
-
-
-
 
             function currencyFmatter (cellvalue, options, rowObject){
                return accounting.formatMoney(cellvalue, { symbol: "TL",  format: "%v %s" });
@@ -171,6 +164,7 @@
                         colNames:['Type', 'Price'],
                         colModel:[
                             {name:'type', index:'type', width:220, editable: false},
+                            {name:'cost', index:'cost', width:150, sortable:true, editable: false, formatter:currencyFmatter, unformat:unformatCurrency, summaryTpl: "{0}", summaryType: "sum" },
                             {name:'price', index:'price', width:150, sortable:true, editable: false, formatter:currencyFmatter, unformat:unformatCurrency, summaryTpl: "{0}", summaryType: "sum" }
                         ],
                         viewrecords : true,
@@ -190,6 +184,7 @@
                         loadComplete : gridLoadComplete
                     });
                 });
+
             });
         });
     </script>

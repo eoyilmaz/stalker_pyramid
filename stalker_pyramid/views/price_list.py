@@ -127,6 +127,7 @@ def get_goods(request):
             'updated_by_name': good.updated_by.name if good.updated_by else None,
             'date_updated': milliseconds_since_epoch(good.date_updated),
             'price_list_name': good.price_lists[0].name if good.price_lists else None,
+            'price_list_id': good.price_lists[0].id if good.price_lists else None,
             'type_name': good.type.name if good.type else None,
             'related_goods': related_goods,
             'linked_goods': linked_goods,
@@ -134,6 +135,7 @@ def get_goods(request):
         })
 
     return return_data
+
 
 @view_config(
     route_name='get_good_related_goods',
@@ -155,7 +157,6 @@ def get_good_related_goods(request):
             related_goods = generic_data["related_goods"]
 
     return related_goods
-
 
 
 @view_config(

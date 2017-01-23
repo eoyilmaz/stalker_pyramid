@@ -75,9 +75,10 @@
         }
     }
 
-    function get_task_notes(id){
-
-        var event_dialog = $('#html_template');
+    function get_task_notes(id, name){
+         var event_dialog = $('#html_template');
+        event_dialog.attr('title', name);
+{#        console.log('get_task_notes ' + name);#}
         event_dialog.modal({
             'remote': '/entities/'+id+'/notes/list/inmodal'
         });
@@ -291,9 +292,14 @@
                          data[i].bid_stat = '#ff0000'
                     }
 
-                    data[i].actions = '<span><a class="purple" data-target="#html_template" data-toggle="modal" data-keyboard=false href="/entities/'+data[i].id+'/notes/list/inmodal" tabindex="-1"> <i class="icon-list bigger-120">&nbsp</i></a></span>';
+{#                    data[i].actions = '<span><a class="purple" data-target="#html_template" data-toggle="modal" data-keyboard=false href="/entities/'+data[i].id+'/notes/list/inmodal" tabindex="-1"> <i class="icon-list bigger-120">&nbsp</i></a></span>';#}
+                    data[i].actions = '<div class="hidden-phone visible-desktop action-buttons"><a class="purple" title="Notes" onclick="get_task_notes('+data[i].id+', \''+data[i].full_path+'\')"><i class="icon-list bigger-130"></i></a>';
+
                     if (data[i].status == 'hrev' || data[i].status == 'drev' || data[i].status == 'wip' || data[i].status == 'cmpl' || data[i].status == 'prev'){
-                         data[i].actions += '<span><a class="green"  title="Copy Path" onclick="get_task_absoulute_path('+data[i].id+')"><i class="icon-copy bigger-130"></i></a></span>';
+                         data[i].actions += '<a class="green"  title="Copy Path" onclick="get_task_absoulute_path('+data[i].id+')"><i class="icon-copy bigger-130"></i></a></div>';
+                    }
+                    else{
+                        data[i].actions += '</div>';
                     }
 
                     var r, resources, responsible;

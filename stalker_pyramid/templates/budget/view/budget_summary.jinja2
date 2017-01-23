@@ -1,0 +1,23 @@
+<table class="table table-striped table-bordered">
+    <thead>
+        <tr style="background-color: #646464; color:#FFFFFF">
+            <th style="width:16%">BÜTÇE TARİHİ</th>
+            <th style="width:16%">BÜTÇE ADI</th>
+            <th style="width:16%">BÜTÇE İÇERİĞİ</th>
+            <th style="width:16%">HAZIRLAYAN</th>
+            <th style="width:16%">BAŞLANGIÇ TARİHİ</th>
+            <th style="width:20%">TESLİM TARİHİ</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        <tr>
+            <td>{{ budget.name }}</td>
+            <td>{{ budget.status.name }}</td>
+            <td>{{ budget.type.name }}</td>
+            <td>{{ budget.created_by.name }}</td>
+            <td id="start_date"></td>
+            <td id="end_date"></td>
+        </tr>
+    </tbody>
+</table>

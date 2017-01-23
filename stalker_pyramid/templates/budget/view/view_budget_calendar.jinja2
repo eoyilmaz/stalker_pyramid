@@ -40,15 +40,20 @@
 
 {#PAGE-CONTENT#}
 {% block page_content %}
+
     <div class="widget-box transparent invoice-box">
-        {% set budget=entity %}
-        {% include 'budget/view/budget_header.jinja2' %}
+        <div class="widget-header widget-header-large">
+           {% set budget=entity %}
+           {% include 'budget/view/budget_header.jinja2' %}
+        </div>
         <div class="widget-body">
-            <div class="widget-main" >
-                {% include 'budget/view/budget_calendar.jinja2' %}
+            <div class="widget-main padding-24">
+               {% include 'budget/view/budget_calendar.jinja2' %}
             </div>
         </div>
     </div>
+
+
 {% endblock page_content %}
 
 

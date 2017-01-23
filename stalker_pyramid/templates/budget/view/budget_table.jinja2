@@ -1,0 +1,581 @@
+{% if mode == 'table_summary'  %}
+    <div class="span12 offset2">
+{% elif mode == 'table_detail'  %}
+    <div class="row-fluid">
+{% endif %}
+        <div class="row-fluid">
+            <div class="span4 pull-left">
+                    <button id="custom_entry_button" class="btn btn-small btn-success">
+                        <span class="icon-plus bigger-120"></span>
+                        YENİ KALEM EKLE
+                    </button>
+            </div>
+            <div class="span4 center">
+                 <button class="btn btn-small btn-success">
+                    FARKLI KAYDET
+                </button>
+            </div>
+            <div class="span4">
+                <button id='summary_view_btn' class="pull-right btn btn-small btn-success">
+                    {% if mode == 'table_summary'  %}
+                        <a  href="/budgets/{{ entity.id }}/view/table_detail" class="white">DETAYLI GÖRÜNÜM</a>
+                    {% elif mode == 'table_detail' %}
+                        <a  href="/budgets/{{ entity.id }}/view/table_summary" class="white">ÖZET GÖRÜNÜM</a>
+                    {% endif %}
+                </button>
+            </div>
+        </div>
+        <div class="space-6"></div>
+        <div class="row-fluid">
+            <div class="span12" id="tables">
+            </div>
+        </div>
+        <div class="space-6"></div>
+        <div class="row-fluid">
+            <div class="span10 offset1">
+                <table id="report_table"></table>
+                <table id="report_table_footer" style="width:100%;" >
+                    <thead>
+                        <tr style="background-color: #4e5962; color:#FFFFFF; height: 55px">
+                            <th style="background-color: #4e5962; color:#FFFFFF; width:220px; font-size: 20px">TOPLAM</th>
+                            <th style="background-color: #4e5962; color:#FFFFFF; width:150px; font-size: 20px" id="total_cost">-</th>
+                            <th style="background-color: #4e5962; color:#FFFFFF; width:150px; font-size: 20px" id="total_price">-</th>
+                            <th style="background-color: #4e5962; color:#FFFFFF; width:100px; font-size: 20px" id="total_discount">-</th>
+                            <th style="background-color: #4e5962; color:#FFFFFF; width:100px; font-size: 20px" id="total_discount_proportion">-</th>
+                        </tr>
+                    </thead>
+                </table>
+                <div class="space-6"></div>
+                {% include 'budget/view/budget_totals.jinja2' %}
+            </div>
+
+
+        </div>
+        <div class="row-fluid">
+            <div class="span12">
+                <button id='send_button'
+                        class="btn btn-small btn-danger pull-right"
+                        data-placement="bottom"
+                        title="BÜTÇEYİ GÖNDER"
+                        >
+                    <a  href="/budgets/{{ entity.id }}/generate/report?" class="white"><i class="icon-envelope bigger-130"></i> BÜTÇEYİ GÖNDER</a>
+                </button>
+            </div>
+        </div>
+    </div>
+
+<script type="text/javascript">
+        if("ontouchend" in document) document.write("<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.mobile.custom.min.js") }}'>"+"<"+"/script>");
+    </script>
+    <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/i18n/grid.locale-en.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/jquery.jqGrid.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/accounting.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/codebase/dhtmlxgantt.js") }}'></script>
+    <link src='{{ request.static_url("stalker_pyramid:static/jqGrid/css/ui.jqgrid-bootstrap.css") }}'/>
+    <script>
+        $.jgrid.defaults.autowidth = true;
+        $.jgrid.defaults.responsive = true;
+        $.jgrid.defaults.styleUI = 'Bootstrap';
+    </script>
+    <style type="text/css">
+    .ui-jqgrid .ui-jqgrid-labels th.ui-th-column {
+        background-color: #4e5962;
+        color:#FFFFFF;
+        height: 15px;
+        background-image: none
+    }
+    .ui-jqgrid-sortable {
+        color: #FFFFFF;
+        font-size-adjust: center;
+    }
+    </style>
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            $('#add_project_entries_to_budget_button').hide();
+            var total_cost = 0;
+            var total_msrp = 0;
+            var total_price = 0;
+            var grid_lists_data = {};
+            var grid_lists_report = [];
+            var grid_data;
+            var lastSelection;
+            var lastSelectionIndex;
+            var colModel = [];
+            var colModel_report = [];
+            var editable = true;
+            var hide_cell = false;
+
+            {% if entity.status.code == 'PLN'  %}
+               editable = true;
+            {% else %}
+               editable = false;
+            {% endif %}
+
+            {% if mode == 'table_summary' %}
+               hide_cell = true;
+            {% elif mode == 'table_detail' %}
+               hide_cell = false;
+            {% endif %}
+
+            colModel = [
+                            {name:'addition_type', index:'addition_type', width:100, editable: false,  hidden: true},
+                            {name:'type', index:'type', width:100, editable: false,  hidden: true},
+                            {name:'id', index:'id', width:100, editable: false, hidden: true},
+                            {name:'name', index:'name', width:220, editable: false},
+                            {name:'amount', index:'amount', width:70, editable: editable, formatter:unitFmatter, unformat:unformatUnit},
+                            {name:'second_amount', index:'second_amount', width:70, editable: editable, formatter:secondUnitFmatter, unformat:secondUnformatUnit},
+                            {name:'msrp', index:'msrp', width:100, editable: false,  hidden: true},
+                            {name:'cost', index:'cost', width:100, editable: false, formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum"},
+                            {name:'total_cost', index:'total_cost', width:100, editable: false, formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum", hidden: true },
+                            {name:'overtime', index:'overtime', width:80, editable: editable, hidden: hide_cell},
+                            {name:'overtime_cost', index:'overtime_cost', width:100, editable: false, formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum" , hidden: hide_cell},
+                            {name:'stoppage_add', index:'stoppage_add', width:60, editable: editable, edittype:"checkbox", editoptions:{value:"1:0"}, hidden: hide_cell},
+                            {name:'stoppage_cost', index:'stoppage_cost', width:100, editable: false, formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum", hidden: hide_cell },
+                            {name:'total_msrp', index:'total_msrp', width:100, editable: false, formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum" },
+                            {name:'price', index:'price', width:100, sortable:true, editable: editable, formatter:currencyFmatter, unformat:unformatCurrency, editoptions:{size:"20",maxlength:"30"} ,  summaryTpl: "{0}", summaryType: "sum" },
+                            {name:'note', index:'note', width:250, sortable:false, editable: editable, edittype:"textarea", editoptions:{size:"20", maxlength:"80"}},
+                            {name:'delete_action', index:'delete_action', width:60, editable: false}
+                         ];
+
+
+
+            $("#custom_entry_button").on('click', function (e) {
+                 var event_dialog = $('#dialog_template');
+
+                event_dialog.modal({
+                    'remote': '{{request.route_path('create_budgetentry_dialog', _query={'mode': "Create", 'budget_id':entity.id }) }}'
+                });
+            });
+
+            function create_new_table(id, data){
+
+                if(!grid_lists_data[id]){
+                    grid_lists_data[id] = [];
+                    $('#tables').append("<table id="+id+"></table>");
+                }
+
+                grid_lists_data[id].push(data);
+
+                var arr_index = findArrayElement(grid_lists_report,'id', id);
+                if(arr_index == -1){
+                    console.log(data.total_cost + "  : "+ data.price);
+                    grid_lists_report.push(
+                                            {
+                                                'id':id,
+                                                'name':data.type,
+                                                'cost': parseFloat(data.total_cost),
+                                                'price':parseFloat(data.price),
+                                                'discount': parseFloat(data.total_cost) - parseFloat(data.price),
+                                                'discountPercent':(((parseFloat(data.total_cost) - parseFloat(data.price))/parseFloat(data.total_cost))*100).toFixed(2)
+                                            }
+                    );
+                }
+                else{
+                    grid_lists_report[arr_index].cost += data.total_cost;
+                    grid_lists_report[arr_index].price += data.price;
+
+                    grid_lists_report[arr_index].discount = grid_lists_report[arr_index].price-grid_lists_report[arr_index].cost;
+                    grid_lists_report[arr_index].discountPercent = (grid_lists_report[arr_index].discount/grid_lists_report[arr_index].cost)*100;
+
+
+                }
+
+            }
+
+            function create_discount_report(){
+
+                var report_table = "#report_table";
+                jQuery(function($) {
+                        jQuery(report_table).jqGrid({
+                            //direction: "rtl",
+                            data: grid_lists_report,
+                            datatype: "local",
+                            colNames:['İNDİRİM YAPILABİLİR KALEMLER', 'İNDİRİM ÖNCESİ', 'İNDİRİM SONRASI', 'İNDİRİM TUTARI', 'İNDİRİM ORANI'],
+                            colModel:[
+                                        {name:'name', index:'name', width:220, editable: false},
+                                        {name:'cost', index:'cost', width:150, sortable:true, editable: false, formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum" },
+                                        {name:'price', index:'price', width:150, sortable:true, editable: false, formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum" },
+                                        {name:'discount', index:'discount', width:100, sortable:true, editable: false },
+                                        {name:'discountPercent', index:'discountPercent', width:100, sortable:true, editable: false }
+                                    ],
+                            viewrecords : true,
+                            pager : false,
+                            altRows: false,
+                            multiselect: false,
+                            loadonce: false,
+                            height: 'auto',
+                            autowidth: true,
+                            sortname: 'name',
+                            sortOrder: "desc",
+                            footerrow: false, // set a footer row
+                            userDataOnFooter: true, // the calculated sums and/or strings from server are put at footer row.
+                            grouping: false,
+                            gridview: true,
+                            caption: ""
+                        });
+                    });
+
+            }
+
+            function find_table(table_id){
+
+                var grid_selector = "#"+table_id;
+                return jQuery(grid_selector);
+
+            }
+
+            function editRow(id) {
+
+                if(id){
+                    var arr_index = findArrayElement(grid_data,'id', id);
+                    if(arr_index!=-1){
+                        if (id !== lastSelection) {
+                            var grid = find_table(grid_data[arr_index].type_id);
+                            grid.restoreRow(lastSelection);
+                            var editParameters = {
+                                keys: true,
+                                successfunc: editSuccessful,
+                                errorfunc: editFailed,
+                                restoreAfterError : false
+                            };
+                            grid.jqGrid('editRow', id, editParameters);
+                            lastSelection = id;
+                            lastSelectionIndex = arr_index;
+                        }
+                    }
+                }
+
+            }
+
+            function editSuccessful(data, stat) {
+                console.log("editSuccessful" );
+
+                var overtime = parseFloat(getCellValue(lastSelection, 'overtime'));
+                var amount = parseFloat(getCellValue(lastSelection, 'amount'));
+                var second_amount = parseFloat(getCellValue(lastSelection, 'second_amount'));
+                var stoppage_add = parseInt(getCellValue(lastSelection, 'stoppage_add'));
+                var price = parseFloat(getCellValue(lastSelection, 'price'));
+
+                var type_id = grid_data[lastSelectionIndex].type_id;
+                var index_01 = findArrayElement(grid_lists_data[type_id], 'id', lastSelection);
+                var selected_data = grid_data[lastSelectionIndex];
+                console.log(selected_data);
+                var recalculated_selected_data = recalculateGridData(selected_data, amount, second_amount, overtime, stoppage_add, price);
+                console.log(recalculated_selected_data);
+                grid_lists_data[type_id][index_01] = recalculated_selected_data;
+                console.log(grid_lists_data[type_id][index_01]);
+                grid_data[lastSelectionIndex] = recalculated_selected_data;
+
+                var grid = find_table(type_id);
+                grid.jqGrid('setGridParam',
+                            {
+                                datatype: 'local',
+                                data:grid_lists_data[grid_data[lastSelectionIndex].type_id]
+                            }
+                ).trigger("reloadGrid");
+
+                flash_message({
+                    type: "success",
+                    title: "Success!",
+                    message: data.responseText
+                });
+                grid.restoreRow(lastSelection);
+                return [true,"",""];
+            }
+
+            function editFailed(rowID, response) {
+                flash_message({
+                    type: "warning",
+                    title: "Warning!",
+                    message: response.responseText
+                });
+            }
+
+            function currencyFmatter (cellvalue, options, rowObject){
+               return accounting.formatMoney(cellvalue, { symbol: "TL",  format: "%v %s", precision:0 });
+            }
+
+            function  unformatCurrency (cellvalue, options){
+               return accounting.unformat(cellvalue);
+            }
+
+            function unitFmatter (cellvalue, options, rowObject){
+                var index = findArrayElement(grid_data,'id', options.rowId);
+                return grid_data[index].amount+" "+ grid_data[index].unit;
+            }
+
+            function  unformatUnit (cellvalue, options, rowObject){
+                var index = findArrayElement(grid_data,'id', options.rowId);
+                return grid_data[index].amount;
+            }
+
+            function secondUnitFmatter (cellvalue, options, rowObject){
+                var index = findArrayElement(grid_data,'id', options.rowId);
+                return grid_data[index].second_amount+" "+ grid_data[index].second_unit;
+            }
+
+            function  secondUnformatUnit (cellvalue, options, rowObject){
+                var index = findArrayElement(grid_data,'id', options.rowId);
+                return grid_data[index].second_amount;
+            }
+
+            function editableFormater (cellvalue, options, rowObject){
+                if(rowObject.addition_type == "Calendar" && (options.colModel.index=="amount" || options.colModel.index=="second_amount")){
+                    options.colModel.editable = false;
+                }
+            }
+
+            function gridLoadComplete() {
+                console.log("gridLoadComplete");
+                calculateTotals();
+                setTimeout(function(){
+                    $('#lui_grid-table').hide();
+                }, 0);
+            }
+
+            function getCellValue(rowId, cellId) {
+                var cell = jQuery('#' + rowId + '_' + cellId);
+                var val = cell.val();
+                return val;
+            }
+
+            function recalculateGridData(s_data, amount_value, second_amount_value, overtime_value, stoppage_add_value, price_value){
+
+                var selected_data = s_data;
+                selected_data = {};
+                for(prop in s_data){
+                    selected_data[prop] = s_data[prop];
+                }
+                console.log(s_data.addition_type);
+                if (s_data.addition_type != "Calendar"){
+                    selected_data.addition_type = "Producer";
+                    selected_data.amount = amount_value;
+                    selected_data.second_amount = second_amount_value;
+                }
+
+                if(selected_data.amount == 0 || selected_data.amount == '0' || selected_data.second_amount == 0 ||selected_data.second_amount == '0'){
+                    selected_data.amount = 0;
+                    selected_data.second_amount = 0;
+                    price_value = 0;
+                }
+
+                selected_data.overtime  = overtime_value;
+                selected_data.stoppage_add = stoppage_add_value;
+                selected_data.price  = price_value;
+
+                selected_data.total_cost = selected_data.cost * (selected_data.amount*selected_data.second_amount + selected_data.overtime);
+                selected_data.total_msrp = selected_data.msrp * (selected_data.amount*selected_data.second_amount + selected_data.overtime);
+                selected_data.overtime_cost = selected_data.cost * selected_data.overtime;
+
+                selected_data.stoppage_cost = selected_data.stoppage_add*selected_data.stoppage_ratio * selected_data.total_cost;
+                selected_data.stoppage_msrp = selected_data.stoppage_add*selected_data.stoppage_ratio * selected_data.total_msrp;
+
+                console.log("selected_data.stoppage_add: "+ selected_data.stoppage_add);
+                console.log("selected_data.stoppage_ratio: "+ selected_data.stoppage_ratio);
+                console.log("selected_data.stoppage_cost: "+ selected_data.stoppage_cost);
+
+                selected_data.total_cost = selected_data.total_cost + selected_data.stoppage_cost;
+                selected_data.total_msrp = selected_data.total_msrp + selected_data.stoppage_msrp;
+
+                if(price_value === '0' || price_value === 0){
+                    selected_data.price = selected_data.total_cost;
+                }
+                return selected_data;
+            }
+
+            function calculateTotals(){
+
+                total_cost = 0;
+                total_msrp = 0;
+                total_price = 0;
+
+                for(var t=0; t<grid_data.length; t++ ){
+
+                    var grid = find_table(grid_data[t].type_id);
+
+                    if(grid_data[t].total_cost>grid_data[t].price){
+                        grid.jqGrid('setCell', grid_data[t].id, 'price', grid_data[t].price, {color:'red'});
+                    }
+                    else if(grid_data[t].total_cost<grid_data[t].price){
+                        grid.jqGrid('setCell', grid_data[t].id, 'price', grid_data[t].price, {color:'green'});
+                    }
+                    total_msrp += parseInt(grid_data[t].total_msrp);
+                    total_cost += parseInt(grid_data[t].total_cost);
+                    total_price += parseInt(grid_data[t].price);
+                }
+
+                $('#total_cost').text(accounting.formatMoney(total_cost, { symbol: "TL",  format: "%v %s" }));
+                $('#total_price').text(accounting.formatMoney(total_price, { symbol: "TL",  format: "%v %s" }));
+                var discount = total_cost-total_price;
+                $('#total_discount').text(accounting.formatMoney(discount, { symbol: "TL",  format: "%v %s" }));
+                $('#total_discount_proportion').text(((discount/total_cost)*100).toFixed(2) + "%");
+
+                calculateSummaryTotals(total_msrp, total_cost, total_price);
+
+                $.post(
+                    '/budgets/{{ entity.id }}/set/totals?total_cost='+total_cost+'&total_price='+total_price+'&total_msrp='+total_msrp
+                ).done(function (response_text) {
+
+{#                       flash_message({#}
+{#                            type: "success",#}
+{#                            title: "Success!",#}
+{#                            message: response_text#}
+{#                        });#}
+
+                }).fail(function (jqXHR) {
+                    bootbox.alert('<div id="message" class="alert alert-danger bigger-110">'+jqXHR.responseText+'</div>');
+                });
+            }
+
+            function create_grids(){
+
+                for( prop in grid_lists_data){
+
+                    var grid = find_table(prop);
+
+                    jQuery(function($) {
+                        grid.jqGrid({
+                            //direction: "rtl",
+                            data: grid_lists_data[prop],
+                            datatype: "local",
+                            colNames:['Addition Type', 'Type', 'Id', grid_lists_data[prop][0].type,'Birim', 'X', 'Msrp_PerHour', 'Birim Fiyat', 'Total Cost', 'Mesai', 'Mesai Tutari', 'Stopaj','Stopaj Tutari','Toplam Maliyet', 'Toplam', 'Notlar',''],
+                            colModel:colModel,
+                            viewrecords : true,
+                            pager : false,
+                            altRows: true,
+                            multiselect: false,
+                            loadonce: false,
+                            height: 'auto',
+                            autowidth: true,
+                            sortname: 'addition_type',
+                            sortOrder: "desc",
+                            footerrow: false, // set a footer row
+                            userDataOnFooter: true, // the calculated sums and/or strings from server are put at footer row.
+                            grouping: false,
+                            gridview: true,
+                            editurl: '/budgetentries/edit?budget_id={{ entity.id }}',
+                            caption: "",
+                            onSelectRow: editRow,
+                            loadComplete : gridLoadComplete
+                        });
+                    });
+                }
+            }
+
+            $.getJSON('/budgets/{{ entity.id }}/entries/').then(function (entry_data) {
+
+                grid_data = entry_data;
+
+                for(var j=0; j<grid_data.length; j++ ){
+                    grid_data[j].delete_action = "<a data-target='#dialog_template' data-toggle='modal' data-keyboard=false href='/budgetentries/"+grid_data[j].id+"/delete/dialog'> <i class='icon-trash'></i></a>"
+                    grid_data[j].addition_type = grid_data[j].generic_data.dataSource;
+
+                    grid_data[j].unit = grid_data[j].unit.split('*')[0];
+
+                    var secondaryFactor = grid_data[j].generic_data.secondaryFactor;
+                    if (secondaryFactor.unit){
+                        grid_data[j].second_unit = secondaryFactor.unit;
+                        grid_data[j].second_amount = secondaryFactor.second_amount;
+                    }
+                    else{
+                        grid_data[j].second_unit = secondaryFactor[0].unit;
+                        grid_data[j].second_amount = 0;
+
+                        for(var t=0; t < secondaryFactor.length; t++){
+                            grid_data[j].second_amount += parseInt(secondaryFactor[t].second_amount)
+                        }
+                    }
+
+                    grid_data[j].amount = grid_data[j].amount/grid_data[j].second_amount;
+
+                    grid_data[j].overtime = grid_data[j].generic_data.overtime;
+                    grid_data[j].overtime_cost = grid_data[j].overtime * grid_data[j].cost;
+
+                    grid_data[j].stoppage_cost = 0;
+                    grid_data[j].stoppage_msrp = 0;
+                    grid_data[j].stoppage_add = grid_data[j].generic_data.stoppage_add;
+
+                    if(grid_data[j].good_generic_data.stopage_ratio){
+                        grid_data[j].stoppage_ratio = parseFloat(grid_data[j].good_generic_data.stopage_ratio);
+                    }
+                    else{
+                        grid_data[j].stoppage_ratio = 0;
+                    }
+
+                    if (grid_data[j].stoppage_add == '1'){
+                        grid_data[j].stoppage_cost = grid_data[j].stoppage_ratio * grid_data[j].cost * (grid_data[j].amount*grid_data[j].second_amount+grid_data[j].overtime);
+                        grid_data[j].stoppage_msrp = grid_data[j].stoppage_ratio * grid_data[j].msrp * (grid_data[j].amount*grid_data[j].second_amount+grid_data[j].overtime);
+                    }
+
+                    console.log("grid_data[j].stoppage_add: "+ grid_data[j].stoppage_add);
+                    console.log("grid_data[j].stoppage_ratio: "+ grid_data[j].stoppage_ratio);
+                    console.log("grid_data[j].stoppage_cost: "+ grid_data[j].stoppage_cost);
+
+                    grid_data[j].total_msrp = grid_data[j].msrp * (grid_data[j].amount * grid_data[j].second_amount+grid_data[j].overtime) + grid_data[j].stoppage_msrp;
+                    grid_data[j].total_cost = grid_data[j].cost * (grid_data[j].amount * grid_data[j].second_amount+grid_data[j].overtime) + grid_data[j].stoppage_cost;
+
+                    if(grid_data[j].total_cost > grid_data[j].price){
+                        var discount = grid_data[j].total_cost - grid_data[j].price;
+                        var discount_pro = ((discount/grid_data[j].total_cost)*100).toFixed(2);
+                        grid_data[j].note = "%"+discount_pro +" indirimli!  "+grid_data[j].note;
+                    }
+
+                    create_new_table(grid_data[j].type_id, grid_data[j]);
+                }
+
+                {% if entity.status.code == 'PLN'  %}
+                    $.getJSON('/studios/{{ entity.id }}/goods/').then(function (good_data) {
+
+                        for(var k=0; k<good_data.length; k++ ){
+
+                            var add_grid_data = true;
+                            for(var m=0; m<grid_data.length; m++ ){
+                                if(good_data[k].name == grid_data[m].name || good_data[k].type_name == 'Custom'){
+                                    add_grid_data = false;
+                                }
+                            }
+
+                            if(add_grid_data){
+                                var new_entry = {
+                                                    'budget_id': '{{ entity.id }}',
+                                                    'good_id':good_data[k].id,
+                                                    'id':good_data[k].id,
+                                                    'type':good_data[k].price_list_name,
+                                                    'type_id':good_data[k].price_list_id,
+                                                    'name':good_data[k].name,
+                                                    'amount':0,
+                                                    'second_amount':0,
+                                                    'unit':good_data[k].unit.split('*')[0],
+                                                    'second_unit':good_data[k].unit.split('*')[1],
+                                                    'msrp':good_data[k].msrp,
+                                                    'total_msrp':0,
+                                                    'cost':good_data[k].cost,
+                                                    'total_cost':0,
+                                                    'realized Total':0,
+                                                    'overtime':0,
+                                                    'overtime_cost':0,
+                                                    'stoppage_cost': 0,
+                                                    'stoppage_msrp': 0,
+                                                    'stoppage_add': '0',
+                                                    'stoppage_ratio': good_data[k].stopage_ratio,
+                                                    'price':0,
+                                                    'note':'',
+                                                    'addition_type':'x'
+                                };
+
+                                create_new_table(good_data[k].price_list_id, new_entry);
+                                grid_data.push(new_entry);
+                            }
+                        }
+                        create_grids();
+                    });
+                {% else %}
+                    create_grids();
+                {% endif %}
+
+                create_discount_report()
+
+            });
+        });
+    </script>

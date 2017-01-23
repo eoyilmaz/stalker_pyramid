@@ -158,7 +158,7 @@
             menus_under_title('Management',
                               'budget',
                               [
-                               {'name': 'Budgets',
+                               {'name': 'Teklifler',
                                 'link':'{{ request.route_url('list_project_budgets', id=project.id) }}',
                                 'state':"{%- if request.current_route_path() == request.route_path('list_project_budgets', id=project.id) -%}'active',{%- else -%},{%- endif -%}"},
                               {'name': 'Invoices',

@@ -274,7 +274,7 @@
                     }
                 ];
 
-                $.getJSON('/budgets/{{ budget.id }}/entries/').then(function (entry_data) {
+                $.getJSON('/budgets/{{ budget.id }}/entries/?data_source=Calendar').then(function (entry_data) {
                     var total_number_of_items = 1;
                     var total_items = [];
                     var budget_entries = entry_data;
@@ -339,6 +339,7 @@
                                             open:false
                                         };
                                         console.log(secondaryFactor[t].task_name+" : "+secondaryFactor[t].gantt_index);
+                                        console.log(task.name+" : "+task.id);
                                         folder_list.push(secondaryFactor[t].folder_id);
                                         total_items[secondaryFactor[t].gantt_index] = task;
                                         items.data.push(task);
@@ -362,6 +363,7 @@
                                     open:true
                                 };
                                 total_items[folders[f].gantt_index] = folder;
+                                console.log(folders[f].name+" : "+folders[f].id);
                                 items.data.push(folder);
                             }
                             for(var k=0; k<milestones.length; k++){
@@ -379,6 +381,7 @@
                                     open:false
                                 };
                                 total_items[milestones[k].gantt_index] = milestone;
+                                console.log(milestones[k].name+" : "+milestones[k].id);
                                 items.data.push(milestone);
                             }
 
@@ -390,8 +393,12 @@
                                         return "gantt_selected";
                             };
 
-                            items.data = total_items;
+                            total_items = total_items.splice(0, items.data.length);
+                            for(var m=0;m<total_items.length;m++){
+                                console.log(m + ":" +total_items[m]);
+                            }
 
+                            items.data = total_items;
                             gantt.parse(items);
 
                             $.getJSON('/budgets/{{ budget.id }}/calendar/items/?item_type=links').then(function (l_data) {
@@ -763,32 +770,34 @@
             var target_task = gantt.getTask(item.target);
             var new_link_item;
 
-            if (source_task.type == "milestone" && item.type == '3'){
-                new_link_item = {'milestone': item.source, 'task':item.target, 'type': '1'};
+            if(source_task && target_task){
+                if (source_task.type == "milestone" && item.type == '3'){
+                    new_link_item = {'milestone': item.source, 'task':item.target, 'type': '1'};
+                }
+                if (target_task.type == "milestone" && item.type == '0'){
+                    new_link_item = {'milestone': item.target, 'task':item.source, 'type': '1'};
+                }
+                if (source_task.type == "milestone" && item.type == '0'){
+                    new_link_item = {'milestone': item.source, 'task':item.target, 'type': '2'};
+                }
+                if (target_task.type == "milestone" && item.type == '3'){
+                    new_link_item = {'milestone': item.target, 'task':item.source, 'type': '2'};
+                }
+                if (source_task.type == "milestone" && item.type == '1' ){
+                    new_link_item = {'milestone': item.source, 'task':item.target, 'type': '3'};
+                }
+                if (target_task.type == "milestone" && item.type == '1'){
+                    new_link_item = {'milestone': item.target, 'task':item.source, 'type': '3'};
+                }
+                if (source_task.type == "milestone" && item.type == '2'){
+                    new_link_item = {'milestone': item.source, 'task':item.target, 'type': '4'};
+                }
+                if (target_task.type == "milestone" && item.type == '2'){
+                    new_link_item = {'milestone': item.target, 'task':item.source, 'type': '4'};
+                }
+                new_link_item['id'] = item.id;
+                links.push(new_link_item);
             }
-            if (target_task.type == "milestone" && item.type == '0'){
-                new_link_item = {'milestone': item.target, 'task':item.source, 'type': '1'};
-            }
-            if (source_task.type == "milestone" && item.type == '0'){
-                new_link_item = {'milestone': item.source, 'task':item.target, 'type': '2'};
-            }
-            if (target_task.type == "milestone" && item.type == '3'){
-                new_link_item = {'milestone': item.target, 'task':item.source, 'type': '2'};
-            }
-            if (source_task.type == "milestone" && item.type == '1' ){
-                new_link_item = {'milestone': item.source, 'task':item.target, 'type': '3'};
-            }
-            if (target_task.type == "milestone" && item.type == '1'){
-                new_link_item = {'milestone': item.target, 'task':item.source, 'type': '3'};
-            }
-            if (source_task.type == "milestone" && item.type == '2'){
-                new_link_item = {'milestone': item.source, 'task':item.target, 'type': '4'};
-            }
-            if (target_task.type == "milestone" && item.type == '2'){
-                new_link_item = {'milestone': item.target, 'task':item.source, 'type': '4'};
-            }
-            new_link_item['id'] = item.id;
-            links.push(new_link_item);
         }
 
         function checkLinkedTasks(task){

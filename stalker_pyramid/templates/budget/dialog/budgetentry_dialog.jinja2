@@ -25,7 +25,7 @@
             {#Amount #}
             <div class='control-group'>
                 <label class='span3 control-label'
-                       for='budgetentry_amount'>Amount</label>
+                       for='budgetentry_amount'>Birim</label>
                 <div class="span5">
                     <input id='budgetentry_amount'
                            name='amount'
@@ -34,7 +34,23 @@
                            min=1
                            max=1000
                            is_updating=false>
-                    <span id="good_unit"> Hour</span>
+                    <span id="good_unit_birim"> Hour</span>
+                </div>
+            </div>
+
+            {#Second Amount #}
+            <div class='control-group'>
+                <label class='span3 control-label'
+                       for='budgetentry_second_amount'>X</label>
+                <div class="span5">
+                    <input id='budgetentry_second_amount'
+                           name='second_amount'
+                           class="input-mini"
+                           type='text'
+                           min=1
+                           max=1000
+                           is_updating=false>
+                    <span id="good_unit_x"> Hour</span>
                 </div>
             </div>
             {# Cost #}
@@ -124,14 +140,24 @@
             btn_up_class: 'btn-info',
             btn_down_class: 'btn-info'
         });
+
+        {# Second Amount  ******************************************************* #}
+        $('#budgetentry_second_amount').ace_spinner({
+            value: 1,
+            min: 1,
+            step: 1,
+            btn_up_class: 'btn-info',
+            btn_down_class: 'btn-info'
+        });
         {# Unit ******************************************************* #}
 
         budgetentry_good.on('change', function(){
-            $('#good_unit').text($(this).val().split('_')[1]);
+            var unit = $(this).val().split('_')[1];
+            $('#good_unit_birim').text(unit.split('*')[0]);
+            $('#good_unit_x').text(unit.split('*')[1]);
         });
 
         {# Price ******************************************************* #}
-
 
 
 
@@ -157,7 +183,7 @@
                 })
             ).done(function (jqXHR) {
                 //$('#new_outputs_storage').text(JSON.stringify(jqXHR));
-{#                window.location.reload();#}
+                window.location.reload();
             }).fail(function (jqXHR) {
                 bootbox.alert(jqXHR.responseText);
                 submit_button.button('reset');

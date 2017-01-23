@@ -261,7 +261,6 @@ def inline_update_user(request):
     )
 
 
-
 @view_config(
     route_name='update_user'
 )

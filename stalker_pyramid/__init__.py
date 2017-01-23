@@ -191,7 +191,7 @@ def main(global_config, **settings):
     config.add_route('get_entity_tasks',               'entities/{id}/tasks/')
     config.add_route('get_entity_tasks_stats',         'entities/{id}/tasks_stats/')
     config.add_route('get_entity_total_schedule_seconds',   'entities/{id}/total_schedule_seconds/')
-    config.add_route('get_entity_authlogs',        'entities/{id}/authlogs/')  # json
+    config.add_route('get_entity_authlogs',            'entities/{id}/authlogs/')  # json
 
     # TODO: Do we still really need "get_entity_tasks_by_filter"
     config.add_route('get_entity_tasks_by_filter',     'entities/{id}/tasks/filter/{f_id}/')
@@ -421,9 +421,12 @@ def main(global_config, **settings):
     config.add_route('inline_update_budget', 'budgets/{id}/update/inline')
 
     config.add_route('view_budget',          'budgets/{id}/view')
+
     config.add_route('view_budget_calendar', 'budgets/{id}/view/calendar')
-    config.add_route('view_budget_table',    'budgets/{id}/view/table')
     config.add_route('view_budget_report',   'budgets/{id}/view/report')
+    config.add_route('view_budget_table_summary',    'budgets/{id}/view/{mode}')
+    config.add_route('view_budget_table_detail',    'budgets/{id}/view/{mode}')
+
     config.add_route('budget_calendar_task_dialog', 'budgets/{id}/calendar/task/dialog')
     config.add_route('budget_calendar_task_action', 'budgets/{id}/calendar/task/action')
     config.add_route('budget_calendar_item_action', 'budgets/{id}/calendar/{item_type}/action')
@@ -576,6 +579,7 @@ def main(global_config, **settings):
     config.add_route('update_user',           'users/{id}/update')
     config.add_route('inline_update_user',    'users/update/inline')
     config.add_route('view_user',             'users/{id}/view')
+    config.add_route('view_user_profile',     'users/{id}/view/profile')
     config.add_route('view_user_settings',    'users/{id}/view_settings')
     config.add_route('view_user_reports',       'users/{id}/view/reports')
 

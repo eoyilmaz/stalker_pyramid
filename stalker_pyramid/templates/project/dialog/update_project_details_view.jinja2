@@ -115,19 +115,19 @@
 
             submit_button.button('loading');
 
-
             var project_form = $('#project_form');
 
             var brand = $('#brand');
             var production_firm = $('#production_firm');
             var adv_agency = $('#adv_agency');
             var product_project_name = $('#product_project_name');
+            var mark_name = $('#mark_name');
 
             var g_data = {
-                 'product_project_name' : product_project_name.val()
-             };
+                'product_project_name' : product_project_name.val(),
+                'mark_name': mark_name.val()
+            };
             var generic_text =  JSON.stringify(g_data);
-
 
             var _client_query = '';
             if (production_firm.val()){

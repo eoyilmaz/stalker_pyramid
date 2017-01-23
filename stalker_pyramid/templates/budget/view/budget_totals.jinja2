@@ -1,0 +1,86 @@
+<table class="table table-striped table-bordered">
+    <thead>
+        <tr style="background-color: #2fafc6; color:#FFFFFF">
+            <th style="width:16%">ARA TOPLAM</th>
+            <th style="width:16%">%15 YAPIMEVİ SERVİSİ</th>
+            <th style="width:16%">NET TOPLAM</th>
+            <th style="width:16%">ONAYLANAN NET TUTAR</th>
+            <th style="width:16%">%18 KDV</th>
+            <th style="width:20%">BRÜT TOPLAM</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        <tr>
+            <td id="ara_toplam">-</td>
+            <td id="yapimevi_servisi">-</td>
+            <td id="net_toplam">-</td>
+            <td id="onaylanan_net_tutar">-</td>
+            <td id="kdv">-</td>
+            <td id="brut_toplam">-</td>
+        </tr>
+    </tbody>
+</table>
+
+<table class="table table-striped table-bordered table-hover">
+    <thead>
+        <tr style="background-color: #f15821; color:#FFFFFF">
+            <th style="width:16%">ÖNGÖRÜLEN MALIYET</th>
+            <th style="width:16%">GERÇEKLEŞEN MALIYET</th>
+            <th style="width:16%">ÖNGÖRÜLEN KAR</th>
+            <th style="width:16%">GERCEKLESEN KÂR</th>
+            <th style="width:16%">ÖNGÖRÜLEN KÂR YÜZDESİ</th>
+            <th style="width:20%">KÂR YÜZDESİ</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        <tr>
+            <td id="ongorulen_maliyet">-</td>
+            <td id="gerceklesen_maliyet">-</td>
+            <td id="ongorulen_kar">-</td>
+            <td id="gerceklesen_kar">-</td>
+            <td id="ongorulen_kar_yuzdesi">-</td>
+            <td id="kar_yudesi">-</td>
+        </tr>
+    </tbody>
+</table>
+
+<script type="text/javascript">
+
+
+    function calculateSummaryTotals(tMsrp, tCost, tPrice){
+
+        $('#ara_toplam').text(accounting.formatMoney(tPrice, { symbol: "TL",  format: "%v %s" }));
+        var yapimevi_servisi = tPrice*0.15;
+        $('#yapimevi_servisi').text(accounting.formatMoney(yapimevi_servisi, { symbol: "TL",  format: "%v %s" }));
+        var net_toplam = tPrice+yapimevi_servisi;
+        $('#net_toplam').text(accounting.formatMoney(net_toplam, { symbol: "TL",  format: "%v %s" }));
+        var onaylanan_net_tutar = parseInt('{{ approved_total_price }}');
+        $('#onaylanan_net_tutar').text(accounting.formatMoney('{{ approved_total_price }}', { symbol: "TL",  format: "%v %s" }));
+
+        var son_tutar = net_toplam;
+        if(onaylanan_net_tutar>0){
+            son_tutar = onaylanan_net_tutar;
+        }
+
+        var kdv = son_tutar*0.18;
+        $('#kdv').text(accounting.formatMoney(kdv, { symbol: "TL",  format: "%v %s" }));
+        var brut_toplam = son_tutar + kdv;
+        $('#brut_toplam').text(accounting.formatMoney(brut_toplam, { symbol: "TL",  format: "%v %s" }));
+
+        var ongorulen_maliyet = tMsrp;
+        $('#ongorulen_maliyet').text(accounting.formatMoney(ongorulen_maliyet, { symbol: "TL",  format: "%v %s" }));
+        var gerceklesen_maliyet = 0;
+        $('#gerceklesen_maliyet').text(gerceklesen_maliyet);
+        var ongorulen_kar = son_tutar - ongorulen_maliyet;
+
+        $('#ongorulen_kar').text(accounting.formatMoney(ongorulen_kar, { symbol: "TL",  format: "%v %s" }));
+        var gerceklesen_kar = son_tutar - gerceklesen_maliyet;
+        $('#gerceklesen_kar').text(accounting.formatMoney(gerceklesen_kar, { symbol: "TL",  format: "%v %s" }));
+        var ongorulen_kar_yuzdesi = (100*(ongorulen_kar/ net_toplam)).toFixed(2);
+        $('#ongorulen_kar_yuzdesi').text(ongorulen_kar_yuzdesi+"%");
+        var kar_yudesi = (100*(gerceklesen_kar/ son_tutar)).toFixed(2);
+        $('#kar_yudesi').text(kar_yudesi+"%");
+    }
+</script>

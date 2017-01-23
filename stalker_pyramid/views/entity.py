@@ -62,6 +62,10 @@ logger.setLevel(logging.DEBUG)
     renderer='templates/auth/dialog/update_user_dialog.jinja2',
 )
 @view_config(
+    route_name='view_user_profile',
+    renderer='templates/auth/view/view_user_profile.jinja2',
+)
+@view_config(
     route_name='create_user_dialog',
     renderer='templates/auth/dialog/create_user_dialog.jinja2',
 )

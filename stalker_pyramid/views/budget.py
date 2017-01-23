@@ -117,6 +117,7 @@ def create_budget(request):
     generic_data = {
             'approved_total_price': 0,
             'total_price': 0,
+            'total_msrp': 0,
             'total_cost': 0,
             'realized_total_price': 0,
             'milestones': [],
@@ -464,7 +465,11 @@ def get_budgets_count(request):
     renderer='templates/budget/view/view_budget_calendar.jinja2'
 )
 @view_config(
-    route_name='view_budget_table',
+    route_name='view_budget_table_summary',
+    renderer='templates/budget/view/view_budget_table.jinja2'
+)
+@view_config(
+    route_name='view_budget_table_detail',
     renderer='templates/budget/view/view_budget_table.jinja2'
 )
 @view_config(
@@ -472,9 +477,9 @@ def get_budgets_count(request):
     renderer='templates/budget/view/view_budget_report.jinja2'
 )
 def view_budget(request):
-    """view_budget_calendar
+    """view_budget
     """
-    logger.debug('view_budget_calendar')
+    logger.debug('view_budget')
     from stalker_pyramid.views import get_logged_in_user
     logged_in_user = get_logged_in_user(request)
 
@@ -489,11 +494,14 @@ def view_budget(request):
 
     projects = Project.query.all()
     mode = request.matchdict.get('mode', None)
+
+    logger.debug("mode %s " % mode)
     came_from = request.params.get('came_from', request.url)
 
     from stalker_pyramid.views import milliseconds_since_epoch
     from stalker_pyramid.views.auth import PermissionChecker
     return {
+
         'mode': mode,
         'entity': budget,
         'has_permission': PermissionChecker(request),
@@ -792,9 +800,11 @@ def set_budget_totals(request):
 
     total_cost = request.params.get('total_cost', 0)
     total_price = request.params.get('total_price', 0)
+    total_msrp = request.params.get('total_msrp', 0)
 
     budget.set_generic_text_attr("total_cost", total_cost)
     budget.set_generic_text_attr("total_price", total_price)
+    budget.set_generic_text_attr("total_msrp", total_msrp)
 
     budget.updated_by = logged_in_user
     budget.date_updated = utc_now

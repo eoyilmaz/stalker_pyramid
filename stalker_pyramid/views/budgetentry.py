@@ -141,16 +141,19 @@ def create_budgetentry(request):
         transaction.abort()
         return Response('There is no budget with id %s' % budget_id, 500)
 
-    amount = request.params.get('amount', 0)
-    second_amount = request.params.get('second_amount', 1)
+    amount = request.params.get('amount', None)
+    second_amount = request.params.get('second_amount', None)
     msrp = request.params.get('msrp', good.msrp)
     cost = request.params.get('cost', good.cost)
-
-    logger.debug('create_budgetentry msrp %s ' % msrp)
-    logger.debug('create_budgetentry cost %s ' % cost)
-    
     price = request.params.get('price', 0)
-    description = request.params.get('description', '')
+    description = request.params.get('note', '')
+
+    logger.debug('amount %s ' % amount)
+    logger.debug('second_amount %s ' % second_amount)
+    logger.debug('msrp %s ' % msrp)
+    logger.debug('cost %s ' % cost)
+    logger.debug('price %s ' % price)
+    logger.debug('description %s ' % description)
 
     generic_data = {
         'dataSource': 'Producer',
@@ -167,10 +170,14 @@ def create_budgetentry(request):
 
     if not amount or amount == '0':
         transaction.abort()
-        return Response('Please supply the amount', 500)
+        return Response('Please supply the "Birim"', 500)
+
+    if not second_amount or second_amount == '0':
+        transaction.abort()
+        return Response('Please supply the "X"', 500)
 
     amount = int(amount)*int(second_amount)
-    if price == '0':
+    if price == '0' or price == 0:
         price = good.cost * amount
 
     if amount and price:
@@ -415,12 +422,15 @@ def update_budgetentry(request):
 
     price = request.params.get('price', None)
 
+    logger.debug("amount %s " % amount)
+    logger.debug("second_amount %s " % second_amount)
     logger.debug("overtime %s " % overtime)
     logger.debug("stoppage_add %s " % stoppage_add)
 
     if not price:
         transaction.abort()
         return Response('Please supply price', 500)
+
     price = int(price)
     description = request.params.get('note', '')
 
@@ -430,7 +440,6 @@ def update_budgetentry(request):
 
     if budgetentry.get_generic_text_attr('dataSource') == 'Calendar':
 
-
         budgetentry.price = price
         budgetentry.description = description
         budgetentry.date_updated = utc_now
@@ -439,9 +448,16 @@ def update_budgetentry(request):
                 "warning: You can not update calendar based entry's amount"
         )
     else:
-        if not amount or amount == '0':
-            transaction.abort()
-            return Response('Please supply the amount', 500)
+        # if not amount:
+        #     transaction.abort()
+        #     return Response('Please supply the "Birim"', 500)
+        #
+        # if not second_amount:
+        #     transaction.abort()
+        #     return Response('Please supply the "X"', 500)
+
+        if second_amount == '0' or amount == '0':
+            return delete_budgetentry_action(budgetentry)
 
         budgetentry.amount = float(amount)*second_amount
 
@@ -464,7 +480,6 @@ def update_budgetentry(request):
     budgetentry.set_generic_text_attr("overtime", overtime)
     budgetentry.set_generic_text_attr("stoppage_add", stoppage_add)
     check_linked_good_budgetentries(budgetentry.good, budgetentry.budget)
-
 
     return Response('successfully updated %s budgetentry!' % budgetentry.name)
 
@@ -613,10 +628,17 @@ def get_budget_entries(request):
            "BudgetEntries_SimpleEntities".description,
            "BudgetEntries_SimpleEntities".generic_text,
            "Goods_SimpleEntities".generic_text,
-           "Goods_SimpleEntities".id
+           "Goods_SimpleEntities".id,
+           pricelists.id as type_id
         from "BudgetEntries"
         join "SimpleEntities" as "BudgetEntries_SimpleEntities" on "BudgetEntries_SimpleEntities".id = "BudgetEntries".id
         join "SimpleEntities" as "Types_SimpleEntities" on "Types_SimpleEntities".id = "BudgetEntries_SimpleEntities".type_id
+        join (
+                select "PriceList_SimpleEntities".id as id,
+                "PriceList_SimpleEntities".name as name
+                from "PriceLists"
+                join "SimpleEntities" as "PriceList_SimpleEntities" on "PriceList_SimpleEntities".id = "PriceLists".id
+        ) as pricelists on pricelists.name = "Types_SimpleEntities".name
         join "Budgets" on "Budgets".id = "BudgetEntries".budget_id
         join "Goods" on "BudgetEntries".good_id = "Goods".id
         join "SimpleEntities" as "Goods_SimpleEntities" on "Goods_SimpleEntities".id = "Goods".id
@@ -641,7 +663,8 @@ def get_budget_entries(request):
             'note': r[9],
             'generic_data': json.loads(r[10]) if r[10] else {},
             'good_generic_data': json.loads(r[11]) if r[11] else {},
-            'good_id': r[12]
+            'good_id': r[12],
+            'type_id': r[13]
         }
         for r in result.fetchall()
     ]
