@@ -97,7 +97,7 @@ def create_budget(request):
     name = request.params.get('name', None)
     type_id = request.params.get('type_id', None)
     type_ = Type.query.filter(Type.id == type_id).first()
-    description = request.params.get('description', None)
+    description = request.params.get('description', "")
 
     logger.debug("type_id : %s" % type_id)
     logger.debug("name : %s" % name)
@@ -109,8 +109,6 @@ def create_budget(request):
     if not type_:
         return Response('There is no type with id: %s' % type_id, 500)
 
-    if not description:
-        return Response('Please supply a description', 500)
 
     status = Status.query.filter(Status.name == 'Planning').first()
 
@@ -141,12 +139,15 @@ def create_budget(request):
         generic_text=json.dumps(generic_data)
     )
     db.DBSession.add(budget)
+    transaction.commit()
+    budget = Budget.query.filter(Budget.name == name).first()
+    new_budget_id = budget.id
 
     # related_budgets = budget.get_generic_text_attr('related_budgets')
     # related_budgets.append(budget.id)
     # budget.set_generic_text_attr('related_budgets', related_budgets)
 
-    return Response('Budget Created successfully')
+    return Response("/budgets/%s/view" % new_budget_id)
 
 
 @view_config(
@@ -160,7 +161,6 @@ def update_budget_dialog(request):
         milliseconds_since_epoch
     logged_in_user = get_logged_in_user(request)
     came_from = request.params.get('came_from', '/')
-
 
     budget_id = request.matchdict.get('id', -1)
     budget = Budget.query.filter(Budget.id == budget_id).first()

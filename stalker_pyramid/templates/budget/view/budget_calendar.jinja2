@@ -389,13 +389,17 @@
                                     return task.type;
                             };
                             gantt.templates.grid_row_class = gantt.templates.task_row_class = function (start, end, task) {
-                                    if (gantt.isSelectedTask(task.id))
-                                        return "gantt_selected";
+                                if (gantt.isSelectedTask(task.id))
+                                    return "gantt_selected";
                             };
 
                             total_items = total_items.splice(0, items.data.length);
+
                             for(var m=0;m<total_items.length;m++){
-                                console.log(m + ":" +total_items[m]);
+                                if(!total_items[m]){
+                                    total_items.splice(m,1);
+                                    m--;
+                                }
                             }
 
                             items.data = total_items;

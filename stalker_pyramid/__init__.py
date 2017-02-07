@@ -446,7 +446,7 @@ def main(global_config, **settings):
     config.add_route('change_budget_status_dialog',   'budgets/{id}/status/{status_code}/dialog')
     config.add_route('change_budget_status',   'budgets/{id}/status/{status_code}')
 
-    config.add_route('get_budget_entries',   'budgets/{id}/entries/')
+    config.add_route('get_budget_entries',          'budgets/{id}/entries/')
     config.add_route('get_budget_calendar_items',   'budgets/{id}/calendar/items/')
     # config.add_route('get_budget_calendar_milestones',   'budgets/{id}/calendar/milestones/')
     # config.add_route('get_budget_calendar_folders',   'budgets/{id}/calendar/folders/')
@@ -455,11 +455,11 @@ def main(global_config, **settings):
 
     # *************************************************************************
     # BudgetEntries
-    config.add_route('create_budgetentry_dialog', 'budgetentries/create/dialog')
+    config.add_route('budgetentry_dialog',        'budgetentries/{id}/{mode}/dialog')
     config.add_route('delete_budgetentry_dialog', 'budgetentries/{id}/delete/dialog')
 
-    config.add_route('create_budgetentry',        'budgetentries/create')
-    config.add_route('edit_budgetentry', 'budgetentries/edit')
+    config.add_route('create_budgetentry', 'budgetentries/create')
+    config.add_route('edit_budgetentry',   'budgetentries/edit')
     config.add_route('update_budgetentry', 'budgetentries/update')
     config.add_route('delete_budgetentry', 'budgetentries/{id}/delete')
 

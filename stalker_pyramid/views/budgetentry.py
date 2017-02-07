@@ -45,7 +45,8 @@ logger.setLevel(logging.DEBUG)
 
 
 @view_config(
-    route_name='edit_budgetentry'
+    route_name='edit_budgetentry',
+    renderer='json'
 )
 def edit_budgetentry(request):
     """edits the budgetentry with data from request
@@ -61,7 +62,8 @@ def edit_budgetentry(request):
 
         if not entity:
             transaction.abort()
-            return Response('There is no entry with id %s' % id, 500)
+            return {}
+            # return Response('There is no entry with id %s' % id, 500)
 
         if entity.entity_type == 'Good':
             logger.debug('***create budgetentry method starts ***')
@@ -73,10 +75,11 @@ def edit_budgetentry(request):
 
         else:
             transaction.abort()
-            return Response(
-                'There is no budgetentry or good with id %s' % id,
-                status=500
-            )
+            return {}
+            # return Response(
+            #     'There is no budgetentry or good with id %s' % id,
+            #     status=500
+            # )
 
     elif oper == 'del':
         logger.debug('***delete budgetentry method starts ***')
@@ -84,38 +87,8 @@ def edit_budgetentry(request):
 
 
 @view_config(
-    route_name='create_budgetentry_dialog',
-    renderer='templates/budget/dialog/budgetentry_dialog.jinja2'
-)
-def create_budgetentry_dialog(request):
-    """called when creating dailies
-    """
-    came_from = request.params.get('came_from', '/')
-
-    # get logged in user
-    from stalker_pyramid.views import (get_logged_in_user,
-                                       milliseconds_since_epoch)
-    logged_in_user = get_logged_in_user(request)
-
-    budget_id = request.params.get('budget_id', -1)
-    budget = Budget.query.filter(Budget.id == budget_id).first()
-
-    if not budget:
-        return Response('No budget found with id: %s' % budget_id, 500)
-
-    from stalker_pyramid.views.auth import PermissionChecker
-    return {
-        'has_permission': PermissionChecker(request),
-        'logged_in_user': logged_in_user,
-        'budget': budget,
-        'came_from': came_from,
-        'mode': 'Create',
-        'milliseconds_since_epoch': milliseconds_since_epoch
-    }
-
-
-@view_config(
-    route_name='create_budgetentry'
+    route_name='create_budgetentry',
+    renderer='json'
 )
 def create_budgetentry(request):
     """runs when creating a budgetentry
@@ -141,19 +114,28 @@ def create_budgetentry(request):
         transaction.abort()
         return Response('There is no budget with id %s' % budget_id, 500)
 
-    amount = request.params.get('amount', None)
-    second_amount = request.params.get('second_amount', None)
+    name = request.params.get('name', good.name)
     msrp = request.params.get('msrp', good.msrp)
     cost = request.params.get('cost', good.cost)
     price = request.params.get('price', 0)
+
+    amount = request.params.get('amount', None)
+    second_amount = request.params.get('second_amount', None)
+
+    stoppage_add = request.params.get('stoppage_add', 'Yok')
+    overtime = request.params.get('overtime', 0)
+
     description = request.params.get('note', '')
 
-    logger.debug('amount %s ' % amount)
-    logger.debug('second_amount %s ' % second_amount)
-    logger.debug('msrp %s ' % msrp)
-    logger.debug('cost %s ' % cost)
-    logger.debug('price %s ' % price)
-    logger.debug('description %s ' % description)
+    logger.debug("name %s " % name)
+    logger.debug("msrp %s " % msrp)
+    logger.debug("cost %s " % cost)
+    logger.debug("price %s " % price)
+    logger.debug("amount %s " % amount)
+    logger.debug("second_amount %s " % second_amount)
+    logger.debug("overtime %s " % overtime)
+    logger.debug("stoppage_add %s " % stoppage_add)
+    logger.debug("description %s " % description)
 
     generic_data = {
         'dataSource': 'Producer',
@@ -164,8 +146,8 @@ def create_budgetentry(request):
                 'second_amount': second_amount
             }
         ],
-        'overtime': 0,
-        'stoppage_add': 0
+        'overtime': overtime,
+        'stoppage_add': stoppage_add
     }
 
     if not amount or amount == '0':
@@ -176,17 +158,19 @@ def create_budgetentry(request):
         transaction.abort()
         return Response('Please supply the "X"', 500)
 
-    amount = int(amount)*int(second_amount)
+    amount = float(amount)*float(second_amount)
     if price == '0' or price == 0:
         price = good.cost * amount
+
+    budgetentry = None
 
     if amount and price:
         # data that's generate from good's data
 
-        create_budgetentry_action(
+        budgetentry = create_budgetentry_action(
                                     budget,
                                     good,
-                                    good.name,
+                                    name,
                                     amount,
                                     float(msrp),
                                     float(cost),
@@ -197,11 +181,22 @@ def create_budgetentry(request):
                                     utc_now
         )
 
+        logger.debug("budgetentry.id %s " % budgetentry.id)
+
     else:
         transaction.abort()
         return Response('There are missing parameters', 500)
 
-    return Response('BudgetEntry Created successfully')
+
+    return {
+                'id': budgetentry.id,
+                'amount': amount/float(second_amount),
+                'second_amount': second_amount,
+                'price': price,
+                'stoppage_add': stoppage_add,
+                'message': 'successfully created %s budgetentry!' % name
+    }
+    # Response('BudgetEntry Created successfully')
 
 
 def create_budgetentry_action(budget, good, name, amount, msrp, cost, price, description, gData, logged_in_user, utc_now):
@@ -243,7 +238,7 @@ def create_budgetentry_action(budget, good, name, amount, msrp, cost, price, des
     budget_entry = BudgetEntry(
         budget=budget,
         good=good,
-        name=good.name,
+        name=name,
         type=entry_type,
         amount=amount,
         price=price,
@@ -255,6 +250,23 @@ def create_budgetentry_action(budget, good, name, amount, msrp, cost, price, des
         generic_text=gData
     )
     db.DBSession.add(budget_entry)
+
+    from sqlalchemy.exc import IntegrityError
+    try:
+        transaction.commit()
+        db.DBSession.add(budget_entry)
+        db.DBSession.add(good)
+        db.DBSession.add(budget)
+
+    except IntegrityError as e:
+        logger.debug(str(e))
+        transaction.abort()
+        return Response(str(e), 500)
+    else:
+        db.DBSession.flush()
+
+    budget_entry = BudgetEntry.query.filter(BudgetEntry.name == name).first()
+
     budget_entry.cost = cost
     budget_entry.msrp = msrp
     budget_entry.name = name
@@ -400,7 +412,8 @@ def update_folder_tasks_startdate(budget, folder_id, time_delta):
 
 
 @view_config(
-    route_name='update_budgetentry'
+    route_name='update_budgetentry',
+    renderer='json'
 )
 def update_budgetentry(request):
     """updates the BudgetEntry with data from request
@@ -413,30 +426,48 @@ def update_budgetentry(request):
     budgetentry_id = request.params.get('id')
     budgetentry = BudgetEntry.query.filter_by(id=budgetentry_id).first()
 
+    if not budgetentry:
+        transaction.abort()
+        return Response('There is no budgetentry with id %s' % budgetentry_id, 500)
+
+    good_id = request.params.get('good_id', None)
+    good = Good.query.filter_by(id=good_id).first()
+    if not good:
+        good = budgetentry.good
     # good = Good.query.filter(Good.name == budgetentry.name).first()
     # user supply this data
-    amount = request.params.get('amount', None)
-    second_amount = request.params.get('second_amount', None)
-    overtime = int(request.params.get('overtime', 0))
-    stoppage_add = request.params.get('stoppage_add', 0)
-
+    name = request.params.get('name', budgetentry.name)
+    msrp = request.params.get('msrp', budgetentry.msrp)
+    cost = request.params.get('cost', budgetentry.cost)
     price = request.params.get('price', None)
 
+    amount = request.params.get('amount', None)
+    second_amount = request.params.get('second_amount', None)
+
+    overtime = float(request.params.get('overtime', 0))
+    stoppage_add = request.params.get('stoppage_add', 0)
+
+    description = request.params.get('note', '')
+
+    logger.debug("name %s " % name)
+    logger.debug("msrp %s " % msrp)
+    logger.debug("cost %s " % cost)
+    logger.debug("price %s " % price)
     logger.debug("amount %s " % amount)
     logger.debug("second_amount %s " % second_amount)
     logger.debug("overtime %s " % overtime)
     logger.debug("stoppage_add %s " % stoppage_add)
+    logger.debug("description %s " % description)
 
     if not price:
         transaction.abort()
         return Response('Please supply price', 500)
 
-    price = int(price)
-    description = request.params.get('note', '')
+    price = float(price)
 
     logger.debug("budgetentry.generic_text: %s" % budgetentry.generic_text)
 
-    second_amount = int(second_amount)
+    second_amount = float(second_amount)
 
     if budgetentry.get_generic_text_attr('dataSource') == 'Calendar':
 
@@ -448,18 +479,15 @@ def update_budgetentry(request):
                 "warning: You can not update calendar based entry's amount"
         )
     else:
-        # if not amount:
-        #     transaction.abort()
-        #     return Response('Please supply the "Birim"', 500)
-        #
-        # if not second_amount:
-        #     transaction.abort()
-        #     return Response('Please supply the "X"', 500)
 
         if second_amount == '0' or amount == '0':
             return delete_budgetentry_action(budgetentry)
 
         budgetentry.amount = float(amount)*second_amount
+        budgetentry.name = name
+        budgetentry.msrp = float(msrp)
+        budgetentry.cost = float(cost)
+        budgetentry.good = good
 
         budgetentry.price = price if price != '0' else budgetentry.cost * (amount + overtime)
         budgetentry.description = description
@@ -473,6 +501,7 @@ def update_budgetentry(request):
                                               'second_amount': second_amount
                                           }]
         )
+
         request.session.flash(
             'success:updated %s budgetentry!' % budgetentry.name
         )
@@ -481,7 +510,15 @@ def update_budgetentry(request):
     budgetentry.set_generic_text_attr("stoppage_add", stoppage_add)
     check_linked_good_budgetentries(budgetentry.good, budgetentry.budget)
 
-    return Response('successfully updated %s budgetentry!' % budgetentry.name)
+    return {
+            'id': budgetentry.id,
+            'amount': amount,
+            'second_amount': second_amount,
+            'overtime': overtime,
+            'stoppage_add': stoppage_add,
+            'price': budgetentry.price,
+            'message': 'successfully updated %s(%s) budgetentry!' % (budgetentry.name, budgetentry.id)
+    }
 
 
 @view_config(
@@ -512,7 +549,8 @@ def delete_budgetentry_dialog(request):
 
 
 @view_config(
-    route_name='delete_budgetentry'
+    route_name='delete_budgetentry',
+    renderer='json'
 )
 def delete_budgetentry(request):
     """deletes the budgetentry
@@ -520,6 +558,7 @@ def delete_budgetentry(request):
     logger.debug('delete_budgetentry is starts')
 
     dataSource = request.params.get('dataSource', None)
+    good_id = None
     if dataSource and dataSource == 'Calendar':
         task_id = request.matchdict.get('id')
         budgetentry_id, secondaryFactor_id = task_id.split('_')
@@ -533,7 +572,7 @@ def delete_budgetentry(request):
     if not budgetentry:
         transaction.abort()
         return Response('There is no budgetentry with id: %s' % budgetentry_id, 500)
-
+    good_id = budgetentry.good.id
     budgetentry_name = budgetentry.name
 
     from stalker_pyramid.views import StdErrToHTMLConverter
@@ -562,14 +601,23 @@ def delete_budgetentry(request):
             c = StdErrToHTMLConverter(e)
             transaction.abort()
             # return Response(c.html(), 500)
-
-    return Response('Successfully deleted budgetentry with name %s' % budgetentry_name)
+    return {
+            'id': good_id,
+            'amount': 0,
+            'second_amount': 0,
+            'overtime': 0,
+            'stoppage_add': 'Yok',
+            'price': 0,
+            'message': 'successfully deleted %s!' % (budgetentry_name)
+        }
+    # return Response('Successfully deleted budgetentry with name %s' % budgetentry_name)
 
 
 def delete_budgetentry_action(budgetentry):
 
     logger.debug('delete_budgetentry_action %s' % budgetentry.name)
     budgetentry_name = budgetentry.name
+    good_id = budgetentry.good.id
     try:
         db.DBSession.delete(budgetentry)
         transaction.commit()
@@ -579,7 +627,16 @@ def delete_budgetentry_action(budgetentry):
         c = StdErrToHTMLConverter(e)
         transaction.abort()
         # return Response(c.html(), 500)
-    return Response('Successfully deleted good with name %s' % budgetentry_name)
+    logger.debug("delete_budgetentry_action good_id %s " % good_id)
+    return {
+            'id': good_id,
+            'amount': 0,
+            'second_amount': 0,
+            'overtime': 0,
+            'stoppage_add': 'Yok',
+            'price': 0,
+            'message': 'successfully deleted %s!' % (budgetentry_name)
+        }
 
 
 @view_config(
@@ -610,9 +667,15 @@ def get_budget_calendar_items(request):
 def get_budget_entries(request):
     """returns budgets with the given id
     """
+    logger.debug("get_budget_entries starts")
+    budget_id = request.matchdict.get('id', -1)
+    budget = Budget.query.filter(Budget.id == budget_id).first()
 
-    budget_id = request.matchdict.get('id')
-    logger.debug('get_budget_entries is working for the project which id is: %s' % budget_id)
+    if not budget:
+        transaction.abort()
+        return Response('No budget with id : %s' % budget_id, 500)
+
+    logger.debug('get_budget_entries is working for the budget which id is: %s' % budget_id)
 
     sql_query = """
         select
@@ -668,7 +731,7 @@ def get_budget_entries(request):
         }
         for r in result.fetchall()
     ]
-
+    logger.debug("get_budget_entries ends %s" % len(entries))
     resp = Response(
         json_body=entries
     )
@@ -677,11 +740,11 @@ def get_budget_entries(request):
 
 
 @view_config(
-    route_name='create_budgetentry_dialog',
+    route_name='budgetentry_dialog',
     renderer='templates/budget/dialog/budgetentry_dialog.jinja2'
 )
-def create_budgetentry_dialog(request):
-    """called when creating dailies
+def budgetentry_dialog(request):
+    """called when creating and updating budget entry
     """
     came_from = request.params.get('came_from', '/')
 
@@ -690,8 +753,25 @@ def create_budgetentry_dialog(request):
                                        milliseconds_since_epoch)
     logged_in_user = get_logged_in_user(request)
 
+
+    mode = request.matchdict.get('mode', None)
+    if not mode:
+        mode = request.params.get('mode', None)
+
+    budgetentry_id = request.matchdict.get('id', -1)
+    budgetentry = BudgetEntry.query.filter(BudgetEntry.id == budgetentry_id).first()
+
     budget_id = request.params.get('budget_id', -1)
     budget = Budget.query.filter(Budget.id == budget_id).first()
+
+    if not budget:
+        transaction.abort()
+        return Response('There is no budget with id %s' % budget_id, 500)
+
+    if budgetentry:
+        action = "/budgetentries/update?id=%s&budget_id=%s" % (budgetentry.id, budget_id)
+    else:
+        action = "/budgetentries/create?budget_id=%s" % budget_id
 
     if not budget:
         return Response('No budget found with id: %s' % budget_id, 500)
@@ -700,8 +780,10 @@ def create_budgetentry_dialog(request):
         'has_permission': PermissionChecker(request),
         'logged_in_user': logged_in_user,
         'budget': budget,
+        'budgetentry': budgetentry,
+        'action': action,
         'came_from': came_from,
-        'mode': 'Create',
+        'mode': mode,
         'milliseconds_since_epoch': milliseconds_since_epoch
     }
 
@@ -1111,10 +1193,10 @@ def budget_calendar_task_action(request):
         create_budgetentry_action(budget,
                                   good,
                                   good.name,
-                                  int(amount)*int(second_amount),
+                                  float(amount)*float(second_amount),
                                   good.msrp,
                                   good.cost,
-                                  int(good.cost * int(amount)*int(second_amount)),
+                                  float(good.cost * float(amount)*float(second_amount)),
                                   description,
                                   json.dumps(generic_data),
                                   logged_in_user,
@@ -1153,7 +1235,7 @@ def budget_calendar_task_action(request):
         total_amount = 0
 
         for fact in secondaryFactor:
-            total_amount += (int(fact['amount'])*int(fact['second_amount']))
+            total_amount += (float(fact['amount'])*float(fact['second_amount']))
 
         budgetentry.amount = total_amount
 

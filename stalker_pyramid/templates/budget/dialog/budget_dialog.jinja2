@@ -9,14 +9,14 @@
             {# Name #}
             <div class="control-group">
                 <label class="span3 control-label"
-                       for="budget_name">Name</label>
+                       for="budget_name">Adi</label>
                 <div class="span9">
 
                     <input id="budget_name"
                            name='name'
                            type="text"
                            class="form-control"
-                           placeholder="Name"
+                           placeholder="Adi"
                            {% if mode=='Update' %}
                             value='{{ budget.name }}'
                            {% endif %}
@@ -26,7 +26,7 @@
             {#Type #}
             <div class='control-group'>
                 <label class='span3 control-label'
-                       for='budget_type'>Type</label>
+                       for='budget_type'>Tip</label>
                 <div class="span5">
                     <select id='budget_type'
                             class='input'
@@ -39,7 +39,7 @@
             {# Start Date #}
             <div class="control-group">
                 <label for="start_date_picker"
-                       class="span3 control-label">Date</label>
+                       class="span3 control-label">Tarih</label>
                 <div class="span9 input-prepend">
                     <input class="date-picker"
                            id='start_date_picker'
@@ -60,7 +60,7 @@
             {#Description #}
             <div class="control-group'">
                 <label for="budget_description"
-                       class="span3 control-label">Description</label>
+                       class="span3 control-label">Tanim</label>
                 <div class="span9">
                     <textarea id="budget_description"
                               name='description'
@@ -85,7 +85,8 @@
 
         var dialog_label = $('#dialog_template_label');
         dialog_label.find('span').remove();
-        dialog_label.append('<span>{{ mode}} Budget</span>');
+
+        dialog_label.append('<span>Teklif</span>');
 
         var duration = 0;
 
@@ -108,6 +109,7 @@
                 enable_split_word_search: true,
                 allow_single_deselect: true
             });
+
             {% if mode=='Update' %}
                 budget_type.val('{{ budget.type.id }}');
             {% endif %}
@@ -173,9 +175,9 @@
                 url,
                 budget_form.serialize() + '&' +
                 $.param(params)
-            ).done(function (jqXHR) {
+            ).done(function (new_url) {
                 //$('#new_outputs_storage').text(JSON.stringify(jqXHR));
-                window.location.reload();
+                window.location.assign(new_url);
             }).fail(function (jqXHR) {
                 bootbox.alert(jqXHR.responseText);
                 submit_button.button('reset');

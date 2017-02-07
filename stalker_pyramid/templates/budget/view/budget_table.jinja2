@@ -1,3 +1,4 @@
+
 {% if mode == 'table_summary'  %}
     <div class="span12 offset2">
 {% elif mode == 'table_detail'  %}
@@ -11,7 +12,7 @@
                     </button>
             </div>
             <div class="span4 center">
-                 <button class="btn btn-small btn-success">
+                 <button id="duplicate_button" class="btn btn-small btn-success">
                     FARKLI KAYDET
                 </button>
             </div>
@@ -26,31 +27,31 @@
             </div>
         </div>
         <div class="space-6"></div>
-        <div class="row-fluid">
-            <div class="span12" id="tables">
+        <div class="slim-scroll" data-height="800">
+            <div class="content">
+                <div class="row-fluid">
+                    <div class="span12" id="tables">
+                    </div>
+                </div>
             </div>
         </div>
         <div class="space-6"></div>
         <div class="row-fluid">
             <div class="span10 offset1">
                 <table id="report_table"></table>
+                <div class="space-12"></div>
                 <table id="report_table_footer" style="width:100%;" >
                     <thead>
                         <tr style="background-color: #4e5962; color:#FFFFFF; height: 55px">
-                            <th style="background-color: #4e5962; color:#FFFFFF; width:220px; font-size: 20px">TOPLAM</th>
-                            <th style="background-color: #4e5962; color:#FFFFFF; width:150px; font-size: 20px" id="total_cost">-</th>
-                            <th style="background-color: #4e5962; color:#FFFFFF; width:150px; font-size: 20px" id="total_price">-</th>
-                            <th style="background-color: #4e5962; color:#FFFFFF; width:100px; font-size: 20px" id="total_discount">-</th>
-                            <th style="background-color: #4e5962; color:#FFFFFF; width:100px; font-size: 20px" id="total_discount_proportion">-</th>
+                            <th><span class="pull-left" style="background-color: #4e5962; color:#FFFFFF; width:220px; padding-left:0px; font-size: 20px;">TOPLAM</span></th>
+                            <th><span class="pull-left" style="background-color: #4e5962; color:#FFFFFF; width:150px; padding-left:0px; font-size: 20px;" id="total_msrp">-</span></th>
+                            <th><span class="pull-left" style="background-color: #4e5962; color:#FFFFFF; width:150px; padding-left:0px; font-size: 20px;" id="total_price">-</span></th>
                         </tr>
                     </thead>
                 </table>
-                <div class="space-6"></div>
-                {% include 'budget/view/budget_totals.jinja2' %}
             </div>
-
-
         </div>
+        <div class="space-6"></div>
         <div class="row-fluid">
             <div class="span12">
                 <button id='send_button'
@@ -70,8 +71,9 @@
     <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/i18n/grid.locale-en.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/jquery.jqGrid.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/accounting.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/codebase/dhtmlxgantt.js") }}'></script>
     <link src='{{ request.static_url("stalker_pyramid:static/jqGrid/css/ui.jqgrid-bootstrap.css") }}'/>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.slimscroll.min.js") }}'></script>
+
     <script>
         $.jgrid.defaults.autowidth = true;
         $.jgrid.defaults.responsive = true;
@@ -86,11 +88,21 @@
     }
     .ui-jqgrid-sortable {
         color: #FFFFFF;
-        font-size-adjust: center;
     }
     </style>
     <script type="text/javascript">
+
+
+
         $(document).ready(function () {
+
+            $('.slim-scroll').each(function () {
+                var $this = $(this);
+                $this.slimScroll({
+                    height: $this.data('height') || 100,
+                    railVisible:true
+                });
+            });
 
             $('#add_project_entries_to_budget_button').hide();
             var total_cost = 0;
@@ -101,6 +113,7 @@
             var grid_data;
             var lastSelection;
             var lastSelectionIndex;
+            var lastGrid;
             var colModel = [];
             var colModel_report = [];
             var editable = true;
@@ -130,21 +143,27 @@
                             {name:'total_cost', index:'total_cost', width:100, editable: false, formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum", hidden: true },
                             {name:'overtime', index:'overtime', width:80, editable: editable, hidden: hide_cell},
                             {name:'overtime_cost', index:'overtime_cost', width:100, editable: false, formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum" , hidden: hide_cell},
-                            {name:'stoppage_add', index:'stoppage_add', width:60, editable: editable, edittype:"checkbox", editoptions:{value:"1:0"}, hidden: hide_cell},
+                            {name:'stoppage_add', index:'stoppage_add', width:60, editable: editable, edittype:"checkbox", editoptions:{value:"Var:Yok"}, hidden: hide_cell},
                             {name:'stoppage_cost', index:'stoppage_cost', width:100, editable: false, formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum", hidden: hide_cell },
                             {name:'total_msrp', index:'total_msrp', width:100, editable: false, formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum" },
-                            {name:'price', index:'price', width:100, sortable:true, editable: editable, formatter:currencyFmatter, unformat:unformatCurrency, editoptions:{size:"20",maxlength:"30"} ,  summaryTpl: "{0}", summaryType: "sum" },
+                            {name:'price', index:'price', width:100, sortable:true, editable: editable, formatter:priceFmatter, unformat:priceUnformatter, editoptions:{size:"20",maxlength:"30"} ,  summaryTpl: "{0}", summaryType: "sum" },
                             {name:'note', index:'note', width:250, sortable:false, editable: editable, edittype:"textarea", editoptions:{size:"20", maxlength:"80"}},
-                            {name:'delete_action', index:'delete_action', width:60, editable: false}
+                            {name:'actions', index:'actions', width:60, editable: false}
                          ];
-
-
 
             $("#custom_entry_button").on('click', function (e) {
                  var event_dialog = $('#dialog_template');
 
                 event_dialog.modal({
-                    'remote': '{{request.route_path('create_budgetentry_dialog', _query={'mode': "Create", 'budget_id':entity.id }) }}'
+                    'remote': '{{request.route_path('budgetentry_dialog',id=-1, mode="create", _query={'budget_id':entity.id }) }}'
+                });
+            });
+
+            $("#duplicate_button").on('click', function (e) {
+                 var event_dialog = $('#dialog_template');
+
+                event_dialog.modal({
+                    'remote': '{{ request.route_url("duplicate_budget_dialog", id=entity.id)}}'
                 });
             });
 
@@ -163,8 +182,9 @@
                     grid_lists_report.push(
                                             {
                                                 'id':id,
-                                                'name':data.type,
+                                                'name':(data.type).toUpperCase(),
                                                 'cost': parseFloat(data.total_cost),
+                                                'msrp': parseFloat(data.total_msrp),
                                                 'price':parseFloat(data.price),
                                                 'discount': parseFloat(data.total_cost) - parseFloat(data.price),
                                                 'discountPercent':(((parseFloat(data.total_cost) - parseFloat(data.price))/parseFloat(data.total_cost))*100).toFixed(2)
@@ -172,13 +192,12 @@
                     );
                 }
                 else{
+                    grid_lists_report[arr_index].msrp += data.total_msrp;
                     grid_lists_report[arr_index].cost += data.total_cost;
                     grid_lists_report[arr_index].price += data.price;
 
                     grid_lists_report[arr_index].discount = grid_lists_report[arr_index].price-grid_lists_report[arr_index].cost;
                     grid_lists_report[arr_index].discountPercent = (grid_lists_report[arr_index].discount/grid_lists_report[arr_index].cost)*100;
-
-
                 }
 
             }
@@ -191,13 +210,14 @@
                             //direction: "rtl",
                             data: grid_lists_report,
                             datatype: "local",
-                            colNames:['İNDİRİM YAPILABİLİR KALEMLER', 'İNDİRİM ÖNCESİ', 'İNDİRİM SONRASI', 'İNDİRİM TUTARI', 'İNDİRİM ORANI'],
+                            colNames:['BUTCE KALEMLERI', 'ONGORULEN MALIYET', 'TOPLAM'],
                             colModel:[
                                         {name:'name', index:'name', width:220, editable: false},
-                                        {name:'cost', index:'cost', width:150, sortable:true, editable: false, formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum" },
+{#                                        {name:'cost', index:'cost', width:150, sortable:true, editable: false, formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum" },#}
+                                        {name:'msrp', index:'msrp', width:150, sortable:true, editable: false, formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum" },
                                         {name:'price', index:'price', width:150, sortable:true, editable: false, formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum" },
-                                        {name:'discount', index:'discount', width:100, sortable:true, editable: false },
-                                        {name:'discountPercent', index:'discountPercent', width:100, sortable:true, editable: false }
+{#                                        {name:'discount', index:'discount', width:100, sortable:true, editable: false },#}
+{#                                        {name:'discountPercent', index:'discountPercent', width:100, sortable:true, editable: false }#}
                                     ],
                             viewrecords : true,
                             pager : false,
@@ -225,14 +245,39 @@
 
             }
 
-            function editRow(id) {
+            function noteTheDiscount(cost, price, note){
+                var new_note = note;
+                var re = /[%]\d+(\.\d*)[*]( indirimli!)/;
+                if(cost > price){
+                    var discount = cost - price;
+                    var discount_pro = ((discount/cost)*100).toFixed(2);
 
+                    if(note.search(re) != -1){
+                        new_note = note.replace(re, "%"+discount_pro+"* indirimli!");
+                    }
+                    else{
+                        new_note = "%"+discount_pro +"* indirimli!  " + note;
+                    }
+                }
+                if(cost == 0 || cost <= price){
+                    new_note = note.replace(re, "");
+                }
+                return new_note;
+            }
+
+            function editRow(id) {
+                console.log("Edit Row : "+id);
                 if(id){
+                    if(lastGrid){
+                        lastGrid.restoreRow(lastSelection);
+                    }
                     var arr_index = findArrayElement(grid_data,'id', id);
                     if(arr_index!=-1){
                         if (id !== lastSelection) {
+
                             var grid = find_table(grid_data[arr_index].type_id);
-                            grid.restoreRow(lastSelection);
+                            lastGrid = grid;
+{#                            grid.restoreRow(lastSelection);#}
                             var editParameters = {
                                 keys: true,
                                 successfunc: editSuccessful,
@@ -245,42 +290,43 @@
                         }
                     }
                 }
-
             }
 
             function editSuccessful(data, stat) {
-                console.log("editSuccessful" );
 
                 var overtime = parseFloat(getCellValue(lastSelection, 'overtime'));
                 var amount = parseFloat(getCellValue(lastSelection, 'amount'));
                 var second_amount = parseFloat(getCellValue(lastSelection, 'second_amount'));
-                var stoppage_add = parseInt(getCellValue(lastSelection, 'stoppage_add'));
-                var price = parseFloat(getCellValue(lastSelection, 'price'));
-
+                var stoppage_add = data.responseJSON.stoppage_add;
+                var price = data.responseJSON.price;
+                var id = data.responseJSON.id;
                 var type_id = grid_data[lastSelectionIndex].type_id;
-                var index_01 = findArrayElement(grid_lists_data[type_id], 'id', lastSelection);
-                var selected_data = grid_data[lastSelectionIndex];
-                console.log(selected_data);
-                var recalculated_selected_data = recalculateGridData(selected_data, amount, second_amount, overtime, stoppage_add, price);
-                console.log(recalculated_selected_data);
-                grid_lists_data[type_id][index_01] = recalculated_selected_data;
-                console.log(grid_lists_data[type_id][index_01]);
-                grid_data[lastSelectionIndex] = recalculated_selected_data;
 
                 var grid = find_table(type_id);
-                grid.jqGrid('setGridParam',
-                            {
-                                datatype: 'local',
-                                data:grid_lists_data[grid_data[lastSelectionIndex].type_id]
-                            }
-                ).trigger("reloadGrid");
+                grid.restoreRow(lastSelection);
+
+                setTimeout(function(){
+                    var index_01 = findArrayElement(grid_lists_data[type_id], 'id', lastSelection);
+                    var selected_data = grid_data[lastSelectionIndex];
+                    var recalculated_selected_data = recalculateGridData(selected_data, id, amount, second_amount, overtime, stoppage_add, price);
+                    grid_lists_data[type_id][index_01] = recalculated_selected_data;
+                    grid_data[lastSelectionIndex] = recalculated_selected_data;
+
+                    grid.jqGrid('setGridParam',
+                                {
+                                    datatype: 'local',
+                                    data:grid_lists_data[type_id]
+                                }
+                    ).trigger("reloadGrid");
+                }, 1);
+
 
                 flash_message({
                     type: "success",
                     title: "Success!",
-                    message: data.responseText
+                    message: data.responseJSON.message
                 });
-                grid.restoreRow(lastSelection);
+
                 return [true,"",""];
             }
 
@@ -292,6 +338,20 @@
                 });
             }
 
+            function priceFmatter (cellvalue, options, rowObject){
+               var index = findArrayElement(grid_data,'id', options.rowId);
+               var cValue = accounting.formatMoney(cellvalue, { symbol: "TL",  format: "%v %s", precision:0 });
+               if(grid_data[index].total_cost != grid_data[index].price){
+                   cValue += " ("+ accounting.formatMoney(grid_data[index].total_cost , { symbol: "TL",  format: "%v %s", precision:0 })+")";
+               }
+               return  cValue;
+            }
+
+            function priceUnformatter (cellvalue, options, rowObject){
+               var index = findArrayElement(grid_data,'id', options.rowId);
+               return grid_data[index].price ;
+            }
+
             function currencyFmatter (cellvalue, options, rowObject){
                return accounting.formatMoney(cellvalue, { symbol: "TL",  format: "%v %s", precision:0 });
             }
@@ -301,6 +361,7 @@
             }
 
             function unitFmatter (cellvalue, options, rowObject){
+
                 var index = findArrayElement(grid_data,'id', options.rowId);
                 return grid_data[index].amount+" "+ grid_data[index].unit;
             }
@@ -336,18 +397,20 @@
 
             function getCellValue(rowId, cellId) {
                 var cell = jQuery('#' + rowId + '_' + cellId);
+
                 var val = cell.val();
                 return val;
             }
 
-            function recalculateGridData(s_data, amount_value, second_amount_value, overtime_value, stoppage_add_value, price_value){
+            function recalculateGridData(s_data, id, amount_value, second_amount_value, overtime_value, stoppage_add_value, price_value){
 
                 var selected_data = s_data;
+                selected_data["id"] = id;
                 selected_data = {};
                 for(prop in s_data){
                     selected_data[prop] = s_data[prop];
                 }
-                console.log(s_data.addition_type);
+
                 if (s_data.addition_type != "Calendar"){
                     selected_data.addition_type = "Producer";
                     selected_data.amount = amount_value;
@@ -363,24 +426,30 @@
                 selected_data.overtime  = overtime_value;
                 selected_data.stoppage_add = stoppage_add_value;
                 selected_data.price  = price_value;
+                console.log("price_value : "+ price_value );
 
                 selected_data.total_cost = selected_data.cost * (selected_data.amount*selected_data.second_amount + selected_data.overtime);
                 selected_data.total_msrp = selected_data.msrp * (selected_data.amount*selected_data.second_amount + selected_data.overtime);
                 selected_data.overtime_cost = selected_data.cost * selected_data.overtime;
 
-                selected_data.stoppage_cost = selected_data.stoppage_add*selected_data.stoppage_ratio * selected_data.total_cost;
-                selected_data.stoppage_msrp = selected_data.stoppage_add*selected_data.stoppage_ratio * selected_data.total_msrp;
+                if (selected_data.stoppage_add == 'Var'){
+                    selected_data.stoppage_cost = selected_data.stoppage_ratio * selected_data.total_cost;
+                    selected_data.stoppage_msrp = selected_data.stoppage_ratio * selected_data.total_msrp;
+                }
+                else{
+                    selected_data.stoppage_cost = 0;
+                    selected_data.stoppage_msrp = 0;
+                }
 
-                console.log("selected_data.stoppage_add: "+ selected_data.stoppage_add);
-                console.log("selected_data.stoppage_ratio: "+ selected_data.stoppage_ratio);
-                console.log("selected_data.stoppage_cost: "+ selected_data.stoppage_cost);
+                selected_data.note = noteTheDiscount(selected_data.total_cost, selected_data.price, selected_data.note);
 
                 selected_data.total_cost = selected_data.total_cost + selected_data.stoppage_cost;
                 selected_data.total_msrp = selected_data.total_msrp + selected_data.stoppage_msrp;
 
                 if(price_value === '0' || price_value === 0){
-                    selected_data.price = selected_data.total_cost;
+                    selected_data["price"] = selected_data.total_cost;
                 }
+                console.log("selected_data.price : "+ selected_data.price );
                 return selected_data;
             }
 
@@ -405,7 +474,8 @@
                     total_price += parseInt(grid_data[t].price);
                 }
 
-                $('#total_cost').text(accounting.formatMoney(total_cost, { symbol: "TL",  format: "%v %s" }));
+                $('#total_msrp').text(accounting.formatMoney(total_msrp, { symbol: "TL",  format: "%v %s" }));
+{#                $('#total_cost').text(accounting.formatMoney(total_cost, { symbol: "TL",  format: "%v %s" }));#}
                 $('#total_price').text(accounting.formatMoney(total_price, { symbol: "TL",  format: "%v %s" }));
                 var discount = total_cost-total_price;
                 $('#total_discount').text(accounting.formatMoney(discount, { symbol: "TL",  format: "%v %s" }));
@@ -416,13 +486,11 @@
                 $.post(
                     '/budgets/{{ entity.id }}/set/totals?total_cost='+total_cost+'&total_price='+total_price+'&total_msrp='+total_msrp
                 ).done(function (response_text) {
-
 {#                       flash_message({#}
 {#                            type: "success",#}
 {#                            title: "Success!",#}
 {#                            message: response_text#}
 {#                        });#}
-
                 }).fail(function (jqXHR) {
                     bootbox.alert('<div id="message" class="alert alert-danger bigger-110">'+jqXHR.responseText+'</div>');
                 });
@@ -439,7 +507,7 @@
                             //direction: "rtl",
                             data: grid_lists_data[prop],
                             datatype: "local",
-                            colNames:['Addition Type', 'Type', 'Id', grid_lists_data[prop][0].type,'Birim', 'X', 'Msrp_PerHour', 'Birim Fiyat', 'Total Cost', 'Mesai', 'Mesai Tutari', 'Stopaj','Stopaj Tutari','Toplam Maliyet', 'Toplam', 'Notlar',''],
+                            colNames:['Addition Type', 'Type', 'Id', (grid_lists_data[prop][0].type).toUpperCase(),'Birim', 'X', 'Msrp_PerHour', 'Birim Fiyat', 'Total Cost', 'Mesai', 'Mesai Tutari', 'Stopaj','Stopaj Tutari','Maliyet', 'Toplam', 'Notlar',''],
                             colModel:colModel,
                             viewrecords : true,
                             pager : false,
@@ -450,8 +518,8 @@
                             autowidth: true,
                             sortname: 'addition_type',
                             sortOrder: "desc",
-                            footerrow: false, // set a footer row
-                            userDataOnFooter: true, // the calculated sums and/or strings from server are put at footer row.
+                            footerrow: false,
+                            userDataOnFooter: true,
                             grouping: false,
                             gridview: true,
                             editurl: '/budgetentries/edit?budget_id={{ entity.id }}',
@@ -468,7 +536,9 @@
                 grid_data = entry_data;
 
                 for(var j=0; j<grid_data.length; j++ ){
-                    grid_data[j].delete_action = "<a data-target='#dialog_template' data-toggle='modal' data-keyboard=false href='/budgetentries/"+grid_data[j].id+"/delete/dialog'> <i class='icon-trash'></i></a>"
+                    if(grid_data[j].type == "Custom List"){
+                       grid_data[j].actions = "<a data-target='#dialog_template' data-toggle='modal' data-keyboard=false href='/budgetentries/"+grid_data[j].id+"/update/dialog?budget_id={{ entity.id }}'> <i class='icon-pencil'></i></a>"
+                    }
                     grid_data[j].addition_type = grid_data[j].generic_data.dataSource;
 
                     grid_data[j].unit = grid_data[j].unit.split('*')[0];
@@ -483,13 +553,13 @@
                         grid_data[j].second_amount = 0;
 
                         for(var t=0; t < secondaryFactor.length; t++){
-                            grid_data[j].second_amount += parseInt(secondaryFactor[t].second_amount)
+                            grid_data[j].second_amount += parseFloat(secondaryFactor[t].second_amount);
                         }
                     }
 
                     grid_data[j].amount = grid_data[j].amount/grid_data[j].second_amount;
 
-                    grid_data[j].overtime = grid_data[j].generic_data.overtime;
+                    grid_data[j].overtime = parseFloat(grid_data[j].generic_data.overtime);
                     grid_data[j].overtime_cost = grid_data[j].overtime * grid_data[j].cost;
 
                     grid_data[j].stoppage_cost = 0;
@@ -503,28 +573,20 @@
                         grid_data[j].stoppage_ratio = 0;
                     }
 
-                    if (grid_data[j].stoppage_add == '1'){
+                    if (grid_data[j].stoppage_add == 'Var'){
                         grid_data[j].stoppage_cost = grid_data[j].stoppage_ratio * grid_data[j].cost * (grid_data[j].amount*grid_data[j].second_amount+grid_data[j].overtime);
                         grid_data[j].stoppage_msrp = grid_data[j].stoppage_ratio * grid_data[j].msrp * (grid_data[j].amount*grid_data[j].second_amount+grid_data[j].overtime);
                     }
 
-                    console.log("grid_data[j].stoppage_add: "+ grid_data[j].stoppage_add);
-                    console.log("grid_data[j].stoppage_ratio: "+ grid_data[j].stoppage_ratio);
-                    console.log("grid_data[j].stoppage_cost: "+ grid_data[j].stoppage_cost);
-
                     grid_data[j].total_msrp = grid_data[j].msrp * (grid_data[j].amount * grid_data[j].second_amount+grid_data[j].overtime) + grid_data[j].stoppage_msrp;
                     grid_data[j].total_cost = grid_data[j].cost * (grid_data[j].amount * grid_data[j].second_amount+grid_data[j].overtime) + grid_data[j].stoppage_cost;
 
-                    if(grid_data[j].total_cost > grid_data[j].price){
-                        var discount = grid_data[j].total_cost - grid_data[j].price;
-                        var discount_pro = ((discount/grid_data[j].total_cost)*100).toFixed(2);
-                        grid_data[j].note = "%"+discount_pro +" indirimli!  "+grid_data[j].note;
-                    }
+                    grid_data[j].note = noteTheDiscount(grid_data[j].total_cost,grid_data[j].price, grid_data[j].note);
 
                     create_new_table(grid_data[j].type_id, grid_data[j]);
                 }
 
-                {% if entity.status.code == 'PLN'  %}
+                {% if entity.status.code == 'PLN' and mode == 'table_detail' %}
                     $.getJSON('/studios/{{ entity.id }}/goods/').then(function (good_data) {
 
                         for(var k=0; k<good_data.length; k++ ){

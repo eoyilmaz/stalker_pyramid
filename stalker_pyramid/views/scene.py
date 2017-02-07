@@ -300,8 +300,6 @@ def get_scenes(request):
     entity = Entity.query.filter_by(id=entity_id).first()
     logger.debug('entity_id : %s' % entity_id)
 
-
-
     sql_query = """select
     "Task_Scenes".id as scene_id,
     "Task_Scenes".name as scene_name,
@@ -419,7 +417,9 @@ order by "Task_Scenes".id"""
         project_id = entity.project.id
 
     project = Project.query.filter(Project.id == project_id).first()
-    sql_query = sql_query % {'where_condition': where_condition}
+    sql_query = sql_query % {
+        'where_condition': where_condition
+    }
 
     result = DBSession.connection().execute(sql_query)
 
@@ -447,7 +447,6 @@ order by "Task_Scenes".id"""
             'update_scene_action': '/scenes/%(id)s/update/dialog?entity_id=%(entity_id)s&mode=Update' % {'id':r[0],'entity_id':entity.id} if update_task_permission else None
         }
 
-
         layout_task_ids = r[3]
         layout_task_type_names = r[4]
         layout_task_status_codes = r[5]
@@ -464,8 +463,6 @@ order by "Task_Scenes".id"""
         shot_task_total_logged_seconds = r[17]
         shot_task_resource_names = r[18]
         shot_task_resource_ids = r[19]
-
-
 
         for i in range(len(layout_task_type_names)):
             task_type_name = layout_task_type_names[i]
