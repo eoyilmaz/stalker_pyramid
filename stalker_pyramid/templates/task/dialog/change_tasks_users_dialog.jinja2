@@ -70,16 +70,17 @@
                 submit_button.button('loading');
 
                 var change_form = $("#change_form");
-
+                var _query = "?project_id={{ tasks[0].project.id }}";
                 var task_ids = [];
                 {% for task in tasks %}
+                    _query += "&task_ids={{ task.id }}";
                     task_ids.push({{ task.id }});
                 {% endfor %}
 
-                console.log('task_ids: ' + task_ids);
+
 
                 $.post(
-                    '/tasks/change/{{ user_type.lower() }}',
+                    '/tasks/change/{{ user_type.lower() }}'+_query,
                     change_form.serialize() + '&' + $.param({'task_ids':task_ids})
                 ).done(function (response_text) {
                     submit_button.button('reset');

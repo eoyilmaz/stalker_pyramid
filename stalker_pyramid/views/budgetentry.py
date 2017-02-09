@@ -124,7 +124,6 @@ def create_budgetentry(request):
 
     stoppage_add = request.params.get('stoppage_add', 'Yok')
     overtime = request.params.get('overtime', 0)
-
     description = request.params.get('note', '')
 
     logger.debug("name %s " % name)
@@ -180,7 +179,7 @@ def create_budgetentry(request):
                                     logged_in_user,
                                     utc_now
         )
-
+        budgetentry = BudgetEntry.query.filter(BudgetEntry.name == name).first()
         logger.debug("budgetentry.id %s " % budgetentry.id)
 
     else:
@@ -193,8 +192,11 @@ def create_budgetentry(request):
                 'amount': amount/float(second_amount),
                 'second_amount': second_amount,
                 'price': price,
+                'overtime': overtime,
                 'stoppage_add': stoppage_add,
-                'message': 'successfully created %s budgetentry!' % name
+                'message': 'successfully created %s budgetentry!' % name,
+                'message_type': 'success',
+                'message_title': 'Success'
     }
     # Response('BudgetEntry Created successfully')
 
@@ -475,9 +477,18 @@ def update_budgetentry(request):
         budgetentry.description = description
         budgetentry.date_updated = utc_now
         budgetentry.updated_by = logged_in_user
-        request.session.flash(
-                "warning: You can not update calendar based entry's amount"
-        )
+
+        secondaryFactors = budgetentry.get_generic_text_attr("secondaryFactor")
+        second_amount = 0
+
+        if secondaryFactors:
+            for secondaryFactor in secondaryFactors:
+                if 'second_amount' in secondaryFactor:
+                    second_amount += float(secondaryFactor["second_amount"])
+        amount = budgetentry.amount/second_amount
+        message = 'Warning: This entry is added from calendarr. So you can only change the price  of %s(%s)!'
+        message_type = 'warning'
+        message_title = 'Warning'
     else:
 
         if second_amount == '0' or amount == '0':
@@ -489,7 +500,7 @@ def update_budgetentry(request):
         budgetentry.cost = float(cost)
         budgetentry.good = good
 
-        budgetentry.price = price if price != '0' else budgetentry.cost * (amount + overtime)
+        budgetentry.price = price if price != '0' else budgetentry.cost * (budgetentry.amount + overtime)
         budgetentry.description = description
         budgetentry.date_updated = utc_now
         budgetentry.updated_by = logged_in_user
@@ -501,6 +512,10 @@ def update_budgetentry(request):
                                               'second_amount': second_amount
                                           }]
         )
+
+        message = 'successfully updated %s(%s) budgetentry!'
+        message_type = 'success'
+        message_title = 'Success'
 
         request.session.flash(
             'success:updated %s budgetentry!' % budgetentry.name
@@ -517,7 +532,9 @@ def update_budgetentry(request):
             'overtime': overtime,
             'stoppage_add': stoppage_add,
             'price': budgetentry.price,
-            'message': 'successfully updated %s(%s) budgetentry!' % (budgetentry.name, budgetentry.id)
+            'message': message % (budgetentry.name, budgetentry.id),
+            'message_type':message_type,
+            'message_title':message_title
     }
 
 
@@ -608,7 +625,9 @@ def delete_budgetentry(request):
             'overtime': 0,
             'stoppage_add': 'Yok',
             'price': 0,
-            'message': 'successfully deleted %s!' % (budgetentry_name)
+            'message': 'successfully deleted %s!' % (budgetentry_name),
+            'message_type': 'success',
+            'message_title': 'Success'
         }
     # return Response('Successfully deleted budgetentry with name %s' % budgetentry_name)
 
@@ -635,7 +654,9 @@ def delete_budgetentry_action(budgetentry):
             'overtime': 0,
             'stoppage_add': 'Yok',
             'price': 0,
-            'message': 'successfully deleted %s!' % (budgetentry_name)
+            'message': 'successfully deleted %s!' % (budgetentry_name),
+            'message_type': 'success',
+            'message_title': 'Success'
         }
 
 
@@ -881,6 +902,7 @@ def budget_calendar_list_order(request):
             index = int(secondaryFactor_id)
             secondaryFactor = budgetentry.get_generic_text_attr("secondaryFactor")
             secondaryFactor[index]['gantt_index'] = item['gantt_index']
+            secondaryFactor[index]['folder_id'] = item['folder_id']
             budgetentry.set_generic_text_attr("secondaryFactor", secondaryFactor)
             budgetentry.date_updated = utc_now
             budgetentry.updated_by = logged_in_user

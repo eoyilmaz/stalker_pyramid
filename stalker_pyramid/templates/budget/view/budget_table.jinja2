@@ -294,12 +294,6 @@
 
             function editSuccessful(data, stat) {
 
-                var overtime = parseFloat(getCellValue(lastSelection, 'overtime'));
-                var amount = parseFloat(getCellValue(lastSelection, 'amount'));
-                var second_amount = parseFloat(getCellValue(lastSelection, 'second_amount'));
-                var stoppage_add = data.responseJSON.stoppage_add;
-                var price = data.responseJSON.price;
-                var id = data.responseJSON.id;
                 var type_id = grid_data[lastSelectionIndex].type_id;
 
                 var grid = find_table(type_id);
@@ -308,7 +302,7 @@
                 setTimeout(function(){
                     var index_01 = findArrayElement(grid_lists_data[type_id], 'id', lastSelection);
                     var selected_data = grid_data[lastSelectionIndex];
-                    var recalculated_selected_data = recalculateGridData(selected_data, id, amount, second_amount, overtime, stoppage_add, price);
+                    var recalculated_selected_data = recalculateGridData(selected_data, data.responseJSON);
                     grid_lists_data[type_id][index_01] = recalculated_selected_data;
                     grid_data[lastSelectionIndex] = recalculated_selected_data;
 
@@ -322,8 +316,8 @@
 
 
                 flash_message({
-                    type: "success",
-                    title: "Success!",
+                    type: data.responseJSON.message_type,
+                    title: data.responseJSON.message_title,
                     message: data.responseJSON.message
                 });
 
@@ -361,7 +355,6 @@
             }
 
             function unitFmatter (cellvalue, options, rowObject){
-
                 var index = findArrayElement(grid_data,'id', options.rowId);
                 return grid_data[index].amount+" "+ grid_data[index].unit;
             }
@@ -402,10 +395,9 @@
                 return val;
             }
 
-            function recalculateGridData(s_data, id, amount_value, second_amount_value, overtime_value, stoppage_add_value, price_value){
+            function recalculateGridData(s_data, n_data){
 
                 var selected_data = s_data;
-                selected_data["id"] = id;
                 selected_data = {};
                 for(prop in s_data){
                     selected_data[prop] = s_data[prop];
@@ -413,20 +405,16 @@
 
                 if (s_data.addition_type != "Calendar"){
                     selected_data.addition_type = "Producer";
-                    selected_data.amount = amount_value;
-                    selected_data.second_amount = second_amount_value;
                 }
 
-                if(selected_data.amount == 0 || selected_data.amount == '0' || selected_data.second_amount == 0 ||selected_data.second_amount == '0'){
-                    selected_data.amount = 0;
-                    selected_data.second_amount = 0;
-                    price_value = 0;
-                }
+                selected_data.id = n_data.id;
 
-                selected_data.overtime  = overtime_value;
-                selected_data.stoppage_add = stoppage_add_value;
-                selected_data.price  = price_value;
-                console.log("price_value : "+ price_value );
+                selected_data.amount = parseFloat(n_data.amount);
+                selected_data.second_amount = parseFloat(n_data.second_amount);
+
+                selected_data.overtime  = parseFloat(n_data.overtime);
+                selected_data.stoppage_add = n_data.stoppage_add;
+                selected_data.price  = parseFloat(n_data.price);
 
                 selected_data.total_cost = selected_data.cost * (selected_data.amount*selected_data.second_amount + selected_data.overtime);
                 selected_data.total_msrp = selected_data.msrp * (selected_data.amount*selected_data.second_amount + selected_data.overtime);
@@ -441,15 +429,13 @@
                     selected_data.stoppage_msrp = 0;
                 }
 
-                selected_data.note = noteTheDiscount(selected_data.total_cost, selected_data.price, selected_data.note);
 
                 selected_data.total_cost = selected_data.total_cost + selected_data.stoppage_cost;
                 selected_data.total_msrp = selected_data.total_msrp + selected_data.stoppage_msrp;
 
-                if(price_value === '0' || price_value === 0){
-                    selected_data["price"] = selected_data.total_cost;
-                }
-                console.log("selected_data.price : "+ selected_data.price );
+                selected_data.note = noteTheDiscount(selected_data.total_cost, selected_data.price, selected_data.note);
+
+
                 return selected_data;
             }
 
@@ -540,6 +526,10 @@
                        grid_data[j].actions = "<a data-target='#dialog_template' data-toggle='modal' data-keyboard=false href='/budgetentries/"+grid_data[j].id+"/update/dialog?budget_id={{ entity.id }}'> <i class='icon-pencil'></i></a>"
                     }
                     grid_data[j].addition_type = grid_data[j].generic_data.dataSource;
+
+                    if(grid_data[j].addition_type == "Calendar"){
+                       grid_data[j].actions = "<i class='icon-calendar'></i>"
+                    }
 
                     grid_data[j].unit = grid_data[j].unit.split('*')[0];
 

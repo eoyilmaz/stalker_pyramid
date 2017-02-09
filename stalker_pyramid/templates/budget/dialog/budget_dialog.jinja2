@@ -176,8 +176,13 @@
                 budget_form.serialize() + '&' +
                 $.param(params)
             ).done(function (new_url) {
+                {% if mode=='Update' %}
+                    window.location.reload();
+                {% else %}
+                    window.location.assign(new_url);
+                {% endif %}
                 //$('#new_outputs_storage').text(JSON.stringify(jqXHR));
-                window.location.assign(new_url);
+
             }).fail(function (jqXHR) {
                 bootbox.alert(jqXHR.responseText);
                 submit_button.button('reset');

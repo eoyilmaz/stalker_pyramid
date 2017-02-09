@@ -95,15 +95,6 @@
                             <option value='y'>Years</option>
                         </select>
                     </div>
-                    <div class='span4'>
-                        <select id='task_schedule_model'
-                                class='input-block-level'
-                                name='schedule_model'>
-                            <option value='effort'>Effort</option>
-                            <option value='duration'>Duration</option>
-                        <option value='length'>Length</option>
-                        </select>
-                    </div>
                 </div>
             </div>
 
@@ -313,11 +304,13 @@ function init_dialog() {
     {# Start & End Date Picker #}
     // initialize date picker
     var start_end_date_range_picker = $('#start_end_date_range_picker').datepicker();
+
     start_end_date_range_picker.datepicker('setDate', start_date_value);
 
     $('.date-picker').datepicker().next().on(ace.click_event, function(){
                 $(this).prev().focus();
             });
+    $( ".date-picker" ).datepicker( "option", "maxDate", "0");
 
     start_end_date_range_picker.on('shown', function (e) {
         e.stopPropagation();

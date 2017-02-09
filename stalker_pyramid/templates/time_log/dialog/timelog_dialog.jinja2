@@ -594,6 +594,7 @@ function init_dialog() {
 
     {# ***************************************************************** #}
     {# Start & End Date Picker #}
+    start_end_date_range_picker.datepicker({maxDate: '0'});
     start_end_date_range_picker.datepicker('setDate', start_date_value);
 
     $('.date-picker').datepicker().next().on(ace.click_event, function(){

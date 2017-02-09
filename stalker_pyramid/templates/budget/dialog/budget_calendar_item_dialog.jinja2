@@ -88,27 +88,28 @@
                 var delete_button = $(this);
                 delete_button.button('loading');
 
-                var confirm_message =
-                    '<h3 class="header red"><i class="icon-warning-sign">' +
-                    '</i> Warning</h3>' +
-                    '<div id="message" class="alert alert-info bigger-110">' +
-                    'Are you sure you want to  delete this item?' +
-                    '</div>';
-
-                bootbox.confirm(confirm_message, function (result) {
-                    if (result) {
-                        $.post(
-                                '/budgets/{{ budget.id }}/calendar/{{ item.type }}/delete?id={{item.id }}'
-                        ).done(function (jqXHR) {
-                            gantt.deleteTask('{{ item.id }}');
-                            $('#dialog_template').modal('hide');
-                        }).fail(function (jqXHR) {
-                            bootbox.alert(jqXHR.responseText);
-                        });
-                    } else {
-                        delete_button.button('reset');
-                    }
-                });
+                deleteItem('{{item.id }}');
+{#                var confirm_message =#}
+{#                    '<h3 class="header red"><i class="icon-warning-sign">' +#}
+{#                    '</i> Warning</h3>' +#}
+{#                    '<div id="message" class="alert alert-info bigger-110">' +#}
+{#                    'Are you sure you want to  delete this item?' +#}
+{#                    '</div>';#}
+{##}
+{#                bootbox.confirm(confirm_message, function (result) {#}
+{#                    if (result) {#}
+{#                        $.post(#}
+{#                                '/budgets/{{ budget.id }}/calendar/{{ item.type }}/delete?id={{item.id }}'#}
+{#                        ).done(function (jqXHR) {#}
+{#                            deleteTaskFromGantt('{{ item.id }}');#}
+{#                            $('#dialog_template').modal('hide');#}
+{#                        }).fail(function (jqXHR) {#}
+{#                            bootbox.alert(jqXHR.responseText);#}
+{#                        });#}
+{#                    } else {#}
+{#                        delete_button.button('reset');#}
+{#                    }#}
+{#                });#}
             });
         {% endif %}
         console.debug('finished initializing the calendar_task dialog!')
