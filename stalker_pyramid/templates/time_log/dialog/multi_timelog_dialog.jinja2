@@ -408,7 +408,8 @@ function init_dialog() {
                 time_log_form.serialize() + '&' +
                 $.param({
                     'start': start.toUTCString(),
-                    'revision_type': $('#revision_type').val()
+                    'revision_type': $('#revision_type').val(),
+                    'schedule_model':'effort'
                 })
             ).done(function (response_text) {
                 if (submit_finalize_form_url){
