@@ -9,6 +9,25 @@
 
         <div class="row-fluid">
 
+            {# Price List #}
+            <div class='control-group'>
+                <label class='span3 control-label'
+                       for='good_pricelist'>Price List</label>
+                <div class="span5">
+                     <select id='good_pricelist'
+                            name='pricelist'
+                            data-placeholder='Price list'
+                            required>
+                    </select>
+{#                    <input id='good_pricelist'#}
+{#                               class='input-block-level'#}
+{#                               name='pricelist'#}
+{#                               type='text'#}
+{#                               placeholder='Price List'#}
+{#                               >#}
+                </div>
+            </div>
+
             {# Good #}
             <div class='control-group'>
                 <label class='span3 control-label'
@@ -157,27 +176,73 @@
         var budgetentry_second_amount = $('#budgetentry_second_amount');
         var budgetentry_msrp = $('#budgetentry_msrp');
         var budgetentry_cost = $('#budgetentry_cost');
+        var budgetentry_price = $('#budgetentry_price');
+        var filtered_goods= [];
+        var price_lists = [];
+        var msrp = 0;
 
         {# Good ******************************************************* #}
+        {% raw %}
+            var pl_option_template = doT.template(
+                    '<option value={{=it.id}}>{{=it.name}}</option>'
+            );
+        {% endraw %}
         {% raw %}
             var good_option_template = doT.template(
                     '<option value={{=it.id}}_{{=it.unit }}>{{=it.name}}</option>'
             );
         {% endraw %}
+
         var budgetentry_good = $('#budgetentry_good');
+        var good_pricelist = $('#good_pricelist');
         $.getJSON('/goods/').then(function (g_data) {
-            var filtered_goods= [];
+            filtered_goods= [];
+            price_lists = [];
             for (var i=0;i<g_data.length;i++){
                 if(g_data[i].type_name == "Custom"){
+                    var index = findArrayElement(price_lists,'id', g_data[i].price_list_id);
+                    if(index ==-1){
+                       price_lists.push({
+                                            'name':g_data[i].price_list_name,
+                                            'id':g_data[i].price_list_id}
+                        );
+                    }
+
                     filtered_goods.push(g_data[i]);
                 }
             }
-            chosen_searchable_field_creator_by_data(budgetentry_good, good_option_template, filtered_goods);
+
+            chosen_searchable_field_creator_by_data(good_pricelist, pl_option_template, price_lists);
+            good_pricelist.trigger('liszt:updated');
+
             {% if mode=='update' %}
+                var pricelist_id = '{{ budgetentry.good.price_lists[0].id }}';
+                good_pricelist.val(pricelist_id);
+                var new_good_list = [];
+                for (var i=0;i<filtered_goods.length;i++){
+                    if(filtered_goods[i].price_list_id == pricelist_id){
+                        new_good_list.push(filtered_goods[i]);
+                    }
+                }
+                chosen_searchable_field_creator_by_data(budgetentry_good, good_option_template, new_good_list);
+                budgetentry_good.trigger('liszt:updated');
 
                 budgetentry_good.val('{{ budgetentry.good.id }}_{{ budgetentry.good.unit }}');
             {% endif %}
+            good_pricelist.trigger('liszt:updated');
             budgetentry_good.trigger('liszt:updated');
+
+            good_pricelist.on('change', function(){
+                var new_good_list = [];
+                for (var i=0;i<filtered_goods.length;i++){
+                    if(filtered_goods[i].price_list_id == $(this).val()){
+                        new_good_list.push(filtered_goods[i]);
+                    }
+                }
+                chosen_searchable_field_creator_by_data(budgetentry_good, good_option_template, new_good_list);
+                budgetentry_good.trigger('liszt:updated');
+            });
+
         });
 
         {# Amount ******************************************************* #}
@@ -204,7 +269,8 @@
         {% if mode=='update' %}
             var amount = '{{ budgetentry.get_generic_text_attr("secondaryFactor")[0].amount}}';
             var second_amount = '{{ budgetentry.get_generic_text_attr("secondaryFactor")[0].second_amount}}';
-            var msrp = '{{ budgetentry.msrp}}';
+            msrp = '{{ budgetentry.msrp}}';
+
             budgetentry_amount.val(amount);
             budgetentry_second_amount.val(second_amount);
             budgetentry_msrp.val(amount*second_amount*msrp);
@@ -212,23 +278,38 @@
         {% endif %}
 
         budgetentry_good.on('change', function(){
+            var good_id = $(this).val().split('_')[0];
             var unit = $(this).val().split('_')[1];
+
             $('#good_unit_birim').text(unit.split('*')[0]);
+            budgetentry_amount.val(1);
+
             $('#good_unit_x').text(unit.split('*')[1]);
+            budgetentry_second_amount.val(1);
+
+            var index = findArrayElement(filtered_goods,'id', good_id);
+            msrp = filtered_goods[index].msrp;
+            budgetentry_msrp.val(msrp);
+            budgetentry_cost.val(filtered_goods[index].cost);
+            budgetentry_price.val(filtered_goods[index].cost);
         });
 
         {# Price ******************************************************* #}
 
         budgetentry_amount.on('change', function(){
-            calculate_price();
+            calculate_msrp_price();
         });
 
         budgetentry_second_amount.on('change', function(){
-            calculate_price();
+            calculate_msrp_price();
+        });
+
+        budgetentry_msrp.on('keyup', function(){
+           msrp = calculate_birim_msrp();
         });
 
         budgetentry_cost.on('keyup', function(){
-            calculate_price();
+            calculate_msrp_price();
         });
 
 
@@ -240,19 +321,15 @@
             return maliyet / (amount*second_amount);
         }
 
-        function calculate_price(){
+        function calculate_msrp_price(){
             var birim_fiyat = parseFloat(budgetentry_cost.val());
             var amount = parseFloat(budgetentry_amount.val());
             var second_amount = parseFloat(budgetentry_second_amount.val());
 
             var price = birim_fiyat*amount*second_amount;
-            $('#budgetentry_price').val(price);
+            budgetentry_price.val(price);
+            budgetentry_msrp.val(msrp*amount*second_amount);
         }
-
-        {% if mode == 'update' %}
-
-        {% endif %}
-
 
         {# ***************************************************************** #}
         {# Submit Button #}

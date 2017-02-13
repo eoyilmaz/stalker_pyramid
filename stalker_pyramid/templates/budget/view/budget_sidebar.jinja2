@@ -25,8 +25,8 @@
         );
         menu_of(
             'Bütçe',
-            "{%- if request.current_route_path() == request.route_path('view_budget_table_detail', id=entity.id, mode='table_detail') -%}'active',{%- else -%},{%- endif -%}",
-            '{{ request.route_url('view_budget_table_detail', id=entity.id, mode='table_detail') }}',
+            "{%- if request.current_route_path() == request.route_path('view_budget_table_summary', id=entity.id, mode='table_summary') -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('view_budget_table_summary', id=entity.id, mode='table_summary') }}',
             get_icon('budget'),
             ''
         );

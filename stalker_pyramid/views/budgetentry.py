@@ -119,6 +119,9 @@ def create_budgetentry(request):
     cost = request.params.get('cost', good.cost)
     price = request.params.get('price', 0)
 
+    if name == '':
+        name = good.name
+
     amount = request.params.get('amount', None)
     second_amount = request.params.get('second_amount', None)
 
@@ -713,7 +716,8 @@ def get_budget_entries(request):
            "BudgetEntries_SimpleEntities".generic_text,
            "Goods_SimpleEntities".generic_text,
            "Goods_SimpleEntities".id,
-           pricelists.id as type_id
+           pricelists.id as type_id,
+           "GoodTypes_SimpleEntities".name
         from "BudgetEntries"
         join "SimpleEntities" as "BudgetEntries_SimpleEntities" on "BudgetEntries_SimpleEntities".id = "BudgetEntries".id
         join "SimpleEntities" as "Types_SimpleEntities" on "Types_SimpleEntities".id = "BudgetEntries_SimpleEntities".type_id
@@ -726,6 +730,7 @@ def get_budget_entries(request):
         join "Budgets" on "Budgets".id = "BudgetEntries".budget_id
         join "Goods" on "BudgetEntries".good_id = "Goods".id
         join "SimpleEntities" as "Goods_SimpleEntities" on "Goods_SimpleEntities".id = "Goods".id
+        left outer join "SimpleEntities" as "GoodTypes_SimpleEntities" on "GoodTypes_SimpleEntities".id = "Goods_SimpleEntities".type_id
 
         where "Budgets".id = %(budget_id)s
     """
@@ -748,7 +753,8 @@ def get_budget_entries(request):
             'generic_data': json.loads(r[10]) if r[10] else {},
             'good_generic_data': json.loads(r[11]) if r[11] else {},
             'good_id': r[12],
-            'type_id': r[13]
+            'type_id': r[13],
+            'good_type':r[14]
         }
         for r in result.fetchall()
     ]

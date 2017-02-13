@@ -78,21 +78,35 @@
                         <a class="white" href='/budgets/{{=it.id }}/view'>PANELE GİT</a>
                     </button>
                 </div>
-                <div class="center span3">
+                <div class="center span2">
                      <button class="btn btn-mini btn-success">
                         <a class="white" href='/budgets/{{=it.id }}/view/calendar'>TAKVİME GİT</a>
                     </button>
                 </div>
                 {{ if (it.item_duplicate_link) { }}
-                    <div class="span3">
+                    <div class="span2">
                          <button class="pull-right btn btn-mini btn-success">
                              <a  class="white"
                                 data-target="#dialog_template"
                                 data-toggle="modal"
-                                data-keyboard=false#}
+                                data-keyboard=false
                                 href="{{=it.item_duplicate_link}}">
                                 <i class="icon-copy bigger-130"></i>
                                  FARKLI KAYDET
+                            </a>
+                        </button>
+                    </div>
+               {{ } }}
+                {{ if (it.item_remove_link) { }}
+                    <div class="span2">
+                         <button class="pull-right btn btn-mini btn-danger">
+                             <a  class="white"
+                                data-target="#dialog_template"
+                                data-toggle="modal"
+                                data-keyboard=false
+                                href="{{=it.item_remove_link}}">
+                                <i class="icon-trash bigger-130"></i>
+                                 SIL
                             </a>
                         </button>
                     </div>

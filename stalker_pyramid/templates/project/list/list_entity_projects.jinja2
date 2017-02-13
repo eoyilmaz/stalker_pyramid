@@ -104,10 +104,14 @@
             <a href="/projects/{{=it.id }}/update/details/view?mode=Update">
                 <i class="icon-pencil"></i>
             </a>
-
-            <a href="#">
-                <i class="icon-remove red"></i>
-            </a>
+            {{ if (it.item_remove_link) { }}
+                <a data-target="#dialog_template"
+                    data-toggle="modal"
+                    data-keyboard=false
+                    href="{{=it.item_remove_link}}">
+                    <i class="icon-remove red"></i>
+                </a>
+            {{ } }}
         </div>
     </li>
  </script>

@@ -348,7 +348,7 @@
 {#                                        '<div class="gantt_cell gantt_add" onclick="createTaskDialog(\''+item.id+'\')"></div>'#}
                                         );
                             }
-                            return ('<i class="fa gantt_button_grid gantt_grid_delete icon-trash" onclick="createTaskDialog(\''+item.id+'\')"></i>');
+                            return ('<i class="fa gantt_button_grid gantt_grid_delete icon-trash" onclick="deleteItem(\''+item.id+'\')"></i>');
                         };
 
                 gantt.config.columns = [
@@ -650,7 +650,7 @@
                 var data = items.data[i];
                 var task = gantt.getTask(data.id);
                 var gantt_index = gantt.getGlobalTaskIndex(data.id);
-
+                console.log(task.name +" : "+gantt_index );
                 var item = {
                             'id':data.id,
                             'type':data.type,

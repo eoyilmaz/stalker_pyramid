@@ -522,7 +522,7 @@
                 grid_data = entry_data;
 
                 for(var j=0; j<grid_data.length; j++ ){
-                    if(grid_data[j].type == "Custom List"){
+                    if(grid_data[j].good_type == "Custom"){
                        grid_data[j].actions = "<a data-target='#dialog_template' data-toggle='modal' data-keyboard=false href='/budgetentries/"+grid_data[j].id+"/update/dialog?budget_id={{ entity.id }}'> <i class='icon-pencil'></i></a>"
                     }
                     grid_data[j].addition_type = grid_data[j].generic_data.dataSource;

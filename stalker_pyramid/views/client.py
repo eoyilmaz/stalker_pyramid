@@ -669,10 +669,11 @@ def generate_report(budget, output_path=''):
                                 json.loads(filtered_entity.generic_text)
 
                             # TODO: Generalize this
-                            filtered_entity.stoppage_add = filtered_entity.get_generic_text_attr('stoppage_add')
+                            stoppage_add = filtered_entity.get_generic_text_attr('stoppage_add')
+                            filtered_entity.stoppage_add = 1 if stoppage_add == 'Var' else 0
                             filtered_entity.overtime = filtered_entity.get_generic_text_attr('overtime')
 
-                            logger.debug('filtered_entity.stoppage_add: %s' % filtered_entity.stoppage_add)
+                            logger.debug('******filtered_entity.stoppage_add: %s' % filtered_entity.stoppage_add)
 
                             secondaryFactor = filtered_entity.get_generic_text_attr('secondaryFactor')
                             secondaryAmount = 0

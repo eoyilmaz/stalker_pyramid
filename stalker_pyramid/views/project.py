@@ -344,9 +344,6 @@ def inline_update_project(request):
     )
 
 
-
-
-
 @view_config(
     route_name='change_project_status_dialog',
     renderer='templates/project/dialog/change_project_status_dialog.jinja2'
@@ -459,7 +456,7 @@ def get_entity_projects(request):
                 'percent_complete': project.percent_complete,
                 'item_view_link': '/projects/%s/view' % project.id,
                 'item_remove_link': '/entities/%s/delete/dialog?came_from=%s'%(project.id, request.current_route_path())
-                if PermissionChecker(request)('Update_Project') else None,
+                if PermissionChecker(request)('Delete_Project') and project.status.code == 'PLN' else None,
                 'archive_project': project.get_generic_text_attr("archive_project")
 
             }

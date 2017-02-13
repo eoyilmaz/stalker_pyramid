@@ -408,19 +408,19 @@ def get_budgets(request):
             'status_code': r[8],
             'generic_data': json.loads(r[9]) if r[9] else {},
         }
-        # if update_budget_permission:
-        budget['item_update_link'] = \
-            '/budgets/%s/update/dialog' % budget['id']
-        budget['item_remove_link'] =\
-            '/entities/%s/delete/dialog?came_from=%s' % (
-                budget['id'],
-                request.current_route_path()
-            )
-        budget['item_duplicate_link'] =\
-            '/budgets/%s/duplicate/dialog?came_from=%s' % (
-                budget['id'],
-                request.current_route_path()
-            )
+        if update_budget_permission:
+            budget['item_update_link'] = \
+                '/budgets/%s/update/dialog' % budget['id']
+            budget['item_remove_link'] =\
+                '/entities/%s/delete/dialog?came_from=%s' % (
+                    budget['id'],
+                    request.current_route_path()
+                )
+            budget['item_duplicate_link'] =\
+                '/budgets/%s/duplicate/dialog?came_from=%s' % (
+                    budget['id'],
+                    request.current_route_path()
+                )
         budgets.append(budget)
     resp = Response(
         json_body=budgets
