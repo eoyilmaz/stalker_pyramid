@@ -1097,6 +1097,7 @@ def update_task(request):
 
     cut_in = int(request.params.get('cut_in', 1))
     cut_out = int(request.params.get('cut_out', 1))
+    fps = int(request.params.get('fps', 1))
 
     logger.debug('entity_type         : %s' % entity_type)
     logger.debug('parent_id           : %s' % parent_id)
@@ -1119,6 +1120,7 @@ def update_task(request):
     logger.debug('shot_sequence_id    : %s' % shot_sequence_id)
     logger.debug('cut_in              : %s' % cut_in)
     logger.debug('cut_out             : %s' % cut_out)
+    logger.debug('fps                 : %s' % fps)
 
     # before doing anything check permission
     if not p_checker('Update_' + entity_type):
@@ -1205,6 +1207,7 @@ def update_task(request):
             task.sequences = [sequence]
         task.cut_in = cut_in
         task.cut_out = cut_out
+        task.fps = fps
 
     task._reschedule(task.schedule_timing, task.schedule_unit)
     if update_bid:
@@ -3624,6 +3627,7 @@ def create_task(request):
 
     cut_in = request.params.get('cut_in')
     cut_out = request.params.get('cut_out')
+    fps = request.params.get('fps')
 
     logger.debug('entity_type         : %s' % entity_type)
     logger.debug('asset_type          : %s' % asset_type)
@@ -3644,6 +3648,7 @@ def create_task(request):
     logger.debug('shot_sequence_id    : %s' % shot_sequence_id)
     logger.debug('cut_in              : %s' % cut_in)
     logger.debug('cut_out             : %s' % cut_out)
+    logger.debug('fps                 : %s' % fps)
 
     kwargs = {}
     if not project_id or not name:
@@ -3751,6 +3756,7 @@ def create_task(request):
         kwargs['sequences'] = [sequence]
         kwargs['cut_in'] = int(cut_in or 1)
         kwargs['cut_out'] = int(cut_out or 1)
+        kwargs['fps'] = int(fps or 1)
 
     try:
         if entity_type == 'Asset':

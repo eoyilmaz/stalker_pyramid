@@ -122,6 +122,19 @@
                 </div>
             </div>
 
+            {# Shot FPS #}
+            <div class='shot_inputs control-group'>
+                <label class="span3 control-label" for='shot_fps'>FPS</label>
+                <div class='span9'>
+                    <input id='shot_fps'
+                           class='input-block-level'
+                           name='fps'
+                           is_updating=false
+                           {% if mode=='update' %}{% if entity.type %}value="{{ entity.fps }}"{% endif %}{% endif %}>
+
+                </div>
+            </div>
+
             <div class='shot_inputs control-group'>
                 <label class="span3 control-label" for='shot_cut_in'>Cut In & Out</label>
                 <div class='span9'>
@@ -136,6 +149,7 @@
                            is_updating=false
                            {% if mode=='update' %}{% if entity.type %}value="{{ entity.cut_out }}"{% endif %}{% endif %}>
                 </div>
+
             </div>
 
             {# Task Type #}
@@ -343,13 +357,15 @@ resource_name, status
         var selected_responsibles = [];
         var shot_cut_in = 1;
         var shot_cut_out = 1;
+        var shot_fps = 1;
         var shot_sequences =[];
         var disable_dependency_field = false;
         var good_id = null;
 
         {% if entity.entity_type == 'Shot' %}
             shot_cut_in = {{ entity.cut_in }};
-            shot_cut_out = {{ entity.cut_out }};
+            shot_cut_out = {{ entity.cut_out}};
+            shot_fps = {{ entity.fps }};
             {% if entity.sequences[0] %}
                 shot_sequences = '{{ entity.sequences[0].id }}';
             {% endif %}
@@ -700,6 +716,21 @@ resource_name, status
 
         // update it on initialize
         setTimeout(shot_sequence_updater, 100); // TODO: this is ugly
+
+
+        {# ***************************************************************** #}
+        {# FPS Spinner #}
+        $('#shot_fps').ace_spinner({
+            value: shot_fps,
+            min: 1,
+            step: 1,
+            btn_up_class: 'btn-info',
+            btn_down_class: 'btn-info'
+        }).on('change', function(){
+            // check if it is in the range
+            var curr_value = $(this).val();
+            $(this).val(curr_value <= 1 ? 1 : curr_value);
+        });
 
 
         {# ***************************************************************** #}
