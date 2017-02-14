@@ -176,7 +176,7 @@
 </div>
 
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/chosen.jquery.min.js") }}'></script>
-{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>#}
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/daterangepicker.min.js") }}'></script>
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-timepicker.min.js") }}'></script>
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.autosize-min.js") }}'></script>
@@ -303,14 +303,14 @@ function init_dialog() {
     {# ***************************************************************** #}
     {# Start & End Date Picker #}
     // initialize date picker
-    var start_end_date_range_picker = $('#start_end_date_range_picker').datepicker();
-
+    var start_end_date_range_picker = $('#start_end_date_range_picker');
+    start_end_date_range_picker.datepicker({maxDate: '0'});
     start_end_date_range_picker.datepicker('setDate', start_date_value);
 
     $('.date-picker').datepicker().next().on(ace.click_event, function(){
                 $(this).prev().focus();
             });
-    $( "#start_end_date_range_picker" ).datepicker({maxDate: "+1M +10D" });
+{#    $( "#start_end_date_range_picker" ).datepicker({maxDate: "+1M +10D" });#}
 
     start_end_date_range_picker.on('shown', function (e) {
         e.stopPropagation();

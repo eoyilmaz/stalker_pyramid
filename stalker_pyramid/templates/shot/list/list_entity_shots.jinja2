@@ -268,7 +268,7 @@
                             data[i].link = '/shots/' + data[i].id + '/view';
                             data[i].status_color = data[i].status.toLowerCase();
                             data[i].duration = data[i].cut_out - data[i].cut_in;
-                            
+
                             if(data[i].fps == null){
                                 data[i].fps = '{{ entity.project.fps }}';
                             }
