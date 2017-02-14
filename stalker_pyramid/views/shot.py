@@ -352,6 +352,7 @@ def get_shots(request):
     array_agg("Resources_SimpleEntities".id) as resource_id,
     "Shots".cut_in as cut_in,
     "Shots".cut_out as cut_out,
+    (coalesce("Shots".fps, 12)) as fps,
     array_agg(coalesce(reviews.rev_count, 0)) as review_num
 
 from "Tasks"
@@ -416,7 +417,8 @@ group by
     "Shot_Sequences".sequence_id,
     "Shot_Sequences_SimpleEntities".name,
     "Shots".cut_in,
-    "Shots".cut_out
+    "Shots".cut_out,
+    "Shots".fps
 order by "Shot_SimpleEntities".name
 """
 
@@ -464,6 +466,7 @@ order by "Shot_SimpleEntities".name
             'sequence_name': r[13],
             'cut_in': r[20],
             'cut_out': r[21],
+            'fps': r[22],
             'update_shot_action': '/tasks/%s/update/dialog' % r[0]
                 if update_shot_permission else None,
             'delete_shot_action': '/tasks/%s/delete/dialog' % r[0]
@@ -481,7 +484,7 @@ order by "Shot_SimpleEntities".name
         task_schedule_unit = r[17]
         task_resource_name = r[18]
         task_resource_id = r[19]
-        task_review_count = r[22]
+        task_review_count = r[23]
 
         r_data['nulls'] = []
 

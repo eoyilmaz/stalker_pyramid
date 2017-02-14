@@ -5739,7 +5739,7 @@ def get_task_events(request):
 
     task_ids = [task['id'] for task in all_tasks]
 
-    logger.debug("task_ids %s" % task_ids)
+    # logger.debug("task_ids %s" % task_ids)
 
     sql_query = """select
     "TimeLogs".id,
@@ -5759,7 +5759,7 @@ from "TimeLogs"
 where "TimeLogs".task_id in %s
     """ % str(task_ids).replace('[', '(').replace(']', ')')
 
-    logger.debug("sql_query %s" % sql_query)
+    # logger.debug("sql_query %s" % sql_query)
 
     # now query all the time logs
     from sqlalchemy import text  # to be able to use "%" sign use this function
