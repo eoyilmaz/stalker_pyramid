@@ -352,7 +352,7 @@ def get_shots(request):
     array_agg("Resources_SimpleEntities".id) as resource_id,
     "Shots".cut_in as cut_in,
     "Shots".cut_out as cut_out,
-    (coalesce("Shots".fps, 12)) as fps,
+    "Shots".fps as fps,
     array_agg(coalesce(reviews.rev_count, 0)) as review_num
 
 from "Tasks"
