@@ -1026,6 +1026,7 @@ def inline_update_task(request):
         else:
             if attr_name == 'cut_in' \
                or attr_name == 'cut_out' \
+               or attr_name == 'fps' \
                or attr_name == 'priority':
                 attr_value = int(attr_value)
 

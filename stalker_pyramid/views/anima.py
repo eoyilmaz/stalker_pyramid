@@ -396,7 +396,7 @@ from (
                                                     else 0
                                                 end) as schedule_seconds,
                         "Shot_SimpleEntities".name as shot_name,
-                        ("Shots".cut_out - "Shots".cut_in)/%(project_fps)s as seconds,
+                        ("Shots".cut_out - "Shots".cut_in)/(coalesce("Shots".fps, %(project_fps)s)) as seconds,
                         "Statuses".code as status_code,
                         "Scene_SimpleEntities".name as scene_name,
                         "Tasks".start as start

@@ -24,6 +24,10 @@
                             <td style="text-align: left"><strong>Cut Duration</strong></td>
                             <td><span class="editable" id="shot_view_cut_duration">{{ entity.cut_duration }} frames</span></td>
                         </tr>
+                        <tr>
+                            <td style="text-align: left"><strong>FPS</strong></td>
+                            <td><span class="editable" id="shot_view_fps">{{ entity.fps }} fps</span></td>
+                        </tr>
 
                     </tbody>
                 </table>
@@ -93,6 +97,28 @@
                     success: function (response, newValue) {
                         var params = $.param({
                             attr_name: 'cut_out',
+                            attr_value: parseInt(newValue)
+                        });
+
+                        $.post(
+                            inline_update_url, params
+                        ).done(function () {
+                            console.log('done');
+                        }).fail(function (jqXHR) {
+                            bootbox.alert('<div id="message" class="alert alert-danger bigger-110">' + jqXHR.responseText + '</div>');
+                        });
+                    }
+                });
+
+                $('#shot_view_fps').editable({
+                    type: 'spinner',
+                    name: 'fps',
+                    spinner : {
+                                min : 0, max:30, step:1
+                            },
+                    success: function (response, newValue) {
+                        var params = $.param({
+                            attr_name: 'fps',
                             attr_value: parseInt(newValue)
                         });
 
