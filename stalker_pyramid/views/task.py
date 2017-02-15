@@ -6702,6 +6702,31 @@ def add_tasks_dependencies(request):
 
 
 @view_config(
+    route_name='makedir_task'
+)
+def makedir_task(request):
+    """add task to the logged in users watch list
+    """
+    logged_in_user = get_logged_in_user(request)
+
+    task_id = request.matchdict.get('id')
+    task = Task.query.get(task_id)
+
+    children = find_leafs_in_hierarchy(task, [])
+
+    for child in children:
+        try:
+            os.makedirs(child.absolute_path)
+        except OSError:
+                pass
+
+    # invalidate all caches
+    invalidate_all_caches()
+
+    return Response('Task successfully added to watch list')
+
+
+@view_config(
     route_name='watch_task'
 )
 def watch_task(request):

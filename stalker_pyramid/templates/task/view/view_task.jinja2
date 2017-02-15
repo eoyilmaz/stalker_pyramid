@@ -128,12 +128,11 @@
                                                            </span>
                                                     </a>
                                                 </li>
-
                                             {% endif %}
                                         {% endif %}
                                     </ul>
-                                 </div>
-                             {% endif %}
+                                </div>
+                            {% endif %}
                         {% endif %}
                     {% endif %}              
                 <br>
@@ -159,8 +158,14 @@
                         <i class="icon-comment-alt"></i>
                     </button>
                 {% endif %}
-
-
+                {% if (logged_in_user in entity.resources or logged_in_user in entity.responsible) and entity.status.code in ['RTS', 'WFD']%}
+                    <a id='make_folder_button'
+                       class="btn btn-inverse btn-small"
+                       title='Make Folder'
+                       href="/tasks/{{ entity.id }}/makedir">
+                        <i class="icon-folder-open"></i>
+                    </a>
+                {% endif %}
 
                 <a id='watch_or_unwatch_task_button'
                    class="btn btn-inverse btn-small"

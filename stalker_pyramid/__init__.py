@@ -830,6 +830,7 @@ def main(global_config, **settings):
     config.add_route('fix_task_statuses',      'tasks/{id}/fix/statuses/')
     config.add_route('fix_task_schedule_info', 'tasks/{id}/fix/schedule_info/')
 
+    config.add_route('makedir_task',   'tasks/{id}/makedir')
     config.add_route('watch_task',   'tasks/{id}/watch')
     config.add_route('unwatch_task', 'tasks/{id}/unwatch')
     config.add_route('watch_tasks',   'tasks/watch')
