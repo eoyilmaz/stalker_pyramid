@@ -275,8 +275,6 @@ def assign_reference(request):
     full_paths = request.POST.getall('full_paths[]')
     original_filenames = request.POST.getall('original_filenames[]')
 
-
-
     entity_id = request.params.get('entity_id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
 
@@ -285,7 +283,6 @@ def assign_reference(request):
 
     #Description
     description = request.params.get('description', '')
-
 
     logger.debug('full_paths         : %s' % full_paths)
     logger.debug('original_filenames : %s' % original_filenames)
@@ -367,8 +364,12 @@ def update_reference(request):
     # Tags
     tags = get_tags(request)
 
+    #Description
+    description = request.params.get('description', '')
+
     if ref:
         ref.tags = tags
+        ref.description = description
     else:
         return Response('No reference with id: %s' % ref_id)
 
