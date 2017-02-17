@@ -47,6 +47,18 @@
                placeholder="Enter tags ..."
                value="{% for tag in reference.tags %}{% if loop.index0>0 %},{% endif %}{{tag.name}}{% endfor %}"/>
     </div>
+
+    <div class="control-group">
+        <textarea id="description"
+                  name='description'
+                  class="span12"
+                  placeholder="Enter description ..."
+                  style="overflow: hidden;
+                         word-wrap: break-word;
+                         resize: horizontal;
+                         height: 80px;"
+                >{{ reference.description }}</textarea>
+    </div>
 </div>
 
 <!--inline scripts related to this page-->

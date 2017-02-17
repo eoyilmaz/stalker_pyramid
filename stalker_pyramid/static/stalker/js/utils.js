@@ -428,13 +428,16 @@ function page_of(name, code, thumbnail_full_path, update_link) {
     'use strict';
     var sidebar_list = $('#sidebar_list');
     var media_template = doT.template($('#tmpl_sidebar_media').html());
-
-    sidebar_list.append(media_template({
+    var dic = {
         'name': name,
         'thumbnail_full_path': thumbnail_full_path,
         'code': code,
         'update_link': update_link
-    }));
+    };
+
+  
+
+    sidebar_list.append(media_template(dic));
 }
 
 

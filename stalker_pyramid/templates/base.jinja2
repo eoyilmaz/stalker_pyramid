@@ -196,6 +196,11 @@
                 </h5>
                 {{ if (it.update_link) { }}
                     <a href={{=it.update_link}}
+                       {{ if (it.modal_view) { }}
+                        data-target="#dialog_template"
+                        data-toggle="modal"
+                        data-keyboard=false
+                       {{ } }}
                        class="menu-text">
                         <i class="icon-edit"></i>
                         Update

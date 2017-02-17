@@ -275,17 +275,24 @@ def assign_reference(request):
     full_paths = request.POST.getall('full_paths[]')
     original_filenames = request.POST.getall('original_filenames[]')
 
+
+
     entity_id = request.params.get('entity_id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
 
     # Tags
     tags = get_tags(request)
 
+    #Description
+    description = request.params.get('description', '')
+
+
     logger.debug('full_paths         : %s' % full_paths)
     logger.debug('original_filenames : %s' % original_filenames)
     logger.debug('entity_id          : %s' % entity_id)
     logger.debug('entity             : %s' % entity)
     logger.debug('tags               : %s' % tags)
+    logger.debug('description        : %s' % description)
 
     links = []
     if entity and full_paths:
@@ -295,6 +302,7 @@ def assign_reference(request):
             l.created_by = logged_in_user
             l.date_created = local_to_utc(datetime.datetime.now())
             l.date_updated = l.date_created
+            l.description = description
 
             for tag in tags:
                 if tag not in l.tags:
@@ -312,15 +320,13 @@ def assign_reference(request):
     return [
         {
             'id': link.id,
-
             'original_filename': link.original_filename,
-
             'hires_full_path': link.full_path,
             'webres_full_path': link.thumbnail.full_path,
             'thumbnail_full_path': link.thumbnail.thumbnail.full_path
-                     if link.thumbnail.thumbnail else link.thumbnail.full_path,
-
-            'tags': [tag.name for tag in link.tags]
+                if link.thumbnail.thumbnail else link.thumbnail.full_path,
+            'tags': [tag.name for tag in link.tags],
+            'description': description
         } for link in links
     ]
 
@@ -523,7 +529,9 @@ select
 
     array_agg(tasks.id) as entity_id,
     array_agg(tasks.full_path) as entity_full_path,
-    array_agg(tasks.entity_type) as entity_type
+    array_agg(tasks.entity_type) as entity_type,
+
+    "Links_ForWeb_SimpleEntities".description as description
 
 -- start with tasks (with full names)
 from (
@@ -559,7 +567,8 @@ group by "Links".id,
     "Links_ForWeb".full_path,
     "Links".original_filename,
     "Thumbnails".id,
-    tags.name
+    tags.name,
+    "Links_ForWeb_SimpleEntities".description
 ) as data
 
 order by data.id
@@ -593,11 +602,13 @@ limit {limit}
             'tags': r[5],
             'entity_ids': r[6],
             'entity_names': r[7],
-            'entity_types': r[8]
+            'entity_types': r[8],
+            'description': r[9]
         } for r in result.fetchall()
     ]
 
     return return_val
+
 
 @view_config(route_name='get_project_references_count', renderer='json')
 @view_config(route_name='get_task_references_count', renderer='json')

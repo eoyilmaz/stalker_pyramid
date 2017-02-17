@@ -25,15 +25,30 @@
     <div class="span12">
 
         {# Tags #}
-        <div id="tags_control_group" class="control-group">
-            <div class="controls">
+        <div id="tags_control_group" >
+            <div class="control-group">
                 <input id="reference_tags_input"
                        type="text"
                        class="span12"
                        name="tags"
                        placeholder="Enter tags ..."/>
+
+            </div>
+
+            <div class="control-group">
+                <textarea id="description"
+                          name='description'
+                          class="span12"
+                          placeholder="Enter description ..."
+                          style="overflow: hidden;
+                                 word-wrap: break-word;
+                                 resize: horizontal;
+                                 height: 80px;"
+                        ></textarea>
             </div>
         </div>
+
+
 
         {# Dropzone #}
         <div id="dropzone">
