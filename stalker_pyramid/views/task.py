@@ -6723,7 +6723,7 @@ def makedir_task(request):
     # invalidate all caches
     invalidate_all_caches()
 
-    return Response('Task successfully added to watch list')
+    return Response('Task folders are created successfully')
 
 
 @view_config(
