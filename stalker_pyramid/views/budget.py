@@ -567,20 +567,12 @@ def change_budget_status(request):
         transaction.abort()
         return Response('There is no status with code %s' % status_code, 500)
 
-    approved_total_price = request.params.get('approved_total_price', 0)
-    total_cost = request.params.get('total_cost', 0)
-    total_price = request.params.get('total_price', 0)
+    approved_total_price = request.params.get('approved_total_price', None)
 
-    logger.debug("approved_total_price : %s" % approved_total_price)
+    if approved_total_price:
+        budget.set_generic_text_attr("approved_total_price", approved_total_price)
 
-    budget.set_generic_text_attr("approved_total_price", approved_total_price)
-    budget.set_generic_text_attr("total_cost", total_cost)
-    budget.set_generic_text_attr("total_price", total_price)
-
-    description = request.params.get('description', 'No description')
-
-    if not description:
-        return Response('Please supply a description', 500)
+    description = request.params.get('description', '')
 
     from stalker_pyramid.views.note import create_simple_note
     note = create_simple_note(description,
@@ -644,7 +636,7 @@ def duplicate_budget(request):
         return Response('There is no budget with id %s' % budget_id, 500)
 
     name = request.params.get('name', None)
-    description = request.params.get('description', None)
+    description = request.params.get('description', '')
     status_code = request.params.get('status_code', 'PLN')
     logger.debug("status_code %s " % status_code)
     from stalker_pyramid.views.type import query_type
@@ -654,9 +646,6 @@ def duplicate_budget(request):
 
     if not name:
         return Response('Please supply a name', 500)
-
-    if not description:
-        return Response('Please supply a description', 500)
 
     if not status:
         return Response('Please supply a status', 500)
@@ -681,7 +670,7 @@ def duplicate_budget(request):
     for budget_entry in budget.entries:
         new_budget_entry = BudgetEntry(
             budget=new_budget,
-            good= budget_entry.good,
+            good=budget_entry.good,
             name=budget_entry.name,
             type=budget_entry.type,
             amount=budget_entry.amount,

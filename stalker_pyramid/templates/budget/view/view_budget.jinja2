@@ -124,19 +124,10 @@
 </style>
     <script type="text/javascript">
         $(document).ready(function () {
-            console.log("{{ entity.get_generic_text_attr('total_cost') }}");
-            var total_cost = {{ entity.get_generic_text_attr('total_cost') }};
-            var total_msrp = {{ entity.get_generic_text_attr('total_msrp') }};
-            var total_price = {{ entity.get_generic_text_attr('total_price') }};
-            var approved_total_price = {{ entity.get_generic_text_attr('approved_total_price') }};
 
-            calculateSummaryTotals(total_msrp, total_cost, total_price);
-
-            $('#total_cost_top').text(accounting.formatMoney(total_cost, { symbol: "TL",  format: "%v %s" }));
-            $('#total_price_top').text(accounting.formatMoney(total_price, { symbol: "TL",  format: "%v %s" }));
-            $('#approved_total_price').text(accounting.formatMoney(approved_total_price, { symbol: "TL",  format: "%v %s" }));
-            $('#start_date').text(moment({{ entity.get_generic_text_attr('start_date') }}).format('DD/MM/YYYY'));
-            $('#end_date').text(moment({{ entity.get_generic_text_attr('end_date') }}).format('DD/MM/YYYY'));
+            var total_cost = parseInt({{ entity.get_generic_text_attr('total_cost') }});
+            var total_price = parseInt({{ entity.get_generic_text_attr('total_price') }});
+            var approved_total_price = parseInt({{ entity.get_generic_text_attr('approved_total_price') }});
 
             $.jqplot._noToImageButton = true;
             $.jqplot.config.enablePlugins = true;

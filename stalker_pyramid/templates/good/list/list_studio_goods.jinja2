@@ -244,11 +244,11 @@
                                 {name:'updated_by',index:'updated_by', width:100, sortable:true, editable: false},
                                 {name:'date_updated',index:'date_updated', width:100, sortable:true, editable: false}
                             ],
-                            height: 700,
-                            rowNum: 10,
+                            height: 'auto',
+                            rowNum: grid_data.length,
                             viewrecords : true,
                             rowList:[20, 50, 100],
-                            pager : pager_selector,
+                            pager : false,
                             altRows: true,
                           {#toppager: true,#}
                             multiselect: false,

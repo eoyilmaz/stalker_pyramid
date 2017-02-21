@@ -578,26 +578,31 @@ def get_entity_users(request):
         where "Entity_Users".did = %(id)s
         """ % {'id': entity_id, 'role_query': role_query}
         sql_query = sql_query % {'new_attr': new_attr}
+
     elif entity_type == "Group":
         sql_query += """join "Group_Users" as "Entity_Users" on "Users".id = "Entity_Users".uid
 
         where "Entity_Users".gid = %(id)s
         """ % {'id': entity_id}
         sql_query = sql_query % {'new_attr': ""}
+
     elif entity_type == "Task":
         sql_query += """join "Task_Resources" on "Users".id = "Task_Resources".resource_id
         where "Task_Resources".task_id = %(id)s
         """ % {'id': entity_id}
         sql_query = sql_query % {'new_attr': new_attr}
+
     elif entity_type == "Client":
         sql_query += """join "Client_Users" as "Entity_Users" on "Users".id = "Entity_Users".uid
         %(role_query)s
         where "Entity_Users".cid = %(id)s
         """ % {'id': entity_id, 'role_query': role_query}
         sql_query = sql_query % {'new_attr': new_attr}
+
     elif entity_type == "User":
         sql_query += 'where "Users".id = %s' % entity_id
         sql_query = sql_query % {'new_attr': ""}
+
     elif entity_type == "Studio":
         sql_query = sql_query % {'new_attr': ""}
 
@@ -1427,7 +1432,7 @@ def update_entity_user(request):
     if entity.entity_type == "Studio":
         if rate:
             user.rate = int(rate)
-
+            logger.debug('rate: %s' % rate)
             user.date_updated = utc_now
             user.updated_by = logged_in_user
 

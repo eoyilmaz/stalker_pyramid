@@ -325,10 +325,7 @@ def update_good(request):
         good.updated_by = logged_in_user
         good.date_updated = utc_now
 
-        good.generic_text = update_generic_text(good.generic_text,
-                                                 "stopage_ratio",
-                                                 stopage_ratio,
-                                                 'equal')
+        good.set_generic_text_attr('stopage_ratio', stopage_ratio)
 
         DBSession.add(good)
 
@@ -341,11 +338,9 @@ def update_good(request):
         logger.debug('***update group method ends ***')
     else:
         logger.debug('not all parameters are in request.params')
-        log_param(request, 'group_id')
-        log_param(request, 'name')
+
         response = Response(
-            'There are missing parameters: '
-            'good_id: %s, name: %s' % (good_id, name), 500
+            'There are missing parameters: ', 500
         )
         transaction.abort()
         return response

@@ -69,7 +69,24 @@ SimpleEntity.get_generic_text_attr = get_generic_text_attr
 SimpleEntity.set_generic_text_attr = set_generic_text_attr
 
 
+def get_active_budget(self):
+    """patch Simple entity to add new functionality
+    """
 
+
+    import json
+    data = {}
+    active_budget = None
+    if self.generic_text:
+        data = json.loads(self.generic_text)
+        active_budget_id = data.get('active_budget_id')
+
+        if active_budget_id:
+            active_budget = Budget.query.filter(Budget.id == active_budget_id).first()
+
+    return active_budget
+
+Project.get_active_budget = get_active_budget
 
 
 def main(global_config, **settings):

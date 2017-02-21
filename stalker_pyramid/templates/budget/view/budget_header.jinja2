@@ -78,6 +78,19 @@
                                </span>
                         </a>
                     </li>
+                {% elif entity.status.code == 'HREV'%}
+                    <li>
+                        <a href="/budgets/{{entity.id}}/status/PREV/dialog?came_from={{ request.current_route_path() }}"
+                           class="tooltip-success"
+                           data-target="#dialog_template"
+                           data-toggle="modal"
+                           data-keyboard=false
+                           data-placement="top">
+                               <span class="blue">
+                                   <i class="icon-comment bigger-110"></i>PREV
+                               </span>
+                        </a>
+                    </li>
 
                 {% endif %}
                 <li>
@@ -92,18 +105,7 @@
                            </span>
                     </a>
                 </li>
-                <li>
-                        <a href="/budgets/{{entity.id}}/status/PREV/dialog?came_from={{ request.current_route_path() }}"
-                           class="tooltip-success"
-                           data-target="#dialog_template"
-                           data-toggle="modal"
-                           data-keyboard=false
-                           data-placement="top">
-                               <span class="blue">
-                                   <i class="icon-comment bigger-110"></i>PREV
-                               </span>
-                        </a>
-                    </li>
+
 
 {#                <li>#}
 {#                    <a href="/budgets/{{entity.id}}/status/CLS/dialog?came_from={{ request.current_route_path() }}"#}

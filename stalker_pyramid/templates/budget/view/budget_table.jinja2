@@ -77,7 +77,7 @@
     <script>
         $.jgrid.defaults.autowidth = true;
         $.jgrid.defaults.responsive = true;
-        $.jgrid.defaults.styleUI = 'Bootstrap';
+{#        $.jgrid.defaults.styleUI = 'Bootstrap';#}
     </script>
     <style type="text/css">
     .ui-jqgrid .ui-jqgrid-labels th.ui-th-column {
@@ -91,8 +91,6 @@
     }
     </style>
     <script type="text/javascript">
-
-
 
         $(document).ready(function () {
 
@@ -467,16 +465,16 @@
                 $('#total_discount').text(accounting.formatMoney(discount, { symbol: "TL",  format: "%v %s" }));
                 $('#total_discount_proportion').text(((discount/total_cost)*100).toFixed(2) + "%");
 
-                calculateSummaryTotals(total_msrp, total_cost, total_price);
+                calculateSummaryTotals(total_msrp, total_cost, total_price, {{ approved_total_price }});
 
                 $.post(
                     '/budgets/{{ entity.id }}/set/totals?total_cost='+total_cost+'&total_price='+total_price+'&total_msrp='+total_msrp
                 ).done(function (response_text) {
-{#                       flash_message({#}
-{#                            type: "success",#}
-{#                            title: "Success!",#}
-{#                            message: response_text#}
-{#                        });#}
+                       flash_message({
+                            type: "success",
+                            title: "Success!",
+                            message: response_text
+                        });
                 }).fail(function (jqXHR) {
                     bootbox.alert('<div id="message" class="alert alert-danger bigger-110">'+jqXHR.responseText+'</div>');
                 });

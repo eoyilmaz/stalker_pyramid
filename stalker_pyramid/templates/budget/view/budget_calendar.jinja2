@@ -369,15 +369,7 @@
                     var total_items = [];
                     var budget_entries = entry_data;
                     var folder_list = [];
-                    var project = {
-                                            id:project_id,
-                                            text:project_name,
-                                            start_date:budget_start.format('DD MM YYYY'),
-                                            end_date:budget_end.format('DD MM YYYY'),
-                                            resources:'-',
-                                            type:'project',
-                                            open:true
-                                        };
+                    var project;
 
                     if(budget_entries.length != 0){
                         project = {
@@ -392,9 +384,23 @@
                             if(budget_entries[j].generic_data.dataSource == "Calendar"){
                                 var secondaryFactor = budget_entries[j].generic_data.secondaryFactor;
                                 total_number_of_items += secondaryFactor.length;
+                                console.log("budget_entries.length : "+ total_number_of_items)
                             }
                         }
                     }
+
+                    if(total_number_of_items == 1){
+                         project = {
+                                        id:project_id,
+                                        text:project_name,
+                                        start_date:budget_start.format('DD MM YYYY'),
+                                        end_date:budget_end.format('DD MM YYYY'),
+                                        resources:'-',
+                                        type:'project',
+                                        open:true
+                                    };
+                    }
+
                     items.data.push(project);
                     total_items.push(project);
 

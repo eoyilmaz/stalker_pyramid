@@ -48,24 +48,25 @@
                 <td id="ongorulen_kar">-</td>
                 <td id="gerceklesen_kar">-</td>
                 <td id="ongorulen_kar_yuzdesi">-</td>
-                <td id="kar_yudesi">-</td>
+                <td id="kar_yuzdesi">-</td>
             </tr>
         </tbody>
     </table>
 </div>
 
+<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/accounting.min.js") }}'></script>
 <script type="text/javascript">
 
 
-    function calculateSummaryTotals(tMsrp, tCost, tPrice){
-
+    function calculateSummaryTotals(tMsrp, tCost, tPrice, aTotalPrice){
+        console.log("calculateSummaryTotals")
         $('#ara_toplam').text(accounting.formatMoney(tPrice, { symbol: "TL",  format: "%v %s" }));
         var yapimevi_servisi = tPrice*0.15;
         $('#yapimevi_servisi').text(accounting.formatMoney(yapimevi_servisi, { symbol: "TL",  format: "%v %s" }));
         var net_toplam = tPrice+yapimevi_servisi;
         $('#net_toplam').text(accounting.formatMoney(net_toplam, { symbol: "TL",  format: "%v %s" }));
-        var onaylanan_net_tutar = parseInt('{{ approved_total_price }}');
-        $('#onaylanan_net_tutar').text(accounting.formatMoney('{{ approved_total_price }}', { symbol: "TL",  format: "%v %s" }));
+        var onaylanan_net_tutar = parseInt(aTotalPrice);
+        $('#onaylanan_net_tutar').text(accounting.formatMoney(aTotalPrice, { symbol: "TL",  format: "%v %s" }));
 
         var son_tutar = net_toplam;
         if(onaylanan_net_tutar>0){
@@ -86,9 +87,30 @@
         $('#ongorulen_kar').text(accounting.formatMoney(ongorulen_kar, { symbol: "TL",  format: "%v %s" }));
         var gerceklesen_kar = son_tutar - gerceklesen_maliyet;
         $('#gerceklesen_kar').text(accounting.formatMoney(gerceklesen_kar, { symbol: "TL",  format: "%v %s" }));
-        var ongorulen_kar_yuzdesi = (100*(ongorulen_kar/ net_toplam)).toFixed(2);
+        console.log("onaylanan_net_tutar: "+ onaylanan_net_tutar);
+        console.log("son_tutar: "+ son_tutar);
+        console.log("net_toplam: "+ net_toplam);
+        var ongorulen_kar_yuzdesi = (100*(ongorulen_kar/ son_tutar)).toFixed(2);
+        if (isNaN(ongorulen_kar_yuzdesi)){
+            ongorulen_kar_yuzdesi = 0;
+        }
         $('#ongorulen_kar_yuzdesi').text(ongorulen_kar_yuzdesi+"%");
-        var kar_yudesi = (100*(gerceklesen_kar/ son_tutar)).toFixed(2);
-        $('#kar_yudesi').text(kar_yudesi+"%");
+        var kar_yuzdesi = (100*(gerceklesen_kar/ son_tutar)).toFixed(2);
+        if (isNaN(kar_yuzdesi)){
+            kar_yuzdesi = 0;
+        }
+        $('#kar_yuzdesi').text(kar_yuzdesi+"%");
+
     }
+
+    $(document).ready(function () {
+        {% if budget %}
+            var total_msrp = parseInt({{ budget.get_generic_text_attr('total_msrp') }});
+            var total_cost = parseInt({{ budget.get_generic_text_attr('total_cost') }});
+            var total_price = parseInt({{ budget.get_generic_text_attr('total_price') }});
+            var approved_total_price = parseInt({{ budget.get_generic_text_attr('approved_total_price') }});
+
+            calculateSummaryTotals(total_msrp, total_cost, total_price, approved_total_price);
+        {% endif %}
+    });
 </script>

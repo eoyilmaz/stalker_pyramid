@@ -335,13 +335,13 @@
                                     {name:'remove_action', index:'remove_action', width:60, editable: false}
                                 ],
                                 viewrecords : true,
-                                rowNum:15,
-                                rowList:[15, 30, 50],
-                                pager: pager_selector,
+                                pager: false,
+                                rowNum:grid_data.length,
+					            rowList:[grid_data.length],
                                 altRows: true,
                                 multiselect: false,
                                 loadonce: true,
-                                height: 700,
+                                height: 'auto',
                                 autowidth: true,
                                 sortname: 'name',
                                 footerrow: false, // set a footer row
