@@ -295,6 +295,7 @@
             var items_per_page = options.items_per_page;
 
             var offset = (current_page - 1) * items_per_page;
+            console.log("options.url: "+ options.url)
             // now generate the template items
             $.getJSON(options.url,
                       $.param({
@@ -310,6 +311,7 @@
                 remove_thumbnails({
                     container: cbox_element
                 });
+
                 for (var i = 0; i < ref_count; i++) {
 {#                    console.log('data: '+i);#}
                     append_thumbnail({
@@ -436,10 +438,12 @@
 
                 // get search string
                 var search_string = $('#reference_search_field').val();
+                console.log("count_url: "+ count_url);
                 $.getJSON(count_url,
                     $.param({
                       'search': search_string
                     })).then(function (data) {
+                    console.log("data: " +data);
 
                     create_paginator({
                         total_number_of_items: data,

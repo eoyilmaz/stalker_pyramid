@@ -520,7 +520,7 @@ def get_project_tasks_cost(request):
 
     sql_query = """
                select
-       "PriceList_SimpleEntities".name as price_list_name,
+        "PriceList_SimpleEntities".name as price_list_name,
         "Good_SimpleEntities".name as good_name,
         "Good_SimpleEntities".id as good_id,
         "Task_Goods".msrp as msrp,
@@ -557,7 +557,7 @@ def get_project_tasks_cost(request):
        join "TimeLogs" on "Tasks".id = "TimeLogs".task_id
        join "Project_Users" on "Project_Users".user_id = "TimeLogs".resource_id
        left outer join (
-                select "BudgetEntries_SimpleEntities".name as name,
+                    select "BudgetEntries_SimpleEntities".name as name,
                          "BudgetEntries".id as id,
                          "BudgetEntries".good_id as good_id,
                          "BudgetEntries".price as price

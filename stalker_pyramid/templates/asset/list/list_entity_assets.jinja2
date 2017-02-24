@@ -304,11 +304,10 @@
                 })
             };
 
-            $.getJSON('/assets/types/').then(function (types) {
+            $.getJSON('/assets/types/?project_id={{ entity.id }}').then(function (types) {
                 var link_template = doT.template($('#tmpl_assetTypeLink').html());
 
                 var asset_type_tabs = $('#asset_type_tabs');
-
                 var selected_asset_id = types[0].asset_type_id;
 
                 {% if asset_type_id %}

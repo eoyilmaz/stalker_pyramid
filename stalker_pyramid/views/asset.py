@@ -158,6 +158,10 @@ def list_project_assets(request):
 def get_assets_types(request):
     """returns the Asset Types
     """
+
+    project_id = request.params.get('project_id', None)
+    project = Project.query.filter(Project.id == project_id).first()
+
     sql_query = """select
      "Assets_Types_SimpleEntities".id,
      "Assets_Types_SimpleEntities".name
@@ -167,11 +171,20 @@ def get_assets_types(request):
      join "SimpleEntities" as "Assets_SimpleEntities" on "Assets_SimpleEntities".id = "Assets".id
      join "SimpleEntities" as "Assets_Types_SimpleEntities" on "Assets_Types_SimpleEntities".id = "Assets_SimpleEntities".type_id
 
+     %(where_condition)s
      group by
         "Assets_Types_SimpleEntities".name,
         "Assets_Types_SimpleEntities".id
      order by "Assets_Types_SimpleEntities".name
      """
+
+    where_condition = ""
+    if project:
+        where_condition = """join "Tasks" on "Tasks".id = "Assets".id
+                             where "Tasks".project_id = %(project_id)s """ % \
+                          {'project_id': project.id}
+
+    sql_query = sql_query % {'where_condition': where_condition}
 
     result = DBSession.connection().execute(sql_query)
 
@@ -231,9 +244,9 @@ def get_assets_type_task_types(request):
     where_condition = ''
 
     if type_id:
-        where_condition = 'where "Assets_SimpleEntities".type_id = %(type_id)s'%{'type_id': type_id}
+        where_condition = 'where "Assets_SimpleEntities".type_id = %(type_id)s' % {'type_id': type_id}
 
-    sql_query = sql_query %{'where_condition':where_condition}
+    sql_query = sql_query % {'where_condition': where_condition}
 
     result = DBSession.connection().execute(sql_query)
 

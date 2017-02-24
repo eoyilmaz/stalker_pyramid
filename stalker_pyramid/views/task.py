@@ -642,7 +642,6 @@ def duplicate_task_hierarchy(request):
     description = request.params.get('dup_task_description', '')
 
     if task:
-
         duplicate_task_hierarchy_action(task, parent, name, description, logged_in_user)
 
         #update_task_statuses_with_dependencies(dup_task)
@@ -6361,9 +6360,6 @@ def remove_tasks_user(request):
 
     return Response('Success: %s is removed from resources of the selected tasks' %
                     (user.name))
-
-
-
 
 
 @view_config(
