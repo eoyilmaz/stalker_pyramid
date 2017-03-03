@@ -3650,6 +3650,10 @@ def create_task(request):
     logger.debug('fps                 : %s' % fps)
 
     kwargs = {}
+    if not all(ord(c) < 128 for c in name):
+        transaction.abort()
+        return Response('Turkce Karakter Kullanma!!!', 500)
+
     if not project_id or not name:
         logger.debug('there are missing parameters')
 

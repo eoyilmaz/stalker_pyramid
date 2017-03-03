@@ -148,8 +148,6 @@
                     total_prize += parseInt(grid_data[t].budgetentries_price);
                 }
 
-
-
                 grid.jqGrid("footerData", "set", {
                                                    bid: total_bid,
                                                    scheduled: total_scheduled,
@@ -157,8 +155,6 @@
                                                    budgetentries_price: total_prize,
                                                    good_name:'TOTAL'
                 });
-
-
 
             }
 
@@ -168,8 +164,8 @@
                     $('#lui_grid-table').hide();
                 }, 0);
             }
-
-            $.getJSON('/projects/{{ entity.id }}/tasks/cost/?budget_ids=488202').then(function (entry_data) {
+            var budget_id = {{ entity.get_active_budget().id }}
+            $.getJSON('/projects/{{ entity.id }}/tasks/cost/?budget_ids='+budget_id).then(function (entry_data) {
                 console.log('entry_data: '+ entry_data.length);
                 grid_data = entry_data;
 

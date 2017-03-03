@@ -46,7 +46,8 @@ logger.setLevel(logging.DEBUG)
 
 @view_config(
     route_name='edit_budgetentry',
-    renderer='json'
+    renderer='json',
+    permission='Create_BudgetEntry'
 )
 def edit_budgetentry(request):
     """edits the budgetentry with data from request
@@ -88,7 +89,8 @@ def edit_budgetentry(request):
 
 @view_config(
     route_name='create_budgetentry',
-    renderer='json'
+    renderer='json',
+    permission='Create_BudgetEntry'
 )
 def create_budgetentry(request):
     """runs when creating a budgetentry
@@ -418,7 +420,8 @@ def update_folder_tasks_startdate(budget, folder_id, time_delta):
 
 @view_config(
     route_name='update_budgetentry',
-    renderer='json'
+    renderer='json',
+    permission='Update_BudgetEntry'
 )
 def update_budgetentry(request):
     """updates the BudgetEntry with data from request
@@ -543,7 +546,8 @@ def update_budgetentry(request):
 
 @view_config(
     route_name='delete_budgetentry_dialog',
-    renderer='templates/modals/confirm_dialog.jinja2'
+    renderer='templates/modals/confirm_dialog.jinja2',
+    permission='Delete_BudgetEntry'
 )
 def delete_budgetentry_dialog(request):
     """delete_budgetentry_dialog
@@ -570,7 +574,8 @@ def delete_budgetentry_dialog(request):
 
 @view_config(
     route_name='delete_budgetentry',
-    renderer='json'
+    renderer='json',
+    permission='Delete_BudgetEntry'
 )
 def delete_budgetentry(request):
     """deletes the budgetentry
@@ -665,7 +670,8 @@ def delete_budgetentry_action(budgetentry):
 
 @view_config(
     route_name='get_budget_calendar_items',
-    renderer='json'
+    renderer='json',
+    permission='List_BudgetEntry'
 )
 def get_budget_calendar_items(request):
     """returns budget items
@@ -686,7 +692,8 @@ def get_budget_calendar_items(request):
 
 @view_config(
     route_name='get_budget_entries',
-    renderer='json'
+    renderer='json',
+    permission='List_BudgetEntry'
 )
 def get_budget_entries(request):
     """returns budgets with the given id
@@ -768,7 +775,8 @@ def get_budget_entries(request):
 
 @view_config(
     route_name='budgetentry_dialog',
-    renderer='templates/budget/dialog/budgetentry_dialog.jinja2'
+    renderer='templates/budget/dialog/budgetentry_dialog.jinja2',
+    permission='Create_BudgetEntry'
 )
 def budgetentry_dialog(request):
     """called when creating and updating budget entry
@@ -817,15 +825,18 @@ def budgetentry_dialog(request):
 
 @view_config(
     route_name='budget_calendar_task_dialog',
-    renderer='templates/budget/dialog/budget_calendar_item_dialog.jinja2'
+    renderer='templates/budget/dialog/budget_calendar_item_dialog.jinja2',
+    permission='Create_BudgetEntry'
 )
 @view_config(
     route_name='budget_calendar_folder_dialog',
-    renderer='templates/budget/dialog/budget_calendar_item_dialog.jinja2'
+    renderer='templates/budget/dialog/budget_calendar_item_dialog.jinja2',
+    permission='Create_BudgetEntry'
 )
 @view_config(
     route_name='budget_calendar_milestone_dialog',
-    renderer='templates/budget/dialog/budget_calendar_item_dialog.jinja2'
+    renderer='templates/budget/dialog/budget_calendar_item_dialog.jinja2',
+    permission='Create_BudgetEntry'
 )
 def budget_calendar_item_dialog(request):
     """budget_calendar_item_dialog
@@ -864,7 +875,8 @@ def budget_calendar_item_dialog(request):
 
 
 @view_config(
-    route_name='budget_calendar_list_order'
+    route_name='budget_calendar_list_order',
+    permission='Update_BudgetEntry'
 )
 def budget_calendar_list_order(request):
     """budget_calendar_list_order
@@ -922,7 +934,8 @@ def budget_calendar_list_order(request):
 
 
 @view_config(
-    route_name='budget_calendar_item_action'
+    route_name='budget_calendar_item_action',
+    permission='Update_BudgetEntry'
 )
 def budget_calendar_item_action(request):
     """budget_calendar_item_action
@@ -1020,7 +1033,8 @@ def budget_calendar_item_action(request):
 
 
 @view_config(
-    route_name='budget_calendar_item_delete'
+    route_name='budget_calendar_item_delete',
+    permission='Delete_BudgetEntry'
 )
 def budget_calendar_item_delete(request):
     """budget_calendar_folder_delete
@@ -1089,7 +1103,8 @@ def budget_calendar_item_delete(request):
 
 
 @view_config(
-    route_name='budget_calendar_link_create'
+    route_name='budget_calendar_link_create',
+    permission='Update_BudgetEntry'
 )
 def budget_calendar_link_create(request):
     """budget_calendar_link_create
@@ -1130,7 +1145,8 @@ def budget_calendar_link_create(request):
 
 
 @view_config(
-    route_name='budget_calendar_task_action'
+    route_name='budget_calendar_task_action',
+    permission='Create_BudgetEntry'
 )
 def budget_calendar_task_action(request):
     """budget_calendar_create_task

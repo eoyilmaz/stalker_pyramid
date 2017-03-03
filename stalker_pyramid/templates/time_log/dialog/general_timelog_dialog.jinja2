@@ -80,15 +80,6 @@
                             <option value='y'>Years</option>
                         </select>
                     </div>
-                    <div class='span4'>
-                        <select id='task_schedule_model'
-                                class='input-block-level'
-                                name='schedule_model'>
-                            <option value='effort'>Effort</option>
-                            <option value='duration'>Duration</option>
-                        <option value='length'>Length</option>
-                        </select>
-                    </div>
                 </div>
             </div>
             <div id="revision_type_cg" class='control-group hide'>
@@ -262,8 +253,8 @@ function init_dialog() {
 
     {# ***************************************************************** #}
     {# Start & End Date Picker #}
-{#    start_end_date_range_picker.datepicker('setDate', start_date_value);#}
-
+    start_end_date_range_picker.datepicker();
+    $('.date-picker').datepicker('setEndDate', new Date());
     $('.date-picker').datepicker().next().on(ace.click_event, function(){
                 $(this).prev().focus();
             });
@@ -313,7 +304,8 @@ function init_dialog() {
                 time_log_form.serialize() + '&' +
                 $.param({
                     'start': start.toUTCString(),
-                    'end': end.toUTCString()
+                    'end': end.toUTCString(),
+                    'schedule_model':'effort'
                 })
             ).done(function (response_text) {
 

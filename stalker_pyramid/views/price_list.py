@@ -62,11 +62,13 @@ def query_price_list(price_list_name):
 
 @view_config(
     route_name='get_studio_price_lists',
-    renderer='json'
+    renderer='json',
+    permission='List_PriceList'
 )
 @view_config(
     route_name='get_price_lists',
-    renderer='json'
+    renderer='json',
+    permission='List_PriceList'
 )
 def get_price_list(request):
     """
@@ -86,11 +88,14 @@ def get_price_list(request):
 
 @view_config(
     route_name='get_studio_goods',
-    renderer='json'
+    renderer='json',
+    permission='List_Good'
+
 )
 @view_config(
     route_name='get_goods',
-    renderer='json'
+    renderer='json',
+    permission='List_Good'
 )
 def get_goods(request):
     """
@@ -139,7 +144,8 @@ def get_goods(request):
 
 @view_config(
     route_name='get_good_related_goods',
-    renderer='json'
+    renderer='json',
+    permission='List_Good'
 )
 def get_good_related_goods(request):
     """
@@ -161,7 +167,8 @@ def get_good_related_goods(request):
 
 @view_config(
     route_name='create_good_dialog',
-    renderer='templates/good/dialog/create_good_dialog.jinja2'
+    renderer='templates/good/dialog/create_good_dialog.jinja2',
+    permission='Create_Good'
 )
 def create_good_dialog(request):
     """ calls create good dialog with necessary info.
@@ -189,7 +196,8 @@ def create_good_dialog(request):
 
 
 @view_config(
-    route_name='create_good'
+    route_name='create_good',
+    permission='Create_Good'
 )
 def create_good(request):
     """creates a new Good
@@ -266,7 +274,8 @@ def create_good(request):
 
 
 @view_config(
-    route_name='edit_good'
+    route_name='edit_good',
+    permission='Create_Good'
 )
 def edit_good(request):
     """edits the good with data from request
@@ -281,7 +290,8 @@ def edit_good(request):
 
 
 @view_config(
-    route_name='update_good'
+    route_name='update_good',
+    permission='Update_Good'
 )
 def update_good(request):
     """updates the good with data from request
@@ -350,7 +360,8 @@ def update_good(request):
 
 
 @view_config(
-    route_name='delete_good'
+    route_name='delete_good',
+    permission='Delete_Good'
 )
 def delete_good(request):
     """deletes the good with data from request
@@ -380,7 +391,8 @@ def delete_good(request):
 
 @view_config(
     route_name='update_good_relation_dialog',
-    renderer='templates/good/dialog/update_good_relation_dialog.jinja2'
+    renderer='templates/good/dialog/update_good_relation_dialog.jinja2',
+    permission='Update_Good'
 )
 def update_good_relation_dialog(request):
     """ calls create good dialog with necessary info.
@@ -403,7 +415,8 @@ def update_good_relation_dialog(request):
     }
 
 @view_config(
-    route_name='update_good_relation'
+    route_name='update_good_relation',
+    permission='Update_Good'
 )
 def update_good_relation(request):
     """updates the good with data from request
@@ -470,7 +483,8 @@ def update_good_relation(request):
 
 @view_config(
     route_name='delete_good_relation_dialog',
-    renderer='templates/modals/confirm_dialog.jinja2'
+    renderer='templates/modals/confirm_dialog.jinja2',
+    permission='Update_Good'
 )
 def delete_good_relation_dialog(request):
     """works when task has at least one answered review
@@ -499,7 +513,8 @@ def delete_good_relation_dialog(request):
 
 
 @view_config(
-    route_name='delete_good_relation'
+    route_name='delete_good_relation',
+    permission='Update_Good'
 )
 def delete_good_relation(request):
     """delete_good_relation data from request

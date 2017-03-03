@@ -116,10 +116,11 @@
                             class='input-block-level'
                             name='revision_type'
                             required>
+                        <option value="Suresi_az">Suresi az verilmis</option>
+                        <option value="Yetistiremedim">Yetistiremedim</option>
                         <option value="Ajans">Ajans</option>
                         <option value="Yonetmen">Yonetmen</option>
                         <option value="Ic_Revizyon">Ic Revizyon</option>
-                        <option value="Yetistiremedim">Yetistiremedim</option>
                     </select>
                 </div>
             </div>
@@ -304,7 +305,7 @@ function init_dialog() {
     {# Start & End Date Picker #}
     // initialize date picker
     var start_end_date_range_picker = $('#start_end_date_range_picker');
-    start_end_date_range_picker.datepicker({maxDate: '0'});
+    $('.date-picker').datepicker('setEndDate', new Date());
     start_end_date_range_picker.datepicker('setDate', start_date_value);
 
     $('.date-picker').datepicker().next().on(ace.click_event, function(){

@@ -38,13 +38,13 @@
 {#            ''#}
 {#        );#}
 {##}
-{#        menu_of(#}
-{#            'Rapor',#}
-{#            "{%- if request.current_route_path() == request.route_path('view_budget_report', id=entity.id) -%}'active',{%- else -%},{%- endif -%}",#}
-{#            '{{ request.route_url('view_budget_report', id=entity.id) }}',#}
-{#            get_icon('budget'),#}
-{#            ''#}
-{#        );#}
+        menu_of(
+            'Rapor',
+            "{%- if request.current_route_path() == request.route_path('view_budget_report', id=entity.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('view_budget_report', id=entity.id) }}',
+            get_icon('budget'),
+            ''
+        );
     });
 </script>
 

@@ -48,7 +48,8 @@ logger.setLevel(logging.DEBUG)
 
 @view_config(
     route_name='create_budget_dialog',
-    renderer='templates/budget/dialog/budget_dialog.jinja2'
+    renderer='templates/budget/dialog/budget_dialog.jinja2',
+    permission='Create_Budget'
 )
 def create_budget_dialog(request):
     """called when creating budget
@@ -79,7 +80,8 @@ def create_budget_dialog(request):
 
 
 @view_config(
-    route_name='create_budget'
+    route_name='create_budget',
+    permission='Create_Budget'
 )
 def create_budget(request):
     """runs when creating a budget
@@ -152,7 +154,8 @@ def create_budget(request):
 
 @view_config(
     route_name='update_budget_dialog',
-    renderer='templates/budget/dialog/budget_dialog.jinja2'
+    renderer='templates/budget/dialog/budget_dialog.jinja2',
+    permission='Update_Budget'
 )
 def update_budget_dialog(request):
     """called when updating dailies
@@ -177,7 +180,8 @@ def update_budget_dialog(request):
 
 
 @view_config(
-    route_name='update_budget'
+    route_name='update_budget',
+    permission='Update_Budget'
 )
 def update_budget(request):
     """runs when updating a budget
@@ -253,7 +257,8 @@ def update_budget(request):
 
 
 @view_config(
-    route_name='inline_update_budget'
+    route_name='inline_update_budget',
+    permission='Update_Budget'
 )
 def inline_update_budget(request):
     """Inline updates the given budget with the data coming from the request
@@ -340,7 +345,8 @@ def check_project_start_end_date(project):
 
 @view_config(
     route_name='get_project_budgets',
-    renderer='json'
+    renderer='json',
+    permission='List_Budget'
 )
 def get_budgets(request):
     """returns budgets with the given id
@@ -431,7 +437,8 @@ def get_budgets(request):
 
 @view_config(
     route_name='get_project_budgets_count',
-    renderer='json'
+    renderer='json',
+    permission='List_Budget'
 )
 def get_budgets_count(request):
     """missing docstring
@@ -462,19 +469,23 @@ def get_budgets_count(request):
 
 @view_config(
     route_name='view_budget_calendar',
-    renderer='templates/budget/view/view_budget_calendar.jinja2'
+    renderer='templates/budget/view/view_budget_calendar.jinja2',
+    permission='Read_Budget'
 )
 @view_config(
     route_name='view_budget_table_summary',
-    renderer='templates/budget/view/view_budget_table.jinja2'
+    renderer='templates/budget/view/view_budget_table.jinja2',
+    permission='Read_Budget'
 )
 @view_config(
     route_name='view_budget_table_detail',
-    renderer='templates/budget/view/view_budget_table.jinja2'
+    renderer='templates/budget/view/view_budget_table.jinja2',
+    permission='Read_Budget'
 )
 @view_config(
     route_name='view_budget_report',
-    renderer='templates/budget/view/view_budget_report.jinja2'
+    renderer='templates/budget/view/view_budget_report.jinja2',
+    permission='Read_Budget'
 )
 def view_budget(request):
     """view_budget
@@ -521,7 +532,8 @@ def view_budget(request):
 
 @view_config(
     route_name='change_budget_status_dialog',
-    renderer='templates/budget/dialog/change_budget_status_dialog.jinja2'
+    renderer='templates/budget/dialog/change_budget_status_dialog.jinja2',
+    permission='Update_Budget'
 )
 def change_budget_status_dialog(request):
     """change_budget_status_dialog
@@ -545,7 +557,8 @@ def change_budget_status_dialog(request):
 
 
 @view_config(
-    route_name='change_budget_status'
+    route_name='change_budget_status',
+    permission='Update_Budget'
 )
 def change_budget_status(request):
 
@@ -593,7 +606,8 @@ def change_budget_status(request):
 
 @view_config(
     route_name='duplicate_budget_dialog',
-    renderer='templates/budget/dialog/duplicate_budget_dialog.jinja2'
+    renderer='templates/budget/dialog/duplicate_budget_dialog.jinja2',
+    permission='Create_Budget'
 )
 def duplicate_budget_dialog(request):
     """duplicate_budget_dialog
@@ -620,7 +634,8 @@ def duplicate_budget_dialog(request):
 
 
 @view_config(
-    route_name='duplicate_budget'
+    route_name='duplicate_budget',
+    permission='Create_Budget'
 )
 def duplicate_budget(request):
 
@@ -709,7 +724,9 @@ class ReportExporter(object):
 
 
 @view_config(
-    route_name='generate_report'
+    route_name='generate_report',
+    permission='Create_Budget'
+
 )
 def generate_report_view(request):
     """generates report and allows the user to download it
@@ -770,7 +787,8 @@ def generate_report_view(request):
 
 
 @view_config(
-    route_name='set_budget_totals'
+    route_name='set_budget_totals',
+    permission='Update_Budget'
 )
 def set_budget_totals(request):
     """set_budget_totals
@@ -803,7 +821,8 @@ def set_budget_totals(request):
 
 
 @view_config(
-    route_name='create_budget_tasks_into_project'
+    route_name='create_budget_tasks_into_project',
+    permission='Update_Project'
 )
 def create_budget_tasks_into_project(request):
     """create_budget_tasks_into_project

@@ -101,8 +101,6 @@
 
     <script type="text/javascript">
         $(document).ready(function () {
-
-
             $.getJSON('/types/?target_entity_type=Good').then(function (good_type_data) {
                 var available_good_types = [];
                 for (var k=0; k < good_type_data.length; k++){

@@ -373,23 +373,29 @@ logger.setLevel(logging.DEBUG)
 )
 @view_config(
     route_name='view_budget',
-    renderer='templates/budget/view/view_budget.jinja2'
+    renderer='templates/budget/view/view_budget.jinja2',
+    permission='Read_Budget'
 )
 @view_config(
     route_name='list_project_budgets',
-    renderer='templates/budget/list/list_project_budgets.jinja2'
+    renderer='templates/budget/list/list_project_budgets.jinja2',
+    permission='List_Budget'
+
 )
 @view_config(
     route_name='list_budget_invoices',
-    renderer='templates/invoice/list/list_budget_invoices.jinja2'
+    renderer='templates/invoice/list/list_budget_invoices.jinja2',
+    permission='List_Invoice'
 )
 @view_config(
     route_name='list_entity_invoices',
-    renderer='templates/invoice/list/list_entity_invoices.jinja2'
+    renderer='templates/invoice/list/list_entity_invoices.jinja2',
+    permission='List_Invoice'
 )
 @view_config(
     route_name='list_studio_goods',
-    renderer='templates/good/list/list_studio_goods.jinja2'
+    renderer='templates/good/list/list_studio_goods.jinja2',
+    permission='List_Good'
 )
 @view_config(
     route_name='test_page',

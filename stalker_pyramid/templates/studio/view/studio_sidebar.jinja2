@@ -109,7 +109,7 @@
 {#                get_icon('budget'),#}
 {#                0#}
 {#            );#}
-            {% if has_permission('Update_Budget') %}
+            {% if has_permission('Create_Budget') and has_permission('Create_Good') %}
                 menus_under_title('Production',
                                   'budget',
                                   [

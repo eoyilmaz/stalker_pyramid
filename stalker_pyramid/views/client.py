@@ -40,18 +40,18 @@ from stalker_pyramid.views.type import query_type
 @view_config(
     route_name='update_client_dialog',
     renderer='templates/client/dialog/update_client_dialog.jinja2',
+    permission='Update_Client'
 )
 @view_config(
     route_name='create_client_dialog',
     renderer='templates/client/dialog/create_client_dialog.jinja2',
+    permission='Create_Client'
 )
 def client_dialog(request):
-    """view for generic data
+    """called when creating a client
     """
-    logged_in_user = get_logged_in_user(request)
 
     came_from = request.params.get('came_from', '/')
-    # logger.debug('came_from %s: '% came_from)
 
     # get logged in user
     logged_in_user = get_logged_in_user(request)
@@ -64,9 +64,8 @@ def client_dialog(request):
     mode = request.matchdict.get('mode', None)
     report_templates = [r['name'] for r in get_distinct_report_templates()]
     client_report_template_name = ""
-    logger.debug("client_report_template %s" % client_report_template_name)
+
     if client:
-        logger.debug("client.name %s" % client.name)
         report_template = get_report_template(client)
         if report_template:
             client_report_template_name = report_template['name']
@@ -86,7 +85,8 @@ def client_dialog(request):
 
 
 @view_config(
-    route_name='create_client'
+    route_name='create_client',
+    permission='Create_Client'
 )
 def create_client(request):
     """called when adding a new client
@@ -151,7 +151,8 @@ def create_client(request):
 
 
 @view_config(
-    route_name='update_client'
+    route_name='update_client',
+    permission='Update_Client'
 )
 def update_client(request):
     """called when updating a client
@@ -208,12 +209,55 @@ def update_client(request):
 
 
 @view_config(
+    route_name='update_studio_client',
+    permission='Update_Client'
+)
+def update_studio_client(request):
+    """updates client with given parameters
+    """
+    logger.debug('update_studio_client is starts')
+    logged_in_user = get_logged_in_user(request)
+    utc_now = local_to_utc(datetime.datetime.now())
+
+    # studio_id = request.matchdict.get('id')
+    # studio = Studio.query.get(studio_id)
+    # if not studio:
+    #     transaction.abort()
+    #     return Response('Can not find a entity with id: %s' % studio_id, 500)
+
+    client_id = request.params.get('id', -1)
+    client = Client.query.filter(Client.id == client_id).first()
+
+    description = request.params.get('description', '')
+
+    type_name = request.params.get('type_name', None)
+    type = query_type("Client", type_name)
+
+    if not client:
+        transaction.abort()
+        return Response('Can not find a User with id: %s' % client_id, 500)
+
+    if type:
+        client.description = description
+        client.type = type
+        client.date_updated = utc_now
+        client.updated_by = logged_in_user
+
+    return Response(
+        'Successfully %s is updated with given parameters' % (client.name)
+    )
+
+
+
+@view_config(
     route_name='get_clients',
-    renderer='json'
+    renderer='json',
+    permission='List_Client'
 )
 @view_config(
     route_name='get_studio_clients',
-    renderer='json'
+    renderer='json',
+    permission='List_Client'
 )
 def get_studio_clients(request):
     """returns client with the given id
@@ -285,9 +329,11 @@ def get_studio_clients(request):
 
     return resp
 
+
 @view_config(
     route_name='get_client',
-    renderer='json'
+    renderer='json',
+    permission='Read_Client'
 )
 def get_client(request):
     """RESTful version of getting a client
@@ -301,9 +347,11 @@ def get_client(request):
 
     return return_data
 
+
 @view_config(
     route_name='append_user_to_client_dialog',
-    renderer='templates/client/dialog/append_user_to_client_dialog.jinja2'
+    renderer='templates/client/dialog/append_user_to_client_dialog.jinja2',
+    permission='Update_Client'
 )
 def append_user_to_client_dialog(request):
     """called when appending user to client
@@ -329,7 +377,8 @@ def append_user_to_client_dialog(request):
 
 @view_config(
     route_name='get_client_users_out_stack',
-    renderer='json'
+    renderer='json',
+    permission='List_User'
 )
 def get_client_users_out_stack(request):
 
@@ -374,7 +423,8 @@ def get_client_users_out_stack(request):
 
 
 @view_config(
-    route_name='append_user_to_client'
+    route_name='append_user_to_client',
+    permission='Update_Client'
 )
 def append_user_to_client(request):
 
@@ -428,7 +478,8 @@ def append_user_to_client(request):
 
 @view_config(
     route_name='get_client_users',
-    renderer='json'
+    renderer='json',
+    permission='List_User'
 )
 def get_client_users(request):
     """get_client_users
@@ -488,7 +539,6 @@ def get_report_template(client):
         )
 
         return generic_text.get('report_template', None)
-
 
 
 def generate_report(budget, output_path=''):

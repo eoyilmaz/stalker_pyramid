@@ -66,7 +66,8 @@ logger.setLevel(logging.DEBUG)
 
 
 @view_config(
-    route_name='create_studio'
+    route_name='create_studio',
+    permission='Create_Studio'
 )
 def create_studio(request):
     """creates the studio
@@ -119,7 +120,8 @@ def create_studio(request):
 
 
 @view_config(
-    route_name='update_studio'
+    route_name='update_studio',
+    permission='Update_Studio'
 )
 def update_studio(request):
     """updates the studio

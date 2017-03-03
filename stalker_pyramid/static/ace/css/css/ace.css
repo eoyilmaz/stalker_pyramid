@@ -29,6 +29,7 @@ body.breadcrumbs-fixed {
 }
 /* ace default theme layout sections */
 .main-container {
+  background: #d3d7dc;
   padding: 0;
   position: relative;
 }

@@ -416,6 +416,7 @@ def main(global_config, **settings):
 
     config.add_route('create_client',                'clients/create')
     config.add_route('update_client',                'clients/{id}/update')
+    config.add_route('update_studio_client',         'studios/{id}/clients/update')
     # config.add_route('delete_client',                'clients/{id}/delete')
 
     config.add_route('view_client',                  'clients/{id}/view')
