@@ -993,6 +993,7 @@ def main(global_config, **settings):
     config.add_route('list_studio_goods', 'studios/{id}/goods/list')
     config.add_route('get_studio_goods', 'studios/{id}/goods/')
     config.add_route('get_goods', 'goods/')
+    config.add_route('get_goods_names', 'goods/names/')
     config.add_route('get_good_related_goods', 'goods/{id}/related_goods/')
 
 

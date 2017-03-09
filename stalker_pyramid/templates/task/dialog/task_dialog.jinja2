@@ -864,7 +864,7 @@ resource_name, status
         {% endraw %}
         var task_good = $('#task_good');
         task_good.attr('is_updating', true);
-        var deferred = chosen_searchable_field_creator(task_good,'/goods/', task_good_option_template);
+        var deferred = chosen_searchable_field_creator(task_good,'/goods/names/', task_good_option_template);
 
         deferred.then(function () {
             task_good.attr('is_updating', false);

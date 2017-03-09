@@ -143,6 +143,29 @@ def get_goods(request):
 
 
 @view_config(
+    route_name='get_goods_names',
+    renderer='json'
+)
+def get_goods_names(request):
+    """
+        give all define goods name in a list
+    """
+    logger.debug('***get_studio_goods method starts ***')
+
+    goods = Good.query.order_by(Good.name.asc()).all()
+
+    return_data = []
+    for good in goods:
+
+        return_data.append({
+            'id': good.id,
+            'name': good.name
+        })
+
+    return return_data
+
+
+@view_config(
     route_name='get_good_related_goods',
     renderer='json',
     permission='List_Good'
