@@ -198,7 +198,7 @@
                 var grid_data = entry_data;
                 for(var j=0; j<grid_data.length; j++ ){
                     grid_data[j].remove_action = "<a data-target='#dialog_template' data-toggle='modal' data-keyboard=false href='"+grid_data[j].item_remove_link+"'> <i class='icon-trash'></i></a>"
-                    grid_data[j].namelink = "<a href='/users/"+grid_data[j].id+"/view'>"+grid_data[j].name+"</a>";
+                    grid_data[j].namelink = "<a href='/clients/"+grid_data[j].id+"/view'>"+grid_data[j].name+"</a>";
 
                 }
                 $.getJSON('/types/?target_entity_type=Client').then(function(available_type){

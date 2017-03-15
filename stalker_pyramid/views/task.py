@@ -608,6 +608,68 @@ def duplicate_task_hierarchy_action(task, parent, name, description, user):
 
     return dup_task
 
+@view_config(
+    route_name='duplicate_asset_hierarchy'
+)
+def duplicate_asset_hierarchy(request):
+    """Duplicates the given asset hierarchy.
+
+    Walks through the hierarchy of the given asset and duplicates every
+    instance it finds in a new task.
+
+    task: The task that wanted to be duplicated
+
+    :return: A list of stalker.models.task.Task
+    """
+
+    logger.debug('duplicate_asset_hierarchy is running')
+    logged_in_user = get_logged_in_user(request)
+
+    asset_id = request.params.get('temp_asset_id')
+    asset = Asset.query.filter_by(id=asset_id).first()
+
+    logger.debug('asset_id %s ' % asset_id)
+
+    name = request.params.get('name', asset.name + ' - Duplicate')
+
+    parent_id = request.params.get('parent_id', -1)
+    parent = Task.query.filter_by(id=parent_id).first()
+
+    if not parent:
+        parent = asset.parent
+
+    description = request.params.get('description', '')
+
+    responsible = []
+    responsible_ids = []
+    if 'responsible_ids[]' in request.params:
+        responsible_ids = get_multi_integer(request, 'responsible_ids[]')
+        responsible = User.query.filter(User.id.in_(responsible_ids)).all()
+
+    if asset:
+        dup_asset = duplicate_task_hierarchy_action(asset,
+                                        parent,
+                                        name,
+                                        description,
+                                        logged_in_user)
+
+        dup_asset.responsible = responsible
+        db.DBSession.add(dup_asset)
+
+        #update_task_statuses_with_dependencies(dup_task)
+        #leafs = find_leafs_in_hierarchy(dup_task)
+    else:
+        transaction.abort()
+        return Response(
+            'No task can be found with the given id: %s' % asset_id, 500)
+
+    # invalidate all caches
+    invalidate_all_caches()
+
+    request.session.flash('success:Task %s is duplicated successfully' % asset.name)
+
+    return Response('Task %s is duplicated successfully' % asset.id)
+
 
 @view_config(
     route_name='duplicate_task_hierarchy'
@@ -642,7 +704,11 @@ def duplicate_task_hierarchy(request):
     description = request.params.get('dup_task_description', '')
 
     if task:
-        duplicate_task_hierarchy_action(task, parent, name, description, logged_in_user)
+        duplicate_task_hierarchy_action(task,
+                                        parent,
+                                        name,
+                                        description,
+                                        logged_in_user)
 
         #update_task_statuses_with_dependencies(dup_task)
         #leafs = find_leafs_in_hierarchy(dup_task)
@@ -3964,7 +4030,7 @@ def cleanup_task_new_reviews(request):
 
 @view_config(
     route_name='review_sequence_dialog',
-    renderer='templates/task/dialog/review_task_dialog.jinja2'
+    renderer='templates/task/dialog/review_aalog.jinja2'
 )
 @view_config(
     route_name='review_asset_dialog',

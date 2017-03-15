@@ -26,7 +26,7 @@
                     <div class='span9'>
                     {% if mode=='Update'%}
                         <input type='text'
-                                   id='sequence_'
+                                   id='sequence_id'
                                    class='input-block-level'
                                    name='sequence_id'
                                    value="{{ sequence.name }}"
@@ -51,7 +51,8 @@
                                 name='temp_scene_id'
                                 class='input-block-level span11'
                                 is_updating=false
-                                data-placeholder='Temp Scene'></select>
+                                data-placeholder='Temp Scene'
+                                required></select>
                     </div>
                 </div>
                 {# Temp Shot #}
@@ -62,7 +63,8 @@
                                 name='temp_shot_id'
                                 class='input-block-level span11'
                                 is_updating=false
-                                data-placeholder='Temp Shot'></select>
+                                data-placeholder='Temp Shot'
+                                required></select>
                     </div>
                 </div>
                 {# Shot Count #}
@@ -117,7 +119,7 @@
         {# ***************************************************************** #}
         {# Sequence #}
         var sequence = $('#sequence');
-        var deferred = chosen_field_creator(sequence, '/entities/{{ project.id }}/sequences/', option_template);
+        var deferred = chosen_searchable_field_creator(sequence, '/entities/{{ project.id }}/sequences/', option_template);
         {% if sequence %}
             deferred.then(function () {
                     sequence.val({{ sequence.id }}).trigger('liszt:updated');
@@ -128,12 +130,17 @@
         {# ***************************************************************** #}
         {# Temp Scene #}
         var temp_scene = $('#temp_scene');
-        var deferred = chosen_field_creator(temp_scene, '/entities/{{ project.id }}/scenes/simple/', option_template);
-
+        var deferred = chosen_searchable_field_creator(temp_scene, '/entities/{{ project.id }}/scenes/simple/', option_template);
+        deferred.then(function () {
+                    temp_scene.trigger('liszt:updated');
+                });
         {# ***************************************************************** #}
         {# Temp Shot #}
         var temp_shot = $('#temp_shot');
-        var deferred = chosen_field_creator(temp_shot, '/entities/{{ project.id }}/shots/simple/', option_template);
+        var deferred = chosen_searchable_field_creator(temp_shot, '/entities/{{ project.id }}/shots/simple/', option_template);
+        deferred.then(function () {
+            temp_shot.trigger('liszt:updated');
+        });
 
         {# ***************************************************************** #}
         {# Shots #}

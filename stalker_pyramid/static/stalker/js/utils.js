@@ -227,7 +227,9 @@ function chosen_searchable_field_creator(field, url, data_template) {
 
 
     return $.getJSON(url).then(function (data) {
-        console.log(data);
+
+        // append new ones
+        var data_count = data.length;
         // remove current data
          // remove current elements
         field.chosen({
@@ -237,12 +239,9 @@ function chosen_searchable_field_creator(field, url, data_template) {
 
         field.find('option').remove();
 
-        // append new ones
-        var data_count = data.length;
         // append a single empty option to the responsible field
         field.append(data_template({'id': "", 'name': ""}));
         for (var i=0; i < data_count; i++){
-//            console.log(data_template(data[i]));
             field.append(data_template(data[i]));
         }
     });

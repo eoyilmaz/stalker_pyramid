@@ -109,16 +109,28 @@
                            {% if mode=='update' %}{% if entity.type %}value="{{ entity.type.name }}"{% endif %}{% endif %}
                            >
                 </div>
-{#                {% if mode=='create' %}#}
-{#                    <div class="span12">#}
-{#                        <label class="inline">#}
-{#                            Duplicate from a template:#}
-{#                            <input id="dup_from_template"  type="checkbox" class="ace ace-switch ace-switch-5" />#}
-{#                            <span class="lbl"></span>#}
-{#                        </label>#}
-{#                    </div>#}
-{#                {% endif %}#}
             </div>
+
+            {% if mode=='create' %}
+                <div class='asset_inputs control-group'>
+                    <label class='span3 control-label' for='dup_from_template'>Duplicate from a template:</label>
+                    <div class='span9'>
+                        <input id="dup_from_template" type="checkbox" class="ace ace-switch ace-switch-5" />
+                        <span class="lbl"></span>
+                    </div>
+                </div>
+
+                <div class='asset_inputs control-group hide' id="temp_asset_list">
+                    <label class='span3 control-label' for='temp_asset'>Temp Assets</label>
+                    <div class='span9'>
+                         <select id='temp_asset'
+                                name='temp_asset_id'
+                                class='input-block-level span11'
+                                is_updating=false
+                                data-placeholder='Select an asset'></select>
+                    </div>
+                </div>
+            {% endif %}
 
             {# Shot Sequence #}
             <div class='shot_inputs control-group'>
@@ -140,7 +152,6 @@
                            name='fps'
                            is_updating=false
                            {% if mode=='update' %}{% if entity.type %}value="{{ entity.fps }}"{% endif %}{% endif %}>
-
                 </div>
             </div>
 
@@ -288,7 +299,7 @@
             </div>
 
             {# Goods #}
-            <div class='control-group'>
+            <div class='task_inputs control-group'>
                 <label class='span3 control-label' for='task_good'>Good</label>
                 <div class='span9'>
                     <select id='task_good'
@@ -442,6 +453,7 @@ resource_name, status
                 $('#task_parent').attr('is_updating') === 'true' ||
                 $('#task_type').attr('is_updating') === 'true' ||
                 $('#asset_type').attr('is_updating') === 'true' ||
+                $('#temp_asset').attr('is_updating') === 'true' ||
                 $('#shot_sequence').attr('is_updating') === 'true' ||
                 $('#task_depends_to').attr('is_updating') === 'true' ||
                 $('#task_resources').attr('is_updating') === 'true' ||
@@ -660,6 +672,15 @@ resource_name, status
         {# ***************************************************************** #}
         {# Asset Type #}
         var asset_type = $('#asset_type');
+        var dup_from_template = $('#dup_from_template');
+        var temp_asset = $('#temp_asset');
+        temp_asset.attr('is_updating', false);
+        {% raw %}
+            var asset_option_template = doT.template(
+                '<option value={{=it.id}}>{{=it.name}}</option>'
+            );
+        {% endraw %}
+
         // set the field to updating mode
         asset_type.attr('is_updating', true);
         field_update_mode_checker();
@@ -679,6 +700,40 @@ resource_name, status
             asset_type.attr('is_updating', false);
             field_update_mode_checker();
         });
+
+
+        dup_from_template.on('click', function () {
+            console.log(this.checked);
+            if(this.checked ){
+                if(asset_type.val()){
+
+                    temp_asset.attr('is_updating', true);
+                    field_update_mode_checker();
+                    temp_asset.find('option').remove();
+
+                    var deferred = chosen_searchable_field_creator(temp_asset,
+                            '/projects/{{ project.id }}/assets/?asset_type_names='+asset_type.val(),
+                            asset_option_template);
+
+                    deferred.then(function () {
+                                temp_asset.trigger('liszt:updated');
+                                temp_asset.attr('is_updating', false);
+                                field_update_mode_checker();
+                            });
+                }
+
+                submit_form_url = '{{ request.route_url('duplicate_asset_hierarchy') }}';
+            }
+            else{
+
+                submit_form_url = '{{ request.route_url('create_task') }}';
+            }
+
+        });
+
+
+
+
 
         {# ***************************************************************** #}
         {# Sequence #}

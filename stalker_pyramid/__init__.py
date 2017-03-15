@@ -692,6 +692,8 @@ def main(global_config, **settings):
     config.add_route('create_asset',        'assets/create')
     config.add_route('update_asset',        'assets/{id}/update')
 
+    config.add_route('duplicate_asset_hierarchy', 'assets/duplicate')
+
     config.add_route('view_asset',          'assets/{id}/view')
     config.add_route('get_asset_tickets',   'assets/{id}/tickets/')
     config.add_route('list_asset_tickets',  'assets/{id}/tickets/list')
