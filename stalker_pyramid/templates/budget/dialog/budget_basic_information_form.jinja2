@@ -1,6 +1,5 @@
-<script class="dialog_loaded"></script>
-<div class="row-fluid">
-    <form id='budget_form'
+
+<form id='budget_form'
           class='form-horizontal'
           role='form'
           method="post"
@@ -74,14 +73,12 @@
             </div>
         </div>
     </form>
-</div>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/daterangepicker.min.js") }}'></script>
+
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.validate.min.js") }}'></script>
 <script type="text/javascript">
-    function init_dialog() {
 
-        console.debug('starting to initialize budget dialog!!!');
-
+    {# Form #}
+    $(document).ready(function () {
         var dialog_label = $('#dialog_template_label');
         dialog_label.find('span').remove();
 
@@ -135,74 +132,11 @@
             duration = end_date.diff(start_date, 'days');
 
             $('#duration').text(duration+ " Days");
+            $('#duration').attr("duration",duration);
             start_date_picker.val(start_date.format('DD/MM/YYYY'));
-;
+
         {% endif %}
+    });
 
-        {# ***************************************************************** #}
-        {# Submit Button #}
-        var submit_button = $('#dialog_template_submit_button');
-        submit_button.on('click', function (e) {
-            e.stopPropagation();
-            e.preventDefault();
 
-            submit_button.button('loading');
-            var budget_form = $('#budget_form');
-
-            var url = '/budgets/create';
-            var params = null;
-            {% if mode=='Update' %}
-                url='/budgets/{{ budget.id }}/update';
-
-                var start_date = get_date_picker('start_date_picker');
-                start_date.setDate(start_date.getDate() + 1);
-                var end_date = new Date(start_date);
-                end_date.setDate(end_date.getDate() + duration);
-
-                params = {
-                    'project_id': {{ budget.project.id }},
-                    'start_date':start_date.getTime(),
-                    'end_date':end_date.getTime()
-                }
-            {% else %}
-                params = {
-                    'project_id': {{ project.id }}
-                }
-            {% endif %}
-
-            $.post(
-                url,
-                budget_form.serialize() + '&' +
-                $.param(params)
-            ).done(function (new_url) {
-                {% if mode=='Update' %}
-                    window.location.reload();
-                {% else %}
-                    window.location.assign(new_url);
-                {% endif %}
-                //$('#new_outputs_storage').text(JSON.stringify(jqXHR));
-
-            }).fail(function (jqXHR) {
-                bootbox.alert(jqXHR.responseText);
-                submit_button.button('reset');
-            });
-        });
-
-        console.debug('finished initializing the budget dialog!')
-    }
 </script>
-
-<script type="text/javascript">
-    function destruct_dialog() {
-        $('#budget_name').unbind();
-        $('#budget_type').unbind();
-        $('#start_date_picker').unbind();
-        $('#budget_description').unbind();
-        $('#dialog_template_submit_button').unbind();
-
-        $('#dialog_template').data('modal', null);
-    }
-</script>
-
-
-

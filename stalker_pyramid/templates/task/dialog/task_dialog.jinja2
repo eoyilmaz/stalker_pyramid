@@ -652,6 +652,7 @@ resource_name, status
         $.getJSON('/types/?target_entity_type=Task').then(function(available_types){
             // map available types to an array
             var available_types_as_list = [];
+
             for (var i=0; i < available_types.length; i++){
                 available_types_as_list.push(available_types[i].name);
             }
@@ -661,10 +662,11 @@ resource_name, status
                 source: available_types_as_list,
                 minLength: 0
             });
+
             if (type !== ''){
                 task_type.val(type);
             }
-            // set the field to normal mode
+
             task_type.attr('is_updating', false);
             field_update_mode_checker();
         });
@@ -712,7 +714,7 @@ resource_name, status
                     temp_asset.find('option').remove();
 
                     var deferred = chosen_searchable_field_creator(temp_asset,
-                            '/projects/{{ project.id }}/assets/?asset_type_names='+asset_type.val(),
+                            '/projects/{{ project.id }}/assets/names?asset_type_names='+asset_type.val()+'&search_name=%Temp%',
                             asset_option_template);
 
                     deferred.then(function () {

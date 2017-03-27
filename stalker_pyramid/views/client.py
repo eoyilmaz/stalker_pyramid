@@ -32,7 +32,6 @@ from webob import Response
 from stalker_pyramid.views import (get_logged_in_user, logger,
                                    PermissionChecker, milliseconds_since_epoch,
                                    local_to_utc)
-from stalker_pyramid.views.project import get_project_user
 from stalker_pyramid.views.role import query_role
 from stalker_pyramid.views.type import query_type
 
@@ -148,6 +147,42 @@ def create_client(request):
         'success:Client with name <strong>%s</strong> is created.'
         % name
     )
+
+
+def query_client(client_name, client_type, logged_in_user):
+    """returns a Client instance either it creates a new one or gets it from DB
+    """
+
+    utc_now = local_to_utc(datetime.datetime.now())
+
+    if not client_name:
+        return None
+
+    if not client_type:
+        return None
+
+    client_type = query_type("Client", client_type)
+    client_query = Client.query.filter_by(type=client_type)
+    client_ = client_query.filter_by(name=client_name).first()
+
+    if not client_:
+
+        try:
+            new_client = Client(
+                name=client_name,
+                description='',
+                created_by=logged_in_user,
+                date_created=utc_now,
+                date_updated=utc_now,
+                type=client_type
+            )
+
+            DBSession.add(new_client)
+
+        except BaseException as e:
+            logger.debug("Exception for creating client")
+
+    return client_
 
 
 @view_config(
@@ -605,6 +640,7 @@ def generate_report(budget, output_path=''):
     import openpyxl
     wb = openpyxl.load_workbook(wb_path)
 
+    from stalker_pyramid.views.project import get_project_user
     creative_director = get_project_user(budget.project, "Yaratici Yonetmen")
     creative_director_name = "Not Appended!!"
     if creative_director:

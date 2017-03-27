@@ -239,6 +239,8 @@ function chosen_searchable_field_creator(field, url, data_template) {
 
         field.find('option').remove();
 
+
+
         // append a single empty option to the responsible field
         field.append(data_template({'id': "", 'name': ""}));
         for (var i=0; i < data_count; i++){

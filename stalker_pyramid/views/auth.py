@@ -471,7 +471,7 @@ def get_entity_users(request):
     has_permission = PermissionChecker(request)
     has_update_user_permission = has_permission('Update_User')
     has_delete_user_permission = has_permission('Delete_User')
-    has_read_rate_permission = has_permission('Read_Budget')
+    has_read_rate_permission = has_permission('Update_Budget')
 
     delete_user_action = '/users/%(id)s/delete/dialog'
 
@@ -480,7 +480,9 @@ def get_entity_users(request):
             'select entity_type from "SimpleEntities" where id=%s' % entity_id
         data = DBSession.connection().execute(sql_query).fetchone()
         entity_type = data[0] if data else None
-        delete_user_action ='/entities/%(id)s/%(entity_id)s/remove/dialog'
+        if entity_type in ['Project', 'Department', 'Group', 'Task', 'User', 'Client']:
+            delete_user_action ='/entities/%(entity_id)s/%(id)s/remove/dialog'
+
 
     logger.debug('entity_id  : %s' % entity_id)
     logger.debug('entity_type: %s' % entity_type)

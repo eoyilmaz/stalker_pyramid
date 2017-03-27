@@ -91,13 +91,11 @@ def update_asset(request):
 
 @view_config(
     route_name='get_entity_assets_count',
-    renderer='json',
-    permission='List_Asset'
+    renderer='json'
 )
 @view_config(
     route_name='get_project_assets_count',
-    renderer='json',
-    permission='List_Asset'
+    renderer='json'
 )
 def get_assets_count(request):
     """returns the count of assets in a project
@@ -471,6 +469,102 @@ def get_assets(request):
         return_data.append(r_data)
 
     return return_data
+
+
+@view_config(
+    route_name='get_entity_assets_names',
+    renderer='json',
+    permission='List_Asset'
+)
+@view_config(
+    route_name='get_project_assets_names',
+    renderer='json',
+    permission='List_Asset'
+)
+def get_assets_names(request):
+    """returns all the Assets of a given Project
+    """
+    logger.debug('*** get_assets method starts ***')
+
+    project_id = request.matchdict.get('id', -1)
+    asset_type_id = request.params.get('asset_type_id', None)
+
+    asset_id = request.params.get('entity_id', None)
+    parent_name = request.params.get('parent_name', None)
+    search_name = request.params.get('search_name', None)
+
+    asset_type_names = get_multi_string(request, 'asset_type_names')
+
+    logger.debug('asset_type_names : %s' % asset_type_names)
+    logger.debug('search_name : %s' % search_name)
+
+    sql_query = """
+        select
+                "Assets".id as asset_id,
+                assets.full_path as name
+        from "Assets"
+        join "Tasks" on "Assets".id = "Tasks".id
+        join (
+                    %(generate_recursive_task_query)s
+                ) as assets on assets.id = "Assets".id
+        join "SimpleEntities" as "Assets_SimpleEntities" on "Assets_SimpleEntities".id = "Assets".id
+        join "SimpleEntities" as "Asset_Types_SimpleEntities" on "Asset_Types_SimpleEntities".id = "Assets_SimpleEntities".type_id
+
+        where "Tasks".project_id = %(project_id)s %(where_conditions)s
+    """
+
+    where_conditions = ''
+
+    if asset_type_id:
+        where_conditions = """and "Asset_Types_SimpleEntities".id = %(asset_type_id)s""" %({'asset_type_id':asset_type_id})
+    if asset_id:
+        where_conditions = """and "Assets".id = %(asset_id)s""" %({'asset_id':asset_id})
+    if len(asset_type_names):
+        asset_type_names_buffer = []
+        for asset_type_name in asset_type_names:
+            asset_type_names_buffer.append(
+                """"Asset_Types_SimpleEntities".name = '%s'""" %
+                asset_type_name
+            )
+
+        logger.debug('asset_type_names_buffer : %s' % asset_type_names_buffer)
+        where_conditions_for_type_names = ' or '.join(asset_type_names_buffer)
+        where_conditions = """and (%s)""" % where_conditions_for_type_names
+        logger.debug('where_conditions : %s' % where_conditions)
+
+    if parent_name:
+        where_conditions += """ and assets.full_path ilike (%s)""" % parent_name
+
+    if search_name:
+        where_conditions += """ and "Assets_SimpleEntities".name ilike '%s'""" % search_name
+
+    logger.debug('sql_query : %s' % sql_query)
+    sql_query = sql_query % {
+        'where_conditions': where_conditions,
+        'project_id': project_id,
+        'generate_recursive_task_query': generate_recursive_task_query(),
+    }
+    logger.debug('sql_query : %s' % sql_query)
+    from sqlalchemy import text
+    result = DBSession.connection().execute(text(sql_query))
+
+    assets = []
+
+    for r in result.fetchall():
+        asset = {
+            'id': r[0],
+            'name': r[1]
+        }
+        assets.append(asset)
+
+    resp = Response(
+        json_body=assets
+    )
+
+    logger.debug('assets : %s' % assets)
+
+    return resp
+
 
 @view_config(
     route_name='get_related_assets',

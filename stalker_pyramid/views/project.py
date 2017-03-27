@@ -39,8 +39,9 @@ from stalker_pyramid.views import (get_date_range,
                                    get_logged_in_user,
                                    milliseconds_since_epoch,
                                    PermissionChecker,
-                                   get_multi_integer)
+                                   get_multi_integer, get_multi_string)
 # from stalker_pyramid.views.budget import update_budgetenties_startdate
+
 from stalker_pyramid.views.role import query_role
 from stalker_pyramid.views.type import query_type
 
@@ -61,6 +62,7 @@ def create_project(request):
 
     came_from = request.params.get('came_from', '/')
 
+    logger.debug('create_project  create_project create_project         :')
     # parameters
     name = request.params.get('name')
     code = request.params.get('code')
@@ -100,10 +102,31 @@ def create_project(request):
         transaction.abort()
         return Response('Please enter a type name')
 
+    from stalker_pyramid.views.client import query_client
+    clients = []
+    brand_name = request.params.get('brand_name', None)
+    if not brand_name:
+        transaction.abort()
+        return Response('Please enter a brand name')
 
-    client_ids = get_multi_integer(request, 'client_ids')
-    clients = Client.query.filter(Client.id.in_(client_ids)).all()
-    logger.debug('client_ids          : %s' % clients)
+    brand = query_client(brand_name, 'Brand', logged_in_user)
+    clients.append(brand)
+
+    production_house_name = request.params.get('production_house_name', None)
+    if not production_house_name:
+        transaction.abort()
+        return Response('Please enter a production house name')
+
+    production_house = query_client(production_house_name, 'Production House', logged_in_user)
+    clients.append(production_house)
+
+    agency_name = request.params.get('agency_name', None)
+    if not agency_name:
+        transaction.abort()
+        return Response('Please enter a agency name')
+
+    agency = query_client(agency_name, 'Agency', logged_in_user)
+    clients.append(agency)
 
     if not clients:
         transaction.abort()
@@ -456,7 +479,7 @@ def get_entity_projects(request):
                 'percent_complete': project.percent_complete,
                 'item_view_link': '/projects/%s/view' % project.id,
                 'item_remove_link': '/entities/%s/delete/dialog?came_from=%s'%(project.id, request.current_route_path())
-                if PermissionChecker(request)('Delete_Project') and project.status.code == 'PLN' else None,
+                if PermissionChecker(request)('Update_Project') and project.status.code == 'PLN' else None,
                 'archive_project': project.get_generic_text_attr("archive_project")
 
             }

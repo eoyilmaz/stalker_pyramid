@@ -34,7 +34,7 @@
             var department_form = $('#department_form');
 
             $.post(department_form.attr('action'),
-                   department_form.serialize()
+                department_form.serialize()
             ).done(function () {
                 window.location.assign('{{ came_from }}');
             }).fail(function (jqXHR) {
@@ -42,7 +42,6 @@
                 submit_button.button('reset');
             });
         });
-
 
         console.debug('finished initializing the department dialog!')
     }

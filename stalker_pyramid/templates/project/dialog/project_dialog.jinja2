@@ -33,34 +33,32 @@
                 var project_form = $('#project_form');
 
                 var brand = $('#brand');
-                var production_firm = $('#production_firm');
+                var production_house = $('#production_house');
                 var adv_agency = $('#adv_agency');
                 var product_project_name = $('#product_project_name');
                 var mark_name = $('#mark_name');
 
-                 var g_data = {
+                var g_data = {
                      'product_project_name' : product_project_name.val(),
                      'mark_name': mark_name.val()
-                 };
-                 var generic_text =  JSON.stringify(g_data);
-
-
-                var _client_query = '';
-                if (production_firm.val()){
-                    _client_query +="&client_ids="+production_firm.val();
-                }
-                if (adv_agency.val()){
-                    _client_query +="&client_ids="+adv_agency.val();
-                }
-                if (brand.val()){
-                    _client_query +="&client_ids="+brand.val();
-                }
-                 console.log("project_form.serialize(): _client_query="+_client_query);
+                };
+                var generic_text =  JSON.stringify(g_data);
+{#                var _client_query = '';#}
+{#                if (production_firm.val()){#}
+{#                    _client_query +="&production_house="+production_house.val();#}
+{#                }#}
+{#                if (adv_agency.val()){#}
+{#                    _client_query +="&agency="+adv_agency.val();#}
+{#                }#}
+{#                if (brand.val()){#}
+{#                    _client_query +="&brand="+brand.val();#}
+{#                }#}
+{#                console.log("project_form.serialize(): _client_query="+_client_query);#}
 
                 if (project_form.validate()) {
                     $.post(
                         project_form.attr('action'),
-                        project_form.serialize()+"&generic_text="+generic_text+_client_query
+                        project_form.serialize()+"&generic_text="+generic_text
                     ).done(function (new_url) {
                         window.location.assign(new_url);
                     }).fail(function (jqXHR) {

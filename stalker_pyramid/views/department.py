@@ -76,16 +76,16 @@ def create_department(request):
                 tags=tags
             )
 
-            # create a new Department_User with lead role
-            lead_role = query_role('Lead')
-            dpu = DepartmentUser(
-                department=new_department,
-                user=lead,
-                role=lead_role
-            )
+            # # create a new Department_User with lead role
+            # lead_role = query_role('Lead')
+            # dpu = DepartmentUser(
+            #     department=new_department,
+            #     user=lead,
+            #     role=lead_role
+            # )
 
             DBSession.add(new_department)
-            DBSession.add(dpu)
+            # DBSession.add(dpu)
 
             logger.debug('added new department successfully!')
 
@@ -307,6 +307,7 @@ def get_entity_departments(request):
     departments = []
 
     lead_role = query_role('Lead')
+    has_update_user_permission = has_permission('Update_User')
 
     # TODO: Update this to use raw SQL
     for department in entity.departments:
@@ -329,10 +330,10 @@ def get_entity_departments(request):
             'item_view_link': '/departments/%s/view' % department.id
         }
 
-        if update_department_permission:
+        if update_department_permission and has_update_user_permission:
             dep['item_update_link'] = \
                 '/departments/%s/update/dialog' % department.id
-            dep['item_remove_link'] = '/entities/%s/%s/remove/dialog?came_from=%s'%(department.id, entity.id, request.current_route_path())
+            dep['item_remove_link'] = '/entities/%s/%s/remove/dialog?came_from=%s' % (entity.id, department.id, request.current_route_path())
         departments.append(dep)
 
     return departments

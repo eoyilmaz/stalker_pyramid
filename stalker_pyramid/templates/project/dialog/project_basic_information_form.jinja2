@@ -188,42 +188,40 @@
                 </div>
             </div>
 
-             <h4 class="header blue bolder smaller">Clients & Roles</h4>
-                {# Client #}
-
-
+            <h4 class="header blue bolder smaller">Clients & Roles</h4>
+            {# Client #}
             <div class="control-group">
                 <label for='brand'
-                       class="span2 control-label">Müşteri</label>
+                       class="span2 control-label">Brand</label>
                 <div class="span10">
-                    <select id='brand'
-                            name='brand_id'
-                            data-placeholder='Client'
-                            required>
-                    </select>
+                    <input id='brand'
+                           name='brand_name'
+                           type='text'
+                           data-placeholder='Brand'
+                           required>
                 </div>
             </div>
             <div class="control-group">
                 <label for='adv_agency'
                        class="span2 control-label">Reklam Ajansı</label>
                 <div class="span10">
-                    <select id='adv_agency'
-                            name='adv_agency_id'
-                            data-placeholder='Client'
+                    <input id='adv_agency'
+                            name='agency_name'
+                            type='text'
+                            data-placeholder='Reklam Ajansı'
                             required>
-                    </select>
                 </div>
             </div>
             <div class="control-group">
-                <label for='production_firm'
+                <label for='production_house'
                        class="span2 control-label">Yapım Şirketi</label>
 
                 <div class="span10">
-                    <select id='production_firm'
-                            name='production_firm_id'
-                            data-placeholder='Client'
+                    <input id='production_house'
+                            name='production_house_name'
+                            type='text'
+                            data-placeholder='Yapım Şirketi'
                             required>
-                    </select>
                 </div>
             </div>
         </div>
@@ -266,22 +264,44 @@
     $(document).ready(function () {
 
         function get_client_data(client_type, field_name ){
-            {% raw %}
-                var option_template = doT.template(
-                    '<option value={{=it.id}}>{{=it.name}}</option>'
-                );
-            {% endraw %}
-            $.getJSON('/clients/?type_name='+client_type).then(function (c_data) {
+
+            $.getJSON('/clients/?type_name='+client_type).then(function(available_clients){
+                // map available types to an array
                 var field = $('#'+field_name);
-                var clients_data = c_data;
-                chosen_searchable_field_creator_by_data(field, option_template, clients_data);
+                var available_client_as_list = [];
+
+                for (var i=0; i < available_clients.length; i++){
+                    available_client_as_list.push(available_clients[i].name);
+                }
+
+                field.autocomplete({
+                    delay: 0,
+                    source: available_client_as_list,
+                    minLength: 0
+                });
 
                 {% if mode == 'Update' %}
                     field.val(get_project_client_by_type(client_type)['id']).trigger('liszt:updated');
                 {% endif %}
 
-                field.trigger('liszt:updated');
             });
+
+{#            {% raw %}#}
+{#                var option_template = doT.template(#}
+{#                    '<option value={{=it.id}}>{{=it.name}}</option>'#}
+{#                );#}
+{#            {% endraw %}#}
+{#            $.getJSON('/clients/?type_name='+client_type).then(function (c_data) {#}
+{#                var field = $('#'+field_name);#}
+{#                var clients_data = c_data;#}
+{#                chosen_searchable_field_creator_by_data(field, option_template, clients_data);#}
+{##}
+{#                {% if mode == 'Update' %}#}
+{#                    field.val(get_project_client_by_type(client_type)['id']).trigger('liszt:updated');#}
+{#                {% endif %}#}
+{##}
+{#                field.trigger('liszt:updated');#}
+{#            });#}
         }
 
         var product_project_name = $('#product_project_name');
@@ -402,7 +422,7 @@
         {% endif %}
 
         get_client_data("Brand", "brand" );
-        get_client_data("Production House", "production_firm" );
+        get_client_data("Production House", "production_house" );
         get_client_data("Agency", "adv_agency" );
 
 

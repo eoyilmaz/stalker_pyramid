@@ -628,15 +628,17 @@ def remove_entity_from_entity_dialog(request):
 
     came_from = request.params.get('came_from', request.current_route_path())
 
-    action = '/entities/%s/%s/remove?came_from=%s'% (selected_entity_id, entity_id, came_from)
-    message = 'Are you sure you want to <strong>remove %s </strong>?'% (selected_entity.name)
+    action = '/entities/%s/%s/remove?came_from=%s' % (entity_id, selected_entity_id, came_from)
+    message = 'Are you sure you want to <strong>remove %s from %s</strong>?' % (selected_entity.name, entity.name)
 
     logger.debug('action: %s' % action)
 
-    return {'came_from': came_from,
-            'message': message,
-            'action': action
-            }
+    return {
+        'came_from': came_from,
+        'message': message,
+        'action': action
+    }
+
 
 @view_config(
     route_name='remove_entity_from_entity',

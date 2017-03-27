@@ -130,7 +130,6 @@
                     list_str += "<a href='/"+list_type+"/"+array[k].id+"/view'>"+array[k].name+"</a><br/>";
                 }
                 return list_str
-
             }
 
             function editRow(id) {
@@ -163,7 +162,7 @@
 
                 var grid_data = entry_data;
                 for(var j=0; j<grid_data.length; j++ ){
-                    grid_data[j].remove_action = "<a data-target='#dialog_template' data-toggle='modal' data-keyboard=false href='/entities/{{ entity.id }}/"+grid_data[j].id+"/remove/dialog'> <i class='icon-trash'></i></a>"
+                    grid_data[j].delete_user_action = "<a data-target='#dialog_template' data-toggle='modal' data-keyboard=false href='"+grid_data[j].delete_user_action+"'> <i class='icon-trash'></i></a>"
                     grid_data[j].namelink = "<a href='/users/"+grid_data[j].id+"/view'>"+grid_data[j].name+"</a>";
                     grid_data[j].clients_list = makelistLink(grid_data[j].clients, 'clients');
                     grid_data[j].departments_list = makelistLink(grid_data[j].departments, 'departments');
@@ -272,7 +271,7 @@
                                         editable: false,
                                         edittype:"text"
                                     },
-                                    {name:'remove_action', index:'remove_action', width:60, editable: false}
+                                    {name:'delete_user_action', index:'delete_user_action', width:60, editable: false}
                                 ],
                                 viewrecords : true,
                                 pager: false,

@@ -48,7 +48,7 @@ logger.setLevel(logging.DEBUG)
 
 @view_config(
     route_name='create_budget_dialog',
-    renderer='templates/budget/dialog/budget_dialog.jinja2',
+    renderer='templates/budget/dialog/create_budget_dialog.jinja2',
     permission='Create_Budget'
 )
 def create_budget_dialog(request):
@@ -154,7 +154,7 @@ def create_budget(request):
 
 @view_config(
     route_name='update_budget_dialog',
-    renderer='templates/budget/dialog/budget_dialog.jinja2',
+    renderer='templates/budget/dialog/update_budget_dialog.jinja2',
     permission='Update_Budget'
 )
 def update_budget_dialog(request):
@@ -168,12 +168,15 @@ def update_budget_dialog(request):
     budget_id = request.matchdict.get('id', -1)
     budget = Budget.query.filter(Budget.id == budget_id).first()
 
+    studio = Studio.query.first()
+
     from stalker_pyramid.views.auth import PermissionChecker
     return {
         'mode': 'Update',
         'has_permission': PermissionChecker(request),
+        'studio': studio,
         'logged_in_user': logged_in_user,
-        'budget': budget,
+        'entity': budget,
         'came_from': came_from,
         'milliseconds_since_epoch': milliseconds_since_epoch,
     }
