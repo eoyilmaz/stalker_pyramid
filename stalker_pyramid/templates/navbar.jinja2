@@ -62,7 +62,19 @@
                                 </ul>
                             </li>
                             <li class="dropdown-submenu">
-                                <a href="#" tabindex="-1">WIP</a>
+                                <a href="#" tabindex="-1">New</a>
+                                <ul class="dropdown-menu dropdown-danger">
+                                    {% for project in projects %}
+                                        {% if project.status.code == 'NEW'  %}
+                                            <li>
+                                                <a href="{{ request.route_url('view_project', id=project.id) }}">{{ project.name }}</a>
+                                            </li>
+                                        {% endif %}
+                                    {% endfor %}
+                                </ul>
+                            </li>
+                            <li class="dropdown-submenu">
+                                <a href="#" tabindex="-1">Wip</a>
                                 <ul class="dropdown-menu dropdown-danger">
                                     {% for project in projects %}
                                         {% if project.status.code == 'WIP'  %}
@@ -75,7 +87,7 @@
                             </li>
 
                             <li class="dropdown-submenu">
-                                <a href="#" tabindex="-1">CMPL</a>
+                                <a href="#" tabindex="-1">Completed</a>
                                 <ul class="dropdown-menu dropdown-danger">
                                     {% for project in projects %}
                                         {% if project.status.code == 'CMPL'  %}

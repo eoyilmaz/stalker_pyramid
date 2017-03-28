@@ -312,7 +312,7 @@ def get_entity_departments(request):
     departments = []
 
     lead_role = query_role('Lead')
-    has_update_user_permission = has_permission('Update_User')
+    has_update_user_permission = PermissionChecker(request)('Update_User')
 
     # TODO: Update this to use raw SQL
     for department in entity.departments:

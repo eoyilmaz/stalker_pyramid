@@ -439,7 +439,11 @@ def milliseconds_since_epoch(dt):
     :param dt: datetime.datetime instance to be converted
     :returns int: showing the milliseconds since epoch
     """
-    dts = dt - datetime.datetime(1970, 1, 1)
+    if dt.tzinfo is None:
+        dts = dt - datetime.datetime(1970, 1, 1)
+    else:
+        import pytz
+        dts = dt - datetime.datetime(1970, 1, 1, tzinfo=pytz.utc)
     return dts.days * 86400000 + dts.seconds * 1000
 
 
