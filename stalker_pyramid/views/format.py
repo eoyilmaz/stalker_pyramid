@@ -24,7 +24,8 @@ from pyramid.view import view_config
 
 from stalker.db import DBSession
 from stalker import ImageFormat
-from stalker_pyramid.views import PermissionChecker, get_logged_in_user
+from stalker_pyramid.views import PermissionChecker, get_logged_in_user, \
+    local_to_utc
 
 import logging
 from stalker import log
@@ -118,7 +119,13 @@ def update_image_format(request):
         imf.height = int(request.params['height'])
         imf.pixel_aspect = float(request.params['pixel_aspect'])
         imf.updated_by = logged_in_user
-        imf.date_updated = datetime.datetime.now()
+
+        utc_now = local_to_utc(datetime.datetime.now())
+        from stalker_pyramid import __stalker_version_number__
+        if __stalker_version_number__ >= 218:
+            import pytz
+            utc_now = utc_now.replace(tzinfo=pytz.utc)
+        imf.date_updated = utc_now
         DBSession.add(imf)
 
     return HTTPOk()

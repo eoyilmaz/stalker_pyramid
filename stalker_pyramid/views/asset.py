@@ -30,7 +30,7 @@ from webob import Response
 import stalker_pyramid
 from stalker_pyramid.views import (get_logged_in_user, PermissionChecker,
                                    milliseconds_since_epoch, get_multi_string,
-                                   get_multi_integer)
+                                   local_to_utc, get_multi_integer)
 from stalker_pyramid.views.task import generate_recursive_task_query
 
 logger = logging.getLogger(__name__)
@@ -82,7 +82,12 @@ def update_asset(request):
         asset.type = type_
         asset.status = status
         asset.updated_by = logged_in_user
-        asset.date_updated = datetime.datetime.now()
+        utc_now = local_to_utc(datetime.datetime.now())
+        from stalker_pyramid import __stalker_version_number__
+        if __stalker_version_number__ >= 218:
+            import pytz
+            utc_now = utc_now.replace(tzinfo=pytz.utc)
+        asset.date_updated = utc_now
 
         DBSession.add(asset)
 
@@ -91,11 +96,13 @@ def update_asset(request):
 
 @view_config(
     route_name='get_entity_assets_count',
-    renderer='json'
+    renderer='json',
+    permission='List_Asset'
 )
 @view_config(
     route_name='get_project_assets_count',
-    renderer='json'
+    renderer='json',
+    permission='List_Asset'
 )
 def get_assets_count(request):
     """returns the count of assets in a project

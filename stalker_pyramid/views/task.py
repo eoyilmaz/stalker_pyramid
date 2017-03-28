@@ -248,6 +248,11 @@ def check_all_tasks_status_by_schedule_model(projects):
     logger.debug('check_task_status_by_schedule_model starts')
 
     utc_now = local_to_utc(datetime.datetime.now())
+    from stalker_pyramid import __stalker_version_number__
+    if __stalker_version_number__ >= 218:
+        import pytz
+        utc_now = utc_now.replace(tzinfo=pytz.utc)
+
     tasks = Task.query.filter(Task.schedule_model == 'duration').filter(Task.project in projects).all()
     status_cmpl = Status.query.filter(Status.code == 'CMPL').first()
     status_wip = Status.query.filter(Status.code == 'WIP').first()
@@ -256,8 +261,7 @@ def check_all_tasks_status_by_schedule_model(projects):
             if task.is_leaf:
                 if task.computed_end < utc_now:
                     task.status = status_cmpl
-                elif task.computed_start < utc_now \
-                        and task.computed_end > utc_now:
+                elif task.computed_start < utc_now < task.computed_end:
                     task.status = status_wip
                 else:
                     continue
@@ -270,6 +274,10 @@ def check_task_status_by_schedule_model(task):
     logger.debug('check_task_status_by_schedule_model starts')
 
     utc_now = local_to_utc(datetime.datetime.now())
+    from stalker_pyramid import __stalker_version_number__
+    if __stalker_version_number__ >= 218:
+        import pytz
+        utc_now = utc_now.replace(tzinfo=pytz.utc)
 
     status_cmpl = Status.query.filter(Status.code == 'CMPL').first()
     status_wip = Status.query.filter(Status.code == 'WIP').first()
@@ -416,6 +424,12 @@ def duplicate_task(task, user):
 
     # all duplicated tasks are new tasks
     new = Status.query.filter(Status.code == 'WFD').first()
+    
+    utc_now = local_to_utc(datetime.datetime.now())
+    from stalker_pyramid import __stalker_version_number__
+    if __stalker_version_number__ >= 218:
+        import pytz
+        utc_now = utc_now.replace(tzinfo=pytz.utc)
 
     dup_task = class_(
         name=task.name,
@@ -442,7 +456,7 @@ def duplicate_task(task, user):
         # thumbnail=task.thumbnail,
         type=task.type,
         watchers=task.watchers,
-        date_created=local_to_utc(datetime.datetime.now()),
+        date_created=utc_now,
         **extra_kwargs
     )
     dup_task.generic_data = task.generic_data
@@ -590,8 +604,6 @@ def duplicate_task_hierarchy_action(task, parent, name, description, user):
 
     :return: A list of stalker.models.task.Task
     """
-    utc_now = local_to_utc(datetime.datetime.now())
-
     dup_task = walk_and_duplicate_task_hierarchy(task, user)
     update_dependencies_in_duplicated_hierarchy(task)
 
@@ -864,6 +876,10 @@ def update_task_schedule_timing(request):
 
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
+    from stalker_pyramid import __stalker_version_number__
+    if __stalker_version_number__ >= 218:
+        import pytz
+        utc_now = utc_now.replace(tzinfo=pytz.utc)
 
     # *************************************************************************
     # collect data
@@ -969,6 +985,10 @@ def update_task_dependencies(request):
 
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
+    from stalker_pyramid import __stalker_version_number__
+    if __stalker_version_number__ >= 218:
+        import pytz
+        utc_now = utc_now.replace(tzinfo=pytz.utc)
 
     depend_ids = get_multi_integer(request, 'dependent_ids')
     depends = Task.query.filter(Task.id.in_(depend_ids)).all()
@@ -1103,6 +1123,10 @@ def inline_update_task(request):
 
         task.updated_by = logged_in_user
         utc_now = local_to_utc(datetime.datetime.now())
+        from stalker_pyramid import __stalker_version_number__
+        if __stalker_version_number__ >= 218:
+            import pytz
+            utc_now = utc_now.replace(tzinfo=pytz.utc)
         task.date_updated = utc_now
 
     else:
@@ -1295,7 +1319,12 @@ def update_task(request):
             logger.debug('Good is found with name : %s' % good.name)
             task.good = good
 
-    task.date_updated = local_to_utc(datetime.datetime.now())
+    utc_now = local_to_utc(datetime.datetime.now())
+    from stalker_pyramid import __stalker_version_number__
+    if __stalker_version_number__ >= 218:
+        import pytz
+        utc_now = utc_now.replace(tzinfo=pytz.utc)
+    task.date_updated = utc_now
 
     # invalidate all caches
     invalidate_all_caches()
@@ -3793,7 +3822,12 @@ def create_task(request):
     kwargs['code'] = code
     kwargs['description'] = description
     kwargs['created_by'] = logged_in_user
-    kwargs['date_created'] = local_to_utc(datetime.datetime.now())
+    utc_now = local_to_utc(datetime.datetime.now())
+    from stalker_pyramid import __stalker_version_number__
+    if __stalker_version_number__ >= 218:
+        import pytz
+        utc_now = utc_now.replace(tzinfo=pytz.utc)
+    kwargs['date_created'] = utc_now
 
     kwargs['status_list'] = status_list
 
@@ -3974,6 +4008,10 @@ def cleanup_task_new_reviews(request):
     multi_permission_checker(request, ['Update_Task', 'Update_Review'])
 
     utc_now = local_to_utc(datetime.datetime.now())
+    from stalker_pyramid import __stalker_version_number__
+    if __stalker_version_number__ >= 218:
+        import pytz
+        utc_now = utc_now.replace(tzinfo=pytz.utc)
 
     task_id = request.matchdict.get('id')
     task = Task.query.filter(Task.id == task_id).first()
@@ -4181,6 +4219,10 @@ def approve_task(request):
     logger.debug('forced: %s' % forced)
 
     utc_now = local_to_utc(datetime.datetime.now())
+    from stalker_pyramid import __stalker_version_number__
+    if __stalker_version_number__ >= 218:
+        import pytz
+        utc_now = utc_now.replace(tzinfo=pytz.utc)
 
     if forced:
         has_permission = PermissionChecker(request)
@@ -4378,6 +4420,10 @@ def request_revision(request):
     forced = request.params.get('forced', None)
 
     utc_now = local_to_utc(datetime.datetime.now())
+    from stalker_pyramid import __stalker_version_number__
+    if __stalker_version_number__ >= 218:
+        import pytz
+        utc_now = utc_now.replace(tzinfo=pytz.utc)
 
     review = None
 
@@ -4596,6 +4642,10 @@ def request_revisions(request):
 
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
+    from stalker_pyramid import __stalker_version_number__
+    if __stalker_version_number__ >= 218:
+        import pytz
+        utc_now = utc_now.replace(tzinfo=pytz.utc)
 
     selected_task_list = get_multi_integer(request, 'task_ids', 'GET')
     tasks = Task.query.filter(Task.id.in_(selected_task_list)).all()
@@ -5027,6 +5077,10 @@ def request_review_action(request, task, logged_in_user, desc, send_email, mode)
     # send_email = request.params.get('send_email', 1)  # for testing purposes
 
     utc_now = local_to_utc(datetime.datetime.now())
+    from stalker_pyramid import __stalker_version_number__
+    if __stalker_version_number__ >= 218:
+        import pytz
+        utc_now = utc_now.replace(tzinfo=pytz.utc)
 
     note = create_simple_note( note_str,
                               'Request Review',
@@ -5227,6 +5281,10 @@ def request_extra_time(request):
     description = request.params.get('description', 'No comments')
 
     utc_now = local_to_utc(datetime.datetime.now())
+    from stalker_pyramid import __stalker_version_number__
+    if __stalker_version_number__ >= 218:
+        import pytz
+        utc_now = utc_now.replace(tzinfo=pytz.utc)
 
     note = create_simple_note('<i class="icon-heart"></i> Requesting extra time <b>'
                                 '%(schedule_timing)s %(schedule_unit)s</b>.<br/>'
@@ -5949,6 +6007,10 @@ def force_task_status(request):
     """
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
+    from stalker_pyramid import __stalker_version_number__
+    if __stalker_version_number__ >= 218:
+        import pytz
+        utc_now = utc_now.replace(tzinfo=pytz.utc)
 
     logger.debug("force_task_status starts")
 
@@ -6053,6 +6115,10 @@ def force_tasks_status(request):
     """
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
+    from stalker_pyramid import __stalker_version_number__
+    if __stalker_version_number__ >= 218:
+        import pytz
+        utc_now = utc_now.replace(tzinfo=pytz.utc)
 
     status_code = request.matchdict.get('status_code')
     status = Status.query.filter(Status.code == status_code).first()
@@ -6199,6 +6265,10 @@ def resume_task(request):
 
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
+    from stalker_pyramid import __stalker_version_number__
+    if __stalker_version_number__ >= 218:
+        import pytz
+        utc_now = utc_now.replace(tzinfo=pytz.utc)
 
     note = create_simple_note('%s has changed this task status to %s' % (logged_in_user.name,
                                                            task.status.name),
@@ -6319,6 +6389,10 @@ def remove_task_user(request):
 
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
+    from stalker_pyramid import __stalker_version_number__
+    if __stalker_version_number__ >= 218:
+        import pytz
+        utc_now = utc_now.replace(tzinfo=pytz.utc)
 
     task.updated_by = logged_in_user
     task.date_updated = utc_now
@@ -6511,6 +6585,10 @@ def change_tasks_priority(request):
 
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
+    from stalker_pyramid import __stalker_version_number__
+    if __stalker_version_number__ >= 218:
+        import pytz
+        utc_now = utc_now.replace(tzinfo=pytz.utc)
 
     for task in tasks:
         task.priority = priority
@@ -6621,6 +6699,10 @@ def change_task_users(request):
     """
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
+    from stalker_pyramid import __stalker_version_number__
+    if __stalker_version_number__ >= 218:
+        import pytz
+        utc_now = utc_now.replace(tzinfo=pytz.utc)
 
     selected_list = get_multi_integer(request, 'user_ids')
     users = User.query\
@@ -6668,6 +6750,10 @@ def change_tasks_users(request):
     """
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
+    from stalker_pyramid import __stalker_version_number__
+    if __stalker_version_number__ >= 218:
+        import pytz
+        utc_now = utc_now.replace(tzinfo=pytz.utc)
 
     selected_list = get_multi_integer(request, 'user_ids')
     users = User.query\

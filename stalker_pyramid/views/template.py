@@ -119,7 +119,12 @@ def update_filename_template(request):
         ft.filename = filename
 
         ft.updated_by = logged_in_user
-        ft.date_updated = datetime.datetime.now()
+        utc_now = local_to_utc(datetime.datetime.now())
+        from stalker_pyramid import __stalker_version_number__
+        if __stalker_version_number__ >= 218:
+            import pytz
+            utc_now = utc_now.replace(tzinfo=pytz.utc)
+        ft.date_updated = utc_now
 
         DBSession.add(ft)
 

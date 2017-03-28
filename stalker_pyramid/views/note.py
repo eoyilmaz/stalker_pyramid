@@ -54,6 +54,11 @@ def create_note(request):
     logger.debug('create_note is running')
 
     utc_now = local_to_utc(datetime.datetime.now())
+    from stalker_pyramid import __stalker_version_number__
+    if __stalker_version_number__ >= 218:
+        import pytz
+        utc_now = utc_now.replace(tzinfo=pytz.utc)
+
     logged_in_user = get_logged_in_user(request)
 
     entity_ids = get_multi_integer(request, 'entity_ids')

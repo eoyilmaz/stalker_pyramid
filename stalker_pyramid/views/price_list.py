@@ -230,7 +230,10 @@ def create_good(request):
 
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
-
+    from stalker_pyramid import __stalker_version_number__
+    if __stalker_version_number__ >= 218:
+        import pytz
+        utc_now = utc_now.replace(tzinfo=pytz.utc)
 
     came_from = request.params.get('came_from', '/')
     name = request.params.get('name', None)
@@ -324,6 +327,10 @@ def update_good(request):
 
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
+    from stalker_pyramid import __stalker_version_number__
+    if __stalker_version_number__ >= 218:
+        import pytz
+        utc_now = utc_now.replace(tzinfo=pytz.utc)
 
     good_id = request.params.get('id')
     good = Good.query.filter_by(id=good_id).first()
@@ -449,6 +456,10 @@ def update_good_relation(request):
 
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
+    from stalker_pyramid import __stalker_version_number__
+    if __stalker_version_number__ >= 218:
+        import pytz
+        utc_now = utc_now.replace(tzinfo=pytz.utc)
 
     good_id = request.matchdict.get('id')
     good = Good.query.filter_by(id=good_id).first()
@@ -547,6 +558,10 @@ def delete_good_relation(request):
 
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
+    from stalker_pyramid import __stalker_version_number__
+    if __stalker_version_number__ >= 218:
+        import pytz
+        utc_now = utc_now.replace(tzinfo=pytz.utc)
 
     good_id = request.matchdict.get('id')
     good = Good.query.filter_by(id=good_id).first()

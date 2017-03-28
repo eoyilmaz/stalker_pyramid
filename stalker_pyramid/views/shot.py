@@ -122,7 +122,7 @@ def update_shot(request):
         sequence_id = request.params['sequence_id']
         sequence = Sequence.query.filter_by(id=sequence_id).first()
 
-        #update the shot
+        # update the shot
 
         shot.name = name
         shot.code = code
@@ -130,7 +130,12 @@ def update_shot(request):
         shot.sequences = [sequence]
         shot.status = status
         shot.updated_by = logged_in_user
-        shot.date_updated = datetime.datetime.now()
+        date_updated = datetime.datetime.now()
+        from stalker_pyramid import __stalker_version_number__
+        if __stalker_version_number__ >= 218:
+            import pytz
+            date_updated = date_updated.replace(tzinfo=pytz.utc)
+        shot.date_updated = date_updated
         shot.cut_in = cut_in
         shot.cut_out = cut_out
 

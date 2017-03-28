@@ -250,6 +250,11 @@ def inline_update_user(request):
 
         user.updated_by = logged_in_user
         utc_now = local_to_utc(datetime.datetime.now())
+        from stalker_pyramid import __stalker_version_number__
+        if __stalker_version_number__ >= 218:
+            import pytz
+            utc_now = utc_now.replace(tzinfo=pytz.utc)
+
         user.date_updated = utc_now
 
     else:
@@ -314,7 +319,14 @@ def update_user(request):
         user.email = email
         user.type = user_type
         user.updated_by = logged_in_user
-        user.date_updated = datetime.datetime.now()
+
+        date_updated = local_to_utc(datetime.datetime.now())
+        from stalker_pyramid import __stalker_version_number__
+        if __stalker_version_number__ >= 218:
+            import pytz
+            date_updated = date_updated.replace(tzinfo=pytz.utc)
+
+        user.date_updated = date_updated
         # user.departments = departments
         # user.groups = groups
         # user.tags = tags

@@ -26,7 +26,8 @@ from pyramid.view import view_config
 from stalker.db import DBSession
 from stalker import Repository
 
-from stalker_pyramid.views import PermissionChecker, get_logged_in_user
+from stalker_pyramid.views import PermissionChecker, get_logged_in_user, \
+    local_to_utc
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.WARNING)
@@ -113,7 +114,12 @@ def update_repository(request):
         repo.linux_path = linux_path
         repo.osx_path = osx_path
         repo.updated_by = logged_in_user
-        repo.date_updated = datetime.datetime.now()
+        utc_now = local_to_utc(datetime.datetime.now())
+        from stalker_pyramid import __stalker_version_number__
+        if __stalker_version_number__ >= 218:
+            import pytz
+            utc_now = utc_now.replace(tzinfo=pytz.utc)
+        repo.date_updated = utc_now
 
         DBSession.add(repo)
 

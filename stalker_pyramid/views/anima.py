@@ -78,6 +78,10 @@ def add_related_assets(request):
     # get logged in user
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
+    from stalker_pyramid import __stalker_version_number__
+    if __stalker_version_number__ >= 218:
+        import pytz
+        utc_now = utc_now.replace(tzinfo=pytz.utc)
 
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
@@ -202,6 +206,10 @@ def remove_related_assets(request):
     # get logged in user
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
+    from stalker_pyramid import __stalker_version_number__
+    if __stalker_version_number__ >= 218:
+        import pytz
+        utc_now = utc_now.replace(tzinfo=pytz.utc)
 
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()

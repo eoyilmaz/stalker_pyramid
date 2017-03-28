@@ -250,6 +250,11 @@ def assign_thumbnail(request):
 
         # now create a link for the thumbnail
         utc_now = local_to_utc(datetime.datetime.now())
+        from stalker_pyramid import __stalker_version_number__
+        if __stalker_version_number__ >= 218:
+            import pytz
+            utc_now = utc_now.replace(tzinfo=pytz.utc)
+
         link = Link(
             full_path=thumbnail_final_relative_path,
             created_by=logged_in_user,
@@ -297,7 +302,12 @@ def assign_reference(request):
         for full_path, original_filename in zip(full_paths, original_filenames):
             l = mm.upload_reference(entity, open(full_path), original_filename)
             l.created_by = logged_in_user
-            l.date_created = local_to_utc(datetime.datetime.now())
+            date_created = local_to_utc(datetime.datetime.now())
+            from stalker_pyramid import __stalker_version_number__
+            if __stalker_version_number__ >= 218:
+                import pytz
+                date_created = date_created.replace(tzinfo=pytz.utc)
+            l.date_created = date_created
             l.date_updated = l.date_created
             l.description = description
 
@@ -418,7 +428,13 @@ def assign_output(request):
         for full_path, original_filename in zip(full_paths, original_filenames):
             l = mm.upload_version_output(entity, open(full_path), original_filename)
             l.created_by = logged_in_user
-            l.date_created = local_to_utc(datetime.datetime.now())
+            date_created = local_to_utc(datetime.datetime.now())
+            from stalker_pyramid import __stalker_version_number__
+            if __stalker_version_number__ >= 218:
+                import pytz
+                date_created = date_created.replace(tzinfo=pytz.utc)
+            l.date_created = date_created
+
             l.date_updated = l.date_created
 
             for tag in tags:

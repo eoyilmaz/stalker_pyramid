@@ -137,6 +137,10 @@ def create_time_log(request):
 
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
+    from stalker_pyramid import __stalker_version_number__
+    if __stalker_version_number__ >= 218:
+        import pytz
+        utc_now = utc_now.replace(tzinfo=pytz.utc)
 
     task_id = request.params.get('task_id')
     task = Task.query.filter(Task.id == task_id).first()
@@ -228,6 +232,10 @@ def update_time_log(request):
 
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
+    from stalker_pyramid import __stalker_version_number__
+    if __stalker_version_number__ >= 218:
+        import pytz
+        utc_now = utc_now.replace(tzinfo=pytz.utc)
 
     # time_log_id = int(request.params.get('time_log_id'))
     time_log_id = request.matchdict.get('id', -1)

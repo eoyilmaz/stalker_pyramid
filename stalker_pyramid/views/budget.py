@@ -89,6 +89,10 @@ def create_budget(request):
     from stalker_pyramid.views import get_logged_in_user, local_to_utc, milliseconds_since_epoch
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
+    from stalker_pyramid import __stalker_version_number__
+    if __stalker_version_number__ >= 218:
+        import pytz
+        utc_now = utc_now.replace(tzinfo=pytz.utc)
 
     project_id = request.params.get('project_id', None)
     project = Project.query.filter(Project.id == project_id).first()
@@ -194,6 +198,10 @@ def update_budget(request):
     from stalker_pyramid.views import get_logged_in_user, local_to_utc
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
+    from stalker_pyramid import __stalker_version_number__
+    if __stalker_version_number__ >= 218:
+        import pytz
+        utc_now = utc_now.replace(tzinfo=pytz.utc)
 
     budget_id = request.matchdict.get('id', -1)
     budget = Budget.query.filter(Budget.id == budget_id).first()
@@ -474,6 +482,10 @@ def get_budgets_count(request):
     route_name='view_budget_calendar',
     renderer='templates/budget/view/view_budget_calendar.jinja2',
     permission='Read_Budget'
+    from stalker_pyramid import __stalker_version_number__
+    if __stalker_version_number__ >= 218:
+        import pytz
+        utc_now = utc_now.replace(tzinfo=pytz.utc)
 )
 @view_config(
     route_name='view_budget_table_summary',
@@ -484,6 +496,10 @@ def get_budgets_count(request):
     route_name='view_budget_table_detail',
     renderer='templates/budget/view/view_budget_table.jinja2',
     permission='Read_Budget'
+    from stalker_pyramid import __stalker_version_number__
+    if __stalker_version_number__ >= 218:
+        import pytz
+        utc_now = utc_now.replace(tzinfo=pytz.utc)
 )
 @view_config(
     route_name='view_budget_report',
@@ -496,6 +512,10 @@ def view_budget(request):
     logger.debug('view_budget')
     from stalker_pyramid.views import get_logged_in_user
     logged_in_user = get_logged_in_user(request)
+    from stalker_pyramid import __stalker_version_number__
+    if __stalker_version_number__ >= 218:
+        import pytz
+        utc_now = utc_now.replace(tzinfo=pytz.utc)
 
     studio = Studio.query.first()
 
@@ -568,6 +588,10 @@ def change_budget_status(request):
     from stalker_pyramid.views import get_logged_in_user, local_to_utc
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
+    from stalker_pyramid import __stalker_version_number__
+    if __stalker_version_number__ >= 218:
+        import pytz
+        utc_now = utc_now.replace(tzinfo=pytz.utc)
 
     budget_id = request.matchdict.get('id')
     budget = Budget.query.filter_by(id=budget_id).first()
@@ -645,6 +669,10 @@ def duplicate_budget(request):
     from stalker_pyramid.views import get_logged_in_user, local_to_utc
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
+    from stalker_pyramid import __stalker_version_number__
+    if __stalker_version_number__ >= 218:
+        import pytz
+        utc_now = utc_now.replace(tzinfo=pytz.utc)
 
     budget_id = request.matchdict.get('id')
     budget = Budget.query.filter_by(id=budget_id).first()

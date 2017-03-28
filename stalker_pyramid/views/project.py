@@ -287,8 +287,13 @@ def update_project(request):
         project.image_format = imf
         project.repositories = [repo]
         project.updated_by = logged_in_user
-        project.date_updated = datetime.datetime.now()
-        project.fps = float(fps)
+        utc_now = datetime.datetime.now()
+        from stalker_pyramid import __stalker_version_number__
+        if __stalker_version_number__ >= 218:
+            import pytz
+            utc_now = utc_now.replace(tzinfo=pytz.utc)
+        project.date_updated = utc_now
+        project.fps = fps
         project.structure = structure
         project.status = status
         project.start = start
@@ -652,6 +657,10 @@ def add_project_entries_to_budget(request):
 
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
+    from stalker_pyramid import __stalker_version_number__
+    if __stalker_version_number__ >= 218:
+        import pytz
+        utc_now = utc_now.replace(tzinfo=pytz.utc)
 
     project_id = request.matchdict.get('id', -1)
     project = Project.query.filter(Project.id == project_id).first()
@@ -730,8 +739,13 @@ def get_project_tasks_today(request):
     start = datetime.time(0, 0)
     end = datetime.time(23, 59, 59)
 
-    start_of_today = datetime.datetime.combine(today, start)
-    end_of_today = datetime.datetime.combine(today, end)
+    start_of_today = local_to_utc(datetime.datetime.combine(today, start))
+    end_of_today = local_to_utc(datetime.datetime.combine(today, end))
+    from stalker_pyramid import __stalker_version_number__
+    if __stalker_version_number__ >= 218:
+        import pytz
+        start_of_today = start_of_today.replace(tzinfo=pytz.utc)
+        end_of_today = end_of_today.replace(tzinfo=pytz.utc)
 
     start = time.time()
 

@@ -72,6 +72,10 @@ def create_daily(request):
 
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
+    from stalker_pyramid import __stalker_version_number__
+    if __stalker_version_number__ >= 218:
+        import pytz
+        utc_now = utc_now.replace(tzinfo=pytz.utc)
 
     name = request.params.get('name')
     description = request.params.get('description')
@@ -143,6 +147,10 @@ def update_daily(request):
 
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
+    from stalker_pyramid import __stalker_version_number__
+    if __stalker_version_number__ >= 218:
+        import pytz
+        utc_now = utc_now.replace(tzinfo=pytz.utc)
 
     daily_id = request.matchdict.get('id', -1)
     daily = Daily.query.filter(Daily.id == daily_id).first()
@@ -680,6 +688,11 @@ def inline_update_daily(request):
 
         daily.updated_by = logged_in_user
         utc_now = local_to_utc(datetime.datetime.now())
+        from stalker_pyramid import __stalker_version_number__
+        if __stalker_version_number__ >= 218:
+            import pytz
+            utc_now = utc_now.replace(tzinfo=pytz.utc)
+
         daily.date_updated = utc_now
 
     else:

@@ -171,7 +171,12 @@ def update_department(request):
 
         department.tags = tags
         department.updated_by = logged_in_user
-        department.date_updated = datetime.datetime.now()
+        utc_now = local_to_utc(datetime.datetime.now())
+        from stalker_pyramid import __stalker_version_number__
+        if __stalker_version_number__ >= 218:
+            import pytz
+            utc_now = utc_now.replace(tzinfo=pytz.utc)
+        department.date_updated = utc_now
 
         DBSession.add(department)
 

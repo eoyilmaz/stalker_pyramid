@@ -290,7 +290,12 @@ def studio_scheduling_mode(request):
 
         studio.is_scheduling = mode
         studio.is_scheduling_by = logged_in_user
-        studio.scheduling_started_at = local_to_utc(datetime.datetime.now())
+        utc_now = local_to_utc(datetime.datetime.now())
+        from stalker_pyramid import __stalker_version_number__
+        if __stalker_version_number__ >= 218:
+            import pytz
+            utc_now = utc_now.replace(tzinfo=pytz.utc)
+        studio.scheduling_started_at = utc_now
 
         return Response(
             "Successfully, set the scheduling mode to: %s" % mode

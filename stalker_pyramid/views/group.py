@@ -30,7 +30,7 @@ from stalker import (defaults, Group, Project, Entity, Studio, Permission,
 import stalker_pyramid
 from stalker_pyramid.views import (log_param, get_logged_in_user,
                                    PermissionChecker, milliseconds_since_epoch,
-                                   StdErrToHTMLConverter)
+                                   StdErrToHTMLConverter, local_to_utc)
 
 import logging
 from stalker_pyramid.views.auth import get_permissions_from_multi_dict
@@ -141,7 +141,12 @@ def update_group(request):
         group.description = description
         group.permissions = permissions
         group.updated_by = logged_in_user
-        group.date_updated = datetime.datetime.now()
+        utc_now = local_to_utc(datetime.datetime.now())
+        from stalker_pyramid import __stalker_version_number__
+        if __stalker_version_number__ >= 218:
+            import pytz
+            utc_now = utc_now.replace(tzinfo=pytz.utc)
+        group.date_updated = utc_now
 
         DBSession.add(group)
 

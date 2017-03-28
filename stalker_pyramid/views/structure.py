@@ -116,7 +116,12 @@ def update_structure(request):
         structure.custom_template = custom_template
         structure.templates = fts
         structure.updated_by = logged_in_user
-        structure.date_updated = datetime.datetime.now()
+        utc_now = datetime.datetime.now()
+        from stalker_pyramid import __stalker_version_number__
+        if __stalker_version_number__ >= 218:
+            import pytz
+            utc_now = utc_now.replace(tzinfo=pytz.utc)
+        structure.date_updated = utc_now
 
         DBSession.add(structure)
 

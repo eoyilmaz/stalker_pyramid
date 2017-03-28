@@ -112,7 +112,12 @@ def update_status(request):
         status.name = name
         status.code = code
         status.updated_by = logged_in_user
-        status.date_updated = datetime.datetime.now()
+        utc_now = datetime.datetime.now()
+        from stalker_pyramid import __stalker_version_number__
+        if __stalker_version_number__ >= 218:
+            import pytz
+            utc_now = utc_now.replace(tzinfo=pytz.utc)
+        status.date_updated = utc_now
         DBSession.add(status)
 
     return HTTPOk()
@@ -222,7 +227,12 @@ def update_status_list(request):
         logger.debug('status_list.statuses : %s' % status_list.statuses)
 
         status_list.updated_by = logged_in_user
-        status_list.date_updated = datetime.datetime.now()
+        utc_now = datetime.datetime.now()
+        from stalker_pyramid import __stalker_version_number__
+        if __stalker_version_number__ >= 218:
+            import pytz
+            utc_now = utc_now.replace(tzinfo=pytz.utc)
+        status_list.date_updated = utc_now
 
         DBSession.add(status_list)
 

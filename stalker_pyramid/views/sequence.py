@@ -117,8 +117,12 @@ def update_sequence(request):
         sequence.description = description
         sequence.status = status
         sequence.updated_by = logged_in_user
-        sequence.date_updated = datetime.datetime.now()
-
+        date_updated = datetime.datetime.now()
+        from stalker_pyramid import __stalker_version_number__
+        if __stalker_version_number__ >= 218:
+            import pytz
+            date_updated = date_updated.replace(tzinfo=pytz.utc)
+        sequence.date_updated = date_updated
         DBSession.add(sequence)
 
     else:
