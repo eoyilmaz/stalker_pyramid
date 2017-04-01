@@ -382,13 +382,17 @@ resource_name, status
         var disable_dependency_field = false;
         var good_id = null;
 
-        {% if entity.entity_type == 'Shot' %}
-            shot_cut_in = {{ entity.cut_in }};
-            shot_cut_out = {{ entity.cut_out}};
-            shot_fps = {{ entity.fps }};
-            {% if entity.sequences[0] %}
-                shot_sequences = '{{ entity.sequences[0].id }}';
+        {% if mode == 'update' %}
+            {% if entity.entity_type == 'Shot' %}
+                shot_cut_in = {{ entity.cut_in }};
+                shot_cut_out = {{ entity.cut_out}};
+                shot_fps = {{ entity.fps }};
+                {% if entity.sequences[0] %}
+                    shot_sequences = '{{ entity.sequences[0].id }}';
+                {% endif %}
             {% endif %}
+        {% else %}
+            shot_fps = {{ parent.project.fps }}
         {% endif %}
 
         {% if depends_to %}
@@ -795,7 +799,7 @@ resource_name, status
         }).on('change', function(){
             // check if it is in the range
             var curr_value = $(this).val();
-            $(this).val(curr_value <= 1 ? 1 : curr_value);
+            $(this).val(Math.max(curr_value, 1));
         });
 
 
@@ -803,14 +807,14 @@ resource_name, status
         {# Cut In Spinner #}
         $('#shot_cut_in').ace_spinner({
             value: shot_cut_in,
-            min: 1,
+            min: 0,
             step: 1,
             btn_up_class: 'btn-info',
             btn_down_class: 'btn-info'
         }).on('change', function(){
             // check if it is in the range
             var curr_value = $(this).val();
-            $(this).val(curr_value <= 1 ? 1 : curr_value);
+            $(this).val(Math.max(curr_value, 0));
         });
 
         {# ***************************************************************** #}
@@ -824,7 +828,7 @@ resource_name, status
         }).on('change', function(){
             // check if it is in the range
             var curr_value = $(this).val();
-            $(this).val(curr_value <= 1 ? 1 : curr_value);
+            $(this).val(Math.max(curr_value, 1));
         });
 
         {# ***************************************************************** #}

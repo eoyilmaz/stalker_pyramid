@@ -3863,8 +3863,9 @@ def create_task(request):
     kwargs['type'] = query_type(entity_type, type_name)
 
     if entity_type == 'Shot':
-        sequence = Sequence.query.filter_by(id=shot_sequence_id).first()
-        kwargs['sequences'] = [sequence]
+        if shot_sequence_id:
+            sequence = Sequence.query.filter_by(id=shot_sequence_id).first()
+            kwargs['sequences'] = [sequence]
         kwargs['cut_in'] = int(cut_in or 1)
         kwargs['cut_out'] = int(cut_out or 1)
         kwargs['fps'] = int(fps or 1)
