@@ -248,8 +248,9 @@ def check_all_tasks_status_by_schedule_model(projects):
     logger.debug('check_task_status_by_schedule_model starts')
 
     utc_now = local_to_utc(datetime.datetime.now())
-    from stalker_pyramid import __stalker_version_number__
-    if __stalker_version_number__ >= 218:
+    import stalker
+    from distutils.version import LooseVersion
+    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
         import pytz
         utc_now = utc_now.replace(tzinfo=pytz.utc)
 
@@ -274,8 +275,9 @@ def check_task_status_by_schedule_model(task):
     logger.debug('check_task_status_by_schedule_model starts')
 
     utc_now = local_to_utc(datetime.datetime.now())
-    from stalker_pyramid import __stalker_version_number__
-    if __stalker_version_number__ >= 218:
+    import stalker
+    from distutils.version import LooseVersion
+    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
         import pytz
         utc_now = utc_now.replace(tzinfo=pytz.utc)
 
@@ -426,8 +428,9 @@ def duplicate_task(task, user):
     new = Status.query.filter(Status.code == 'WFD').first()
     
     utc_now = local_to_utc(datetime.datetime.now())
-    from stalker_pyramid import __stalker_version_number__
-    if __stalker_version_number__ >= 218:
+    import stalker
+    from distutils.version import LooseVersion
+    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
         import pytz
         utc_now = utc_now.replace(tzinfo=pytz.utc)
 
@@ -876,8 +879,9 @@ def update_task_schedule_timing(request):
 
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
-    from stalker_pyramid import __stalker_version_number__
-    if __stalker_version_number__ >= 218:
+    import stalker
+    from distutils.version import LooseVersion
+    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
         import pytz
         utc_now = utc_now.replace(tzinfo=pytz.utc)
 
@@ -985,8 +989,9 @@ def update_task_dependencies(request):
 
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
-    from stalker_pyramid import __stalker_version_number__
-    if __stalker_version_number__ >= 218:
+    import stalker
+    from distutils.version import LooseVersion
+    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
         import pytz
         utc_now = utc_now.replace(tzinfo=pytz.utc)
 
@@ -1123,8 +1128,9 @@ def inline_update_task(request):
 
         task.updated_by = logged_in_user
         utc_now = local_to_utc(datetime.datetime.now())
-        from stalker_pyramid import __stalker_version_number__
-        if __stalker_version_number__ >= 218:
+        import stalker
+        from distutils.version import LooseVersion
+        if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
             import pytz
             utc_now = utc_now.replace(tzinfo=pytz.utc)
         task.date_updated = utc_now
@@ -1320,8 +1326,9 @@ def update_task(request):
             task.good = good
 
     utc_now = local_to_utc(datetime.datetime.now())
-    from stalker_pyramid import __stalker_version_number__
-    if __stalker_version_number__ >= 218:
+    import stalker
+    from distutils.version import LooseVersion
+    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
         import pytz
         utc_now = utc_now.replace(tzinfo=pytz.utc)
     task.date_updated = utc_now
@@ -3823,8 +3830,9 @@ def create_task(request):
     kwargs['description'] = description
     kwargs['created_by'] = logged_in_user
     utc_now = local_to_utc(datetime.datetime.now())
-    from stalker_pyramid import __stalker_version_number__
-    if __stalker_version_number__ >= 218:
+    import stalker
+    from distutils.version import LooseVersion
+    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
         import pytz
         utc_now = utc_now.replace(tzinfo=pytz.utc)
     kwargs['date_created'] = utc_now
@@ -4008,8 +4016,9 @@ def cleanup_task_new_reviews(request):
     multi_permission_checker(request, ['Update_Task', 'Update_Review'])
 
     utc_now = local_to_utc(datetime.datetime.now())
-    from stalker_pyramid import __stalker_version_number__
-    if __stalker_version_number__ >= 218:
+    import stalker
+    from distutils.version import LooseVersion
+    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
         import pytz
         utc_now = utc_now.replace(tzinfo=pytz.utc)
 
@@ -4219,8 +4228,9 @@ def approve_task(request):
     logger.debug('forced: %s' % forced)
 
     utc_now = local_to_utc(datetime.datetime.now())
-    from stalker_pyramid import __stalker_version_number__
-    if __stalker_version_number__ >= 218:
+    import stalker
+    from distutils.version import LooseVersion
+    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
         import pytz
         utc_now = utc_now.replace(tzinfo=pytz.utc)
 
@@ -4420,8 +4430,9 @@ def request_revision(request):
     forced = request.params.get('forced', None)
 
     utc_now = local_to_utc(datetime.datetime.now())
-    from stalker_pyramid import __stalker_version_number__
-    if __stalker_version_number__ >= 218:
+    import stalker
+    from distutils.version import LooseVersion
+    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
         import pytz
         utc_now = utc_now.replace(tzinfo=pytz.utc)
 
@@ -4642,8 +4653,9 @@ def request_revisions(request):
 
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
-    from stalker_pyramid import __stalker_version_number__
-    if __stalker_version_number__ >= 218:
+    import stalker
+    from distutils.version import LooseVersion
+    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
         import pytz
         utc_now = utc_now.replace(tzinfo=pytz.utc)
 
@@ -5077,8 +5089,9 @@ def request_review_action(request, task, logged_in_user, desc, send_email, mode)
     # send_email = request.params.get('send_email', 1)  # for testing purposes
 
     utc_now = local_to_utc(datetime.datetime.now())
-    from stalker_pyramid import __stalker_version_number__
-    if __stalker_version_number__ >= 218:
+    import stalker
+    from distutils.version import LooseVersion
+    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
         import pytz
         utc_now = utc_now.replace(tzinfo=pytz.utc)
 
@@ -5281,8 +5294,9 @@ def request_extra_time(request):
     description = request.params.get('description', 'No comments')
 
     utc_now = local_to_utc(datetime.datetime.now())
-    from stalker_pyramid import __stalker_version_number__
-    if __stalker_version_number__ >= 218:
+    import stalker
+    from distutils.version import LooseVersion
+    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
         import pytz
         utc_now = utc_now.replace(tzinfo=pytz.utc)
 
@@ -6007,8 +6021,9 @@ def force_task_status(request):
     """
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
-    from stalker_pyramid import __stalker_version_number__
-    if __stalker_version_number__ >= 218:
+    import stalker
+    from distutils.version import LooseVersion
+    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
         import pytz
         utc_now = utc_now.replace(tzinfo=pytz.utc)
 
@@ -6115,8 +6130,9 @@ def force_tasks_status(request):
     """
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
-    from stalker_pyramid import __stalker_version_number__
-    if __stalker_version_number__ >= 218:
+    import stalker
+    from distutils.version import LooseVersion
+    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
         import pytz
         utc_now = utc_now.replace(tzinfo=pytz.utc)
 
@@ -6265,8 +6281,9 @@ def resume_task(request):
 
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
-    from stalker_pyramid import __stalker_version_number__
-    if __stalker_version_number__ >= 218:
+    import stalker
+    from distutils.version import LooseVersion
+    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
         import pytz
         utc_now = utc_now.replace(tzinfo=pytz.utc)
 
@@ -6389,8 +6406,9 @@ def remove_task_user(request):
 
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
-    from stalker_pyramid import __stalker_version_number__
-    if __stalker_version_number__ >= 218:
+    import stalker
+    from distutils.version import LooseVersion
+    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
         import pytz
         utc_now = utc_now.replace(tzinfo=pytz.utc)
 
@@ -6585,8 +6603,9 @@ def change_tasks_priority(request):
 
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
-    from stalker_pyramid import __stalker_version_number__
-    if __stalker_version_number__ >= 218:
+    import stalker
+    from distutils.version import LooseVersion
+    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
         import pytz
         utc_now = utc_now.replace(tzinfo=pytz.utc)
 
@@ -6699,8 +6718,9 @@ def change_task_users(request):
     """
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
-    from stalker_pyramid import __stalker_version_number__
-    if __stalker_version_number__ >= 218:
+    import stalker
+    from distutils.version import LooseVersion
+    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
         import pytz
         utc_now = utc_now.replace(tzinfo=pytz.utc)
 
@@ -6750,8 +6770,9 @@ def change_tasks_users(request):
     """
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
-    from stalker_pyramid import __stalker_version_number__
-    if __stalker_version_number__ >= 218:
+    import stalker
+    from distutils.version import LooseVersion
+    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
         import pytz
         utc_now = utc_now.replace(tzinfo=pytz.utc)
 

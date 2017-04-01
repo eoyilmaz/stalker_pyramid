@@ -31,7 +31,8 @@ import transaction
 from webob import Response
 import stalker_pyramid
 from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
-                                   log_param, get_tags, StdErrToHTMLConverter)
+                                   log_param, get_tags, StdErrToHTMLConverter,
+                                   local_to_utc)
 from stalker_pyramid.views.role import query_role
 
 logger = logging.getLogger(__name__)
@@ -172,8 +173,9 @@ def update_department(request):
         department.tags = tags
         department.updated_by = logged_in_user
         utc_now = local_to_utc(datetime.datetime.now())
-        from stalker_pyramid import __stalker_version_number__
-        if __stalker_version_number__ >= 218:
+        import stalker
+        from distutils.version import LooseVersion
+        if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
             import pytz
             utc_now = utc_now.replace(tzinfo=pytz.utc)
         department.date_updated = utc_now

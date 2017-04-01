@@ -30,10 +30,7 @@ __version__ = '0.1.11'
 
 # before anything about stalker create the defaults
 from stalker.config import defaults
-from stalker import SimpleEntity, Project, Status, Budget
-
-import stalker
-__stalker_version_number__ = int(stalker.__version__.replace('.', ''))
+from stalker import SimpleEntity, Project, Budget
 
 
 import logging

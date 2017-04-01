@@ -288,8 +288,9 @@ def update_project(request):
         project.repositories = [repo]
         project.updated_by = logged_in_user
         utc_now = datetime.datetime.now()
-        from stalker_pyramid import __stalker_version_number__
-        if __stalker_version_number__ >= 218:
+        import stalker
+        from distutils.version import LooseVersion
+        if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
             import pytz
             utc_now = utc_now.replace(tzinfo=pytz.utc)
         project.date_updated = utc_now
@@ -657,8 +658,9 @@ def add_project_entries_to_budget(request):
 
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
-    from stalker_pyramid import __stalker_version_number__
-    if __stalker_version_number__ >= 218:
+    import stalker
+    from distutils.version import LooseVersion
+    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
         import pytz
         utc_now = utc_now.replace(tzinfo=pytz.utc)
 
@@ -741,8 +743,9 @@ def get_project_tasks_today(request):
 
     start_of_today = local_to_utc(datetime.datetime.combine(today, start))
     end_of_today = local_to_utc(datetime.datetime.combine(today, end))
-    from stalker_pyramid import __stalker_version_number__
-    if __stalker_version_number__ >= 218:
+    import stalker
+    from distutils.version import LooseVersion
+    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
         import pytz
         start_of_today = start_of_today.replace(tzinfo=pytz.utc)
         end_of_today = end_of_today.replace(tzinfo=pytz.utc)

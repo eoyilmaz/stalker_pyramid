@@ -92,8 +92,9 @@ def create_client(request):
     """
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
-    from stalker_pyramid import __stalker_version_number__
-    if __stalker_version_number__ >= 218:
+    import stalker
+    from distutils.version import LooseVersion
+    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
         import pytz
         utc_now = utc_now.replace(tzinfo=pytz.utc)
 
@@ -198,8 +199,9 @@ def update_client(request):
     """
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
-    from stalker_pyramid import __stalker_version_number__
-    if __stalker_version_number__ >= 218:
+    import stalker
+    from distutils.version import LooseVersion
+    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
         import pytz
         utc_now = utc_now.replace(tzinfo=pytz.utc)
 
@@ -473,8 +475,9 @@ def append_user_to_client(request):
 
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
-    from stalker_pyramid import __stalker_version_number__
-    if __stalker_version_number__ >= 218:
+    import stalker
+    from distutils.version import LooseVersion
+    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
         import pytz
         utc_now = utc_now.replace(tzinfo=pytz.utc)
 

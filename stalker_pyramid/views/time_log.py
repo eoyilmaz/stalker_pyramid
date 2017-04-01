@@ -132,13 +132,14 @@ def create_time_log(request):
     """
     logger.debug('create_time_log method starts')
 
-    #**************************************************************************
+    # *************************************************************************
     # task
 
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
-    from stalker_pyramid import __stalker_version_number__
-    if __stalker_version_number__ >= 218:
+    import stalker
+    from distutils.version import LooseVersion
+    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
         import pytz
         utc_now = utc_now.replace(tzinfo=pytz.utc)
 
@@ -151,7 +152,7 @@ def create_time_log(request):
     if not task:
         return Response('No task with id %s found' % task_id, 500)
 
-    #**************************************************************************
+    # *************************************************************************
     # resource
     resource_id = request.params.get('resource_id', None)
     resource = User.query.filter(User.id == resource_id).first()
@@ -232,8 +233,9 @@ def update_time_log(request):
 
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
-    from stalker_pyramid import __stalker_version_number__
-    if __stalker_version_number__ >= 218:
+    import stalker
+    from distutils.version import LooseVersion
+    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
         import pytz
         utc_now = utc_now.replace(tzinfo=pytz.utc)
 

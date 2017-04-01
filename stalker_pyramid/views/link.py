@@ -250,8 +250,9 @@ def assign_thumbnail(request):
 
         # now create a link for the thumbnail
         utc_now = local_to_utc(datetime.datetime.now())
-        from stalker_pyramid import __stalker_version_number__
-        if __stalker_version_number__ >= 218:
+        import stalker
+        from distutils.version import LooseVersion
+        if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
             import pytz
             utc_now = utc_now.replace(tzinfo=pytz.utc)
 
@@ -303,8 +304,9 @@ def assign_reference(request):
             l = mm.upload_reference(entity, open(full_path), original_filename)
             l.created_by = logged_in_user
             date_created = local_to_utc(datetime.datetime.now())
-            from stalker_pyramid import __stalker_version_number__
-            if __stalker_version_number__ >= 218:
+            import stalker
+            from distutils.version import LooseVersion
+            if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
                 import pytz
                 date_created = date_created.replace(tzinfo=pytz.utc)
             l.date_created = date_created
@@ -429,8 +431,9 @@ def assign_output(request):
             l = mm.upload_version_output(entity, open(full_path), original_filename)
             l.created_by = logged_in_user
             date_created = local_to_utc(datetime.datetime.now())
-            from stalker_pyramid import __stalker_version_number__
-            if __stalker_version_number__ >= 218:
+            import stalker
+            from distutils.version import LooseVersion
+            if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
                 import pytz
                 date_created = date_created.replace(tzinfo=pytz.utc)
             l.date_created = date_created

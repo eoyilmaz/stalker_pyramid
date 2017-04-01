@@ -113,8 +113,9 @@ def update_status(request):
         status.code = code
         status.updated_by = logged_in_user
         utc_now = datetime.datetime.now()
-        from stalker_pyramid import __stalker_version_number__
-        if __stalker_version_number__ >= 218:
+        import stalker
+        from distutils.version import LooseVersion
+        if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
             import pytz
             utc_now = utc_now.replace(tzinfo=pytz.utc)
         status.date_updated = utc_now
@@ -228,8 +229,9 @@ def update_status_list(request):
 
         status_list.updated_by = logged_in_user
         utc_now = datetime.datetime.now()
-        from stalker_pyramid import __stalker_version_number__
-        if __stalker_version_number__ >= 218:
+        import stalker
+        from distutils.version import LooseVersion
+        if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
             import pytz
             utc_now = utc_now.replace(tzinfo=pytz.utc)
         status_list.date_updated = utc_now

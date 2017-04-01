@@ -117,8 +117,9 @@ def update_structure(request):
         structure.templates = fts
         structure.updated_by = logged_in_user
         utc_now = datetime.datetime.now()
-        from stalker_pyramid import __stalker_version_number__
-        if __stalker_version_number__ >= 218:
+        import stalker
+        from distutils.version import LooseVersion
+        if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
             import pytz
             utc_now = utc_now.replace(tzinfo=pytz.utc)
         structure.date_updated = utc_now

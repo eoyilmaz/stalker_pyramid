@@ -168,8 +168,9 @@ def create_ticket(request):
     # we are ready to create the time log
     # Ticket should handle the extension of the effort
     utc_now = local_to_utc(datetime.datetime.now())
-    from stalker_pyramid import __stalker_version_number__
-    if __stalker_version_number__ >= 218:
+    import stalker
+    from distutils.version import LooseVersion
+    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
         import pytz
         utc_now = utc_now.replace(tzinfo=pytz.utc)
     ticket = Ticket(
@@ -255,8 +256,9 @@ def update_ticket(request):
         return Response('No ticket with id : %s' % ticket_id, 500)
 
     utc_now = local_to_utc(datetime.datetime.now())
-    from stalker_pyramid import __stalker_version_number__
-    if __stalker_version_number__ >= 218:
+    import stalker
+    from distutils.version import LooseVersion
+    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
         import pytz
         utc_now = utc_now.replace(tzinfo=pytz.utc)
     ticket_log = None
