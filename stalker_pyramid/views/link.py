@@ -796,7 +796,7 @@ def delete_reference(request):
         # now delete files
         for f in files_to_remove:
             # convert the paths to system path
-            f_system = os.path.join(prefix, f)
+            f_system = os.path.join(prefix, f).replace('\\', '/')
             logger.debug('deleting : %s' % f_system)
             try:
                 os.remove(f_system)
@@ -1457,7 +1457,7 @@ def serve_repository_files(request):
     file_full_path = os.path.join(
         repo.path,
         partial_file_path
-    )
+    ).replace('\\', '/')
 
     logger.debug('serve_repository_files is running')
     logger.debug('file_full_path : %s' % file_full_path)
@@ -1904,12 +1904,12 @@ class MediaManager(object):
             defaults.server_side_storage_path,
             first_folder,
             second_folder
-        )
+        ).replace('\\', '/')
 
         file_full_path = os.path.join(
             file_path,
             new_filename
-        )
+        ).replace('\\', '/')
 
         return file_full_path
 
@@ -1951,7 +1951,7 @@ class MediaManager(object):
         file_full_path = os.path.join(
             defaults.server_side_storage_path,
             link_full_path
-        )
+        ).replace('\\', '/')
         return file_full_path
 
     @classmethod
@@ -2356,7 +2356,7 @@ class MediaManager(object):
             random_part = '_%s' % uuid.uuid4().hex[:4]
             return os.path.join(
                 path, '%s%s%s' % (basename, random_part, extension)
-            )
+            ).replace('\\', '/')
 
         random_file_full_path = generate()
         # generate until we have something unique
@@ -2440,7 +2440,7 @@ class MediaManager(object):
         else:
             filename = self.format_filename(filename)
 
-        file_full_path = os.path.join(file_path, filename)
+        file_full_path = os.path.join(file_path, filename).replace('\\', '/')
         if os.path.exists(file_full_path):
             file_full_path = self.randomize_file_name(file_full_path)
 
@@ -2491,7 +2491,7 @@ class MediaManager(object):
         file_path = os.path.join(
             os.path.join(task.absolute_path),
             self.reference_path
-        )
+        ).replace('\\', '/')
 
         # upload it
         reference_file_full_path = \
@@ -2531,7 +2531,7 @@ class MediaManager(object):
                 os.path.dirname(reference_file_full_path),
                 'ForWeb',
                 web_version_file_name
-            )
+            ).replace('\\', '/')
         web_version_os_independent_full_path = \
             repo.to_os_independent_path(web_version_full_path)
         web_version_link = Link(
@@ -2561,7 +2561,7 @@ class MediaManager(object):
                 os.path.dirname(reference_file_full_path),
                 'Thumbnail',
                 thumbnail_file_name
-            )
+            ).replace('\\', '/')
         thumbnail_repo_os_independent_full_path = \
             repo.to_os_independent_path(thumbnail_full_path)
         thumbnail_link = Link(
@@ -2641,7 +2641,7 @@ class MediaManager(object):
         file_path = os.path.join(
             os.path.join(version.absolute_path),
             self.version_output_path
-        )
+        ).replace('\\', '/')
 
         # upload it
         version_output_file_full_path = \
@@ -2681,7 +2681,7 @@ class MediaManager(object):
                 os.path.dirname(version_output_file_full_path),
                 'ForWeb',
                 version_output_base_name + web_version_extension
-            )
+            ).replace('\\', '/')
         web_version_repo_relative_full_path = \
             repo.to_os_independent_path(str(web_version_full_path))
         web_version_link = Link(
@@ -2709,7 +2709,7 @@ class MediaManager(object):
                 os.path.dirname(version_output_file_full_path),
                 'Thumbnail',
                 version_output_base_name + thumbnail_extension
-            )
+            ).replace('\\', '/')
         thumbnail_repo_relative_full_path = \
             repo.to_os_independent_path(thumbnail_full_path)
         thumbnail_link = Link(

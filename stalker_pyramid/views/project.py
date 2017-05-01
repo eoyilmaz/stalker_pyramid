@@ -75,39 +75,35 @@ def create_project(request):
     imf = ImageFormat.query.filter_by(id=imf_id).first()
     if not imf:
         imf = ImageFormat.query.first()
-    #     transaction.abort()
-    #     return Response('Can not find a ImageFormat with code: %s' % imf_id, 500)
 
     repo_id = request.params.get('repository_id', -1)
     repo = Repository.query.filter_by(id=repo_id).first()
     if not repo:
         repo = Repository.query.first()
-    #     transaction.abort()
-    #     return Response('Can not find a Repository with code: %s' % repo_id, 500)
 
     structure_id = request.params.get('structure_id', -1)
     structure = Structure.query.filter_by(id=structure_id).first()
     if not structure:
         structure = Structure.query.first()
-        # transaction.abort()
-        # return Response('Can not find a structure with code: %s' % structure_id, 500)
 
     status = Status.query.filter_by(code='PLN').first()
     if not status:
-        transaction.abort()
-        return Response('Can not find a status with code: %s' % status.id, 500)
+        # just use the first status for a project
+        project_status_list = \
+            StatusList.query.filter_by(target_entity_type='Project').first()
+        status = project_status_list.statuses[0]
 
     type_id = request.params.get('type_id', None)
-    if not type_id:
-        transaction.abort()
-        return Response('Please enter a type name')
+    # if not type_id:
+    #     transaction.abort()
+    #     return Response('Please enter a type name', 500)
 
     from stalker_pyramid.views.client import query_client
     clients = []
     brand_name = request.params.get('brand_name', None)
     if not brand_name:
         transaction.abort()
-        return Response('Please enter a brand name')
+        return Response('Please enter a brand name', 500)
 
     brand = query_client(brand_name, 'Brand', logged_in_user)
     clients.append(brand)
@@ -115,7 +111,7 @@ def create_project(request):
     production_house_name = request.params.get('production_house_name', None)
     if not production_house_name:
         transaction.abort()
-        return Response('Please enter a production house name')
+        return Response('Please enter a production house name', 500)
 
     production_house = query_client(production_house_name, 'Production House', logged_in_user)
     clients.append(production_house)
@@ -123,7 +119,7 @@ def create_project(request):
     agency_name = request.params.get('agency_name', None)
     if not agency_name:
         transaction.abort()
-        return Response('Please enter a agency name')
+        return Response('Please enter a agency name', 500)
 
     agency = query_client(agency_name, 'Agency', logged_in_user)
     clients.append(agency)
@@ -149,16 +145,22 @@ def create_project(request):
     logger.debug('type_id     : %s' % type_id)
     new_project_id = ""
 
-    if name and code and start and end and type_id:
+    if name and code and start and end:
         # status is always New
         # lets create the project
-        logger.debug('codecode          : %s' % code)
+        logger.debug('code              : %s' % code)
         # status list
         status_list = StatusList.query \
             .filter_by(target_entity_type='Project').first()
 
-        project_type = Type.query.filter_by(target_entity_type="Project").\
-                                filter_by(id=type_id).first()
+        if type_id:
+            project_type = \
+                Type.query\
+                    .filter_by(target_entity_type="Project")\
+                    .filter_by(id=type_id).first()
+        else:
+            project_type = None
+
         try:
             logger.debug('code: %s' % code)
             logger.debug('type(code): %s' % type(code))
@@ -199,7 +201,6 @@ def create_project(request):
         return Response('There are missing parameters', 500)
 
     return Response("/projects/%s/view" % new_project_id)
-
 
 
 @view_config(

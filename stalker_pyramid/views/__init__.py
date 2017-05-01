@@ -212,7 +212,7 @@ def log_param(request, param):
 )
 def server_error(exc, request):
     msg = exc.args[0] if exc.args else ''
-    response = Response('Server Error: %s' % msg, 500)
+    response = Response('Server Error: %s' % str(exc), 500)
     transaction.abort()
     return response
 
