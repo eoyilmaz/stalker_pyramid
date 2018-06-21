@@ -21,6 +21,7 @@
 from pyramid.view import view_config
 
 from stalker import db
+from stalker.db.session import DBSession
 from stalker import Role
 
 import logging
@@ -43,7 +44,7 @@ join "SimpleEntities" on "Roles".id = "SimpleEntities".id
 order by "SimpleEntities".name
 """
 
-    result = db.DBSession.connection().execute(sql_query)
+    result = DBSession.connection().execute(sql_query)
 
     return [
         {
@@ -66,6 +67,6 @@ def query_role(role_name):
         # create a new Type
         logger.debug('creating new role: %s' % role_name)
         role = Role(name=role_name)
-        db.DBSession.add(role)
+        DBSession.add(role)
 
     return role

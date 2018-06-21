@@ -28,6 +28,7 @@ from pyramid.response import Response
 from pyramid.view import view_config
 
 from stalker import db, defaults, Task, User, Studio, TimeLog, Entity, Status
+from stalker.db.session import DBSession
 from stalker.exceptions import OverBookedError, DependencyViolationError
 
 from stalker_pyramid.views import (get_logged_in_user,
@@ -275,7 +276,7 @@ def update_time_log(request):
             if time_log.duration > previous_duration\
                and time_log.task.status == 'HREV':
                 # update the task status to WIP
-                with db.DBSession.no_autoflush:
+                with DBSession.no_autoflush:
                     wip = Status.query.filter(Status.code == 'WIP').first()
                     time_log.task.status = wip
 
@@ -285,7 +286,7 @@ def update_time_log(request):
             transaction.abort()
             return response
         else:
-            db.DBSession.add(time_log)
+            DBSession.add(time_log)
             request.session.flash(
                 'success:Time log for <strong>%s</strong> is updated..'
                 % time_log.task.name
@@ -508,7 +509,7 @@ def get_time_logs(request):
     entity_id = request.matchdict.get('id', -1)
     logger.debug('entity_id : %s' % entity_id)
 
-    data = db.DBSession.connection().execute(
+    data = DBSession.connection().execute(
         'select entity_type from "SimpleEntities" where id=%s' % entity_id
     ).fetchone()
 
@@ -581,7 +582,7 @@ def get_time_logs(request):
     elif entity_type is None:
         return []
 
-    result = db.DBSession.connection().execute(sql_query)
+    result = DBSession.connection().execute(sql_query)
 
     start = time.time()
     data = [
@@ -650,7 +651,7 @@ def get_monthly_time_logs(request):
         'where_conditions': where_conditions
     }
 
-    result = db.DBSession.connection().execute(sql_query).fetchall()
+    result = DBSession.connection().execute(sql_query).fetchall()
 
     logger.debug('get_project_total_schedule_seconds: %s' % result[0])
     return [{
@@ -690,7 +691,7 @@ def delete_time_log(request):
     task_id = time_log.task.id
 
     try:
-        db.DBSession.delete(time_log)
+        DBSession.delete(time_log)
         transaction.commit()
     except Exception as e:
         transaction.abort()

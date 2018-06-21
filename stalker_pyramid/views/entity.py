@@ -24,7 +24,7 @@ from pyramid.httpexceptions import HTTPServerError, HTTPOk, HTTPForbidden
 from pyramid.view import view_config
 from pyramid.response import Response
 
-from stalker.db import DBSession
+from stalker.db.session import DBSession
 from stalker import (db, defaults, Entity, Studio, Project, User, Group, Department,Sequence,Asset,Shot,Ticket,Task,
                      Status)
 import transaction
@@ -842,7 +842,7 @@ def get_entity_events(request):
         else:
             sql_query = task_sql_query
 
-    result = db.DBSession.connection().execute(sql_query)
+    result = DBSession.connection().execute(sql_query)
     return [{
         'id': r[0],
         'entity_type': r[1],
@@ -1169,7 +1169,7 @@ def get_entity_total_schedule_seconds(request):
 
     sql_query = sql_query % {'where_conditions': where_conditions, 'division':division}
 
-    result = db.DBSession.connection().execute(sql_query).fetchone()
+    result = DBSession.connection().execute(sql_query).fetchone()
 
     logger.debug('get_project_total_schedule_seconds: %s' % result[0])
     return result[0]
@@ -1214,7 +1214,7 @@ def get_entity_task_min_start(request):
 
     sql_query = sql_query % {'where_conditions': where_conditions}
 
-    result = db.DBSession.connection().execute(sql_query).fetchone()
+    result = DBSession.connection().execute(sql_query).fetchone()
 
     return result[0]
 
@@ -1258,7 +1258,7 @@ def get_entity_task_max_end(request):
 
     sql_query = sql_query % {'where_conditions': where_conditions}
 
-    result = db.DBSession.connection().execute(sql_query).fetchone()
+    result = DBSession.connection().execute(sql_query).fetchone()
 
     return result[0]
 

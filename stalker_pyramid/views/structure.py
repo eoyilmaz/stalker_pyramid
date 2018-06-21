@@ -23,7 +23,7 @@ from pyramid.httpexceptions import HTTPOk
 
 from pyramid.view import view_config
 
-from stalker.db import DBSession
+from stalker.db.session import DBSession
 from stalker import Structure, FilenameTemplate
 
 import logging

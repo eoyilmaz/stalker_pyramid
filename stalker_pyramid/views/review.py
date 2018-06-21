@@ -23,7 +23,7 @@ import transaction
 from pyramid.response import Response
 from pyramid.view import view_config
 
-from stalker.db import DBSession
+from stalker.db.session import DBSession
 from stalker import (User, Task, Project)
 
 from stalker_pyramid.views import get_logged_in_user
@@ -176,8 +176,9 @@ def get_task_last_reviews(request):
                 'reviewer_name': responsible.name,
                 'reviewer_thumbnail_full_path':
                 responsible.thumbnail.full_path
-                if responsible.thumbnail else None,
+                    if responsible.thumbnail else None,
                 'reviewer_department': responsible.departments[0].name
+                    if responsible.departments else '--No Department--'
             }
             for responsible in task.responsible
         ]

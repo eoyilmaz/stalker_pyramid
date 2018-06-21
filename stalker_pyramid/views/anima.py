@@ -25,7 +25,7 @@ import logging
 
 from pyramid.response import Response
 from pyramid.view import view_config
-from stalker.db import DBSession
+from stalker.db.session import DBSession
 import transaction
 
 from stalker import db,Project, Entity, Task, Shot, Type, Asset

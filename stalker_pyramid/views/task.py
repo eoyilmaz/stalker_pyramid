@@ -37,6 +37,7 @@ from sqlalchemy.exc import IntegrityError
 from stalker import (db, defaults, User, Task, Entity, Project, StatusList,
                      Status, Studio, Asset, Shot, Sequence, Ticket, Type, Note,
                      Review, Version, TimeLog, Good)
+from stalker.db.session import DBSession
 from stalker.exceptions import CircularDependencyError, StatusError
 from stalker.models import walk_hierarchy
 
@@ -149,7 +150,7 @@ def get_task_full_path(task_id):
         'task_id': task_id
     }
 
-    result = db.DBSession.connection().execute(sql_query).fetchone()
+    result = DBSession.connection().execute(sql_query).fetchone()
 
     return result[0]
 
@@ -619,7 +620,7 @@ def duplicate_task_hierarchy_action(task, parent, name, description, user):
     dup_task.code = name
     dup_task.description = description
 
-    db.DBSession.add(dup_task)
+    DBSession.add(dup_task)
 
     return dup_task
 
@@ -669,7 +670,7 @@ def duplicate_asset_hierarchy(request):
                                         logged_in_user)
 
         dup_asset.responsible = responsible
-        db.DBSession.add(dup_asset)
+        DBSession.add(dup_asset)
 
         #update_task_statuses_with_dependencies(dup_task)
         #leafs = find_leafs_in_hierarchy(dup_task)
@@ -757,7 +758,7 @@ def convert_to_dgrid_gantt_project_format(projects):
         from "Tasks"
         where "Tasks".parent_id is NULL and "Tasks".project_id = %s
         """ % proj.id
-        r = db.DBSession.connection().execute(sql_query).fetchone()[0]
+        r = DBSession.connection().execute(sql_query).fetchone()[0]
         end_inner = time.time()
 
         logger.debug('hasChildren took: %s seconds' %
@@ -1112,7 +1113,7 @@ def inline_update_task(request):
                         link_data
                     )
                     attachments.append(attachment)
-                db.DBSession.add_all(links)
+                DBSession.add_all(links)
         else:
             if attr_name == 'cut_in' \
                or attr_name == 'cut_out' \
@@ -1261,7 +1262,7 @@ def update_task(request):
                 )
             transaction.abort()
             return Response(message, 500)
-    logger.debug('task in DBSession: %s' % (task in db.DBSession))
+    logger.debug('task in DBSession: %s' % (task in DBSession))
 
     task.schedule_model = schedule_model
     task.schedule_unit = schedule_unit
@@ -1697,7 +1698,7 @@ def generate_where_clause(params):
         where_string = \
             'where (\n%s\n)' % '\n{indent}and '.join(where_string_buffer)
         where_string = where_string.format(indent=' ' * 4)
-    logger.debug("WHERE STRING: %s" % where_string)
+    #logger.debug("WHERE STRING: %s" % where_string)
     return where_string
 
 
@@ -1794,7 +1795,7 @@ def cached_query_tasks(
     if task_id:
         # check if this is a Task or Project
         # get the entity_type of this data
-        entity_type = db.DBSession.connection().execute(
+        entity_type = DBSession.connection().execute(
             """select entity_type from "SimpleEntities" where id=%s""" %
             task_id
         ).fetchone()[0]
@@ -2064,9 +2065,9 @@ def cached_query_tasks(
         sql_query = '%s limit %s' % (sql_query, limit)
     from sqlalchemy import text  # to be able to use "%" sign use this function
     logger.debug("Big Fucking Query Starts")
-    logger.debug("%s" % sql_query)
+    #logger.debug("%s" % sql_query)
     logger.debug("Big Fucking Query Ends")
-    result = db.DBSession.connection().execute(text(sql_query))
+    result = DBSession.connection().execute(text(sql_query))
     # use local functions to speed things up
     local_raw_data_to_array = raw_data_to_array
     return_data = [
@@ -2172,7 +2173,7 @@ def get_tasks(request):
 def get_entity_type(entity_id):
     """returns entity_type of the given entity with the given entity_id
     """
-    return db.DBSession.connection().execute(
+    return DBSession.connection().execute(
         """select entity_type from "SimpleEntities" where id=%s""" %
         entity_id
     ).fetchone()[0]
@@ -2425,7 +2426,7 @@ def get_cached_tasks_count(entity_type, where_clause, task_id):
             )
     from sqlalchemy import text  # to be able to use "%" sign use this function
 
-    result = db.DBSession.connection().execute(text(sql_query))
+    result = DBSession.connection().execute(text(sql_query))
 
     tasks_count = result.fetchone()
 
@@ -2582,7 +2583,7 @@ def get_cached_user_tasks(statuses, user_id):
         'generate_recursive_task_query': generate_recursive_task_query(),
         'where_clause': where_clause
     }
-    result = db.DBSession.connection().execute(sql_query)
+    result = DBSession.connection().execute(sql_query)
     return_data = [
         {
             'id': r[0],
@@ -2729,11 +2730,11 @@ def get_user_tasks_simple(request):
         'user_id': user.id
     }
 
-    logger.debug("sql_query %s" % sql_query)
+    #logger.debug("sql_query %s" % sql_query)
 
     start = time.time()
     from sqlalchemy import text
-    result = db.DBSession.connection().execute(text(sql_query))
+    result = DBSession.connection().execute(text(sql_query))
 
     return_data = [
         {
@@ -2924,7 +2925,7 @@ def get_project_tasks_count(request):
         where "Tasks".project_id = %s
         """ % project_id
 
-    return db.DBSession.connection().execute(sql_query).fetchone()[0]
+    return DBSession.connection().execute(sql_query).fetchone()[0]
 
 
 @view_config(
@@ -2992,7 +2993,7 @@ def get_project_tasks(request):
     )
     """ % {'p_id': project_id}
 
-    result = db.DBSession.connection().execute(sql_query)
+    result = DBSession.connection().execute(sql_query)
 
     data = [
         {
@@ -3022,7 +3023,7 @@ from "Task_Resources"
 where "Task_Resources".resource_id = %s
 """ % user_id
 
-    return db.DBSession.connection().execute(sql_query).fetchone()[0]
+    return DBSession.connection().execute(sql_query).fetchone()[0]
 
 
 @cache_region('long_term', 'load_tasks')
@@ -3070,9 +3071,9 @@ def get_cached_entity_tasks_stats(entity, entity_id, project):
         'where_clause_for_entity': where_clause_for_entity
     }
 
-    logger.debug("sql_query: %s" % sql_query)
+    #logger.debug("sql_query: %s" % sql_query)
     # convert to dgrid format right here in place
-    result = db.DBSession.connection().execute(sql_query)
+    result = DBSession.connection().execute(sql_query)
     return_data = [
         {
             'tasks_count': r[0],
@@ -3158,7 +3159,7 @@ def get_cached_tasks_stats(entity, entity_id, project):
 
     logger.debug("sql_query: %s" % sql_query)
     # convert to dgrid format right here in place
-    result = db.DBSession.connection().execute(sql_query)
+    result = DBSession.connection().execute(sql_query)
     return_data = [
         {
             'tasks_count': r[0],
@@ -3424,7 +3425,7 @@ from "Tasks"
     }
 
     # convert to dgrid format right here in place
-    result = db.DBSession.connection().execute(sql_query)
+    result = DBSession.connection().execute(sql_query)
 
     return_data = [
         {
@@ -3514,7 +3515,7 @@ def get_task_leafs_in_hierarchy(request):
     logger.debug(sql_query)
 
     from sqlalchemy import text  # to be able to use "%" sign use this function
-    result = db.DBSession.connection().execute(text(sql_query))
+    result = DBSession.connection().execute(text(sql_query))
 
     return [
         {
@@ -3884,7 +3885,7 @@ def create_task(request):
         else:  # entity_type == 'Task'
             new_entity = Task(**kwargs)
             logger.debug('new_task.name %s' % new_entity.name)
-        db.DBSession.add(new_entity)
+        DBSession.add(new_entity)
 
         # if responsible:
         #     # check if the responsible is different than
@@ -3898,7 +3899,7 @@ def create_task(request):
         transaction.abort()
         return response
     else:
-        db.DBSession.add(new_entity)
+        DBSession.add(new_entity)
         try:
             transaction.commit()
         except IntegrityError as e:
@@ -3907,7 +3908,7 @@ def create_task(request):
             return Response(str(e), 500)
         else:
             logger.debug('flushing the DBSession, no problem here!')
-            db.DBSession.flush()
+            DBSession.flush()
             logger.debug('finished adding Task')
 
     # invalidate all caches
@@ -3952,7 +3953,7 @@ def get_last_version_of_task(request, is_published=''):
         'is_published_condition': is_published_condition
     }
 
-    result = db.DBSession.connection().execute(sql_query).fetchone()
+    result = DBSession.connection().execute(sql_query).fetchone()
     version = None
     if result:
         version = Version.query.filter(Version.id == result[0]).first()
@@ -4186,7 +4187,7 @@ def cleanup_unanswered_reviews(task, review_set_number):
 
             try:
                 review.task = None
-                db.DBSession.delete(review)
+                DBSession.delete(review)
             except Exception as e:
                 transaction.abort()
                 c = StdErrToHTMLConverter(e)
@@ -4987,7 +4988,7 @@ def request_reviews(request):
 #
 #         # link the task to the review
 #         request_review_ticket.links.append(task)
-#         db.DBSession.add(request_review_ticket)
+#         DBSession.add(request_review_ticket)
 #
 #         ticket_comment = create_simple_note(note,
 #                                             'Ticket Comment',
@@ -5322,7 +5323,7 @@ def request_extra_time(request):
             code='ExtraTime',
             target_entity_type='Review'
         )
-        db.DBSession.add(extra_time_type)
+        DBSession.add(extra_time_type)
 
     reviews = task.request_review()
     for review in reviews:
@@ -5432,7 +5433,7 @@ def auto_extend_time(task, description, revision_type, logged_in_user):
     #         code='ExtraTime',
     #         target_entity_type='Review'
     #     )
-    #     db.DBSession.add(extra_time_type)
+    #     DBSession.add(extra_time_type)
     #
     # reviews = task.request_review()
     # for review in reviews:
@@ -5546,7 +5547,7 @@ group by "Input_Version_Task_SimpleEntities".id,
 
     sql_query = sql_query % {'task_id': task_id}
 
-    result = db.DBSession.connection().execute(sql_query)
+    result = DBSession.connection().execute(sql_query)
 
     return_data = [
         {
@@ -5588,7 +5589,7 @@ def unbind_task_relations(task):
         ticket.links.remove(task)
 
     from stalker import Version
-    with db.DBSession.no_autoflush:
+    with DBSession.no_autoflush:
         task.references = []
         for v in task.versions:
             v.inputs = []
@@ -5655,7 +5656,7 @@ def delete_task(request):
             unbind_task_hierarchy_relations(task)
             unbind_task_relations(task)
 
-            db.DBSession.delete(task)
+            DBSession.delete(task)
 
             logger.debug(
                 'Successfully deleted task: %s (%s)' % (task.name, task.id)
@@ -5690,7 +5691,7 @@ def delete_task(request):
 #         unbind_task_hierarchy_relations(task)
 #         unbind_task_relations(task)
 #
-#         db.DBSession.delete(task)
+#         DBSession.delete(task)
 #         #transaction.commit()
 #
 #         # invalidate all caches
@@ -5905,7 +5906,7 @@ where "TimeLogs".task_id in %s
 
     # now query all the time logs
     from sqlalchemy import text  # to be able to use "%" sign use this function
-    result = db.DBSession.connection().execute(text(sql_query))
+    result = DBSession.connection().execute(text(sql_query))
 
     events = [
         {

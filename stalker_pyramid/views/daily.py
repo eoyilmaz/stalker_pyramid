@@ -23,6 +23,7 @@ import datetime
 from pyramid.view import view_config
 
 from stalker import db, Project, Status, Daily, Link, Task
+from stalker.db.session import DBSession
 
 import transaction
 
@@ -108,7 +109,7 @@ def create_daily(request):
         date_created=utc_now,
         date_updated=utc_now
     )
-    db.DBSession.add(daily)
+    DBSession.add(daily)
 
     return Response('Daily Created successfully')
 
@@ -237,7 +238,7 @@ def get_dailies(request):
 
     sql_query = sql_query % {'project_id': project_id, 'additional_condition':additional_condition}
 
-    result = db.DBSession.connection().execute(sql_query)
+    result = DBSession.connection().execute(sql_query)
 
     dailies = []
 
@@ -299,7 +300,7 @@ where "Statuses".code = 'OPEN' and "Projects".id = %(project_id)s
     sql_query = sql_query % {'project_id': project_id}
 
     from sqlalchemy import text  # to be able to use "%" sign use this function
-    result = db.DBSession.connection().execute(text(sql_query))
+    result = DBSession.connection().execute(text(sql_query))
 
     return result.fetchone()[0]
 
@@ -427,7 +428,7 @@ def get_daily_outputs(request):
     """
     sql_query = sql_query % {'daily_id': daily_id, 'generate_recursive_task_query': generate_recursive_task_query()}
 
-    result = db.DBSession.connection().execute(sql_query)
+    result = DBSession.connection().execute(sql_query)
 
     tasks = []
 

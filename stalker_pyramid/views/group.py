@@ -23,7 +23,7 @@ from pyramid.httpexceptions import HTTPFound
 from pyramid.view import view_config
 from webob import Response
 
-from stalker.db import DBSession
+from stalker.db.session import DBSession
 from stalker import (defaults, Group, Project, Entity, Studio, Permission,
                      EntityType)
 
@@ -393,8 +393,8 @@ def get_entity_groups(request):
             'name': group.name,
             'thumbnail_full_path':
             group.thumbnail.full_path if group.thumbnail else None,
-            'created_by_id': group.created_by.id,
-            'created_by_name': group.created_by.name,
+            'created_by_id': group.created_by.id if group.created_by else None,
+            'created_by_name': group.created_by.name if group.created_by else None,
             'description': len(group.users),
             'item_view_link': '/groups/%s/view' % group.id,
             'item_update_link': '/groups/%s/update/dialog' % group.id

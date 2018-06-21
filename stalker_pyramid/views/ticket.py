@@ -30,7 +30,7 @@ from pyramid.view import view_config
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message, Attachment
 
-from stalker.db import DBSession
+from stalker.db.session import DBSession
 from stalker import User, Ticket, Project, Note, Type, Task
 
 from stalker_pyramid.views import (get_logged_in_user, PermissionChecker,

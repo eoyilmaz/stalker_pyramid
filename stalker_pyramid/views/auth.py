@@ -35,7 +35,7 @@ import stalker_pyramid
 from stalker import (defaults, User, Department, Group, Project, Studio,
                      Permission, EntityType, Entity, Role, ClientUser,
                      ProjectUser, DepartmentUser, Client, Status)
-from stalker.db import DBSession
+from stalker.db.session import DBSession
 from stalker_pyramid.views import (log_param, get_logged_in_user,
                                    PermissionChecker, get_multi_integer,
                                    get_tags, milliseconds_since_epoch,

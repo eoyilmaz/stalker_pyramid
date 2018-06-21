@@ -29,7 +29,7 @@ __version__ = '0.1.11'
 
 
 # before anything about stalker create the defaults
-from stalker.config import defaults
+from stalker import defaults
 from stalker import SimpleEntity, Project, Budget
 
 
@@ -99,7 +99,7 @@ def main(global_config, **settings):
 
     # setup the database to the given settings
     from stalker import db
-    from stalker.db import DBSession
+    from stalker.db.session import DBSession
 
     from stalker_pyramid.views.auth import group_finder
 

@@ -23,7 +23,7 @@ import datetime
 from pyramid.httpexceptions import HTTPOk
 from pyramid.view import view_config
 
-from stalker.db import DBSession
+from stalker.db.session import DBSession
 from stalker import Repository
 
 from stalker_pyramid.views import PermissionChecker, get_logged_in_user, \

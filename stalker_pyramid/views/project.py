@@ -27,7 +27,7 @@ from pyramid.httpexceptions import HTTPOk, HTTPFound
 from pyramid.response import Response
 from pyramid.view import view_config
 
-from stalker.db import DBSession
+from stalker.db.session import DBSession
 from stalker import (db, ImageFormat, Repository, Structure, Status,
                      StatusList, Project, Entity, Studio, defaults, Client,
                      Budget, BudgetEntry, Good, User, Type, SimpleEntity)

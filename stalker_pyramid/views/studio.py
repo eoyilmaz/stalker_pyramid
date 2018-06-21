@@ -25,7 +25,7 @@ from pyramid.httpexceptions import HTTPOk
 from pyramid.response import Response
 from pyramid.view import view_config
 
-from stalker.db import DBSession
+from stalker.db.session import DBSession
 from stalker import Studio, WorkingHours, TaskJugglerScheduler, Project
 import transaction
 from stalker_pyramid.views import (get_time, get_logged_in_user, local_to_utc,
@@ -248,7 +248,7 @@ def schedule_info(request):
     """
 
     from stalker import db
-    result = db.DBSession.connection().execute(sql_query)
+    result = DBSession.connection().execute(sql_query)
     r = result.fetchone()
 
     return {

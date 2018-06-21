@@ -24,6 +24,7 @@ from pyramid.view import view_config
 
 from stalker import db, Project, Status, Budget, BudgetEntry, Good, Entity, \
     Type, Studio, StatusList
+from stalker.db.session import DBSession
 
 import transaction
 
@@ -256,21 +257,21 @@ def create_budgetentry_action(budget, good, name, amount, msrp, cost, price, des
         date_updated=utc_now,
         generic_text=gData
     )
-    db.DBSession.add(budget_entry)
+    DBSession.add(budget_entry)
 
     from sqlalchemy.exc import IntegrityError
     try:
         transaction.commit()
-        db.DBSession.add(budget_entry)
-        db.DBSession.add(good)
-        db.DBSession.add(budget)
+        DBSession.add(budget_entry)
+        DBSession.add(good)
+        DBSession.add(budget)
 
     except IntegrityError as e:
         logger.debug(str(e))
         transaction.abort()
         return Response(str(e), 500)
     else:
-        db.DBSession.flush()
+        DBSession.flush()
 
     budget_entry = BudgetEntry.query.filter(BudgetEntry.name == name).first()
 
@@ -342,7 +343,7 @@ def update_budgetenties_startdate(entity, time_delta):
     sql_query = sql_query % {'where_clause': where_clause}
     # logger.debug('sql_query: %s' % sql_query)
 
-    result = db.DBSession.connection().execute(sql_query)
+    result = DBSession.connection().execute(sql_query)
     lists = [
         {
             'budgetEntries': r[0],
@@ -610,7 +611,7 @@ def delete_budgetentry(request):
             budgetentry.set_generic_text_attr("secondaryFactor", secondaryFactor)
         else:
             try:
-                db.DBSession.delete(budgetentry)
+                DBSession.delete(budgetentry)
                 transaction.commit()
             except Exception as e:
                 transaction.abort()
@@ -619,7 +620,7 @@ def delete_budgetentry(request):
                 # return Response(c.html(), 500)
     else:
         try:
-            db.DBSession.delete(budgetentry)
+            DBSession.delete(budgetentry)
             transaction.commit()
         except Exception as e:
             transaction.abort()
@@ -646,7 +647,7 @@ def delete_budgetentry_action(budgetentry):
     budgetentry_name = budgetentry.name
     good_id = budgetentry.good.id
     try:
-        db.DBSession.delete(budgetentry)
+        DBSession.delete(budgetentry)
         transaction.commit()
     except Exception as e:
         transaction.abort()
@@ -744,7 +745,7 @@ def get_budget_entries(request):
 
     sql_query = sql_query % {'budget_id': budget_id}
 
-    result = db.DBSession.connection().execute(sql_query)
+    result = DBSession.connection().execute(sql_query)
     entries = [
         {
             'id': r[0],
@@ -1090,7 +1091,7 @@ def budget_calendar_item_delete(request):
             budgetentry.set_generic_text_attr("secondaryFactor", secondaryFactor)
         else:
             try:
-                db.DBSession.delete(budgetentry)
+                DBSession.delete(budgetentry)
                 transaction.commit()
             except Exception as e:
                 transaction.abort()

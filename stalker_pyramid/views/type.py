@@ -21,6 +21,7 @@
 from pyramid.view import view_config
 
 from stalker import db
+from stalker.db.session import DBSession
 from stalker import Type
 
 import logging
@@ -54,7 +55,7 @@ join "SimpleEntities" on "Types".id = "SimpleEntities".id
 
 
 
-    result = db.DBSession.connection().execute(sql_query)
+    result = DBSession.connection().execute(sql_query)
 
     return [
         {
@@ -83,6 +84,6 @@ def query_type(entity_type, type_name):
             code=type_name,
             target_entity_type=entity_type
         )
-        db.DBSession.add(type_)
+        DBSession.add(type_)
 
     return type_

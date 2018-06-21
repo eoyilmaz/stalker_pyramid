@@ -29,7 +29,7 @@ from pyramid.response import Response
 from pyramid.security import has_permission, authenticated_userid
 
 from stalker import log, User, Tag
-from stalker.db import DBSession
+from stalker.db.session import DBSession
 import transaction
 
 

@@ -27,7 +27,7 @@ from pyramid.view import view_config
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message, Attachment
 
-from stalker.db import DBSession
+from stalker.db.session import DBSession
 from stalker import (db, Entity, Note, Type)
 
 from stalker_pyramid.views import (get_logged_in_user,
@@ -219,7 +219,7 @@ def create_simple_note(content, n_type, html_class, code, logged_in_user, utc_no
         date_updated=utc_now,
         type=note_type
     )
-    db.DBSession.add(note)
+    DBSession.add(note)
 
     return note
 

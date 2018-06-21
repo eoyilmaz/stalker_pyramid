@@ -26,6 +26,7 @@ from pyramid.response import Response
 from sqlalchemy import distinct
 
 from stalker import db, Task, Version, Entity, User, defaults
+from stalker.db.session import DBSession
 
 from stalker_pyramid.views import (get_logged_in_user, get_user_os,
                                    PermissionChecker, milliseconds_since_epoch)
@@ -53,7 +54,7 @@ def create_version_dialog(request):
 
     takes = map(
         lambda x: x[0],
-        db.DBSession.query(distinct(Version.take_name))
+        DBSession.query(distinct(Version.take_name))
         .filter(Version.task == task)
         .all()
     )
@@ -140,7 +141,7 @@ def create_version(request):
             arch = archive.Archiver()
             arch.bind_to_original(v.absolute_full_path)
 
-        db.DBSession.add(v)
+        DBSession.add(v)
         logger.debug('version added to: %s' % v.absolute_full_path)
     else:
         return Response('No task with id: %s' % task_id, 500)
@@ -255,7 +256,7 @@ def get_user_versions(request):
 
     from sqlalchemy import text  # to be able to use "%" sign use this function
 
-    result = db.DBSession.connection().execute(text(sql_query))
+    result = DBSession.connection().execute(text(sql_query))
 
     return_data = [
         {
@@ -355,7 +356,7 @@ def list_version_children(request):
 # where "Versions".id = %(id)s
 #     """ % {'id': version_id}
 #
-#     return db.DBSession.connection().execute(sql_query).fetchone()[0]
+#     return DBSession.connection().execute(sql_query).fetchone()[0]
 
 #
 # @view_config(
@@ -376,7 +377,7 @@ def list_version_children(request):
 # where "Tasks".id = %(id)s
 #     """ % {'id': task_id}
 #
-#     return db.DBSession.connection().execute(sql_query).fetchone()[0]
+#     return DBSession.connection().execute(sql_query).fetchone()[0]
 
 
 @view_config(

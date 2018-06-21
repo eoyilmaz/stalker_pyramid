@@ -24,7 +24,7 @@ from pyramid.view import view_config
 from pyramid.response import Response
 
 from stalker import (defaults, Good, Project, Studio, PriceList)
-from stalker.db import DBSession
+from stalker.db.session import DBSession
 from stalker_pyramid.views import local_to_utc, update_generic_text
 import transaction
 

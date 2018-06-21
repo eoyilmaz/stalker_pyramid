@@ -24,7 +24,7 @@ from pyramid.httpexceptions import HTTPFound
 from pyramid.view import view_config
 
 from stalker import db, Client, User, ClientUser, Studio, ProjectUser
-from stalker.db import DBSession
+from stalker.db.session import DBSession
 
 import transaction
 
@@ -344,7 +344,7 @@ def get_studio_clients(request):
         'where_conditions': where_conditions
     }
 
-    result = db.DBSession.connection().execute(sql_query)
+    result = DBSession.connection().execute(sql_query)
     update_client_permission = \
         PermissionChecker(request)('Update_Client')
 
@@ -450,7 +450,7 @@ def get_client_users_out_stack(request):
     """
 
     sql_query = sql_query % {'client_id': client_id}
-    result = db.DBSession.connection().execute(sql_query)
+    result = DBSession.connection().execute(sql_query)
 
     users = []
     for r in result.fetchall():

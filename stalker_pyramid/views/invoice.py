@@ -23,6 +23,7 @@ import json
 from pyramid.view import view_config
 
 from stalker import db, Project, Status, Entity, Invoice, Budget, Client, Payment
+from stalker.db.session import DBSession
 
 import transaction
 
@@ -120,7 +121,7 @@ def create_invoice(request):
         date_created=utc_now,
         date_updated=utc_now
     )
-    db.DBSession.add(invoice)
+    DBSession.add(invoice)
 
     return Response('Invoice Created successfully')
 
@@ -230,7 +231,7 @@ def create_payment(request):
         date_created=utc_now,
         date_updated=utc_now
     )
-    db.DBSession.add(invoice)
+    DBSession.add(invoice)
 
     return Response('Invoice Created successfully')
 
@@ -370,7 +371,7 @@ def get_invoices(request):
     }
 
     from stalker_pyramid.views.auth import PermissionChecker
-    result = db.DBSession.connection().execute(sql_query)
+    result = DBSession.connection().execute(sql_query)
     update_budget_permission = \
         PermissionChecker(request)('Update_Budget')
 
@@ -443,7 +444,7 @@ def get_invoices_count(request):
     sql_query = sql_query % {'budget_id': budget_id}
 
     from sqlalchemy import text  # to be able to use "%" sign use this function
-    result = db.DBSession.connection().execute(text(sql_query))
+    result = DBSession.connection().execute(text(sql_query))
 
     return result.fetchone()[0]
 
@@ -488,7 +489,7 @@ def get_payments(request):
     }
 
     from stalker_pyramid.views.auth import PermissionChecker
-    result = db.DBSession.connection().execute(sql_query)
+    result = DBSession.connection().execute(sql_query)
     update_budget_permission = \
         PermissionChecker(request)('Update_Budget')
 

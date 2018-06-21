@@ -23,7 +23,7 @@ import datetime
 from pyramid.httpexceptions import HTTPOk
 from pyramid.view import view_config
 from stalker import Type, Status, Asset, Studio, Entity, Project
-from stalker.db import DBSession
+from stalker.db.session import DBSession
 
 import logging
 from webob import Response

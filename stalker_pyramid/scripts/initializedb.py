@@ -26,6 +26,7 @@ from pyramid.paster import (
 )
 
 from stalker import db, StatusList, Status, Type
+from stalker.db.session import DBSession
 
 
 def usage(argv):
@@ -57,10 +58,10 @@ def create_statuses_and_status_lists():
     project_status_list.statuses = [new, wip, cmpl]
 
     # Warning! Not using scoped_session here, it is the plain old session
-    db.DBSession.add_all([
+    DBSession.add_all([
         project_status_list,
     ])
-    db.DBSession.commit()
+    DBSession.commit()
 
 
 def create_ticket_types():
@@ -77,8 +78,8 @@ def create_ticket_types():
         )
 
     # Warning! Not using scoped_session here, it is the plain old session
-    db.DBSession.add(review)
-    db.DBSession.commit()
+    DBSession.add(review)
+    DBSession.commit()
 
 
 def main(argv=sys.argv):

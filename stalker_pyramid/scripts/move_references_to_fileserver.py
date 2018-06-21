@@ -35,6 +35,7 @@ from pyramid.paster import (
 
 
 from stalker import db, Task
+from stalker.db.session import DBSession
 from stalker_pyramid.views.link import MediaManager
 
 
@@ -80,7 +81,7 @@ def move_references():
                               map(lambda x: x.name, r.tags))
                         new_ref.tags = r.tags
                         # add this new_ref to DBSession
-                        db.DBSession.add(new_ref)
+                        DBSession.add(new_ref)
 
                     # store this reference to be deleted
                     processed_references[r.id] = {
@@ -133,17 +134,17 @@ def move_references():
     for v in processed_references.values():
         old_ref = v['old_ref']
         # delete the thumbnail
-        with db.DBSession.no_autoflush:
+        with DBSession.no_autoflush:
             old_thumbnail = old_ref.thumbnail
 
-        db.DBSession.delete(old_ref)
+        DBSession.delete(old_ref)
         if old_thumbnail:
-            db.DBSession.delete(old_thumbnail)
+            DBSession.delete(old_thumbnail)
 
     print("Processed %s Link objects!" % len(processed_references))
 
     # commit to database
-    db.DBSession.commit()
+    DBSession.commit()
 
 
 def main(argv=sys.argv):

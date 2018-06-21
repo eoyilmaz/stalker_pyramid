@@ -25,6 +25,7 @@ from pyramid.view import view_config
 
 from stalker import db, Project, Status, Budget, BudgetEntry, Good, Entity, \
     Type, Studio, StatusList, Task
+from stalker.db.session import DBSession
 
 import transaction
 
@@ -145,7 +146,7 @@ def create_budget(request):
         date_updated=utc_now,
         generic_text=json.dumps(generic_data)
     )
-    db.DBSession.add(budget)
+    DBSession.add(budget)
     transaction.commit()
     budget = Budget.query.filter(Budget.name == name).first()
     new_budget_id = budget.id
@@ -409,7 +410,7 @@ def get_budgets(request):
     }
 
     from stalker_pyramid.views.auth import PermissionChecker
-    result = db.DBSession.connection().execute(sql_query)
+    result = DBSession.connection().execute(sql_query)
     update_budget_permission = \
         PermissionChecker(request)('Update_Budget')
 
@@ -475,7 +476,7 @@ def get_budgets_count(request):
     sql_query = sql_query % {'project_id': project_id}
 
     from sqlalchemy import text  # to be able to use "%" sign use this function
-    result = db.DBSession.connection().execute(text(sql_query))
+    result = DBSession.connection().execute(text(sql_query))
 
     return result.fetchone()[0]
 
@@ -698,7 +699,7 @@ def duplicate_budget(request):
         date_updated=utc_now,
         generic_text=budget.generic_text
     )
-    db.DBSession.add(new_budget)
+    DBSession.add(new_budget)
 
     # related_budgets = budget.get_generic_text_attr('related_budgets')
     # related_budgets.append(new_budget.id)
@@ -721,7 +722,7 @@ def duplicate_budget(request):
             date_updated=utc_now,
             generic_text=budget_entry.generic_text
         )
-        db.DBSession.add(new_budget_entry)
+        DBSession.add(new_budget_entry)
 
     if status_code == 'ATV':
         project.set_generic_text_attr('active_budget_id', new_budget.id)
@@ -892,7 +893,7 @@ def create_budget_tasks_into_project(request):
         kwargs['priority'] = 500
         new_tasks_list.append(kwargs)
         create_task_to_project(kwargs)
-        db.DBSession.add(budget)
+        DBSession.add(budget)
 
     budgetentries = BudgetEntry.query.filter(BudgetEntry.budget == budget).all()
     for budgetentry in budgetentries:
@@ -908,7 +909,7 @@ def create_budget_tasks_into_project(request):
                     parent = None
                     if filtered_folders:
                         folder = filtered_folders[0]
-                        with db.DBSession.no_autoflush:
+                        with DBSession.no_autoflush:
                             parent = Task.query.filter(Task.name == folder['name']).first()
 
                     kwargs['parent'] = parent
@@ -931,8 +932,8 @@ def create_budget_tasks_into_project(request):
                     kwargs['priority'] = 500
                     new_tasks_list.append(kwargs)
                     create_task_to_project(kwargs)
-                    db.DBSession.add(budget)
-                    db.DBSession.add_all(budgetentries)
+                    DBSession.add(budget)
+                    DBSession.add_all(budgetentries)
 
     # for new_task_kwargs in new_tasks_list:
     #     create_task_to_project(new_task_kwargs)
@@ -946,7 +947,7 @@ def create_task_to_project(kwargs):
     try:
         new_entity = Task(**kwargs)
         logger.debug('task %s' % new_entity.name)
-        db.DBSession.add(new_entity)
+        DBSession.add(new_entity)
 
     except (AttributeError, TypeError, CircularDependencyError) as e:
         logger.debug('The Error Message: %s' % e)
@@ -954,20 +955,20 @@ def create_task_to_project(kwargs):
         transaction.abort()
         return response
     else:
-        db.DBSession.add(new_entity)
+        DBSession.add(new_entity)
         try:
             transaction.commit()
-            # db.DBSession.add_all(kwargs.values())
-            db.DBSession.add(kwargs['project'])
-            db.DBSession.add(kwargs['status_list'])
-            # db.DBSession.add(kwargs['parent'])
+            # DBSession.add_all(kwargs.values())
+            DBSession.add(kwargs['project'])
+            DBSession.add(kwargs['status_list'])
+            # DBSession.add(kwargs['parent'])
         except IntegrityError as e:
             logger.debug('The Error Message: %s' % str(e))
             transaction.abort()
             return Response(str(e), 500)
         else:
             logger.debug('flushing the DBSession, no problem here!')
-            db.DBSession.flush()
+            DBSession.flush()
             logger.debug('finished adding Task')
 
     return Response('Task created successfully')
