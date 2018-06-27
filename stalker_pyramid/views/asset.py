@@ -18,6 +18,7 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 
+import pytz
 import datetime
 
 from pyramid.httpexceptions import HTTPOk
@@ -30,11 +31,13 @@ from webob import Response
 import stalker_pyramid
 from stalker_pyramid.views import (get_logged_in_user, PermissionChecker,
                                    milliseconds_since_epoch, get_multi_string,
-                                   local_to_utc, get_multi_integer)
+                                   get_multi_integer)
 from stalker_pyramid.views.task import generate_recursive_task_query
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+#logger = logging.getLogger(__name__)
+#logger.setLevel(logging.DEBUG)
+from stalker_pyramid import logger_name
+logger = logging.getLogger(logger_name)
 
 
 @view_config(
@@ -82,12 +85,7 @@ def update_asset(request):
         asset.type = type_
         asset.status = status
         asset.updated_by = logged_in_user
-        utc_now = local_to_utc(datetime.datetime.now())
-        import stalker
-        from distutils.version import LooseVersion
-        if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
-            import pytz
-            utc_now = utc_now.replace(tzinfo=pytz.utc)
+        utc_now = datetime.datetime.now(pytz.utc)
         asset.date_updated = utc_now
 
         DBSession.add(asset)

@@ -18,6 +18,7 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 
+import pytz
 import datetime
 import json
 from pyramid.view import view_config
@@ -29,17 +30,12 @@ import transaction
 
 from webob import Response
 import stalker_pyramid
-# from stalker_pyramid.views import (get_logged_in_user, logger,
-#                                    PermissionChecker, milliseconds_since_epoch,
-#                                    local_to_utc, StdErrToHTMLConverter,
-#                                    get_multi_string, update_generic_text)
-# from stalker_pyramid.views.client import generate_report
-#
-# from stalker_pyramid.views.task import generate_recursive_task_query
-# from stalker_pyramid.views.type import query_type
+
 import logging
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+#logger = logging.getLogger(__name__)
+#logger.setLevel(logging.DEBUG)
+from stalker_pyramid import logger_name
+logger = logging.getLogger(logger_name)
 
 
 @view_config(
@@ -84,9 +80,9 @@ def create_invoice_dialog(request):
 def create_invoice(request):
     """runs when creating a invoice
     """
-    from stalker_pyramid.views import get_logged_in_user, local_to_utc, milliseconds_since_epoch
+    from stalker_pyramid.views import get_logged_in_user, milliseconds_since_epoch
     logged_in_user = get_logged_in_user(request)
-    utc_now = local_to_utc(datetime.datetime.now())
+    utc_now = datetime.datetime.now(pytz.utc)
 
 
     description = request.params.get('description')
@@ -203,9 +199,9 @@ def create_payment_dialog(request):
 def create_payment(request):
     """runs when creating a payment
     """
-    from stalker_pyramid.views import get_logged_in_user, local_to_utc, milliseconds_since_epoch
+    from stalker_pyramid.views import get_logged_in_user, milliseconds_since_epoch
     logged_in_user = get_logged_in_user(request)
-    utc_now = local_to_utc(datetime.datetime.now())
+    utc_now = datetime.datetime.now(pytz.utc)
 
     description = request.params.get('description')
 
@@ -242,9 +238,9 @@ def update_payment(request):
     """edits the edit_payment with data from request
     """
     logger.debug('***edit edit_payment method starts ***')
-    from stalker_pyramid.views import get_logged_in_user, local_to_utc
+    from stalker_pyramid.views import get_logged_in_user
     logged_in_user = get_logged_in_user(request)
-    utc_now = local_to_utc(datetime.datetime.now())
+    utc_now = datetime.datetime.now(pytz.utc)
 
     payment_id = request.params.get('id')
     payment = Payment.query.filter_by(id=payment_id).first()

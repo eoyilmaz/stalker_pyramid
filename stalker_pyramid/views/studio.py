@@ -28,14 +28,16 @@ from pyramid.view import view_config
 from stalker.db.session import DBSession
 from stalker import Studio, WorkingHours, TaskJugglerScheduler, Project
 import transaction
-from stalker_pyramid.views import (get_time, get_logged_in_user, local_to_utc,
+from stalker_pyramid.views import (get_time, get_logged_in_user,
                                    StdErrToHTMLConverter,
                                    invalidate_all_caches)
 from stalker_pyramid.views.task import check_task_status_by_schedule_model, \
     check_all_tasks_status_by_schedule_model
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+#logger = logging.getLogger(__name__)
+from stalker_pyramid import logger_name
+logger = logging.getLogger(logger_name)
+#logger.setLevel(logging.DEBUG)
 
 #
 # @view_config(
@@ -205,8 +207,8 @@ def auto_schedule_tasks(request):
 
         # update schedule timings to UTC
         studio.scheduling_started_at = \
-            local_to_utc(studio.scheduling_started_at)
-        studio.last_scheduled_at = local_to_utc(studio.last_scheduled_at)
+            studio.scheduling_started_at
+        studio.last_scheduled_at = studio.last_scheduled_at
 
         # invalidate cache regions
         from stalker_pyramid.views.task import cached_query_tasks,\
@@ -290,12 +292,7 @@ def studio_scheduling_mode(request):
 
         studio.is_scheduling = mode
         studio.is_scheduling_by = logged_in_user
-        utc_now = local_to_utc(datetime.datetime.now())
-        import stalker
-        from distutils.version import LooseVersion
-        if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
-            import pytz
-            utc_now = utc_now.replace(tzinfo=pytz.utc)
+        utc_now = datetime.datetime.now(pytz.utc)
         studio.scheduling_started_at = utc_now
 
         return Response(

@@ -19,6 +19,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 
 import logging
+import pytz
 import calendar
 import datetime
 import json
@@ -33,38 +34,13 @@ from stalker.db.session import DBSession
 import transaction
 
 
-logger = logging.getLogger(__name__)
-logger.setLevel(log.logging_level)
+#logger = logging.getLogger(__name__)
+#logger.setLevel(log.logging_level)
+from stalker_pyramid import logger_name
+logger = logging.getLogger(logger_name)
 
 # this is a dummy mail address change it in the config (*.ini) file
 dummy_email_address = "Stalker Pyramid <stalker.pyramid@stalker.pyramid.com>"
-
-
-def utc_to_local(utc_dt):
-    """converts utc time to local time
-
-    based on the answer of J.F. Sebastian on
-    http://stackoverflow.com/questions/4563272/how-to-convert-a-python-utc-datetime-to-a-local-datetime-using-only-python-stand/13287083#13287083
-    """
-    # get integer timestamp to avoid precision lost
-    timestamp = calendar.timegm(utc_dt.timetuple())
-    local_dt = datetime.datetime.fromtimestamp(timestamp)
-    assert utc_dt.resolution >= datetime.timedelta(microseconds=1)
-    return local_dt.replace(microsecond=utc_dt.microsecond)
-
-
-def local_to_utc(local_dt):
-    """converts local datetime to utc datetime
-
-    based on the answer of J.F. Sebastian on
-    http://stackoverflow.com/questions/4563272/how-to-convert-a-python-utc-datetime-to-a-local-datetime-using-only-python-stand/13287083#13287083
-    """
-    # get the utc_dt as if the local_dt is utc and calculate the timezone
-    # difference and add it to the local dt object
-    logger.debug('utc_to_local(local_dt) : %s' % utc_to_local(local_dt))
-    logger.debug('utc - local            : %s' % (utc_to_local(local_dt) - local_dt))
-    logger.debug('local - (utc - local)  : %s' % (local_dt - (utc_to_local(local_dt) - local_dt)))
-    return local_dt - (utc_to_local(local_dt) - local_dt)
 
 
 def to_seconds(timing, unit):
@@ -291,10 +267,13 @@ def get_date_range(request, date_range_attr):
     :param date_range_attr: the attribute name
     :return: datetime.datetime
     """
+    import tzlocal
+    local_tz = tzlocal.get_localzone()
+
     date_range_string = request.params.get(date_range_attr)
     start_str, end_str = date_range_string.split(' - ')
-    start = datetime.datetime.strptime(start_str, '%d/%m/%Y')
-    end = datetime.datetime.strptime(end_str, '%d/%m/%Y')
+    start = datetime.datetime.strptime(start_str, '%d/%m/%Y').replace(tzinfo=local_tz)
+    end = datetime.datetime.strptime(end_str, '%d/%m/%Y').replace(tzinfo=local_tz)
     return start, end
 
 
@@ -427,7 +406,7 @@ def seconds_since_epoch(dt):
     :param dt: datetime.datetime instance to be converted
     :returns int: showing the seconds since epoch
     """
-    dts = dt - datetime.datetime(1970, 1, 1)
+    dts = dt - datetime.datetime(1970, 1, 1, tzinfo=pytz.utc)
     return dts.days * 86400 + dts.seconds
 
 
@@ -451,7 +430,7 @@ def from_microseconds(t):
     """converts the given microseconds showing the time since epoch to datetime
     instance
     """
-    epoch = datetime.datetime(1970, 1, 1)
+    epoch = datetime.datetime(1970, 1, 1, tzinfo=pytz.utc)
     delta = datetime.timedelta(microseconds=t)
     return epoch + delta
 

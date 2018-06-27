@@ -30,19 +30,13 @@ import transaction
 
 from webob import Response
 import stalker_pyramid
-# from stalker_pyramid.views import (get_logged_in_user, logger,
-#                                    PermissionChecker, milliseconds_since_epoch,
-#                                    local_to_utc, StdErrToHTMLConverter,
-#                                    get_multi_string, update_generic_text)
-# from stalker_pyramid.views.client import generate_report
-#
-# from stalker_pyramid.views.task import generate_recursive_task_query
-# from stalker_pyramid.views.type import query_type
 import logging
 from stalker_pyramid.views import get_date
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+#logger = logging.getLogger(__name__)
+#logger.setLevel(logging.DEBUG)
+from stalker_pyramid import logger_name
+logger = logging.getLogger(logger_name)
 
 
 @view_config(
@@ -97,9 +91,10 @@ def create_budgetentry(request):
     """runs when creating a budgetentry
     """
     logger.debug('***create_budgetentry method starts ***')
-    from stalker_pyramid.views import get_logged_in_user, local_to_utc
+    import pytz
+    from stalker_pyramid.views import get_logged_in_user 
     logged_in_user = get_logged_in_user(request)
-    utc_now = local_to_utc(datetime.datetime.now())
+    utc_now = datetime.datetime.now(pytz.utc)
 
     good_id = request.params.get('good_id', None)
     if not good_id:
@@ -428,9 +423,10 @@ def update_budgetentry(request):
     """updates the BudgetEntry with data from request
     """
     logger.debug('***update_budgetentry method starts ***')
-    from stalker_pyramid.views import get_logged_in_user, local_to_utc
+    import pytz
+    from stalker_pyramid.views import get_logged_in_user 
     logged_in_user = get_logged_in_user(request)
-    utc_now = local_to_utc(datetime.datetime.now())
+    utc_now = datetime.datetime.now(pytz.utc)
 
     budgetentry_id = request.params.get('id')
     budgetentry = BudgetEntry.query.filter_by(id=budgetentry_id).first()
@@ -884,9 +880,10 @@ def budget_calendar_list_order(request):
     """
     logger.debug('budget_calendar_list_order method starts')
 
-    from stalker_pyramid.views import get_logged_in_user, local_to_utc
+    import pytz
+    from stalker_pyramid.views import get_logged_in_user
     logged_in_user = get_logged_in_user(request)
-    utc_now = local_to_utc(datetime.datetime.now())
+    utc_now = datetime.datetime.now(pytz.utc)
 
     budget_id = request.matchdict.get('id', -1)
     budget = Budget.query.filter(Budget.id == budget_id).first()
@@ -943,9 +940,10 @@ def budget_calendar_item_action(request):
     """
     logger.debug('budget_calendar_item_action method starts')
 
-    from stalker_pyramid.views import get_logged_in_user, local_to_utc
+    import pytz
+    from stalker_pyramid.views import get_logged_in_user 
     logged_in_user = get_logged_in_user(request)
-    utc_now = local_to_utc(datetime.datetime.now())
+    utc_now = datetime.datetime.now(pytz.utc)
 
     budget_id = request.matchdict.get('id', -1)
     budget = Budget.query.filter(Budget.id == budget_id).first()
@@ -1041,9 +1039,10 @@ def budget_calendar_item_delete(request):
     """budget_calendar_folder_delete
     """
     logger.debug('***budget_calendar_folder_delete method starts ***')
-    from stalker_pyramid.views import get_logged_in_user, local_to_utc
+    import pytz
+    from stalker_pyramid.views import get_logged_in_user 
     logged_in_user = get_logged_in_user(request)
-    utc_now = local_to_utc(datetime.datetime.now())
+    utc_now = datetime.datetime.now(pytz.utc)
 
     budget_id = request.matchdict.get('id', None)
     budget = Budget.query.filter(Budget.id == budget_id).first()
@@ -1111,9 +1110,10 @@ def budget_calendar_link_create(request):
     """budget_calendar_link_create
     """
     logger.debug('***budget_calendar_link_create method starts ***')
-    from stalker_pyramid.views import get_logged_in_user, local_to_utc
+    import pytz
+    from stalker_pyramid.views import get_logged_in_user
     logged_in_user = get_logged_in_user(request)
-    utc_now = local_to_utc(datetime.datetime.now())
+    utc_now = datetime.datetime.now(pytz.utc)
 
     budget_id = request.matchdict.get('id', None)
     budget = Budget.query.filter(Budget.id == budget_id).first()
@@ -1154,9 +1154,10 @@ def budget_calendar_task_action(request):
     """
     logger.debug('***budget_calendar_create_task method starts ***')
 
-    from stalker_pyramid.views import get_logged_in_user, local_to_utc
+    import pytz
+    from stalker_pyramid.views import get_logged_in_user
     logged_in_user = get_logged_in_user(request)
-    utc_now = local_to_utc(datetime.datetime.now())
+    utc_now = datetime.datetime.now(pytz.utc)
 
     budget_id = request.matchdict.get('id', None)
     budget = Budget.query.filter(Budget.id == budget_id).first()

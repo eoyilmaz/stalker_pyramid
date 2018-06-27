@@ -26,6 +26,7 @@ import pyramid_beaker
 from zope.sqlalchemy import ZopeTransactionExtension
 
 __version__ = '0.1.11'
+logger_name = 'stalker_pyramid'
 
 
 # before anything about stalker create the defaults
@@ -34,10 +35,9 @@ from stalker import SimpleEntity, Project, Budget
 
 
 import logging
-
 logging.basicConfig()
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger = logging.getLogger(logger_name)
+#logger.setLevel(logging.DEBUG)
 
 
 stalker_server_external_url = None

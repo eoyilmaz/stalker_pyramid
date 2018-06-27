@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
+import pytz
 import datetime
 from pyramid.httpexceptions import HTTPOk, HTTPServerError
 
@@ -24,13 +25,14 @@ from pyramid.view import view_config
 
 from stalker.db.session import DBSession
 from stalker import ImageFormat
-from stalker_pyramid.views import PermissionChecker, get_logged_in_user, \
-    local_to_utc
+from stalker_pyramid.views import PermissionChecker, get_logged_in_user
+    
 
 import logging
-from stalker import log
-logger = logging.getLogger(__name__)
-logger.setLevel(log.logging_level)
+#logger = logging.getLogger(__name__)
+#logger.setLevel(log.logging_level)
+from stalker_pyramid import logger_name
+logger = logging.getLogger(logger_name)
 
 
 @view_config(
@@ -120,12 +122,7 @@ def update_image_format(request):
         imf.pixel_aspect = float(request.params['pixel_aspect'])
         imf.updated_by = logged_in_user
 
-        utc_now = local_to_utc(datetime.datetime.now())
-        import stalker
-        from distutils.version import LooseVersion
-        if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
-            import pytz
-            utc_now = utc_now.replace(tzinfo=pytz.utc)
+        utc_now = datetime.datetime.now(pytz.utc)
         imf.date_updated = utc_now
         DBSession.add(imf)
 

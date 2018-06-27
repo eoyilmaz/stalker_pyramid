@@ -20,6 +20,7 @@
 import shutil
 import subprocess
 import tempfile
+import pytz
 import datetime
 import copy
 import os
@@ -39,12 +40,14 @@ from stalker.db.session import DBSession
 from stalker import Entity, Link, defaults, Repository, Version, Daily
 
 from stalker_pyramid.views import (get_logged_in_user, get_tags,
-                                   StdErrToHTMLConverter, local_to_utc,
+                                   StdErrToHTMLConverter,
                                    get_multi_integer)
 
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+#logger = logging.getLogger(__name__)
+#logger.setLevel(logging.DEBUG)
+from stalker_pyramid import logger_name
+logger = logging.getLogger(logger_name)
 
 
 class ImageData(object):
@@ -249,12 +252,7 @@ def assign_thumbnail(request):
                      thumbnail_final_relative_path)
 
         # now create a link for the thumbnail
-        utc_now = local_to_utc(datetime.datetime.now())
-        import stalker
-        from distutils.version import LooseVersion
-        if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
-            import pytz
-            utc_now = utc_now.replace(tzinfo=pytz.utc)
+        utc_now = datetime.datetime.now(pytz.utc)
 
         link = Link(
             full_path=thumbnail_final_relative_path,
@@ -303,12 +301,7 @@ def assign_reference(request):
         for full_path, original_filename in zip(full_paths, original_filenames):
             l = mm.upload_reference(entity, open(full_path), original_filename)
             l.created_by = logged_in_user
-            date_created = local_to_utc(datetime.datetime.now())
-            import stalker
-            from distutils.version import LooseVersion
-            if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
-                import pytz
-                date_created = date_created.replace(tzinfo=pytz.utc)
+            date_created = datetime.datetime.now(pytz.utc)
             l.date_created = date_created
             l.date_updated = l.date_created
             l.description = description
@@ -430,12 +423,7 @@ def assign_output(request):
         for full_path, original_filename in zip(full_paths, original_filenames):
             l = mm.upload_version_output(entity, open(full_path), original_filename)
             l.created_by = logged_in_user
-            date_created = local_to_utc(datetime.datetime.now())
-            import stalker
-            from distutils.version import LooseVersion
-            if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
-                import pytz
-                date_created = date_created.replace(tzinfo=pytz.utc)
+            date_created = datetime.datetime.now(pytz.utc)
             l.date_created = date_created
 
             l.date_updated = l.date_created

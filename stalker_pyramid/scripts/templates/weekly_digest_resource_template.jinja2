@@ -77,8 +77,8 @@
                     </thead>
                     <tbody>
                         {% for task in tasks_ending_this_week %}
-                            {% set start = utc_to_local(task.start) %}
-                            {% set end = utc_to_local(task.end) %}
+                            {% set start = task.start %}
+                            {% set end = task.end %}
                             <tr>
                                 <td style="font-weight: bold; padding-right: 2em">
                                     <a href="{{ stalker_url }}/tasks/{{ task.id }}/view">{{ task.name }} ({{ task.project.code }}{% for parent in task.parents %} | {{ parent.name }}{% endfor %})</a>
@@ -115,8 +115,8 @@
                     </thead>
                     <tbody>
                             {% for task in tasks_continues %}
-                                {% set start = utc_to_local(task.start) %}
-                                {% set end = utc_to_local(task.end) %}
+                                {% set start = task.start %}
+                                {% set end = task.end %}
                                 <tr>
                                     <td style="font-weight: bold; padding-right: 2em">
                                         <a href="{{ stalker_url }}/tasks/{{ task.id }}/view">{{ task.name }} ({{ task.project.code }}{% for parent in task.parents %} | {{ parent.name }}{% endfor %})</a>

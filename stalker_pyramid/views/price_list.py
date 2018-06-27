@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
+import pytz
 import datetime
 import json
 from pyramid.httpexceptions import HTTPFound
@@ -25,7 +26,7 @@ from pyramid.response import Response
 
 from stalker import (defaults, Good, Project, Studio, PriceList)
 from stalker.db.session import DBSession
-from stalker_pyramid.views import local_to_utc, update_generic_text
+from stalker_pyramid.views import update_generic_text
 import transaction
 
 from stalker_pyramid.views import (log_param, get_logged_in_user,
@@ -35,8 +36,10 @@ from stalker_pyramid.views import (log_param, get_logged_in_user,
 import logging
 from stalker_pyramid.views.type import query_type
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+#logger = logging.getLogger(__name__)
+#logger.setLevel(logging.DEBUG)
+from stalker_pyramid import logger_name
+logger = logging.getLogger(logger_name)
 
 
 def query_price_list(price_list_name):
@@ -229,12 +232,7 @@ def create_good(request):
     logger.debug('***create good method starts ***')
 
     logged_in_user = get_logged_in_user(request)
-    utc_now = local_to_utc(datetime.datetime.now())
-    import stalker
-    from distutils.version import LooseVersion
-    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
-        import pytz
-        utc_now = utc_now.replace(tzinfo=pytz.utc)
+    utc_now = datetime.datetime.now(pytz.utc)
 
     came_from = request.params.get('came_from', '/')
     name = request.params.get('name', None)
@@ -327,12 +325,7 @@ def update_good(request):
     logger.debug('***update good method starts ***')
 
     logged_in_user = get_logged_in_user(request)
-    utc_now = local_to_utc(datetime.datetime.now())
-    import stalker
-    from distutils.version import LooseVersion
-    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
-        import pytz
-        utc_now = utc_now.replace(tzinfo=pytz.utc)
+    utc_now = datetime.datetime.now(pytz.utc)
 
     good_id = request.params.get('id')
     good = Good.query.filter_by(id=good_id).first()
@@ -457,12 +450,7 @@ def update_good_relation(request):
     logger.debug('***update_good_relation method starts ***')
 
     logged_in_user = get_logged_in_user(request)
-    utc_now = local_to_utc(datetime.datetime.now())
-    import stalker
-    from distutils.version import LooseVersion
-    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
-        import pytz
-        utc_now = utc_now.replace(tzinfo=pytz.utc)
+    utc_now = datetime.datetime.now(pytz.utc)
 
     good_id = request.matchdict.get('id')
     good = Good.query.filter_by(id=good_id).first()
@@ -560,12 +548,7 @@ def delete_good_relation(request):
     logger.debug('***delete_good_relation method starts ***')
 
     logged_in_user = get_logged_in_user(request)
-    utc_now = local_to_utc(datetime.datetime.now())
-    import stalker
-    from distutils.version import LooseVersion
-    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
-        import pytz
-        utc_now = utc_now.replace(tzinfo=pytz.utc)
+    utc_now = datetime.datetime.now(pytz.utc)
 
     good_id = request.matchdict.get('id')
     good = Good.query.filter_by(id=good_id).first()

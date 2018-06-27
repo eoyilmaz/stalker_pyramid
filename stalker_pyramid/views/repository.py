@@ -19,6 +19,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 
 import logging
+import pytz
 import datetime
 from pyramid.httpexceptions import HTTPOk
 from pyramid.view import view_config
@@ -26,11 +27,12 @@ from pyramid.view import view_config
 from stalker.db.session import DBSession
 from stalker import Repository
 
-from stalker_pyramid.views import PermissionChecker, get_logged_in_user, \
-    local_to_utc
+from stalker_pyramid.views import PermissionChecker, get_logged_in_user
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.WARNING)
+#logger = logging.getLogger(__name__)
+#logger.setLevel(logging.WARNING)
+from stalker_pyramid import logger_name
+logger = logging.getLogger(logger_name)
 
 
 @view_config(
@@ -114,12 +116,7 @@ def update_repository(request):
         repo.linux_path = linux_path
         repo.osx_path = osx_path
         repo.updated_by = logged_in_user
-        utc_now = local_to_utc(datetime.datetime.now())
-        import stalker
-        from distutils.version import LooseVersion
-        if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
-            import pytz
-            utc_now = utc_now.replace(tzinfo=pytz.utc)
+        utc_now = datetime.datetime.now(pytz.utc)
         repo.date_updated = utc_now
 
         DBSession.add(repo)

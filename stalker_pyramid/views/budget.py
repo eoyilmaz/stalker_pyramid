@@ -18,7 +18,7 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 
-
+import pytz
 import datetime
 import json
 from pyramid.view import view_config
@@ -31,20 +31,14 @@ import transaction
 
 from webob import Response
 import stalker_pyramid
-# from stalker_pyramid.views import (get_logged_in_user, logger,
-#                                    PermissionChecker, milliseconds_since_epoch,
-#                                    local_to_utc, StdErrToHTMLConverter,
-#                                    get_multi_string, update_generic_text)
-# from stalker_pyramid.views.client import generate_report
-#
-# from stalker_pyramid.views.task import generate_recursive_task_query
-# from stalker_pyramid.views.type import query_type
 import logging
 from stalker_pyramid.views import get_date
 
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+#logger = logging.getLogger(__name__)
+#logger.setLevel(logging.DEBUG)
+from stalker_pyramid import logger_name
+logger = logging.getLogger(logger_name)
 
 
 @view_config(
@@ -87,14 +81,9 @@ def create_budget_dialog(request):
 def create_budget(request):
     """runs when creating a budget
     """
-    from stalker_pyramid.views import get_logged_in_user, local_to_utc, milliseconds_since_epoch
+    from stalker_pyramid.views import get_logged_in_user, milliseconds_since_epoch
     logged_in_user = get_logged_in_user(request)
-    utc_now = local_to_utc(datetime.datetime.now())
-    import stalker
-    from distutils.version import LooseVersion
-    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
-        import pytz
-        utc_now = utc_now.replace(tzinfo=pytz.utc)
+    utc_now = datetime.datetime.now(pytz.utc)
 
     project_id = request.params.get('project_id', None)
     project = Project.query.filter(Project.id == project_id).first()
@@ -197,14 +186,9 @@ def update_budget(request):
     """
     logger.debug("update_budget starts")
 
-    from stalker_pyramid.views import get_logged_in_user, local_to_utc
+    from stalker_pyramid.views import get_logged_in_user
     logged_in_user = get_logged_in_user(request)
-    utc_now = local_to_utc(datetime.datetime.now())
-    import stalker
-    from distutils.version import LooseVersion
-    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
-        import pytz
-        utc_now = utc_now.replace(tzinfo=pytz.utc)
+    utc_now = datetime.datetime.now(pytz.utc)
 
     budget_id = request.matchdict.get('id', -1)
     budget = Budget.query.filter(Budget.id == budget_id).first()
@@ -280,10 +264,10 @@ def inline_update_budget(request):
 
     logger.debug('INLINE UPDATE BUDGET IS RUNNING')
 
-    from stalker_pyramid.views import get_logged_in_user, local_to_utc, \
+    from stalker_pyramid.views import get_logged_in_user, \
         get_date_range, milliseconds_since_epoch
     logged_in_user = get_logged_in_user(request)
-    utc_now = local_to_utc(datetime.datetime.now())
+    utc_now = datetime.datetime.now(pytz.utc)
 
     # *************************************************************************
     # collect data
@@ -575,14 +559,9 @@ def change_budget_status_dialog(request):
 )
 def change_budget_status(request):
 
-    from stalker_pyramid.views import get_logged_in_user, local_to_utc
+    from stalker_pyramid.views import get_logged_in_user
     logged_in_user = get_logged_in_user(request)
-    utc_now = local_to_utc(datetime.datetime.now())
-    import stalker
-    from distutils.version import LooseVersion
-    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
-        import pytz
-        utc_now = utc_now.replace(tzinfo=pytz.utc)
+    utc_now = datetime.datetime.now(pytz.utc)
 
     budget_id = request.matchdict.get('id')
     budget = Budget.query.filter_by(id=budget_id).first()
@@ -657,14 +636,9 @@ def duplicate_budget_dialog(request):
 )
 def duplicate_budget(request):
 
-    from stalker_pyramid.views import get_logged_in_user, local_to_utc
+    from stalker_pyramid.views import get_logged_in_user
     logged_in_user = get_logged_in_user(request)
-    utc_now = local_to_utc(datetime.datetime.now())
-    import stalker
-    from distutils.version import LooseVersion
-    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
-        import pytz
-        utc_now = utc_now.replace(tzinfo=pytz.utc)
+    utc_now = datetime.datetime.now(pytz.utc)
 
     budget_id = request.matchdict.get('id')
     budget = Budget.query.filter_by(id=budget_id).first()
@@ -754,9 +728,9 @@ class ReportExporter(object):
 def generate_report_view(request):
     """generates report and allows the user to download it
     """
-    from stalker_pyramid.views import get_logged_in_user, local_to_utc
+    from stalker_pyramid.views import get_logged_in_user 
     logged_in_user = get_logged_in_user(request)
-    utc_now = local_to_utc(datetime.datetime.now())
+    utc_now = datetime.datetime.now(pytz.utc)
 
     budget_id = request.matchdict['id']
 
@@ -817,9 +791,9 @@ def set_budget_totals(request):
     """set_budget_totals
     """
     logger.debug('set_budget_totals method starts')
-    from stalker_pyramid.views import get_logged_in_user, local_to_utc
+    from stalker_pyramid.views import get_logged_in_user
     logged_in_user = get_logged_in_user(request)
-    utc_now = local_to_utc(datetime.datetime.now())
+    utc_now = datetime.datetime.now(pytz.utc)
 
     budget_id = request.matchdict.get('id')
     budget = Budget.query.filter_by(id=budget_id).first()
@@ -851,9 +825,9 @@ def create_budget_tasks_into_project(request):
     """create_budget_tasks_into_project
     """
     logger.debug('create_budget_tasks_into_project method starts')
-    from stalker_pyramid.views import get_logged_in_user, local_to_utc
+    from stalker_pyramid.views import get_logged_in_user
     logged_in_user = get_logged_in_user(request)
-    utc_now = local_to_utc(datetime.datetime.now())
+    utc_now = datetime.datetime.now(pytz.utc)
 
     budget_id = request.matchdict.get('id')
     budget = Budget.query.filter_by(id=budget_id).first()

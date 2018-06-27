@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
+import pytz
 import datetime
 
 from pyramid.httpexceptions import HTTPServerError, HTTPOk
@@ -28,11 +29,12 @@ from stalker import Sequence, StatusList, Status, Shot, Project, Entity
 import logging
 import transaction
 from webob import Response
-from stalker_pyramid.views import get_logged_in_user, PermissionChecker, \
-    local_to_utc
+from stalker_pyramid.views import get_logged_in_user, PermissionChecker 
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+#logger = logging.getLogger(__name__)
+#logger.setLevel(logging.DEBUG)
+from stalker_pyramid import logger_name
+logger = logging.getLogger(logger_name)
 
 
 @view_config(
@@ -130,12 +132,7 @@ def update_shot(request):
         shot.sequences = [sequence]
         shot.status = status
         shot.updated_by = logged_in_user
-        date_updated = datetime.datetime.now()
-        import stalker
-        from distutils.version import LooseVersion
-        if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
-            import pytz
-            date_updated = date_updated.replace(tzinfo=pytz.utc)
+        date_updated = datetime.datetime.now(pytz.utc)
         shot.date_updated = date_updated
         shot.cut_in = cut_in
         shot.cut_out = cut_out

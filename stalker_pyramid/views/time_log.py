@@ -21,6 +21,7 @@
 
 import time
 import logging
+import pytz
 import datetime
 import transaction
 
@@ -34,7 +35,7 @@ from stalker.exceptions import OverBookedError, DependencyViolationError
 from stalker_pyramid.views import (get_logged_in_user,
                                    PermissionChecker, milliseconds_since_epoch,
                                    get_date, StdErrToHTMLConverter,
-                                   local_to_utc, get_multi_integer, to_seconds,
+                                   get_multi_integer, to_seconds,
                                    from_milliseconds, seconds_since_epoch)
 from stalker_pyramid.views.task import (get_task_full_path,
                                         generate_where_clause,
@@ -42,8 +43,10 @@ from stalker_pyramid.views.task import (get_task_full_path,
                                         auto_extend_time,
                                         get_schedule_information)
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+#logger = logging.getLogger(__name__)
+#logger.setLevel(logging.DEBUG)
+from stalker_pyramid import logger_name
+logger = logging.getLogger(logger_name)
 
 
 @view_config(
@@ -137,12 +140,7 @@ def create_time_log(request):
     # task
 
     logged_in_user = get_logged_in_user(request)
-    utc_now = local_to_utc(datetime.datetime.now())
-    import stalker
-    from distutils.version import LooseVersion
-    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
-        import pytz
-        utc_now = utc_now.replace(tzinfo=pytz.utc)
+    utc_now = datetime.datetime.now(pytz.utc)
 
     task_id = request.params.get('task_id')
     task = Task.query.filter(Task.id == task_id).first()
@@ -233,12 +231,7 @@ def update_time_log(request):
     logger.debug('inside update_time_log')
 
     logged_in_user = get_logged_in_user(request)
-    utc_now = local_to_utc(datetime.datetime.now())
-    import stalker
-    from distutils.version import LooseVersion
-    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
-        import pytz
-        utc_now = utc_now.replace(tzinfo=pytz.utc)
+    utc_now = datetime.datetime.now(pytz.utc)
 
     # time_log_id = int(request.params.get('time_log_id'))
     time_log_id = request.matchdict.get('id', -1)
@@ -357,7 +350,7 @@ def create_multi_timelog(request):
     # task
 
     logged_in_user = get_logged_in_user(request)
-    utc_now = local_to_utc(datetime.datetime.now())
+    utc_now = datetime.datetime.now(pytz.utc)
 
     selected_task_list = get_multi_integer(request, 'task_ids')
     tasks = Task.query.filter(Task.id.in_(selected_task_list)).all()

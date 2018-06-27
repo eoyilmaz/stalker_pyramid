@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
+import pytz
 import datetime
 
 from pyramid.httpexceptions import HTTPServerError, HTTPFound
@@ -31,12 +32,13 @@ import transaction
 from webob import Response
 import stalker_pyramid
 from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
-                                   log_param, get_tags, StdErrToHTMLConverter,
-                                   local_to_utc)
+                                   log_param, get_tags, StdErrToHTMLConverter)
 from stalker_pyramid.views.role import query_role
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.WARNING)
+#logger = logging.getLogger(__name__)
+#logger.setLevel(logging.WARNING)
+from stalker_pyramid import logger_name
+logger = logging.getLogger(logger_name)
 
 
 @view_config(
@@ -172,12 +174,7 @@ def update_department(request):
 
         department.tags = tags
         department.updated_by = logged_in_user
-        utc_now = local_to_utc(datetime.datetime.now())
-        import stalker
-        from distutils.version import LooseVersion
-        if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
-            import pytz
-            utc_now = utc_now.replace(tzinfo=pytz.utc)
+        utc_now = datetime.datetime.now(pytz.utc)
         department.date_updated = utc_now
 
         DBSession.add(department)

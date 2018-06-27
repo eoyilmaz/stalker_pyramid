@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
+import pytz
 import logging
 import datetime
 import os
@@ -32,7 +33,7 @@ from stalker import (db, Entity, Note, Type)
 
 from stalker_pyramid.views import (get_logged_in_user,
                                    milliseconds_since_epoch,
-                                   StdErrToHTMLConverter, local_to_utc,
+                                   StdErrToHTMLConverter,
                                    get_multi_integer, dummy_email_address)
 from stalker_pyramid.views.link import replace_img_data_with_links, \
     MediaManager
@@ -41,8 +42,10 @@ from stalker_pyramid.views.link import replace_img_data_with_links, \
 from stalker_pyramid.views.type import query_type
 
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+#logger = logging.getLogger(__name__)
+#logger.setLevel(logging.DEBUG)
+from stalker_pyramid import logger_name
+logger = logging.getLogger(logger_name)
 
 
 @view_config(
@@ -53,12 +56,7 @@ def create_note(request):
     """
     logger.debug('create_note is running')
 
-    utc_now = local_to_utc(datetime.datetime.now())
-    import stalker
-    from distutils.version import LooseVersion
-    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
-        import pytz
-        utc_now = utc_now.replace(tzinfo=pytz.utc)
+    utc_now = datetime.datetime.now(pytz.utc)
 
     logged_in_user = get_logged_in_user(request)
 

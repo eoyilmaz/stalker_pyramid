@@ -31,8 +31,11 @@ from stalker_pyramid.views import get_logged_in_user, PermissionChecker, \
     get_parent_task_status, to_seconds
 from stalker_pyramid.views.task import duplicate_task_hierarchy_action
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+#logger = logging.getLogger(__name__)
+#logger.setLevel(logging.DEBUG)
+from stalker_pyramid import logger_name
+logger = logging.getLogger(logger_name)
+
 
 @view_config(
     route_name='update_scene_dialog',

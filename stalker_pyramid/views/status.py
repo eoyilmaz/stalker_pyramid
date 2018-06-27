@@ -18,6 +18,7 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 import logging
+import pytz
 import datetime
 
 from pyramid.httpexceptions import HTTPOk
@@ -29,8 +30,10 @@ from stalker import Status, StatusList, EntityType
 from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
                                    get_multi_integer)
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.WARNING)
+#logger = logging.getLogger(__name__)
+#logger.setLevel(logging.WARNING)
+from stalker_pyramid import logger_name
+logger = logging.getLogger(logger_name)
 
 
 # *******************
@@ -112,12 +115,7 @@ def update_status(request):
         status.name = name
         status.code = code
         status.updated_by = logged_in_user
-        utc_now = datetime.datetime.now()
-        import stalker
-        from distutils.version import LooseVersion
-        if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
-            import pytz
-            utc_now = utc_now.replace(tzinfo=pytz.utc)
+        utc_now = datetime.datetime.now(pytz.utc)
         status.date_updated = utc_now
         DBSession.add(status)
 
@@ -228,12 +226,7 @@ def update_status_list(request):
         logger.debug('status_list.statuses : %s' % status_list.statuses)
 
         status_list.updated_by = logged_in_user
-        utc_now = datetime.datetime.now()
-        import stalker
-        from distutils.version import LooseVersion
-        if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
-            import pytz
-            utc_now = utc_now.replace(tzinfo=pytz.utc)
+        utc_now = datetime.datetime.now(pytz.utc)
         status_list.date_updated = utc_now
 
         DBSession.add(status_list)

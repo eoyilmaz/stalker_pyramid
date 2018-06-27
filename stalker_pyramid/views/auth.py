@@ -20,6 +20,7 @@
 
 
 import time
+import pytz
 import datetime
 from beaker.cache import cache_region
 
@@ -28,7 +29,6 @@ from pyramid.response import Response
 from pyramid.security import forget, remember
 from pyramid.view import view_config, forbidden_view_config
 from sqlalchemy import or_
-from stalker.models import local_to_utc
 import transaction
 
 import stalker_pyramid
@@ -45,8 +45,10 @@ import logging
 from stalker_pyramid.views.role import query_role
 from stalker_pyramid.views.type import query_type
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+#logger = logging.getLogger(__name__)
+#logger.setLevel(logging.DEBUG)
+from stalker_pyramid import logger_name
+logger = logging.getLogger(logger_name)
 
 
 @cache_region('long_term', 'load_users')
@@ -249,12 +251,7 @@ def inline_update_user(request):
         setattr(user, attr_name, attr_val)
 
         user.updated_by = logged_in_user
-        utc_now = local_to_utc(datetime.datetime.now())
-        import stalker
-        from distutils.version import LooseVersion
-        if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
-            import pytz
-            utc_now = utc_now.replace(tzinfo=pytz.utc)
+        utc_now = datetime.datetime.now(pytz.utc)
 
         user.date_updated = utc_now
 
@@ -321,12 +318,7 @@ def update_user(request):
         user.type = user_type
         user.updated_by = logged_in_user
 
-        date_updated = local_to_utc(datetime.datetime.now())
-        import stalker
-        from distutils.version import LooseVersion
-        if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
-            import pytz
-            date_updated = date_updated.replace(tzinfo=pytz.utc)
+        date_updated = datetime.datetime.now(pytz.utc)
 
         user.date_updated = date_updated
         # user.departments = departments
@@ -835,7 +827,7 @@ def logout(request):
     from stalker.models.auth import LOGOUT
     al = AuthenticationLog(
         user=logged_in_user,
-        date=local_to_utc(datetime.datetime.now()),
+        date=datetime.datetime.now(pytz.utc),
         action=LOGOUT
     )
     DBSession.add(al)
@@ -884,7 +876,7 @@ def login(request):
             from stalker.models.auth import LOGIN
             al = AuthenticationLog(
                 user_obj,
-                date=local_to_utc(datetime.datetime.now()),
+                date=datetime.datetime.now(pytz.utc),
                 action=LOGIN
             )
             DBSession.add(al)
@@ -1391,7 +1383,7 @@ def update_entity_user(request):
     """
     logger.debug('update_entity_user_role is starts')
     logged_in_user = get_logged_in_user(request)
-    utc_now = local_to_utc(datetime.datetime.now())
+    utc_now = datetime.datetime.now(pytz.utc)
 
     entity_id = request.matchdict.get('id')
     entity = Entity.query.get(entity_id)
@@ -1492,7 +1484,7 @@ def append_user_to_entity_dialog(request):
 def append_user_to_entity(request):
 
     logged_in_user = get_logged_in_user(request)
-    utc_now = local_to_utc(datetime.datetime.now())
+    utc_now = datetime.datetime.now(pytz.utc)
 
     came_from = request.params.get('came_from', '/')
 

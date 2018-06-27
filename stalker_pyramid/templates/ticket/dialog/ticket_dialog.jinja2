@@ -220,8 +220,10 @@
 
 
             link_ids = $.map(raw_link_ids.split(','), function (value) {
-                value = value.match(/\(([0-9]+)\)/)[1];
-                return value;
+                values = value.match(/\(([0-9]+)\)/);
+                if( values !== null && values !== undefined ){
+                    return values[1];
+                }
             });
             console.log(link_ids)
 

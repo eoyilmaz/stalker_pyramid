@@ -36,7 +36,7 @@ from pyramid_mailer.mailer import Mailer
 from pyramid_mailer.message import Message
 
 from stalker import db, Task, User
-from stalker_pyramid.views import dummy_email_address, utc_to_local
+from stalker_pyramid.views import dummy_email_address
 
 mailer = None
 stalker_server_external_url = None
@@ -129,7 +129,6 @@ def send_resource_remainder(resource):
         tasks_continues=tasks_continues,
         start_of_week=start_of_week,
         end_of_week=end_of_week,
-        utc_to_local=utc_to_local,
         stalker_url=stalker_server_external_url
     )
 
@@ -186,7 +185,6 @@ def send_responsible_remainder(responsible):
         tasks_continues=tasks_continues,
         start_of_week=start_of_week,
         end_of_week=end_of_week,
-        utc_to_local=utc_to_local,
         stalker_url=stalker_server_external_url
     )
 

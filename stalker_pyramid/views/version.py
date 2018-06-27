@@ -33,8 +33,10 @@ from stalker_pyramid.views import (get_logged_in_user, get_user_os,
 from stalker_pyramid.views.link import MediaManager
 from stalker_pyramid.views.task import generate_recursive_task_query
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+#logger = logging.getLogger(__name__)
+#logger.setLevel(logging.DEBUG)
+from stalker_pyramid import logger_name
+logger = logging.getLogger(logger_name)
 
 
 @view_config(

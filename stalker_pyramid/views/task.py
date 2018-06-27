@@ -19,6 +19,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 import logging
 import time
+import pytz
 import datetime
 import json
 import os
@@ -46,7 +47,7 @@ from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
                                    StdErrToHTMLConverter,
                                    multi_permission_checker,
                                    convert_seconds_to_time_range,
-                                   dummy_email_address, local_to_utc,
+                                   dummy_email_address,
                                    get_path_converter, invalidate_all_caches,
                                    measure_time, get_date, get_user_os)
 from stalker_pyramid.views.link import (replace_img_data_with_links,
@@ -55,8 +56,11 @@ from stalker_pyramid.views.note import create_simple_note
 from stalker_pyramid.views.type import query_type
 
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+#logger = logging.getLogger(__name__)
+#logger.setLevel(logging.DEBUG)
+from stalker_pyramid import logger_name
+logger = logging.getLogger(logger_name)
+
 
 def generate_recursive_task_query(ordered=True):
     """generates a query string that recursively gathers task information
@@ -248,12 +252,7 @@ def check_all_tasks_status_by_schedule_model(projects):
 
     logger.debug('check_task_status_by_schedule_model starts')
 
-    utc_now = local_to_utc(datetime.datetime.now())
-    import stalker
-    from distutils.version import LooseVersion
-    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
-        import pytz
-        utc_now = utc_now.replace(tzinfo=pytz.utc)
+    utc_now = datetime.datetime.now(pytz.utc)
 
     tasks = Task.query.filter(Task.schedule_model == 'duration').filter(Task.project in projects).all()
     status_cmpl = Status.query.filter(Status.code == 'CMPL').first()
@@ -275,12 +274,7 @@ def check_task_status_by_schedule_model(task):
 
     logger.debug('check_task_status_by_schedule_model starts')
 
-    utc_now = local_to_utc(datetime.datetime.now())
-    import stalker
-    from distutils.version import LooseVersion
-    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
-        import pytz
-        utc_now = utc_now.replace(tzinfo=pytz.utc)
+    utc_now = datetime.datetime.now(pytz.utc)
 
     status_cmpl = Status.query.filter(Status.code == 'CMPL').first()
     status_wip = Status.query.filter(Status.code == 'WIP').first()
@@ -428,12 +422,7 @@ def duplicate_task(task, user):
     # all duplicated tasks are new tasks
     new = Status.query.filter(Status.code == 'WFD').first()
     
-    utc_now = local_to_utc(datetime.datetime.now())
-    import stalker
-    from distutils.version import LooseVersion
-    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
-        import pytz
-        utc_now = utc_now.replace(tzinfo=pytz.utc)
+    utc_now = datetime.datetime.now(pytz.utc)
 
     dup_task = class_(
         name=task.name,
@@ -879,12 +868,7 @@ def update_task_schedule_timing(request):
     logger.debug('update_task_schedule_timing IS RUNNING')
 
     logged_in_user = get_logged_in_user(request)
-    utc_now = local_to_utc(datetime.datetime.now())
-    import stalker
-    from distutils.version import LooseVersion
-    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
-        import pytz
-        utc_now = utc_now.replace(tzinfo=pytz.utc)
+    utc_now = datetime.datetime.now(pytz.utc)
 
     # *************************************************************************
     # collect data
@@ -989,12 +973,7 @@ def update_task_dependencies(request):
     logger.debug('update_task_dependencies IS RUNNING')
 
     logged_in_user = get_logged_in_user(request)
-    utc_now = local_to_utc(datetime.datetime.now())
-    import stalker
-    from distutils.version import LooseVersion
-    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
-        import pytz
-        utc_now = utc_now.replace(tzinfo=pytz.utc)
+    utc_now = datetime.datetime.now(pytz.utc)
 
     depend_ids = get_multi_integer(request, 'dependent_ids')
     depends = Task.query.filter(Task.id.in_(depend_ids)).all()
@@ -1128,12 +1107,7 @@ def inline_update_task(request):
                     ct.priority = attr_value
 
         task.updated_by = logged_in_user
-        utc_now = local_to_utc(datetime.datetime.now())
-        import stalker
-        from distutils.version import LooseVersion
-        if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
-            import pytz
-            utc_now = utc_now.replace(tzinfo=pytz.utc)
+        utc_now = datetime.datetime.now(pytz.utc)
         task.date_updated = utc_now
 
     else:
@@ -1326,12 +1300,7 @@ def update_task(request):
             logger.debug('Good is found with name : %s' % good.name)
             task.good = good
 
-    utc_now = local_to_utc(datetime.datetime.now())
-    import stalker
-    from distutils.version import LooseVersion
-    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
-        import pytz
-        utc_now = utc_now.replace(tzinfo=pytz.utc)
+    utc_now = datetime.datetime.now(pytz.utc)
     task.date_updated = utc_now
 
     # invalidate all caches
@@ -3830,12 +3799,7 @@ def create_task(request):
     kwargs['code'] = code
     kwargs['description'] = description
     kwargs['created_by'] = logged_in_user
-    utc_now = local_to_utc(datetime.datetime.now())
-    import stalker
-    from distutils.version import LooseVersion
-    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
-        import pytz
-        utc_now = utc_now.replace(tzinfo=pytz.utc)
+    utc_now = datetime.datetime.now(pytz.utc)
     kwargs['date_created'] = utc_now
 
     kwargs['status_list'] = status_list
@@ -4017,12 +3981,7 @@ def cleanup_task_new_reviews(request):
 
     multi_permission_checker(request, ['Update_Task', 'Update_Review'])
 
-    utc_now = local_to_utc(datetime.datetime.now())
-    import stalker
-    from distutils.version import LooseVersion
-    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
-        import pytz
-        utc_now = utc_now.replace(tzinfo=pytz.utc)
+    utc_now = datetime.datetime.now(pytz.utc)
 
     task_id = request.matchdict.get('id')
     task = Task.query.filter(Task.id == task_id).first()
@@ -4229,12 +4188,7 @@ def approve_task(request):
 
     logger.debug('forced: %s' % forced)
 
-    utc_now = local_to_utc(datetime.datetime.now())
-    import stalker
-    from distutils.version import LooseVersion
-    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
-        import pytz
-        utc_now = utc_now.replace(tzinfo=pytz.utc)
+    utc_now = datetime.datetime.now(pytz.utc)
 
     if forced:
         has_permission = PermissionChecker(request)
@@ -4431,12 +4385,7 @@ def request_revision(request):
     description = request.params.get('description', 1)
     forced = request.params.get('forced', None)
 
-    utc_now = local_to_utc(datetime.datetime.now())
-    import stalker
-    from distutils.version import LooseVersion
-    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
-        import pytz
-        utc_now = utc_now.replace(tzinfo=pytz.utc)
+    utc_now = datetime.datetime.now(pytz.utc)
 
     review = None
 
@@ -4654,12 +4603,7 @@ def request_revisions(request):
     """
 
     logged_in_user = get_logged_in_user(request)
-    utc_now = local_to_utc(datetime.datetime.now())
-    import stalker
-    from distutils.version import LooseVersion
-    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
-        import pytz
-        utc_now = utc_now.replace(tzinfo=pytz.utc)
+    utc_now = datetime.datetime.now(pytz.utc)
 
     selected_task_list = get_multi_integer(request, 'task_ids', 'GET')
     tasks = Task.query.filter(Task.id.in_(selected_task_list)).all()
@@ -4953,7 +4897,7 @@ def request_reviews(request):
 #
 #     note = request.params.get('note', 'No note')
 #
-#     utc_now = local_to_utc(datetime.datetime.now())
+#     utc_now = datetime.datetime.now(pytz.utc)
 #
 #     # Create ticket_type if it does not exist
 #     ticket_type_name = 'In Progress-Review'
@@ -5090,12 +5034,7 @@ def request_review_action(request, task, logged_in_user, desc, send_email, mode)
     note_str = desc
     # send_email = request.params.get('send_email', 1)  # for testing purposes
 
-    utc_now = local_to_utc(datetime.datetime.now())
-    import stalker
-    from distutils.version import LooseVersion
-    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
-        import pytz
-        utc_now = utc_now.replace(tzinfo=pytz.utc)
+    utc_now = datetime.datetime.now(pytz.utc)
 
     note = create_simple_note( note_str,
                               'Request Review',
@@ -5295,12 +5234,7 @@ def request_extra_time(request):
     send_email = request.params.get('send_email', 1)  # for testing purposes
     description = request.params.get('description', 'No comments')
 
-    utc_now = local_to_utc(datetime.datetime.now())
-    import stalker
-    from distutils.version import LooseVersion
-    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
-        import pytz
-        utc_now = utc_now.replace(tzinfo=pytz.utc)
+    utc_now = datetime.datetime.now(pytz.utc)
 
     note = create_simple_note('<i class="icon-heart"></i> Requesting extra time <b>'
                                 '%(schedule_timing)s %(schedule_unit)s</b>.<br/>'
@@ -5407,7 +5341,7 @@ def auto_extend_time(task, description, revision_type, logged_in_user):
     """
     logger.debug('EXTEND TIMING OF TASK!')
     # get logged in user as he review requester
-    utc_now = local_to_utc(datetime.datetime.now())
+    utc_now = datetime.datetime.now(pytz.utc)
 
     exceeded_time_str = convert_seconds_to_time_range(task.total_logged_seconds
                                                       - task.schedule_seconds)
@@ -6022,12 +5956,7 @@ def force_task_status(request):
     It will work only for tasks with 'WIP' and 'HREV' statuses.
     """
     logged_in_user = get_logged_in_user(request)
-    utc_now = local_to_utc(datetime.datetime.now())
-    import stalker
-    from distutils.version import LooseVersion
-    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
-        import pytz
-        utc_now = utc_now.replace(tzinfo=pytz.utc)
+    utc_now = datetime.datetime.now(pytz.utc)
 
     logger.debug("force_task_status starts")
 
@@ -6131,12 +6060,7 @@ def force_tasks_status(request):
     It will work only for tasks with 'WIP' and 'HREV' statuses.
     """
     logged_in_user = get_logged_in_user(request)
-    utc_now = local_to_utc(datetime.datetime.now())
-    import stalker
-    from distutils.version import LooseVersion
-    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
-        import pytz
-        utc_now = utc_now.replace(tzinfo=pytz.utc)
+    utc_now = datetime.datetime.now(pytz.utc)
 
     status_code = request.matchdict.get('status_code')
     status = Status.query.filter(Status.code == status_code).first()
@@ -6282,12 +6206,7 @@ def resume_task(request):
     task.resume()
 
     logged_in_user = get_logged_in_user(request)
-    utc_now = local_to_utc(datetime.datetime.now())
-    import stalker
-    from distutils.version import LooseVersion
-    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
-        import pytz
-        utc_now = utc_now.replace(tzinfo=pytz.utc)
+    utc_now = datetime.datetime.now(pytz.utc)
 
     note = create_simple_note('%s has changed this task status to %s' % (logged_in_user.name,
                                                            task.status.name),
@@ -6407,12 +6326,7 @@ def remove_task_user(request):
         task.responsible.remove(user)
 
     logged_in_user = get_logged_in_user(request)
-    utc_now = local_to_utc(datetime.datetime.now())
-    import stalker
-    from distutils.version import LooseVersion
-    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
-        import pytz
-        utc_now = utc_now.replace(tzinfo=pytz.utc)
+    utc_now = datetime.datetime.now(pytz.utc)
 
     task.updated_by = logged_in_user
     task.date_updated = utc_now
@@ -6487,7 +6401,7 @@ def remove_tasks_user(request):
         return Response('Missing parameters', 500)
 
     logged_in_user = get_logged_in_user(request)
-    utc_now = local_to_utc(datetime.datetime.now())
+    utc_now = datetime.datetime.now(pytz.utc)
 
     description = request.params.get('description', 'No note')
     note = create_simple_note(
@@ -6604,12 +6518,7 @@ def change_tasks_priority(request):
         return Response('Can not find any Task', 500)
 
     logged_in_user = get_logged_in_user(request)
-    utc_now = local_to_utc(datetime.datetime.now())
-    import stalker
-    from distutils.version import LooseVersion
-    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
-        import pytz
-        utc_now = utc_now.replace(tzinfo=pytz.utc)
+    utc_now = datetime.datetime.now(pytz.utc)
 
     for task in tasks:
         task.priority = priority
@@ -6685,7 +6594,7 @@ def set_task_start_end_date(request):
     """sets task start end date with the data
     """
     logged_in_user = get_logged_in_user(request)
-    utc_now = local_to_utc(datetime.datetime.now())
+    utc_now = datetime.datetime.now(pytz.utc)
 
     selected_task_list = get_multi_integer(request, 'task_ids', 'GET')
     tasks = Task.query.filter(Task.id.in_(selected_task_list)).all()
@@ -6719,12 +6628,7 @@ def change_task_users(request):
     """changes task users with the given users
     """
     logged_in_user = get_logged_in_user(request)
-    utc_now = local_to_utc(datetime.datetime.now())
-    import stalker
-    from distutils.version import LooseVersion
-    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
-        import pytz
-        utc_now = utc_now.replace(tzinfo=pytz.utc)
+    utc_now = datetime.datetime.now(pytz.utc)
 
     selected_list = get_multi_integer(request, 'user_ids')
     users = User.query\
@@ -6771,12 +6675,7 @@ def change_tasks_users(request):
     """changes task users with the given users
     """
     logged_in_user = get_logged_in_user(request)
-    utc_now = local_to_utc(datetime.datetime.now())
-    import stalker
-    from distutils.version import LooseVersion
-    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
-        import pytz
-        utc_now = utc_now.replace(tzinfo=pytz.utc)
+    utc_now = datetime.datetime.now(pytz.utc)
 
     selected_list = get_multi_integer(request, 'user_ids')
     users = User.query\

@@ -18,6 +18,7 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 
+import pytz
 import time
 import json
 import datetime
@@ -31,7 +32,6 @@ from stalker.db.session import DBSession
 from stalker import (db, ImageFormat, Repository, Structure, Status,
                      StatusList, Project, Entity, Studio, defaults, Client,
                      Budget, BudgetEntry, Good, User, Type, SimpleEntity)
-from stalker.models import local_to_utc
 from stalker.models.project import ProjectUser
 import transaction
 
@@ -45,11 +45,11 @@ from stalker_pyramid.views import (get_date_range,
 from stalker_pyramid.views.role import query_role
 from stalker_pyramid.views.type import query_type
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+#logger = logging.getLogger(__name__)
+#logger.setLevel(logging.DEBUG)
+from stalker_pyramid import logger_name
+logger = logging.getLogger(logger_name)
 
-from stalker import log
-log.logging_level = logging.DEBUG
 
 
 @view_config(
@@ -243,17 +243,19 @@ def update_project(request):
         return Response('Can not find a status with code: %s' % status_id, 500)
 
 
-
-    client_ids = get_multi_integer(request, 'client_ids')
-    clients = Client.query.filter(Client.id.in_(client_ids)).all()
-    logger.debug('client_ids          : %s' % clients)
-
-    if not clients:
-        transaction.abort()
-        return Response('Can not find any client', 500)
+    clients = []
+    try:
+        client_ids = get_multi_integer(request, 'client_ids')
+        logger.debug('client_ids          : %s' % clients)
+        clients = Client.query.filter(Client.id.in_(client_ids)).all()
+    except ValueError:
+        pass
+    #if not clients:
+    #    transaction.abort()
+    #    return Response('Can not find any client', 500)
 
     name = request.params.get('name')
-    fps = request.params.get('fps')
+    fps = float(request.params.get('fps'))
 
     start, end = get_date_range(request, 'start_and_end_dates')
     generic_text = request.params.get('generic_text')
@@ -288,12 +290,9 @@ def update_project(request):
         project.image_format = imf
         project.repositories = [repo]
         project.updated_by = logged_in_user
-        utc_now = datetime.datetime.now()
-        import stalker
-        from distutils.version import LooseVersion
-        if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
-            import pytz
-            utc_now = utc_now.replace(tzinfo=pytz.utc)
+
+        utc_now = datetime.datetime.now(pytz.utc)
+
         project.date_updated = utc_now
         project.fps = fps
         project.structure = structure
@@ -332,7 +331,7 @@ def inline_update_project(request):
     logger.debug('INLINE UPDATE PROJECT IS RUNNING')
 
     logged_in_user = get_logged_in_user(request)
-    utc_now = local_to_utc(datetime.datetime.now())
+    utc_now = datetime.datetime.now(pytz.utc)
 
     # *************************************************************************
     # collect data
@@ -401,9 +400,9 @@ def change_project_status_dialog(request):
 )
 def change_project_status(request):
 
-    from stalker_pyramid.views import get_logged_in_user, local_to_utc
+    from stalker_pyramid.views import get_logged_in_user
     logged_in_user = get_logged_in_user(request)
-    utc_now = local_to_utc(datetime.datetime.now())
+    utc_now = datetime.datetime.now(pytz.utc)
 
     project_id = request.matchdict.get('id')
     project = Project.query.filter_by(id=project_id).first()
@@ -658,12 +657,7 @@ def add_project_entries_to_budget(request):
     """ adds entries to bugdet"""
 
     logged_in_user = get_logged_in_user(request)
-    utc_now = local_to_utc(datetime.datetime.now())
-    import stalker
-    from distutils.version import LooseVersion
-    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
-        import pytz
-        utc_now = utc_now.replace(tzinfo=pytz.utc)
+    utc_now = datetime.datetime.now(pytz.utc)
 
     project_id = request.matchdict.get('id', -1)
     project = Project.query.filter(Project.id == project_id).first()
@@ -738,18 +732,12 @@ def get_project_tasks_today(request):
     project_id = request.matchdict.get('id', -1)
     action = request.matchdict.get('action', -1)
 
-    today = datetime.date.today()
-    start = datetime.time(0, 0)
-    end = datetime.time(23, 59, 59)
+    today = datetime.date.now(tzinfo=pytz.utc)
+    start = datetime.time(0, 0, tzinfo=pytz.utc)
+    end = datetime.time(23, 59, 59, tzinfo=pytz.utc)
 
-    start_of_today = local_to_utc(datetime.datetime.combine(today, start))
-    end_of_today = local_to_utc(datetime.datetime.combine(today, end))
-    import stalker
-    from distutils.version import LooseVersion
-    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
-        import pytz
-        start_of_today = start_of_today.replace(tzinfo=pytz.utc)
-        end_of_today = end_of_today.replace(tzinfo=pytz.utc)
+    start_of_today = datetime.datetime.combine(today, start)
+    end_of_today = datetime.datetime.combine(today, end)
 
     start = time.time()
 

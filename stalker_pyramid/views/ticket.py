@@ -21,6 +21,7 @@
 import os
 import time
 import logging
+import pytz
 import datetime
 import re
 import transaction
@@ -34,14 +35,16 @@ from stalker.db.session import DBSession
 from stalker import User, Ticket, Project, Note, Type, Task
 
 from stalker_pyramid.views import (get_logged_in_user, PermissionChecker,
-                                   dummy_email_address, local_to_utc,
+                                   dummy_email_address,
                                    get_multi_integer)
 from stalker_pyramid.views.link import (replace_img_data_with_links,
                                         MediaManager)
 from stalker_pyramid.views.type import query_type
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+#logger = logging.getLogger(__name__)
+#logger.setLevel(logging.DEBUG)
+from stalker_pyramid import logger_name
+logger = logging.getLogger(logger_name)
 
 
 @view_config(
@@ -167,12 +170,8 @@ def create_ticket(request):
 
     # we are ready to create the time log
     # Ticket should handle the extension of the effort
-    utc_now = local_to_utc(datetime.datetime.now())
-    import stalker
-    from distutils.version import LooseVersion
-    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
-        import pytz
-        utc_now = utc_now.replace(tzinfo=pytz.utc)
+    utc_now = datetime.datetime.now(pytz.utc)
+
     ticket = Ticket(
         project=project,
         summary=summary,
@@ -255,12 +254,7 @@ def update_ticket(request):
         transaction.abort()
         return Response('No ticket with id : %s' % ticket_id, 500)
 
-    utc_now = local_to_utc(datetime.datetime.now())
-    import stalker
-    from distutils.version import LooseVersion
-    if LooseVersion(stalker.__version__) >= LooseVersion('0.2.18'):
-        import pytz
-        utc_now = utc_now.replace(tzinfo=pytz.utc)
+    utc_now = datetime.datetime.now(pytz.utc)
     ticket_log = None
 
     if not action.startswith('leave_as'):
