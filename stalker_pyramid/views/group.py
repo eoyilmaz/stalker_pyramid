@@ -326,15 +326,12 @@ def get_groups(request):
         {
             'id': group.id,
             'name': group.name,
-            'thumbnail_full_path': group.thumbnail.full_path
-            if group.thumbnail else None,
-            'created_by_id': group.created_by.id,
-            'created_by_name': group.created_by.name,
+            'thumbnail_full_path': group.thumbnail.full_path if group.thumbnail else None,
+            'created_by_id': group.created_by.id if group.created_by else None,
+            'created_by_name': group.created_by.name if group.created_by else None,
             'users_count': len(group.users),
-            'update_group_action': '/groups/%s/update/dialog' % group.id
-            if update_group_permission else None,
-            'delete_group_action': '/groups/%s/delete/dialog' % group.id
-            if delete_group_permission else None
+            'update_group_action': '/groups/%s/update/dialog' % group.id if update_group_permission else None,
+            'delete_group_action': '/groups/%s/delete/dialog' % group.id if delete_group_permission else None
         }
         for group in Group.query.order_by(Group.name.asc()).all()
     ]
