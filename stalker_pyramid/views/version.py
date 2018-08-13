@@ -399,14 +399,49 @@ def pack_version(request):
             os.path.splitext(version.filename)[0]
         archive_name = '%s%s' % (version_filename_without_extension, '.zip')
         archive_path = os.path.join(version.absolute_path, archive_name)
+
+        # create a temp file so this process knows that there is another process
+        # zipping the file
+        archive_lock_file_path = '%s.lock' % archive_path
+
         logger.debug('ZIP Path: %s' % archive_path)
         if os.path.exists(archive_path):
             # just serve the same file
             logger.debug('ZIP exists, not creating it again!')
             new_zip_path = archive_path
+        elif os.path.exists(archive_lock_file_path):
+            # somebody else is preparing the file
+            # so wait
+            logger.debug('ZIP is created by another process, waiting!')
+
+            # check the utime of the lock file
+            # if it is longer than 30 minutes delete the file
+            # and return an Error
+            import datetime
+            file_date = datetime.datetime.fromtimestamp(
+                os.path.getmtime(archive_lock_file_path)
+            )
+            now = datetime.datetime.now()
+
+            if now - file_date > datetime.timedelta(minutes=30):
+                os.remove(archive_lock_file_path)
+                from pyramid.httpexceptions import HTTPError
+                raise HTTPError('Lock File deleted please refresh!')
+
+            import time
+            while os.path.exists(archive_lock_file_path):
+                # sleep for 10 seconds
+                time.sleep(10)
+                logger.debug('ZIP is created by another process, still waiting!')
+            new_zip_path = archive_path
         else:
             # create the zip file
             logger.debug('ZIP does not exists, creating it!')
+
+            # create lock file
+            with open(archive_lock_file_path, 'a'):
+                os.utime(archive_lock_file_path, None)
+
             import shutil
             from stalker_pyramid.views.archive import Archiver
 
@@ -454,6 +489,9 @@ def pack_version(request):
 
             # now remove the temp files
             shutil.rmtree(project_path, ignore_errors=True)
+
+            # remove the lock file
+            os.remove(archive_lock_file_path)
 
         # open the zip file in browser
         # serve the file new_zip_path
