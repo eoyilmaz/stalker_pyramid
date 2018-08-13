@@ -28,7 +28,7 @@ import transaction
 from pyramid.response import Response
 from pyramid.view import view_config
 
-from stalker import db, defaults, Task, User, Studio, TimeLog, Entity, Status
+from stalker import defaults, Task, User, Studio, TimeLog, Entity, Status
 from stalker.db.session import DBSession
 from stalker.exceptions import OverBookedError, DependencyViolationError
 
@@ -38,13 +38,10 @@ from stalker_pyramid.views import (get_logged_in_user,
                                    get_multi_integer, to_seconds,
                                    from_milliseconds, seconds_since_epoch)
 from stalker_pyramid.views.task import (get_task_full_path,
-                                        generate_where_clause,
                                         fix_task_computed_time,
                                         auto_extend_time,
                                         get_schedule_information)
 
-#logger = logging.getLogger(__name__)
-#logger.setLevel(logging.DEBUG)
 from stalker_pyramid import logger_name
 logger = logging.getLogger(logger_name)
 
@@ -103,8 +100,8 @@ def update_time_log_dialog(request):
     """
     logger.debug('inside updates_time_log_dialog')
 
-    came_from = request.params.get('came_from','/')
-    logger.debug('came_from %s: '% came_from)
+    came_from = request.params.get('came_from', '/')
+    logger.debug('came_from %s: ' % came_from)
 
     # get logged in user
     logged_in_user = get_logged_in_user(request)
@@ -162,7 +159,7 @@ def create_time_log(request):
     if not resource:
         return Response('No user with id %s found' % resource_id, 500)
 
-    #**************************************************************************
+    # **************************************************************************
     # collect data
     start_date = get_date(request, 'start')
     end_date = get_date(request, 'end')
@@ -194,7 +191,7 @@ def create_time_log(request):
         else:
             request.session.flash(
                 'success: Time log for <strong>%s</strong> is saved for '
-                'resource <strong>%s</strong>.' % (task.name,resource.name)
+                'resource <strong>%s</strong>.' % (task.name, resource.name)
             )
         logger.debug('no problem here!')
     else:
@@ -208,7 +205,6 @@ def create_time_log(request):
     fix_task_computed_time(task)
 
     if task.total_logged_seconds > task.schedule_seconds:
-
         logger.debug('EXTEND TIMING OF TASK!')
         revision_type = request.params.get('revision_type', 'Auto Extended Time')
         auto_extend_time(task,
@@ -237,7 +233,7 @@ def update_time_log(request):
     time_log_id = request.matchdict.get('id', -1)
     time_log = TimeLog.query.filter_by(id=time_log_id).first()
 
-    #**************************************************************************
+    # **************************************************************************
     # collect data
     resource_id = int(request.params.get('resource_id', None))
     resource = User.query.filter(User.id == resource_id).first()
@@ -337,7 +333,6 @@ def user_multi_timelog_dialog(request):
     }
 
 
-
 @view_config(
     route_name='create_multi_timelog'
 )
@@ -346,7 +341,7 @@ def create_multi_timelog(request):
     """
     logger.debug('create_multi_timelog method starts')
 
-    #**************************************************************************
+    # **************************************************************************
     # task
 
     logged_in_user = get_logged_in_user(request)
@@ -358,7 +353,7 @@ def create_multi_timelog(request):
     if not tasks:
         return Response('No task id found', 500)
 
-    #**************************************************************************
+    # **************************************************************************
     # resource
     resource_id = request.params.get('resource_id', None)
     resource = User.query.filter(User.id == resource_id).first()
@@ -369,7 +364,7 @@ def create_multi_timelog(request):
     if not resource:
         return Response('No user with id %s found' % resource_id, 500)
 
-    #**************************************************************************
+    # **************************************************************************
     # collect data
     start_date = get_date(request, 'start')
     description = request.params.get('description', '')
@@ -520,9 +515,9 @@ def get_time_logs(request):
         parent_names.parent_name,
         "TimeLogs".resource_id,
         "SimpleEntities_Resource".name,
-        extract(epoch from "TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC') as total_seconds,
-        extract(epoch from "TimeLogs".start::timestamp AT TIME ZONE 'UTC') * 1000 as start,
-        extract(epoch from "TimeLogs".end::timestamp AT TIME ZONE 'UTC') * 1000 as end,
+        extract(epoch from "TimeLogs".end - "TimeLogs".start) as total_seconds,
+        extract(epoch from "TimeLogs".start) * 1000 as start,
+        extract(epoch from "TimeLogs".end) * 1000 as end,
         "SimpleEntities_Created_By".id,
         "SimpleEntities_Created_By".name,
         "SimpleEntities_TimeLog".description
@@ -616,9 +611,9 @@ def get_monthly_time_logs(request):
     project_id = request.params.get('project_id', None)
 
     sql_query = """select
-        sum(extract(epoch from "TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC')) / 3600 as total_hours,
-        min(extract(epoch from "TimeLogs".start::timestamp AT TIME ZONE 'UTC')) as start,
-        max(extract(epoch from "TimeLogs".end::timestamp AT TIME ZONE 'UTC')) as end
+        sum(extract(epoch from "TimeLogs".end - "TimeLogs".start)) / 3600 as total_hours,
+        min(extract(epoch from "TimeLogs".start)) as start,
+        max(extract(epoch from "TimeLogs".end)) as end
     from "TimeLogs"
     join "Tasks" on "Tasks".id = "TimeLogs".task_id
 

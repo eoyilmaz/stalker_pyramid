@@ -1108,16 +1108,16 @@ def get_resources(request):
         time_log_query = """select
             "TimeLogs".id,
             "TimeLogs".task_id,
-            extract(epoch from "TimeLogs".start::timestamp AT TIME ZONE 'UTC') * 1000 as start,
-            extract(epoch from "TimeLogs".end::timestamp AT TIME ZONE 'UTC') * 1000 as end
+            extract(epoch from "TimeLogs".start) * 1000 as start,
+            extract(epoch from "TimeLogs".end) * 1000 as end
         from "TimeLogs"
         """
 
         tasks_query = """select
             tasks.id,
             tasks.full_path,
-            extract(epoch from "Tasks".computed_start::timestamp AT TIME ZONE 'UTC') * 1000 as start,
-            extract(epoch from "Tasks".computed_end::timestamp AT TIME ZONE 'UTC') * 1000 as end
+            extract(epoch from "Tasks".computed_start) * 1000 as start,
+            extract(epoch from "Tasks".computed_end) * 1000 as end
         -- start with tasks (with full names)
         from (
             %(recursive_task_query)s
@@ -1178,8 +1178,8 @@ def get_resources(request):
             # select
             #     "Tasks".id,
             #     "Task_SimpleEntities".name,
-            #     extract(epoch from "Tasks".computed_start::timestamp AT TIME ZONE 'UTC') * 1000 as start,
-            #     extract(epoch from "Tasks".computed_end::timestamp AT TIME ZONE 'UTC') * 1000 as end
+            #     extract(epoch from "Tasks".computed_start) * 1000 as start,
+            #     extract(epoch from "Tasks".computed_end) * 1000 as end
             # from "Tasks"
             #     join "SimpleEntities" as "Task_SimpleEntities" on "Tasks".id = "Task_SimpleEntities".id
             #     where not (
@@ -1228,8 +1228,8 @@ def get_resources(request):
         time_log_query = """select
             "TimeLogs".id,
             "TimeLogs".task_id,
-            extract(epoch from "TimeLogs".start::timestamp AT TIME ZONE 'UTC') * 1000 as start,
-            extract(epoch from "TimeLogs".end::timestamp AT TIME ZONE 'UTC') * 1000 as end
+            extract(epoch from "TimeLogs".start) * 1000 as start,
+            extract(epoch from "TimeLogs".end) * 1000 as end
         from "TimeLogs"
         where resource_id = %(id)s
         """
@@ -1237,8 +1237,8 @@ def get_resources(request):
         tasks_query = """select
             tasks.id,
             tasks.full_path,
-            extract(epoch from "Tasks".computed_start::timestamp AT TIME ZONE 'UTC') * 1000 as start,
-            extract(epoch from "Tasks".computed_end::timestamp AT TIME ZONE 'UTC') * 1000 as end
+            extract(epoch from "Tasks".computed_start) * 1000 as start,
+            extract(epoch from "Tasks".computed_end) * 1000 as end
         from (
             %(recursive_task_query)s
         ) as tasks

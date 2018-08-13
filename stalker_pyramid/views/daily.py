@@ -200,7 +200,7 @@ def get_dailies(request):
             "Dailies_SimpleEntities".created_by_id,
             "Dailies_Creator_SimpleEntities".name,
             daily_count.link_count,
-            (extract(epoch from "Dailies_SimpleEntities".date_created::timestamp at time zone 'UTC') * 1000)::bigint as date_created
+            (extract(epoch from "Dailies_SimpleEntities".date_created) * 1000)::bigint as date_created
 
         from "Projects"
         join "Dailies" on "Dailies".project_id = "Projects".id

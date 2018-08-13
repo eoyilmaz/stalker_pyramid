@@ -351,8 +351,8 @@ def get_entity_task_type_result(request):
 
     sql_query = """
 select
-        min(extract(epoch from results.start::timestamp AT TIME ZONE 'UTC')) as start,
-        min(extract(epoch from results.scheduled_start::timestamp AT TIME ZONE 'UTC')) as scheduled_start,
+        min(extract(epoch from results.start)) as start,
+        min(extract(epoch from results.scheduled_start)) as scheduled_start,
         array_agg(distinct(results.shot_name)) as shot_names,
         results.resource_id as resource_ids,
         results.scheduled_resource_id as scheduled_resource_ids,
@@ -380,10 +380,10 @@ from (
 
             tasks.schedule_seconds,
             (case tasks.status_code
-                        when 'CMPL' then (extract(epoch from "TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC'))
+                        when 'CMPL' then (extract(epoch from "TimeLogs".end - "TimeLogs".start))
                         else 0
                     end) as approved_timelog_duration,
-            (extract(epoch from "TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC')) as timelog_duration
+            (extract(epoch from "TimeLogs".end - "TimeLogs".start)) as timelog_duration
 
 
         from (
@@ -608,7 +608,7 @@ select
 #
 #     sql_query = """
 # select
-#         min(extract(epoch from results.start::timestamp AT TIME ZONE 'UTC')) as start,
+#         min(extract(epoch from results.start)) as start,
 #         array_agg(distinct(results.shot_name)) as shot_names,
 #         results.resource_id as resource_ids,
 #         sum(results.approved_shot_seconds*results.timelog_duration/results.schedule_seconds) as approved_shot_seconds,
@@ -632,10 +632,10 @@ select
 #
 #             tasks.schedule_seconds,
 #              (case tasks.status_code
-#                         when 'CMPL' then (extract(epoch from "TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC'))
+#                         when 'CMPL' then (extract(epoch from "TimeLogs".end - "TimeLogs".start))
 #                         else 0
 #                     end) as approved_timelog_duration,
-#             (extract(epoch from "TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC')) as timelog_duration
+#             (extract(epoch from "TimeLogs".end - "TimeLogs".start)) as timelog_duration
 #
 #         from "TimeLogs"
 #         join (

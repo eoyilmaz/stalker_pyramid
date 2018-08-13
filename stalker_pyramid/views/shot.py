@@ -392,7 +392,7 @@ left join "SimpleEntities" as "Shot_Sequences_SimpleEntities" on "Shot_Sequences
 left outer join (
             select
                 "TimeLogs".task_id,
-                extract(epoch from sum("TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC')) as duration
+                extract(epoch from sum("TimeLogs".end - "TimeLogs".start)) as duration
             from "TimeLogs"
             group by task_id
         ) as "Task_TimeLogs" on "Task_TimeLogs".task_id = "Tasks".id

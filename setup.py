@@ -22,7 +22,10 @@ requires = [
     'stalker>=0.2.2',
     'exifread',
     'webtest',
-    'mocker'
+    'mocker',
+    'tzlocal',
+    'pytz',
+    'beaker'
 ]
 
 setup(name='stalker_pyramid',

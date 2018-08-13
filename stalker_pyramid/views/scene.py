@@ -350,7 +350,7 @@ join "Statuses" as "Task_Statuses" on "Tasks".status_id = "Task_Statuses".id
 left outer join (
             select
                 "TimeLogs".task_id,
-                extract(epoch from sum("TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC')) as duration
+                extract(epoch from sum("TimeLogs".end - "TimeLogs".start)) as duration
             from "TimeLogs"
             group by task_id
         ) as "Task_TimeLogs" on "Task_TimeLogs".task_id = "Tasks".id

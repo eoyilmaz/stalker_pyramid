@@ -309,7 +309,7 @@ def get_reviews(request, where_conditions):
         "Reviewers_SimpleEntities".name as reviewer_name,
         "Reviewers_SimpleEntities_Links".full_path as reviewer_thumbnail_path,
         array_agg("Reviewer_Departments_SimpleEntities".name) as reviewer_departments,
-        extract(epoch from"Reviews_Simple_Entities".date_created::timestamp AT TIME ZONE 'UTC') * 1000 as date_created,
+        extract(epoch from"Reviews_Simple_Entities".date_created) * 1000 as date_created,
         "Reviews_Simple_Entities".description,
         "Review_Types".name as type_name
 

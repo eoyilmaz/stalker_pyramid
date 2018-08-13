@@ -727,8 +727,8 @@ def get_entity_events(request):
             "TimeLogs".id,
             'timelogs' as entity_type, -- entity_type
             "Task_SimpleEntities".name || ' (' || parent_names.path_names || ')' as title,
-            (extract(epoch from "TimeLogs".start::timestamp AT TIME ZONE 'UTC') * 1000)::bigint as start,
-            (extract(epoch from "TimeLogs".end::timestamp AT TIME ZONE 'UTC') * 1000)::bigint as end,
+            (extract(epoch from "TimeLogs".start) * 1000)::bigint as start,
+            (extract(epoch from "TimeLogs".end) * 1000)::bigint as end,
             'label-success' as "className",
             false as "allDay",
             "Status_SimpleEntities".name as status
@@ -774,8 +774,8 @@ def get_entity_events(request):
             "Vacations".id,
             'vacations' as entity_type,
             "Type_SimpleEntities".name as title,
-            (extract(epoch from "Vacations".start::timestamp at time zone 'UTC') * 1000)::bigint as start,
-            (extract(epoch from "Vacations".end::timestamp at time zone 'UTC') * 1000)::bigint as end,
+            (extract(epoch from "Vacations".start) * 1000)::bigint as start,
+            (extract(epoch from "Vacations".end) * 1000)::bigint as end,
             'label-yellow' as "className",
             true as "allDay",
             NULL as status
@@ -797,8 +797,8 @@ def get_entity_events(request):
             "Tasks".id,
             'tasks' as entity_type,
             "Task_SimpleEntities".name || ' (' || parent_names.path_names || ')' as title,
-            (extract(epoch from "Tasks".computed_start::timestamp at time zone 'UTC') * 1000)::bigint as start,
-            (extract(epoch from "Tasks".computed_end::timestamp at time zone 'UTC') * 1000)::bigint as end,
+            (extract(epoch from "Tasks".computed_start) * 1000)::bigint as start,
+            (extract(epoch from "Tasks".computed_end) * 1000)::bigint as end,
             'label' as "className",
             false as "allDay",
             "Status_SimpleEntities".name as status
@@ -1127,7 +1127,7 @@ def get_entity_total_schedule_seconds(request):
     left outer join (
         select
             "Tasks".id as task_id,
-            sum(extract(epoch from "TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC')) as total_timelogs
+            sum(extract(epoch from "TimeLogs".end - "TimeLogs".start)) as total_timelogs
         from "TimeLogs"
         join "Tasks" on "Tasks".id = "TimeLogs".task_id
 
@@ -1189,7 +1189,7 @@ def get_entity_task_min_start(request):
     entity = Entity.query.filter_by(id=entity_id).first()
 
     sql_query = """select
-            min(extract(epoch from "Tasks".start::timestamp AT TIME ZONE 'UTC')) as start
+            min(extract(epoch from "Tasks".start)) as start
         from "Users"
         join "Task_Resources" on "Task_Resources".resource_id = "Users".id
         join "Tasks" on "Tasks".id = "Task_Resources".task_id
@@ -1233,7 +1233,7 @@ def get_entity_task_max_end(request):
     entity = Entity.query.filter_by(id=entity_id).first()
 
     sql_query = """select
-            max(extract(epoch from "Tasks".end::timestamp AT TIME ZONE 'UTC')) as end
+            max(extract(epoch from "Tasks".end)) as end
         from "Users"
         join "Task_Resources" on "Task_Resources".resource_id = "Users".id
         join "Tasks" on "Tasks".id = "Task_Resources".task_id

@@ -238,12 +238,12 @@ def schedule_info(request):
         is_scheduling,
         "CurrentScheduler_SimpleEntities".id as is_scheduling_by_id,
         "CurrentScheduler_SimpleEntities".name as is_scheduling_by,
-        (extract(epoch from scheduling_started_at::timestamp AT TIME ZONE 'UTC') * 1000)::bigint as scheduling_started_at,
-        (extract(epoch from last_scheduled_at::timestamp AT TIME ZONE 'UTC') * 1000)::bigint as last_scheduled_at,
-        extract(epoch from last_scheduled_at::timestamp AT TIME ZONE 'UTC' - scheduling_started_at::timestamp AT TIME ZONE 'UTC') as last_scheduling_duration,
+        (extract(epoch from scheduling_started_at) * 1000)::bigint as scheduling_started_at,
+        (extract(epoch from last_scheduled_at) * 1000)::bigint as last_scheduled_at,
+        extract(epoch from last_scheduled_at - scheduling_started_at) as last_scheduling_duration,
         "LastScheduler_SimpleEntities".name as last_scheduled_by,
-        (extract(epoch from "Studios".start::timestamp AT TIME ZONE 'UTC') * 1000)::bigint as start,
-        (extract(epoch from "Studios".end::timestamp AT TIME ZONE 'UTC') * 1000)::bigint as end
+        (extract(epoch from "Studios".start) * 1000)::bigint as start,
+        (extract(epoch from "Studios".end) * 1000)::bigint as end
     from "Studios"
     left outer join "SimpleEntities" as "LastScheduler_SimpleEntities" on "Studios".last_scheduled_by_id = "LastScheduler_SimpleEntities".id
     left outer join "SimpleEntities" as "CurrentScheduler_SimpleEntities" on "Studios".is_scheduling_by_id = "CurrentScheduler_SimpleEntities".id

@@ -887,7 +887,7 @@ select
     "Versions".is_published as version_published,
     "Daily_SimpleEntities".name as daily_name,
     "Daily_SimpleEntities".id as daily_id,
-    (extract(epoch from "Link_SimpleEntities".date_created::timestamp at time zone 'UTC') * 1000)::bigint as date_created
+    (extract(epoch from "Link_SimpleEntities".date_created) * 1000)::bigint as date_created
 
 
 
@@ -1130,7 +1130,7 @@ left outer join (
 #     "Versions".is_published as version_published,
 #     "Daily_SimpleEntities".name as daily_name,
 #     "Daily_SimpleEntities".id as daily_id,
-#     (extract(epoch from "Link_SimpleEntities".date_created::timestamp at time zone 'UTC') * 1000)::bigint as date_created
+#     (extract(epoch from "Link_SimpleEntities".date_created) * 1000)::bigint as date_created
 #
 #
 # from "Version_Outputs"

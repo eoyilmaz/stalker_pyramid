@@ -1798,8 +1798,8 @@ def cached_query_tasks(
             "Task_SimpleEntities".description,
 
             -- audit info
-            (extract(epoch from "Task_SimpleEntities".date_created::timestamp at time zone 'UTC') * 1000)::bigint as date_created,
-            (extract(epoch from "Task_SimpleEntities".date_updated::timestamp at time zone 'UTC') * 1000)::bigint as date_updated,
+            (extract(epoch from "Task_SimpleEntities".date_created) * 1000)::bigint as date_created,
+            (extract(epoch from "Task_SimpleEntities".date_updated) * 1000)::bigint as date_updated,
 
             exists (
                 select 1
@@ -1861,8 +1861,8 @@ def cached_query_tasks(
                     end)) * 100.0
             ) as percent_complete,
 
-            (extract(epoch from coalesce("Tasks".computed_start::timestamp AT TIME ZONE 'UTC', "Tasks".end::timestamp AT TIME ZONE 'UTC')) * 1000)::bigint as "start",
-            (extract(epoch from coalesce("Tasks".computed_end::timestamp AT TIME ZONE 'UTC', "Tasks".end::timestamp AT TIME ZONE 'UTC')) * 1000)::bigint as "end",
+            (extract(epoch from coalesce("Tasks".computed_start, "Tasks".end)) * 1000)::bigint as "start",
+            (extract(epoch from coalesce("Tasks".computed_end, "Tasks".end)) * 1000)::bigint as "end",
 
             lower("Statuses".code) as status,
             "Status_SimpleEntities".name as status_name,
@@ -1899,7 +1899,7 @@ def cached_query_tasks(
         left outer join (
             select
                 "TimeLogs".task_id,
-                extract(epoch from sum("TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC')) as duration
+                extract(epoch from sum("TimeLogs".end - "TimeLogs".start)) as duration
             from "TimeLogs"
             group by task_id
         ) as "Task_TimeLogs" on "Task_TimeLogs".task_id = tasks.id
@@ -1947,8 +1947,8 @@ def cached_query_tasks(
             "Project_SimpleEntities".description,
 
             -- audit info
-            (extract(epoch from "Project_SimpleEntities".date_created::timestamp at time zone 'UTC') * 1000)::bigint as date_created,
-            (extract(epoch from "Project_SimpleEntities".date_updated::timestamp at time zone 'UTC') * 1000)::bigint as date_updated,
+            (extract(epoch from "Project_SimpleEntities".date_created) * 1000)::bigint as date_created,
+            (extract(epoch from "Project_SimpleEntities".date_updated) * 1000)::bigint as date_updated,
 
             exists (
                 select 1
@@ -1977,8 +1977,8 @@ def cached_query_tasks(
 
             project_schedule_info.total_logged_seconds / total_schedule_seconds  * 100 as percent_complete,
 
-            (extract(epoch from coalesce("Projects".computed_start::timestamp AT TIME ZONE 'UTC', "Projects".end::timestamp AT TIME ZONE 'UTC')) * 1000)::bigint as "start",
-            (extract(epoch from coalesce("Projects".computed_end::timestamp AT TIME ZONE 'UTC', "Projects".end::timestamp AT TIME ZONE 'UTC')) * 1000)::bigint as "end",
+            (extract(epoch from coalesce("Projects".computed_start, "Projects".end)) * 1000)::bigint as "start",
+            (extract(epoch from coalesce("Projects".computed_end, "Projects".end)) * 1000)::bigint as "end",
 
             lower("Statuses".code) as status,
             "Status_SimpleEntities".name as status_name,
@@ -2013,7 +2013,7 @@ def cached_query_tasks(
             left outer join (
                 select
                     "TimeLogs".task_id,
-                    extract(epoch from sum("TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC')) as duration
+                    extract(epoch from sum("TimeLogs".end - "TimeLogs".start)) as duration
                 from "TimeLogs"
                 group by task_id
             ) as "Task_TimeLogs" on "Task_TimeLogs".task_id = "Tasks".id
@@ -2170,8 +2170,8 @@ def get_cached_tasks_count(entity_type, where_clause, task_id):
             "Task_SimpleEntities".description,
 
             -- audit info
-            (extract(epoch from "Task_SimpleEntities".date_created::timestamp at time zone 'UTC') * 1000)::bigint as date_created,
-            (extract(epoch from "Task_SimpleEntities".date_updated::timestamp at time zone 'UTC') * 1000)::bigint as date_updated,
+            (extract(epoch from "Task_SimpleEntities".date_created) * 1000)::bigint as date_created,
+            (extract(epoch from "Task_SimpleEntities".date_updated) * 1000)::bigint as date_updated,
 
             exists (
                 select 1
@@ -2233,8 +2233,8 @@ def get_cached_tasks_count(entity_type, where_clause, task_id):
                     end)) * 100.0
             ) as percent_complete,
 
-            (extract(epoch from coalesce("Tasks".computed_start::timestamp AT TIME ZONE 'UTC', "Tasks".end::timestamp AT TIME ZONE 'UTC')) * 1000)::bigint as "start",
-            (extract(epoch from coalesce("Tasks".computed_end::timestamp AT TIME ZONE 'UTC', "Tasks".end::timestamp AT TIME ZONE 'UTC')) * 1000)::bigint as "end",
+            (extract(epoch from coalesce("Tasks".computed_start, "Tasks".end)) * 1000)::bigint as "start",
+            (extract(epoch from coalesce("Tasks".computed_end, "Tasks".end)) * 1000)::bigint as "end",
 
             lower("Statuses".code) as status
 
@@ -2269,7 +2269,7 @@ def get_cached_tasks_count(entity_type, where_clause, task_id):
         left outer join (
             select
                 "TimeLogs".task_id,
-                extract(epoch from sum("TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC')) as duration
+                extract(epoch from sum("TimeLogs".end - "TimeLogs".start)) as duration
             from "TimeLogs"
             group by task_id
         ) as "Task_TimeLogs" on "Task_TimeLogs".task_id = tasks.id
@@ -2314,8 +2314,8 @@ def get_cached_tasks_count(entity_type, where_clause, task_id):
             "Project_SimpleEntities".description,
 
             -- audit info
-            (extract(epoch from "Project_SimpleEntities".date_created::timestamp at time zone 'UTC') * 1000)::bigint as date_created,
-            (extract(epoch from "Project_SimpleEntities".date_updated::timestamp at time zone 'UTC') * 1000)::bigint as date_updated,
+            (extract(epoch from "Project_SimpleEntities".date_created) * 1000)::bigint as date_created,
+            (extract(epoch from "Project_SimpleEntities".date_updated) * 1000)::bigint as date_updated,
 
             exists (
                 select 1
@@ -2344,8 +2344,8 @@ def get_cached_tasks_count(entity_type, where_clause, task_id):
 
             project_schedule_info.total_logged_seconds / total_schedule_seconds  * 100 as percent_complete,
 
-            (extract(epoch from coalesce("Projects".computed_start::timestamp AT TIME ZONE 'UTC', "Projects".end::timestamp AT TIME ZONE 'UTC')) * 1000)::bigint as "start",
-            (extract(epoch from coalesce("Projects".computed_end::timestamp AT TIME ZONE 'UTC', "Projects".end::timestamp AT TIME ZONE 'UTC')) * 1000)::bigint as "end",
+            (extract(epoch from coalesce("Projects".computed_start, "Projects".end)) * 1000)::bigint as "start",
+            (extract(epoch from coalesce("Projects".computed_end, "Projects".end)) * 1000)::bigint as "end",
 
             lower("Statuses".code) as status
 
@@ -2377,7 +2377,7 @@ def get_cached_tasks_count(entity_type, where_clause, task_id):
             left outer join (
                 select
                     "TimeLogs".task_id,
-                    extract(epoch from sum("TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC')) as duration
+                    extract(epoch from sum("TimeLogs".end - "TimeLogs".start)) as duration
                 from "TimeLogs"
                 group by task_id
             ) as "Task_TimeLogs" on "Task_TimeLogs".task_id = "Tasks".id
@@ -2666,7 +2666,7 @@ def get_user_tasks_simple(request):
         left outer join (
             select
                 "TimeLogs".task_id,
-                extract(epoch from sum("TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC')) as duration
+                extract(epoch from sum("TimeLogs".end - "TimeLogs".start)) as duration
             from "TimeLogs"
             group by task_id
         ) as "Task_TimeLogs" on "Task_TimeLogs".task_id = tasks.id
@@ -3249,7 +3249,7 @@ from "Tasks"
     left outer join (
         select
             "TimeLogs".task_id,
-            extract(epoch from sum("TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC')) as duration
+            extract(epoch from sum("TimeLogs".end - "TimeLogs".start)) as duration
             from "TimeLogs"
             group by task_id
         ) as "Task_TimeLogs" on "Task_TimeLogs".task_id = "Tasks".id
@@ -3454,7 +3454,7 @@ def get_task_leafs_in_hierarchy(request):
             "Tasks".bid_unit,
             "Tasks".schedule_timing,
             "Tasks".schedule_unit,
-            coalesce( extract(epoch from sum("TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC')), 0) as total_logged_seconds,
+            coalesce( extract(epoch from sum("TimeLogs".end - "TimeLogs".start)), 0) as total_logged_seconds,
             "Statuses".code
         from (
             %(generate_recursive_task_query)s
@@ -5823,8 +5823,8 @@ def get_task_events(request):
     'timelogs' as entity_type,
     "Resource_SimpleEntities".name as resource_name,
     "Task_SimpleEntities".name as task_name,
-    (extract(epoch from "TimeLogs".start::timestamp at time zone 'UTC') * 1000)::bigint as start,
-    (extract(epoch from "TimeLogs".end::timestamp at time zone 'UTC') * 1000)::bigint as end,
+    (extract(epoch from "TimeLogs".start) * 1000)::bigint as start,
+    (extract(epoch from "TimeLogs".end) * 1000)::bigint as end,
     'label-success', --className
     false, --allDay
     "Statuses".code as task_status

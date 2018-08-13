@@ -365,7 +365,7 @@ def get_budgets(request):
             "Created_By_SimpleEntities".created_by_id,
             "Created_By_SimpleEntities".name,
             "Type_SimpleEntities".name,
-            (extract(epoch from "Budget_SimpleEntities".date_created::timestamp at time zone 'UTC') * 1000)::bigint as date_created,
+            (extract(epoch from "Budget_SimpleEntities".date_created) * 1000)::bigint as date_created,
             "Budget_SimpleEntities".description,
             "Statuses_SimpleEntities".name,
             "Statuses".code,

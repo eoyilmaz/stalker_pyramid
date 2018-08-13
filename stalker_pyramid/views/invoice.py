@@ -327,7 +327,7 @@ def get_invoices(request):
             "Invoices".amount,
             "Invoices".unit,
             "Invoice_SimpleEntities".description,
-            (extract(epoch from "Invoice_SimpleEntities".date_created::timestamp at time zone 'UTC') * 1000)::bigint as date_created,
+            (extract(epoch from "Invoice_SimpleEntities".date_created) * 1000)::bigint as date_created,
             "Clients".id,
             "Client_SimpleEntities".name,
             array_agg("Payments".amount::float/"Invoices".amount*100),
@@ -465,7 +465,7 @@ def get_payments(request):
             "Payments".amount,
             "Payments".unit,
             "Payment_SimpleEntities".description,
-            (extract(epoch from "Payment_SimpleEntities".date_created::timestamp at time zone 'UTC') * 1000)::bigint as date_created
+            (extract(epoch from "Payment_SimpleEntities".date_created) * 1000)::bigint as date_created
 
         from "Payments"
         join "SimpleEntities" as "Payment_SimpleEntities" on "Payment_SimpleEntities".id = "Payments".id
