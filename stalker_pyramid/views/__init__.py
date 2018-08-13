@@ -20,7 +20,6 @@
 
 import logging
 import pytz
-import calendar
 import datetime
 import json
 
@@ -29,13 +28,11 @@ from pyramid.view import view_config
 from pyramid.response import Response
 from pyramid.security import has_permission, authenticated_userid
 
-from stalker import log, User, Tag
+from stalker import User, Tag
 from stalker.db.session import DBSession
 import transaction
 
 
-#logger = logging.getLogger(__name__)
-#logger.setLevel(log.logging_level)
 from stalker_pyramid import logger_name
 logger = logging.getLogger(logger_name)
 
@@ -56,22 +53,21 @@ def seconds_in_unit(unit):
         return 3600
     elif unit == 'd':
         return 32400
-        # TODO: this is not true, please use: stalker.defaults.daily_working_hours
+        # TODO: please use: stalker.defaults.daily_working_hours
     elif unit == 'w':
         return 183600
-        # TODO: this is not true, please use: stalker.defaults.weekly_working_hours
+        # TODO: please use: stalker.defaults.weekly_working_hours
     elif unit == 'm':
         return 734400
-        # TODO: this is not true, please use: 4 * stalker.defaults.weekly_working_hours
+        # TODO: please use: 4 * stalker.defaults.weekly_working_hours
     elif unit == 'y':
         return 9573418
-        # TODO: this is not true, please use: stalker.defaults.yearly_working_days * stalker.defaults.daily_working_hours
+        # TODO: please use: stalker.defaults.yearly_working_days * stalker.defaults.daily_working_hours
     else:
         return 0
 
 
-
-class StdErrToHTMLConverter():
+class StdErrToHTMLConverter(object):
     """Converts stderr, stdout messages of TaskJuggler to html
 
     :param error: An exception
@@ -98,7 +94,8 @@ class StdErrToHTMLConverter():
         else:
             self.error_message = error
 
-    def replace_tjp_ids(self, message):
+    @classmethod
+    def replace_tjp_ids(cls, message):
         """replaces tjp ids in error messages with proper links
         """
         import re
@@ -187,6 +184,11 @@ def log_param(request, param):
     context=HTTPServerError
 )
 def server_error(exc, request):
+    """Default server_error view
+    :param exc:
+    :param request:
+    :return:
+    """
     msg = exc.args[0] if exc.args else ''
     response = Response('Server Error: %s' % str(exc), 500)
     transaction.abort()
@@ -218,10 +220,10 @@ def convert_seconds_to_time_range(seconds):
 
     units = ['y', 'm', 'w', 'd', 'h', 'min']
     time_range_string = ''
-    remainder = 0
-    integer_division = 0
-    current_unit = ''
-    sec_in_unit = ''
+    # remainder = 0
+    # integer_division = 0
+    # current_unit = ''
+    # sec_in_unit = ''
     logger.debug("seconds %s " % seconds)
     for i in range(0, len(units)):
         current_unit = units[i]
@@ -257,7 +259,7 @@ def get_date(request, date_attr):
     return datetime.datetime.strptime(
         request.params[date_attr][:-4],
         '%a, %d %b %Y %H:%M:%S'
-    )
+    ).replace(tzinfo=pytz.utc)
 
 
 def get_date_range(request, date_range_attr):
@@ -280,7 +282,8 @@ def get_date_range(request, date_range_attr):
 def get_datetime(request, date_attr, time_attr):
     """Extracts a UTC  datetime object from the given request
     :param request: the request object
-    :param date_attr: the attribute name
+    :param date_attr: the date attribute name
+    :param time_attr: the time attribute name
     :return: datetime.datetime
     """
     date_part = datetime.datetime.strptime(
@@ -318,6 +321,7 @@ def get_multi_integer(request, attr_name, method='POST'):
 
     :param request: Request object
     :param attr_name: Attribute name to extract data from
+    :param method: HTTP request method
     :return:
     """
     data = request.POST
@@ -347,6 +351,7 @@ def get_tags(request, parameter='tags[]'):
     """Extracts Tags from the given request
 
     :param request: Request object
+    :param parameter: the name of the parameter
     :return: A list of stalker.models.tag.Tag instances
     """
     # Tags
@@ -386,16 +391,14 @@ def get_path_converter(request, task):
     user_os = get_user_os(request)
     repo = task.project.repository
 
-    path_converter = lambda x: x
-
     if user_os == 'windows':
-        path_converter = repo.to_windows_path
+        return repo.to_windows_path
     elif user_os == 'linux':
-        path_converter = repo.to_linux_path
+        return repo.to_linux_path
     elif user_os == 'osx':
-        path_converter = repo.to_osx_path
+        return repo.to_osx_path
 
-    return path_converter
+    return lambda x: x
 
 
 def seconds_since_epoch(dt):
@@ -502,7 +505,6 @@ def invalidate_all_caches():
     from beaker.cache import cache_managers
     for _cache in cache_managers.values():
         _cache.clear()
-
 
 
 def update_generic_text(generic_text, attr, data, action):
