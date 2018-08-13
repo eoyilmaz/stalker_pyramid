@@ -75,7 +75,7 @@
                                     <i class="icon-film"></i>
                                 </span>
                             {{?}}
-                            <span class="label label-info">{{=it.version_take_name }} | {{=it.version_number }} </span>
+                            <span class="label label-info">{{=it.version_take_name }} | {{'000'.substring(0, 3 - it.version_number.toString().length) + it.version_number.toString() }} </span>
                         </div>
                     </div>
                 </a>

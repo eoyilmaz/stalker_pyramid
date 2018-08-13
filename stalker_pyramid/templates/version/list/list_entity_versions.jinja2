@@ -108,7 +108,7 @@
                 </a>
             </td>
             <td><a href="/versions/{{= it.id }}/view" {{=it.is_published? 'class="green"' : '' }}>
-                    {{= it.take_name }} | {{= it.version_number }}
+                    {{= it.take_name }} | {{= '000'.substring(0, 3 - it.version_number.toString().length) + it.version_number.toString() }}
                 </a>
             </td>
             <td>{{= it.is_published }}</td>
