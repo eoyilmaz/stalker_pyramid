@@ -398,6 +398,7 @@ def duplicate_task(task, user):
     """Duplicates the given task without children.
 
     :param task: a stalker.models.task.Task instance
+    :param user:
     :return: stalker.models.task.Task
     """
     # create a new task and change its attributes
@@ -434,7 +435,7 @@ def duplicate_task(task, user):
         created_by=user,
         description=task.description,
         is_milestone=task.is_milestone,
-        resources=task.resources,
+        # resources=task.resources,
         priority=task.priority,
         schedule_constraint=task.schedule_constraint,
         schedule_model=task.schedule_model,
@@ -3481,7 +3482,7 @@ def get_task_leafs_in_hierarchy(request):
         'task_id': task.id
     }
 
-    logger.debug(sql_query)
+    # logger.debug(sql_query)
 
     from sqlalchemy import text  # to be able to use "%" sign use this function
     result = DBSession.connection().execute(text(sql_query))

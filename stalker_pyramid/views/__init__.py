@@ -46,7 +46,7 @@ def to_seconds(timing, unit):
 
 
 def seconds_in_unit(unit):
-    logger.debug("seconds_in_unit: %s" % unit)
+    # logger.debug("seconds_in_unit: %s" % unit)
     if unit == 'min':
         return 60
     elif unit == 'h':

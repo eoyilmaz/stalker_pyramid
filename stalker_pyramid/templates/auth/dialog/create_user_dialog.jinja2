@@ -22,17 +22,17 @@
         //$('#dialog_template').attr('style', "width:700px; height:800px");
 
 
-        {# ***************************************************************** #}
-        {# Submit Button #}
+        // {# ***************************************************************** #}
+        // {# Submit Button #}
         var submit_button = $('#dialog_template_submit_button');
         submit_button.on('click', function (e) {
             e.stopPropagation();
             e.preventDefault();
 
-            submit_button.button('loading');
+            setTimeout(function(){submit_button.button('loading')}, 0)
 
             var user_form = $('#user_form');
-            if (user_form.validate()) {
+            if (user_form.validate().errorList.length === 0) {
                 $.post(
                     user_form.attr('action'),
                     user_form.serialize()
@@ -41,8 +41,11 @@
                     window.location.reload();
                 }).fail(function (jqXHR) {
                     bootbox.alert(jqXHR.responseText);
-                    submit_button.button('reset');
+                    setTimeout(function(){submit_button.button('reset')}, 0);
                 });
+            } else {
+                setTimeout(function(){submit_button.button('reset')}, 0);
+                bootbox.alert("There are invalid fields!");
             }
         });
 

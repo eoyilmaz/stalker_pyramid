@@ -29,9 +29,10 @@
                        type="text"
                        class="form-control"
                        placeholder="Name"
-                        {% if mode == 'Update' %}
+                       {% if mode == 'Update' %}
                        value='{{ user.name }}'
-                        {% endif %}
+                       {% endif %}
+                       pattern="^[_A-z0-9]{1,}$"
                        required>
             </div>
         </div>
@@ -46,9 +47,10 @@
                        type="text"
                        class="form-control"
                        placeholder="Login"
-                        {% if mode == 'Update' %}
+                       {% if mode == 'Update' %}
                        value='{{ user.login }}'
-                        {% endif %}
+                       {% endif %}
+                       pattern="^[_A-z0-9]{1,}$"
                        required>
             </div>
         </div>
@@ -146,6 +148,7 @@
 </form>
 
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.validate.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/additional-methods.min.js") }}'></script>
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.gritter.min.js") }}'></script>
 
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.ui.touch-punch.min.js") }}'></script>
@@ -179,7 +182,27 @@
             });
         });
 
-        $('#user_form').validate({
+        var user_form = $('#user_form');
+
+        var submit_button = $('#dialog_template_submit_button');
+
+        submit_button.on('click', function(e) {
+            e.stopPropagation();
+            e.preventDefault();
+
+            // disable submit button
+            setTimeout(function(){submit_button.button('loading')}, 0);
+
+            if ( user_form.validate().errorList.length === 0 ){
+                user_form.submit();
+            } else {
+                setTimeout(function(){submit_button.button('reset')}, 0);
+                bootbox.alert("There are invalid fields!");
+            }
+
+        });
+
+        user_form.validate({
             errorElement: 'span',
             errorClass: 'help-inline',
             focusInvalid: true,
@@ -241,13 +264,15 @@
                     error.insertAfter(element.siblings('[class*="chosen-container"]:eq(0)'));
                 }
                 else error.insertAfter(element);
-            },
-
-            submitHandler: function (form) {
-                form.submit();
             }
 
+            // submitHandler: function (form) {
+            //     form.validate();
+            //     form.submit();
+            // }
+
         });
+
     });
 
 </script>

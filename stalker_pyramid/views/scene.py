@@ -528,7 +528,7 @@ order by "Task_Scenes".id"""
             shot_task_type_name = shot_task_types[l]
             shot_task = r_data[shot_task_type_name]
 
-            logger.debug('shot_task : %s %s %s' % (r[1], shot_task_type_name, shot_task['child_statuses']))
+            # logger.debug('shot_task : %s %s %s' % (r[1], shot_task_type_name, shot_task['child_statuses']))
             shot_task['child_statuses'] = list(set(shot_task['child_statuses']))
             # logger.debug('shot_task : %s' % shot_task['child_statuses'])
 
