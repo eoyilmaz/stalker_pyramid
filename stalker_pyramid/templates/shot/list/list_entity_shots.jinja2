@@ -54,7 +54,7 @@
                     <a data-target="#dialog_template"
                        data-toggle="modal"
                        data-keyboard=false
-                       href="{{ request.route_url("create_shot_dialog", id=-1, _query={'project_id': entity.id }) }}"
+                       href="{{ request.route_url("create_shot_dialog", id=-1, _query={'project_id': entity.project.id }) }}"
                        class="white">
                         <i class="icon-plus"></i>
                         New
