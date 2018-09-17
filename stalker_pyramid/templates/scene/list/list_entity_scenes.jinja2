@@ -254,7 +254,7 @@
             var column_template = doT.template($('#tmpl_sceneColumn').html());
 
             $(function () {
-                $.getJSON('/sequences/{{ entity.id }}/distinct_task_type_names/').then(function (data){
+                $.getJSON('/shots/children/task_type/?entity_id={{ entity.id }}').then(function (data){
                     types = data;
                     var k;
                     var table_column = $('#scenes_table_column');
