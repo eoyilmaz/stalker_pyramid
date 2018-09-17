@@ -394,7 +394,7 @@ resource_name, status
                     shot_sequences = '{{ entity.sequences[0].id }}';
                 {% endif %}
             {% endif %}
-        {% else %}
+        {% elif parent %}
             shot_fps = {{ parent.project.fps }}
         {% endif %}
 

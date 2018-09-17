@@ -394,6 +394,47 @@ def fix_task_schedule_info(request):
     return HTTPOk()
 
 
+def generate_unique_shot_name(base_name, shot_name_increment=10):
+    """generates a unique shot name and code based of the base_name
+
+    :param base_name: The base shot name
+    :param int shot_name_increment: The increment amount
+    """
+    logger.debug('generating unique shot number based on: %s' % base_name)
+    logger.debug('shot_name_increment is: %s' % shot_name_increment)
+    import re
+    from stalker.db.session import DBSession
+    from stalker import Shot
+
+    regex = re.compile('[0-9]+')
+
+    # base_name: Ep001_001_0010
+    name_parts = base_name.split('_')
+
+    # find the shot number
+    shot_number_as_string = regex.findall(name_parts[-1])[-1]
+    padding = len(shot_number_as_string)
+    shot_number = int(shot_number_as_string)
+
+    # initialize from the given shot_number
+    i = shot_number
+
+    logger.debug('start shot_number: %s' % shot_number)
+
+    # initialize existing_shot variable with base_name
+    while True and i < 10000:
+        name_parts[-1] = str(i).zfill(padding)
+        shot_name = '_'.join(name_parts)
+        with DBSession.no_autoflush:
+            existing_shot = DBSession.query(Shot.name).filter(Shot.name==shot_name).first()
+        if not existing_shot:
+            logger.debug('generated unique shot name: %s' % shot_name)
+            return shot_name
+        i += shot_name_increment
+
+    raise RuntimeError("Can not generate a unique shot name!!!")
+
+
 def duplicate_task(task, user):
     """Duplicates the given task without children.
 
@@ -411,8 +452,14 @@ def duplicate_task(task, user):
         }
     elif task.entity_type == 'Shot':
         class_ = Shot
+
+        # generate a unique shot name based on task.name
+        logger.debug('generating unique shot name!')
+        shot_name = generate_unique_shot_name(task.name)
+
         extra_kwargs = {
-            'code': task.code + 'dup'
+            'name': shot_name,
+            'code': shot_name
         }
     elif task.entity_type == 'Sequence':
         class_ = Sequence
@@ -421,38 +468,41 @@ def duplicate_task(task, user):
         }
 
     # all duplicated tasks are new tasks
-    new = Status.query.filter(Status.code == 'WFD').first()
-    
+    from stalker.db.session import DBSession
+    with DBSession.no_autoflush:
+        wfd = Status.query.filter(Status.code == 'WFD').first()
+
     utc_now = datetime.datetime.now(pytz.utc)
 
-    dup_task = class_(
-        name=task.name,
-        project=task.project,
-        bid_timing=task.bid_timing,
-        bid_unit=task.bid_unit,
-        computed_end=task.computed_end,
-        computed_start=task.computed_start,
-        created_by=user,
-        description=task.description,
-        is_milestone=task.is_milestone,
-        # resources=task.resources,
-        priority=task.priority,
-        schedule_constraint=task.schedule_constraint,
-        schedule_model=task.schedule_model,
-        schedule_timing=task.schedule_timing,
-        schedule_unit=task.schedule_unit,
-        status=new,
-        status_list=task.status_list,
-        tags=task.tags,
-        responsible=task.responsible,
-        start=task.start,
-        end=task.end,
-        # thumbnail=task.thumbnail,
-        type=task.type,
-        watchers=task.watchers,
-        date_created=utc_now,
-        **extra_kwargs
-    )
+    kwargs = {
+        'name': task.name,
+        'project': task.project,
+        'bid_timing': task.bid_timing,
+        'bid_unit': task.bid_unit,
+        'computed_end': task.computed_end,
+        'computed_start': task.computed_start,
+        'created_by': user,
+        'description': task.description,
+        'is_milestone': task.is_milestone,
+        'priority': task.priority,
+        'schedule_constraint': task.schedule_constraint,
+        'schedule_model': task.schedule_model,
+        'schedule_timing': task.schedule_timing,
+        'schedule_unit': task.schedule_unit,
+        'status': wfd,
+        'status_list': task.status_list,
+        'tags': task.tags,
+        'responsible': task.responsible,
+        'start': task.start,
+        'end': task.end,
+        'type': task.type,
+        'watchers': task.watchers,
+        'date_created': utc_now,
+    }
+
+    kwargs.update(extra_kwargs)
+
+    dup_task = class_(**kwargs)
     dup_task.generic_data = task.generic_data
 
     return dup_task
@@ -496,8 +546,11 @@ def walk_and_duplicate_task_hierarchy(task, user):
     it finds
 
     :param task: task
+    :param user: The user who is calling this function
     :return:
     """
+    import re
+    regex = re.compile('[0-9]+')
     # start from the given task
     logger.debug('duplicating task : %s' % task)
     logger.debug('task.children    : %s' % task.children)
@@ -507,7 +560,9 @@ def walk_and_duplicate_task_hierarchy(task, user):
         logger.debug('duplicating child : %s' % child)
         duplicated_child = walk_and_duplicate_task_hierarchy(child, user)
         duplicated_child.parent = dup_task
+
     return dup_task
+
 
 def update_dependencies_in_duplicated_hierarchy(task):
     """Updates the dependencies in the given task. Uses the task.duplicate
@@ -614,6 +669,7 @@ def duplicate_task_hierarchy_action(task, parent, name, description, user):
 
     return dup_task
 
+
 @view_config(
     route_name='duplicate_asset_hierarchy'
 )
@@ -653,11 +709,13 @@ def duplicate_asset_hierarchy(request):
         responsible = User.query.filter(User.id.in_(responsible_ids)).all()
 
     if asset:
-        dup_asset = duplicate_task_hierarchy_action(asset,
-                                        parent,
-                                        name,
-                                        description,
-                                        logged_in_user)
+        dup_asset = duplicate_task_hierarchy_action(
+            asset,
+            parent,
+            name,
+            description,
+            logged_in_user
+        )
 
         dup_asset.responsible = responsible
         DBSession.add(dup_asset)
@@ -6989,8 +7047,6 @@ def get_actual_end_time(task):
     return task.computed_end
 
 
-
-
 @view_config(
     route_name='get_task_absolute_full_path',
     renderer='json'
@@ -7004,24 +7060,21 @@ def get_task_absolute_full_path(request):
         transaction.abort()
         return Response('Can not find a Task with id: %s' % task_id, 500)
 
-
     version = Version.query.filter(Version.task == task).first()
 
     if not version:
         transaction.abort()
         return Response('Can not find a Version for task : %s' % task.name, 500)
 
-
     repo = task.project.repository
     user_os = get_user_os(request)
-    path_converter = lambda x: x
 
     if repo:
         if user_os == 'windows':
-            path_converter = repo.to_windows_path
+            return repo.to_windows_path(version.absolute_full_path)
         elif user_os == 'linux':
-            path_converter = repo.to_linux_path
+            return repo.to_linux_path(version.absolute_full_path)
         elif user_os == 'osx':
-            path_converter = repo.to_osx_path
+            return repo.to_osx_path(version.absolute_full_path)
 
-    return  path_converter(version.absolute_full_path)
+    return version.absolute_full_path

@@ -17,22 +17,18 @@
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
-import datetime
 
-from pyramid.httpexceptions import HTTPServerError, HTTPOk
 from pyramid.view import view_config
 import transaction
 from stalker.db.session import DBSession
-from stalker import Sequence, StatusList, Status, Shot, Project, Entity, Task
+from stalker import Sequence, Shot, Project, Entity, Task
 
 import logging
 from webob import Response
 from stalker_pyramid.views import get_logged_in_user, PermissionChecker, \
-    get_parent_task_status, to_seconds
+    get_parent_task_status, to_seconds, invalidate_all_caches
 from stalker_pyramid.views.task import duplicate_task_hierarchy_action
 
-#logger = logging.getLogger(__name__)
-#logger.setLevel(logging.DEBUG)
 from stalker_pyramid import logger_name
 logger = logging.getLogger(logger_name)
 
@@ -87,17 +83,6 @@ def scene_dialog(request):
     }
 
 
-def shot_no(no):
-    s_no = no*10
-    if s_no < 100:
-        s_no_str = '00%s' % s_no
-    elif 100 <= s_no < 1000:
-        s_no_str = '0%s' % s_no
-    else:
-        s_no_str = '%s' %s_no
-    return s_no_str
-
-
 @view_config(
     route_name='create_scene'
 )
@@ -109,7 +94,13 @@ def create_scene(request):
     sequence_id = request.params.get('sequence_id')
     sequence = Sequence.query.filter_by(id=sequence_id).first()
 
+    sequence_name = sequence.name
     scene_name = request.params.get('name')
+
+    import re
+    regex = re.compile('[0-9]+')
+
+    scene_number = regex.findall(scene_name)[-1]
 
     temp_scene_id = request.params.get('temp_scene_id')
     temp_scene = Task.query.filter_by(id=temp_scene_id).first()
@@ -119,23 +110,23 @@ def create_scene(request):
 
     shot_count = request.params.get('shot_count')
 
-    logger.debug('sequence_id   : %s' % sequence_id)
+    logger.debug('sequence_id: %s' % sequence_id)
 
     if sequence and scene_name and temp_scene and temp_shot and shot_count:
         # get descriptions
         description = request.params.get('description', '')
         try:
             new_scene = duplicate_task_hierarchy_action(
-                                                        temp_scene,
-                                                        sequence,
-                                                        scene_name,
-                                                        description,
-                                                        logged_in_user
+                temp_scene,
+                sequence,
+                scene_name,
+                description,
+                logged_in_user
             )
             DBSession.flush()
-        except:
+        except BaseException as e:
             transaction.abort()
-            return Response(status=500)
+            return Response(body=str(e), status=500)
         else:
             transaction.commit()
             sequence = Sequence.query.filter_by(id=sequence_id).first()
@@ -145,24 +136,42 @@ def create_scene(request):
                 .first()
             if not new_scene:
                 transaction.abort()
-                return Response(status=500)
+                return Response('no new_scene', status=500)
 
-        logger.debug('new_scene   : %s' % new_scene.name)
+        logger.debug('new_scene: %s' % new_scene.name)
         # transaction.commit()
-        shots = Task.query.filter(Task.name == 'Shots').filter(Task.parent == new_scene).first()
+        shots_task = Task.query.filter(Task.name == 'Shots').filter(Task.parent == new_scene).first()
         temp_shot = Shot.query.filter_by(id=temp_shot_id).first()
-        if not shots:
+        if not shots_task:
             transaction.abort()
             return Response('There is no shots under scene task', 500)
-        for i in range(1, int(shot_count)+1):
-            new_shot_name = '%s_%s' % (scene_name, shot_no(i))
-            new_shot = duplicate_task_hierarchy_action(temp_shot, shots, new_shot_name, description, logged_in_user)
-            logger.debug('new_shot   : %s' % new_shot.name)
+
+        # sometimes the scene template already has some shots
+        # so delete any existing shots
+        with DBSession.no_autoflush:
+            residual_shots = Shot.query.filter(Shot.parent == shots_task).all()
+
+        # create shots based on shot template
+        for i in range(1, int(shot_count) + 1):
+            new_shot_name = '%s_%s_%s' % (sequence_name, scene_number, str(i * 10).zfill(4))
+            new_shot = \
+                duplicate_task_hierarchy_action(temp_shot, shots_task, new_shot_name, description, logged_in_user)
+            logger.debug('new_shot_name: %s' % new_shot.name)
             new_shot.sequences = [sequence]
+
+        # do residual shot deletion here
+        if residual_shots:
+            for shot in residual_shots:
+                DBSession.delete(shot)
+
+        invalidate_all_caches()
+
     else:
         logger.debug('there are missing parameters')
-        logger.debug('scene_name      : %s' % scene_name)
-        logger.debug('temp_shot_id      : %s' % temp_shot_id)
+        logger.debug('sequence_name    : %s' % sequence_name)
+        logger.debug('scene_name       : %s' % scene_name)
+        logger.debug('scene_number     : %s' % scene_number)
+        logger.debug('temp_shot_id     : %s' % temp_shot_id)
         logger.debug('temp_scene_id    : %s' % temp_scene_id)
         logger.debug('shot_count   : %s' % shot_count)
         transaction.abort()
@@ -334,7 +343,7 @@ join "Shots" on "Shots".id = "Tasks".parent_id
 join "SimpleEntities" as "Task_SimpleEntities" on "Tasks".id = "Task_SimpleEntities".id
 join "Shot_Sequences" on "Shots".id = "Shot_Sequences".shot_id
 
-left join (
+left outer join (
     select
         "SimpleEntities".id as type_id,
         "SimpleEntities".name as type_name
@@ -345,7 +354,7 @@ left join (
     group by "SimpleEntities".id, "SimpleEntities".name
     order by "SimpleEntities".id
 ) as "Distinct_Shot_Task_Types" on "Task_SimpleEntities".type_id = "Distinct_Shot_Task_Types".type_id
-join "Statuses" as "Task_Statuses" on "Tasks".status_id = "Task_Statuses".id
+left outer join "Statuses" as "Task_Statuses" on "Tasks".status_id = "Task_Statuses".id
 
 left outer join (
             select
@@ -363,7 +372,7 @@ join "Tasks" as "Shot_Parents" on "Shot_Parents".id = "Shot_As_Tasks".parent_id
 left outer join "Task_Resources" on "Tasks".id = "Task_Resources".task_id
 left outer join "SimpleEntities" as "Resources_SimpleEntities" on "Resources_SimpleEntities".id = "Task_Resources".resource_id
 
-join(
+left outer join(
 select "Scene_SimpleEntities".name as name,
        "Scene_SimpleEntities".id as id,
        "Scene_SimpleEntities".description as description,
@@ -376,10 +385,10 @@ select "Scene_SimpleEntities".name as name,
     from "Tasks"
     join "SimpleEntities" as "Scene_SimpleEntities" on "Scene_SimpleEntities".id = "Tasks".id
     join "SimpleEntities" as "Type_SimpleEntities" on "Type_SimpleEntities".id = "Scene_SimpleEntities".type_id
-    join "Tasks" as "Child_Tasks" on "Child_Tasks".parent_id = "Scene_SimpleEntities".id
-    join "SimpleEntities" as "Child_SimpleEntities" on "Child_SimpleEntities".id = "Child_Tasks".id
-    join "Statuses" as "Child_Task_Statuses" on "Child_Task_Statuses".id = "Child_Tasks".status_id
-    join "SimpleEntities" as "Type_Child_SimpleEntities" on "Type_Child_SimpleEntities".id = "Child_SimpleEntities".type_id
+    left outer join "Tasks" as "Child_Tasks" on "Child_Tasks".parent_id = "Scene_SimpleEntities".id
+    left outer join "SimpleEntities" as "Child_SimpleEntities" on "Child_SimpleEntities".id = "Child_Tasks".id
+    left outer join "Statuses" as "Child_Task_Statuses" on "Child_Task_Statuses".id = "Child_Tasks".status_id
+    left outer join "SimpleEntities" as "Type_Child_SimpleEntities" on "Type_Child_SimpleEntities".id = "Child_SimpleEntities".type_id
 
     left outer join "Task_Resources" as "Child_Task_Resources" on "Child_Tasks".id = "Child_Task_Resources".task_id
     left outer join "SimpleEntities" as "Child_Task_Resources_SimpleEntities" on "Child_Task_Resources_SimpleEntities".id = "Child_Task_Resources".resource_id
@@ -442,43 +451,64 @@ order by "Task_Scenes".id"""
                 distinct_shot_ids.append(shot_ids[x])
                 scene_total_frame += shot_durations[x]
         r_data = {
-            'id': r[0],
-            'name': r[1],
-            'description': r[2],
+            'id': r['scene_id'],
+            'name': r['scene_name'],
+            'description': r['scene_description'],
             'num_of_shots': len(distinct_shot_ids),
             'total_seconds': float(scene_total_frame/project.fps),
             'update_scene_action': '/scenes/%(id)s/update/dialog?entity_id=%(entity_id)s&mode=Update' % {'id':r[0],'entity_id':entity.id} if update_task_permission else None
         }
 
-        layout_task_ids = r[3]
-        layout_task_type_names = r[4]
-        layout_task_status_codes = r[5]
-        layout_task_resource_ids = r[6]
-        layout_task_resource_names = r[7]
-        shot_task_types = r[9]
-        shot_task_ids = r[10]
-        shot_task_names = r[11]
-        shot_task_status_codes = r[12]
-        shot_task_bid_timing = r[13]
-        shot_task_bid_unit = r[14]
-        shot_task_schedule_timing = r[15]
-        shot_task_schedule_unit = r[16]
-        shot_task_total_logged_seconds = r[17]
-        shot_task_resource_names = r[18]
-        shot_task_resource_ids = r[19]
+        layout_task_ids = r['children_id']
+        layout_task_type_names = r['children_type_name'] if r['children_type_name'] else []
+        layout_task_status_codes = r['children_status_code']
+        layout_task_resource_ids = r['child_task_resource_id']
+        layout_task_resource_names = r['child_task_resource_name']
+        shot_task_types = r['type_name']
+        shot_task_ids = r['task_id']
+        shot_task_names = r['task_name']
+        shot_task_status_codes = r['status_code']
+        shot_task_bid_timing = r['bid_timing']
+        shot_task_bid_unit = r['bid_unit']
+        shot_task_schedule_timing = r['schedule_timing']
+        shot_task_schedule_unit = r['schedule_unit']
+        shot_task_total_logged_seconds = r['total_logged_seconds']
+        shot_task_resource_names = r['resource_name']
+        shot_task_resource_ids = r['resource_id']
 
-        for i in range(len(layout_task_type_names)):
-            task_type_name = layout_task_type_names[i]
+        # if layout_task_type_names:
+        #     for i in range(len(layout_task_type_names)):
+        #         task_type_name = layout_task_type_names[i]
+        #         r_data[task_type_name] = {
+        #             'id': '',
+        #             'name': '',
+        #             'resource_id': '',
+        #             'resource_name': '',
+        #             'update_task_resource_action': None
+        #         }
+        for task_type_name in layout_task_type_names:
             r_data[task_type_name] = {
-                                         'id': '',
-                                         'name': '',
-                                         'resource_id': '',
-                                         'resource_name': '',
-                                         'update_task_resource_action': None
+                'id': '',
+                'name': '',
+                'resource_id': '',
+                'resource_name': '',
+                'update_task_resource_action': None
             }
 
-        for j in range(len(layout_task_type_names)):
-            task_type_name = layout_task_type_names[j]
+        # if layout_task_type_names:
+        #     for j in range(len(layout_task_type_names)):
+        #         task_type_name = layout_task_type_names[j]
+        #         task = r_data[task_type_name]
+        #         task['id'] = layout_task_ids[j]
+        #         task['name'] = task_type_name
+        #         task['resource_name'] = layout_task_resource_names[j]
+        #         task['resource_id'] = layout_task_resource_ids[j]
+        #         task['status'] = layout_task_status_codes[j].lower()
+        #         if update_task_permission:
+        #             task['update_task_resource_action'] = request.route_url('change_tasks_users_dialog', user_type='Resources',  _query={'project_id':project_id,'task_ids': [task['id']]})
+        #             task['update_task_priority_action'] = request.route_url('change_tasks_priority_dialog',  _query={'task_ids': [task['id']]})
+
+        for j, task_type_name in enumerate(layout_task_type_names):
             task = r_data[task_type_name]
             task['id'] = layout_task_ids[j]
             task['name'] = task_type_name
@@ -489,8 +519,23 @@ order by "Task_Scenes".id"""
                 task['update_task_resource_action'] = request.route_url('change_tasks_users_dialog', user_type='Resources',  _query={'project_id':project_id,'task_ids': [task['id']]})
                 task['update_task_priority_action'] = request.route_url('change_tasks_priority_dialog',  _query={'task_ids': [task['id']]})
 
-        for m in range(len(shot_task_types)):
-            shot_task_type_name = shot_task_types[m]
+        # for m in range(len(shot_task_types)):
+        #     shot_task_type_name = shot_task_types[m]
+        #     r_data[shot_task_type_name] = {
+        #             'name': shot_task_type_name,
+        #             'ids': [],
+        #             'resource_ids': [],
+        #             'resource_names': [],
+        #             'bid_seconds': 0,
+        #             'schedule_seconds': 0,
+        #             'total_logged_seconds': 0,
+        #             'child_statuses': [],
+        #             'status': '',
+        #             'num_of_task': 0,
+        #             'update_task_resource_action': None
+        #     }
+
+        for shot_task_type_name in shot_task_types:
             r_data[shot_task_type_name] = {
                     'name': shot_task_type_name,
                     'ids': [],
@@ -505,8 +550,7 @@ order by "Task_Scenes".id"""
                     'update_task_resource_action': None
             }
 
-        for k in range(len(shot_task_types)):
-            shot_task_type_name = shot_task_types[k]
+        for k, shot_task_type_name in enumerate(shot_task_types):
             shot_task = r_data[shot_task_type_name]
             if shot_task_ids[k] not in shot_task['ids']:
                 shot_task['ids'].append(shot_task_ids[k])
@@ -524,8 +568,7 @@ order by "Task_Scenes".id"""
             shot_task['total_logged_seconds'] += float(shot_task_total_logged_seconds[k])
             shot_task['num_of_task'] += 1
 
-        for l in range(len(shot_task_types)):
-            shot_task_type_name = shot_task_types[l]
+        for shot_task_type_name in shot_task_types:
             shot_task = r_data[shot_task_type_name]
 
             # logger.debug('shot_task : %s %s %s' % (r[1], shot_task_type_name, shot_task['child_statuses']))
