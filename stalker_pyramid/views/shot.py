@@ -407,7 +407,7 @@ left outer join (
         group by "Tasks".id) as reviews on reviews.task_id = "Tasks".id
 
 left outer join "Task_Resources" on "Tasks".id = "Task_Resources".task_id
-join "SimpleEntities" as "Resources_SimpleEntities" on "Resources_SimpleEntities".id = "Task_Resources".resource_id
+left outer join "SimpleEntities" as "Resources_SimpleEntities" on "Resources_SimpleEntities".id = "Task_Resources".resource_id
 
 %(where_condition)s
 group by
