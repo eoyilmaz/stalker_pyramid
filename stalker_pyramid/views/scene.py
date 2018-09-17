@@ -61,7 +61,6 @@ def scene_dialog(request):
             shots = Shot.query.filter(Shot.parent == shots_folder).all()
             shot_count = len(shots)
 
-
     project = None
     sequence = None
 
@@ -115,32 +114,45 @@ def create_scene(request):
     if sequence and scene_name and temp_scene and temp_shot and shot_count:
         # get descriptions
         description = request.params.get('description', '')
-        try:
-            new_scene = duplicate_task_hierarchy_action(
-                temp_scene,
-                sequence,
-                scene_name,
-                description,
-                logged_in_user
-            )
-            DBSession.flush()
-        except BaseException as e:
-            transaction.abort()
-            return Response(body=str(e), status=500)
-        else:
-            transaction.commit()
-            sequence = Sequence.query.filter_by(id=sequence_id).first()
-            new_scene = Task.query\
-                .filter(Task.name == scene_name)\
-                .filter(Task.parent == sequence)\
-                .first()
-            if not new_scene:
-                transaction.abort()
-                return Response('no new_scene', status=500)
 
-        logger.debug('new_scene: %s' % new_scene.name)
+        # do not create a new scene if there is one
+        new_scene = Task.query \
+            .filter(Task.name == scene_name) \
+            .filter(Task.parent == sequence) \
+            .first()
+
+        if new_scene is None:
+            try:
+                new_scene = duplicate_task_hierarchy_action(
+                    temp_scene,
+                    sequence,
+                    scene_name,
+                    description,
+                    logged_in_user
+                )
+                DBSession.flush()
+            except BaseException as e:
+                transaction.abort()
+                return Response(body=str(e), status=500)
+            else:
+                transaction.commit()
+                sequence = Sequence.query.filter_by(id=sequence_id).first()
+                new_scene = Task.query\
+                    .filter(Task.name == scene_name)\
+                    .filter(Task.parent == sequence)\
+                    .first()
+                if not new_scene:
+                    transaction.abort()
+                    return Response('no new_scene', status=500)
+
+            logger.debug('new_scene: %s' % new_scene.name)
+        else:
+            logger.debug('found scene with the same name, not generating a new one: %s' % scene_name)
+
         # transaction.commit()
         shots_task = Task.query.filter(Task.name == 'Shots').filter(Task.parent == new_scene).first()
+        logger.debug('shots_task.id: %s' % shots_task.id)
+
         temp_shot = Shot.query.filter_by(id=temp_shot_id).first()
         if not shots_task:
             transaction.abort()
@@ -148,21 +160,31 @@ def create_scene(request):
 
         # sometimes the scene template already has some shots
         # so delete any existing shots
-        with DBSession.no_autoflush:
-            residual_shots = Shot.query.filter(Shot.parent == shots_task).all()
+        # with DBSession.no_autoflush:
+        #     residual_shots = Shot.query.filter(Shot.parent == shots_task).all()
 
         # create shots based on shot template
+        shot_number_start_from = 0
+
+        # pick the greatest shot number from the scene if there are any shots
+        with DBSession.no_autoflush:
+            existing_shots = DBSession.query(Shot.name).filter(Shot.parent==shots_task).order_by(Shot.name.asc()).all()
+            if existing_shots:
+                shot_number_start_from = int(regex.findall(existing_shots[-1][0].split('_')[-1])[-1])
+
+        logger.debug('shot_number_start_from: %s' % shot_number_start_from)
+
         for i in range(1, int(shot_count) + 1):
-            new_shot_name = '%s_%s_%s' % (sequence_name, scene_number, str(i * 10).zfill(4))
+            new_shot_name = '%s_%s_%s' % (sequence_name, scene_number, str(i * 10 + shot_number_start_from).zfill(4))
             new_shot = \
                 duplicate_task_hierarchy_action(temp_shot, shots_task, new_shot_name, description, logged_in_user)
             logger.debug('new_shot_name: %s' % new_shot.name)
             new_shot.sequences = [sequence]
 
         # do residual shot deletion here
-        if residual_shots:
-            for shot in residual_shots:
-                DBSession.delete(shot)
+        # if residual_shots:
+        #     for shot in residual_shots:
+        #         DBSession.delete(shot)
 
         invalidate_all_caches()
 
