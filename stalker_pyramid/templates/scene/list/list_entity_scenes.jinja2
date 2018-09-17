@@ -250,32 +250,20 @@
             var icon_name = get_icon('shot');
             $('#items_header').append('<i class=' + icon_name + '></i>');
 
-            // TODO: query distinct task types
-            var types = [
-                {name:'Storyboard'},
-                {name:'Schematic'},
-                {name:'Edit'},
-                {name:'Dubbing'},
-                {name:'Previs'},
-                {name:'Shot Previs'},
-                {name:'Animation'},
-                {name:'Camera'},
-                {name:'Scene Assembly'},
-                {name:'FX'},
-                {name:'Lighting'},
-                {name:'Comp'},
-                {name:'Render'}
-            ];
+            var types = [];
             var column_template = doT.template($('#tmpl_sceneColumn').html());
 
             $(function () {
-                var k;
-                var table_column = $('#scenes_table_column');
-                for (k = 0; k < types.length; k++) {
-                    table_column.append(column_template(types[k]));
-                }
+                $.getJSON('/sequences/{{ entity.id }}/distinct_task_type_names/').then(function (data){
+                    types = data;
+                    var k;
+                    var table_column = $('#scenes_table_column');
+                    for (k = 0; k < types.length; k++) {
+                        table_column.append(column_template(types[k]));
+                    }
+                }).then(function (){
 
-                $.getJSON('/entities/{{ entity.id }}/scenes/').then(function (data) {
+                    $.getJSON('/entities/{{ entity.id }}/scenes/').then(function (data) {
 
                     var scenes = data;
                     var scene_template = doT.template($('#tmpl_sceneRow').html());
@@ -326,6 +314,8 @@
                         $('#loading_spinner').hide();
                         $('#scenes_table').show();
                     });
+                });
+
                 });
             });
         });

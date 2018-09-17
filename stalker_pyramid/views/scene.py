@@ -24,7 +24,7 @@ from stalker.db.session import DBSession
 from stalker import Sequence, Shot, Project, Entity, Task
 
 import logging
-from webob import Response
+from pyramid.response import Response
 from stalker_pyramid.views import get_logged_in_user, PermissionChecker, \
     get_parent_task_status, to_seconds, invalidate_all_caches
 from stalker_pyramid.views.task import duplicate_task_hierarchy_action
@@ -239,7 +239,7 @@ def update_scene(request):
         shots = Shot.query.filter(Shot.parent == shots_folder).all()
 
         for i in range(len(shots)+1, int(shot_count)+1):
-            new_shot_name = '%s_%s' % (scene.name, shot_no(i))
+            new_shot_name = '%s_%s' % (scene.name, str(i * 10).zfill(4))
             new_shot = duplicate_task_hierarchy_action(temp_shot, shots_folder, new_shot_name, description, logged_in_user)
             logger.debug('new_shot   : %s' % new_shot.name)
             new_shot.sequences = [sequence]

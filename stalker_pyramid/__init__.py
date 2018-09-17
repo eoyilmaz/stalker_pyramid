@@ -740,6 +740,7 @@ def main(global_config, **settings):
 
     config.add_route('view_sequence',          'sequences/{id}/view')
 
+    config.add_route('get_sequence_distinct_task_type_names', 'sequences/{id}/distinct_task_type_names/')
     config.add_route('get_sequence_references', 'sequences/{id}/references/')  # json
     config.add_route('get_sequence_references_count', 'sequences/{id}/references/count/')  # json
     config.add_route('get_sequence_tickets',    'sequences/{id}/tickets/')  # json
