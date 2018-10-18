@@ -1812,14 +1812,17 @@ def query_tasks(
 
 
 @cache_region('long_term', 'load_tasks')
-def cached_query_tasks(
-        limit,
-        offset,
-        order_by_params,
-        where_clause,
-        task_id):
+def cached_query_tasks(limit, offset, order_by_params, where_clause, task_id):
+    """Query for tasks. Does some pretty amazing things.
 
-    start = time.time()
+    :param limit:
+    :param offset:
+    :param order_by_params:
+    :param where_clause:
+    :param task_id:
+    :return:
+    """
+    start_time = time.time()
 
     entity_type = "Task"
     if task_id:
@@ -2138,9 +2141,9 @@ def cached_query_tasks(
     ]
 
     # logger.debug('return_data: %s' % return_data)
-    end = time.time()
+    end_time = time.time()
     logger.debug('%s rows retrieved in %s seconds' % (len(return_data),
-                                                      (end - start)))
+                                                      (end_time - start_time)))
     return return_data
 
 
@@ -5885,7 +5888,6 @@ def get_task_events(request):
     )
 
     task_ids = [task['id'] for task in all_tasks]
-
     # logger.debug("task_ids %s" % task_ids)
 
     sql_query = """select
@@ -5909,7 +5911,8 @@ where "TimeLogs".task_id in %s
     # logger.debug("sql_query %s" % sql_query)
 
     # now query all the time logs
-    from sqlalchemy import text  # to be able to use "%" sign use this function
+    # to be able to use "%" sign use this function
+    from sqlalchemy import text
     result = DBSession.connection().execute(text(sql_query))
 
     events = [

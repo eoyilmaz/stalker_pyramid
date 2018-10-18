@@ -26,6 +26,7 @@ CLASSIFIERS = [
 ]
 INSTALL_REQUIRES = [
     'pyramid>=1.4',
+    'sqlalchemy',
     'transaction',
     'pyramid_tm',
     'pyramid_beaker',
@@ -42,7 +43,7 @@ INSTALL_REQUIRES = [
     'mocker',
     'tzlocal',
     'pytz',
-    'beaker'
+    'beaker',
 ]
 TEST_REQUIRES = ['pytest', 'pytest-xdist', 'pytest-cov', 'coverage']
 DATA_FILES = [(

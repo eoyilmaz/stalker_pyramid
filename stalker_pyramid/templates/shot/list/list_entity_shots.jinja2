@@ -76,10 +76,10 @@
 
                     <thead>
                     <tr id="shots_table_column">
-                        <th>Sequence</th>
-                        <th>Status</th>
-{#                        <th>Thumbnail</th>#}
-                        <th>Name</th>
+                        <th style="width: 40px">Sequence</th>
+                        <th style="width: 40px">Status</th>
+                        <th style="width: 150px">Thumbnail</th>
+                        <th style="width: 150px">Name</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -125,15 +125,12 @@
             </td>
             <td style="width:15px;"><span
                     class="label label-status_{{=it.status_color}}">{{=it.status}}</span><br/>
-                <img style="width:auto; height: auto;"
+            </td>
+            <td>
+                <img style="width:auto; height: auto; max-height: 80px;"
                      class="img-thumbnail"
                      src="{{=it.thumbnail_full_path }}">
             </td>
-            <!--<td>-->
-                <!--<img style="width:auto; height: auto;"-->
-                     <!--class="img-thumbnail"-->
-                     <!--src="{{=it.thumbnail_full_path }}">-->
-            <!--</td>-->
             <td id="shot_summary_cell_{{=it.id}}">
 
                 <a href='{{=it.link}}'>{{=it.name}}</a><br/>
@@ -277,12 +274,11 @@
                                 data[i].description = data[i].description.substring(0,30)+"...";
                             }
 
-                            if (data[i].thumbnail_full_path == null) {
+                            if (data[i].thumbnail_full_path === null) {
                                 data[i].thumbnail_full_path = '{{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}';
                             } else {
                                 data[i].thumbnail_full_path = '/' + data[i].thumbnail_full_path;
                             }
-                            data[i].thumbnail_full_path = '';
 
                             data[i].came_from = '{{ request.current_route_path() }}';
 
