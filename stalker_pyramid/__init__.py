@@ -256,7 +256,6 @@ def main(global_config, **settings):
     config.add_route('get_entity_users_roles',         'entities/{id}/users/roles/')#json
     config.add_route('get_entity_role_user',           'entities/{id}/role_user/')#json
 
-
     config.add_route('get_entity_thumbnail',           'entities/{id}/thumbnail')
 
     config.add_route('list_entity_users',              'entities/{id}/users/list')
@@ -638,10 +637,10 @@ def main(global_config, **settings):
     config.add_route('get_user_reviews_count',      'users/{id}/reviews/count/') #json
     config.add_route('get_user_events',       'users/{id}/events/')  # json
     # config.add_route('get_user_worked_hours', 'users/{id}/{frequency}/worked_hours/')  # json
-    config.add_route('get_resources',         'resources/')
+    config.add_route('get_resources',         'resources')
 
     config.add_route('get_entity_resources',  'entities/{id}/resources/')
-    config.add_route('get_resource',          'resources/{id}/')
+    config.add_route('get_resource',          'resources/{id}')
 
     config.add_route('list_users',            'users/list')  # html
     config.add_route('list_user_tasks',       'users/{id}/tasks/list')  # html

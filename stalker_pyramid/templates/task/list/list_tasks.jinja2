@@ -550,7 +550,6 @@ require([
     'dstore/Cache',
     'dstore/Memory',
     'dstore/Rest',
-    'dstore/Request',
 
     'dojo/request/xhr',
     'dojo/_base/lang',
@@ -570,8 +569,7 @@ require([
     'dojo/domReady!'
 ], function (registry, Button, FilteringSelect, Menu, MenuItem, MenuSeparator,
              DateTextBox, Tooltip, cookie, json, query, Cache, Memory,
-             Rest, Request,
-             xhr, lang, Deferred, when, date, List, Grid,
+             Rest, xhr, lang, Deferred, when, date, List, Grid,
              JsonRestStore, dialogs, dialogCaller, dialogCreator, GanttGrid) {
 
     // The Memory
@@ -591,8 +589,8 @@ require([
                 parent_id: parent.id
             });
         },
-        mayHaveChildren: function (object) {
-            return object.hasChildren;
+        mayHaveChildren: function (parent) {
+            return parent.hasChildren;
         }
     });
     {#var tasks_cache_store = new Cache(tasks_jsonRest_store, tasks_memory_store);#}
@@ -615,10 +613,6 @@ require([
         width: '100%',
         autoHeight: true,
         collection: tasks_jsonRest_store, {# tasks_cache_store, #}
-        {#query: {#}
-        {#    // initialize with the entity itself#}
-        {#    id: {{ entity.id }}#}
-        {# },#}
         loadingMessage: "<div style='float: left' class='dijitIconLoading'>&nbsp</div><div>Loading</div>",
         noDataMessage: "",
         pageSkip: 0,

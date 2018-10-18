@@ -20,15 +20,17 @@
 define([
     "dojo/_base/declare",
     'dojo/_base/lang',
+
     "dgrid/OnDemandGrid",
     "dgrid/ColumnSet",
     "dgrid/Selection",
     "dgrid/Keyboard",
-    "dgrid/tree",
+    "dgrid/Tree",
     "dgrid/extensions/DijitRegistry",
+
     "put-selector/put",
     "stalker/js/DiscreetDataColumn"
-], function (declare, lang, OnDemandGrid, ColumnSet, Selection, Keyboard, tree,
+], function (declare, lang, OnDemandGrid, ColumnSet, Selection, Keyboard, Tree,
              DijitRegistry, put, DiscreetDataColumn) {
     // module:
     //     GanttGrid
@@ -40,7 +42,7 @@ define([
     // and a second column set for the actual discreet data
     "use strict";
 
-    return declare([OnDemandGrid, ColumnSet, Selection, Keyboard, DijitRegistry], {
+    return declare([OnDemandGrid, Tree, ColumnSet, Selection, Keyboard, DijitRegistry], {
         /**
          *  customize this to add functionality to the data
          *  
@@ -101,7 +103,8 @@ define([
                         },
                         resizable: true
                     },
-                    name: tree(
+                    name:
+                        // tree(
                         {
                             label: "Name",
                             sortable: false,
@@ -133,7 +136,7 @@ define([
                                 return node;
                             }
                         }
-                    )
+                    // )
 
                 }
             ],
