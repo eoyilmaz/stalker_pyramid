@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Stalker Pyramid a Web Base Production Asset Management System
-# Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
+# Copyright (C) 2009-2018 Erkan Ozgur Yilmaz
 #
 # This file is part of Stalker Pyramid.
 #
@@ -25,16 +25,30 @@ import pyramid_beaker
 
 from zope.sqlalchemy import ZopeTransactionExtension
 
-__version__ = '0.1.11'
-logger_name = 'stalker_pyramid'
-
-
 # before anything about stalker create the defaults
 from stalker import defaults
 from stalker import SimpleEntity, Project, Budget
 
 
 import logging
+
+
+__version__ = '0.1.11'
+
+__title__ = "stalker_pyramid"
+__description__ = 'Stalker (ProdAM) Based Web App'
+__uri__ = 'http://code.google.com/p/stalker_pyramid/'
+__doc__ = __description__ + " <" + __uri__ + ">"
+
+__author__ = "Erkan Ozgur Yilmaz"
+__email__ = 'eoyilmaz@gmail.com'
+
+__license__ = 'LGPLv3'
+__copyright__ = "Copyright (C) 2009-2018 Erkan Ozgur Yilmaz"
+
+logger_name = 'stalker_pyramid'
+
+
 logging.basicConfig()
 logger = logging.getLogger(logger_name)
 #logger.setLevel(logging.DEBUG)

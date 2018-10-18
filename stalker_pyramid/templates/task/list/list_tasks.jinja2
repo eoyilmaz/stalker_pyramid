@@ -550,8 +550,8 @@ require([
     'dojo/cookie',
     'dojo/json',
     'dojo/query',
-    'dojo/store/Cache',
-    'dojo/store/Memory',
+    'dstore/Cache',
+    'dstore/Memory',
     'dojo/store/JsonRest',
     'dojo/request/xhr',
     'dojo/_base/lang',
@@ -610,11 +610,11 @@ require([
         id: gantt_chart_dgrid_id,
         width: '100%',
         autoHeight: true,
-        store: tasks_cache_store,
-        query: {
-            // initialize with the entity itself
-            id: {{ entity.id }}
-        },
+        collection: tasks_cache_store,
+        {#query: {#}
+        {#    // initialize with the entity itself#}
+        {#    id: {{ entity.id }}#}
+        {# },#}
         loadingMessage: "<div style='float: left' class='dijitIconLoading'>&nbsp</div><div>Loading</div>",
         noDataMessage: "",
         pageSkip: 0,
@@ -622,7 +622,10 @@ require([
     }, gantt_chart_dom_id);
     gantt_chart.startup();
 
-    // ceter on today
+    // initialize with the entity itself
+    {#gantt_chart.set('collection', tasks_cache_store.filter({ id: {{ entity.id }} }) );#}
+
+    // center on today
     setTimeout(
         function () {
             gantt_column.centerOnToday();
