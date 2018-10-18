@@ -834,6 +834,7 @@ def convert_to_dgrid_gantt_project_format(projects):
             ),
             'total_logged_seconds': project.total_logged_seconds,
             'type': project.entity_type,
+            'entity_type': project.entity_type,
             'status': project.status.code.lower()
         } for project in projects
     ]
@@ -895,6 +896,7 @@ def convert_to_dgrid_gantt_task_format(tasks):
             'status_name': task.status.name,
             'total_logged_seconds': task.total_logged_seconds,
             'type': task.entity_type,
+            'entity_type': task.entity_type,
             'date_created': milliseconds_since_epoch(task.date_created),
             'date_updated': milliseconds_since_epoch(task.date_updated)
         } for task in tasks
@@ -2150,19 +2152,29 @@ def get_tasks(request):
     """RESTful version of getting all tasks
     """
     logger.debug('get_tasks is running')
-    global_start = start = time.time()
+    global_start_time = start_time = time.time()
     # set the content range to prevent JSONRest Store to query the data twice
-    offset = request.params.get('offset', 0)
-    limit = request.params.get('limit')
+
+    offset = int(request.params.get('offset', 0))
+    limit = int(request.params.get('limit'))
+
+    # instead of offset and limit
+    # the new dstore implementation uses start and end
+    start = request.params.get('start')
+    end = request.params.get('end')
+
+    if start is not None and end is not None:
+        offset = start
+        limit = end - start
 
     order_by_params = request.GET.getall('order_by')
     logger.debug('order_by_params: %s' % order_by_params)
 
     where_clause = generate_where_clause(request.params.dict_of_lists())
-    end = time.time()
-    logger.debug('generate_where_clause: %s seconds' % (end - start))
+    end_time = time.time()
+    logger.debug('generate_where_clause: %s seconds' % (end_time - start_time))
 
-    start = time.time()
+    start_time = time.time()
     task_id = None
     if 'id' in request.params:
         # check if this is a Task or Project
@@ -2175,9 +2187,9 @@ def get_tasks(request):
         where_clause=where_clause,
         task_id=task_id,
     )
-    end = time.time()
+    end_time = time.time()
     logger.debug(
-        'query_tasks: %s seconds' % (end - start)
+        'query_tasks: %s seconds' % (end_time - start_time)
     )
 
     task_count = len(return_data)
@@ -2190,7 +2202,7 @@ def get_tasks(request):
     global_end = time.time()
     logger.debug(
         'GET_TASKS: %s rows retrieved in %s seconds' % (
-            len(return_data), (global_end - global_start)
+            len(return_data), (global_end - global_start_time)
         )
     )
 
@@ -2490,7 +2502,6 @@ def get_tasks_count(request):
         where_clause = generate_where_clause(request.params.dict_of_lists())
 
     return get_cached_tasks_count(entity_type, where_clause, task_id)
-
 
 
 

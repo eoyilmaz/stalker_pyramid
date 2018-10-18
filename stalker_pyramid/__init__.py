@@ -811,11 +811,11 @@ def main(global_config, **settings):
     config.add_route('get_gantt_tasks',          'tasks/{id}/gantt')
     config.add_route('get_gantt_task_children',  'tasks/{id}/children/gantt')
 
-    config.add_route('get_tasks',                   'tasks/')
+    config.add_route('get_tasks',                   'tasks')
     config.add_route('get_tasks_count',             'tasks/count/')
     config.add_route('get_tasks_stats',             'tasks/stats/')
 
-    config.add_route('get_task',                        'tasks/{id}/')
+    config.add_route('get_task',                        'tasks/{id}')
     config.add_route('get_task_events',                 'tasks/{id}/events/')  #json
     config.add_route('get_task_children_task_types',    'tasks/{id}/children_task_types/')  # json
     config.add_route('get_task_children_tasks',         'tasks/{id}/children_tasks/')  # json
