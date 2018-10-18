@@ -170,7 +170,10 @@ def main(global_config, **settings):
         'FDSPL/{partial_file_path:[a-zA-Z0-9/\.]+}'
     )
 
-    logger.debug(defaults.server_side_storage_path + '/{partial_file_path}')
+    logger.debug(
+        '%s/{partial_file_path}' %
+        defaults.server_side_storage_path.replace('\\', '/')
+    )
 
     # *************************************************************************
     # DATA VIEWS

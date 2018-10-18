@@ -225,7 +225,7 @@ def assign_thumbnail(request):
                 extension=thumbnail_extension
             )
             thumbnail_final_relative_path = thumbnail_final_path.replace(
-                defaults.server_side_storage_path, 'SPL'
+                defaults.server_side_storage_path.replace('\\', '/'), 'SPL'
             )
         else:  # put thumbnails in to the repository
             thumbnail_final_relative_path = Repository.to_os_independent_path(
@@ -1961,19 +1961,22 @@ class MediaManager(object):
                 }
             )
 
-        if not full_path.startswith(defaults.server_side_storage_path):
+        if not full_path.startswith(
+                defaults.server_side_storage_path.replace('\\', '/')):
             raise ValueError(
                 '"full_path" argument in '
                 '%(class)s.convert_full_path_to_file_link() method should be '
                 'a str starting with "%(spl)s"' % {
                     'class': cls.__name__,
-                    'spl': defaults.server_side_storage_path,
+                    'spl': defaults.server_side_storage_path.replace('\\', '/'),
                 }
             )
 
         spl_prefix = 'SPL/'
         return os.path.normpath(
-            full_path.replace(defaults.server_side_storage_path, spl_prefix)
+            full_path.replace(
+                defaults.server_side_storage_path.replace('\\', '/'),
+                spl_prefix)
         )
 
     def get_video_info(self, full_path):
