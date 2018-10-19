@@ -838,6 +838,7 @@ def get_project_tasks_today(request):
 
     return data
 
+
 @view_config(
     route_name='view_project_tasks',
     renderer='templates/project/view/view_project_tasks.jinja2'

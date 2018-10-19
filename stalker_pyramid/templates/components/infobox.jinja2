@@ -6,10 +6,10 @@
             <span class="infobox-data-number">{{=it.tasks_count }}</span>
             <div class="infobox-content">
                 {{ if (it.entity_type === 'Project'){ }}
-                <a href="/projects/{{=it.entity_id }}/view?f_id={{=it.status_id }}"
+                <a href="/projects/{{=it.entity_id }}/view/tasks?f_id={{=it.status_id }}"
                    class="white">{{=it.status_code }}</a>
                 {{ } else if (it.entity_type === 'User'){ }}
-                <a href="/users/{{=it.entity_id }}/view?f_id={{=it.status_id }}"
+                <a href="/users/{{=it.entity_id }}/view/tasks?f_id={{=it.status_id }}"
                    class="white">{{=it.status_code }}</a>
                 {{ } else { }}
                 <a data-target="#html_template"

@@ -2158,8 +2158,8 @@ def get_tasks(request):
     global_start_time = start_time = time.time()
     # set the content range to prevent JSONRest Store to query the data twice
 
-    offset = int(request.params.get('offset', 0))
-    limit = int(request.params.get('limit'))
+    offset = request.params.get('offset', 0)
+    limit = request.params.get('limit')
 
     # instead of offset and limit
     # the new dstore implementation uses start and end
@@ -2167,8 +2167,8 @@ def get_tasks(request):
     end = request.params.get('end')
 
     if start is not None and end is not None:
-        offset = start
-        limit = end - start
+        offset = int(start)
+        limit = int(end) - int(start)
 
     order_by_params = request.GET.getall('order_by')
     logger.debug('order_by_params: %s' % order_by_params)

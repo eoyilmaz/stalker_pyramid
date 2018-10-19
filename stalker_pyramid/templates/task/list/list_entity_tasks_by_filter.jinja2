@@ -58,9 +58,9 @@
     function submit_action(url, modal){
         var _query = generateQuery();
 
-        console.log("modal: "+ modal)
+        {#console.log("modal: "+ modal);#}
 
-        if(modal == 'true'){
+        if(modal === 'true'){
             var event_dialog = $('#dialog_template');
             event_dialog.modal({
                 'remote': url+_query
@@ -103,58 +103,58 @@
         var btn_template = doT.template($('#tmpl_btn').html());
 
         var force_complete_btn_info = {
-                                        'id':'force_complete_btn',
-                                        'title':'Force Complete',
-                                        'icon':'icon-ok',
-                                        'url':'/tasks/force_status/CMPL/dialog',
-                                        'modal':true
+            'id':'force_complete_btn',
+            'title':'Force Complete',
+            'icon':'icon-ok',
+            'url':'/tasks/force_status/CMPL/dialog',
+            'modal':true
         };
 
         var request_revisions_btn_info = {
-                                        'id':'request_revisions_btn',
-                                        'title':'Request Revisions',
-                                        'icon':'icon-comment-alt',
-                                        'url':'/tasks/request_revisions/dialog',
-                                        'modal':true
+            'id':'request_revisions_btn',
+            'title':'Request Revisions',
+            'icon':'icon-comment-alt',
+            'url':'/tasks/request_revisions/dialog',
+            'modal':true
         };
 
         var request_review_btn_info = {
-                                        'id':'request_review_btn',
-                                        'title':'Request Review',
-                                        'icon':'icon-comment',
-                                        'url':'/tasks/request_review/dialog',
-                                        'modal':true
+            'id':'request_review_btn',
+            'title':'Request Review',
+            'icon':'icon-comment',
+            'url':'/tasks/request_review/dialog',
+            'modal':true
         };
 
         var set_start_end_date_btn_info = {
-                                        'id':'set_start_end_date_btn',
-                                        'title':'Set Start End Date',
-                                        'icon':'icon-edit',
-                                        'url':'/tasks/set_start_end_date/dialog',
-                                        'modal':true
+            'id':'set_start_end_date_btn',
+            'title':'Set Start End Date',
+            'icon':'icon-edit',
+            'url':'/tasks/set_start_end_date/dialog',
+            'modal':true
         };
 
         var fix_btn_info = {
-                                        'id':'fix_task_btn',
-                                        'title':'Fix Tasks',
-                                        'icon':'icon-cogs',
-                                        'url':'/tasks/fix/statuses/',
-                                        'modal':false
+            'id':'fix_task_btn',
+            'title':'Fix Tasks',
+            'icon':'icon-cogs',
+            'url':'/tasks/fix/statuses/',
+            'modal':false
         };
         var watch_task_btn_info = {
-                                        'id':'watch_task_btn',
-                                        'title':'Watch Tasks',
-                                        'icon':'icon-eye-open',
-                                        'url':'/tasks/watch',
-                                        'modal':false
+            'id':'watch_task_btn',
+            'title':'Watch Tasks',
+            'icon':'icon-eye-open',
+            'url':'/tasks/watch',
+            'modal':false
         };
 
         var unwatch_task_btn_info = {
-                                        'id':'unwatch_task_btn_info',
-                                        'title':'Unwatch Tasks',
-                                        'icon':'icon-eye-close',
-                                        'url':'/tasks/unwatch',
-                                        'modal':false
+            'id':'unwatch_task_btn_info',
+            'title':'Unwatch Tasks',
+            'icon':'icon-eye-close',
+            'url':'/tasks/unwatch',
+            'modal':false
         };
 
 
@@ -234,7 +234,7 @@
         {% endif %}
 
 
-        $.getJSON('/tasks/?' + query_str).then(function (data) {
+        $.getJSON('/tasks?' + query_str).then(function (data) {
 
             // fill items table with dynamic data
             // wait until document is ready
@@ -269,8 +269,8 @@
                         for (var k=0; k<data[i].responsible.length;k++){
                             var r_id = data[i].responsible[k];
                             data[i].responsible[k] = {
-                                                        'id':r_id,
-                                                        'name':get_user_name(r_id)
+                                'id':r_id,
+                                'name':get_user_name(r_id)
                             }
                         }
                     }
