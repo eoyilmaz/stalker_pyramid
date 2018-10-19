@@ -195,8 +195,8 @@ require({
         // update date values
         var start_and_end_dates_as_string = jQuery('#start_end_date_range_picker').val();
         var dates = start_and_end_dates_as_string.split(' - ');
-        var start_date = moment(dates[0], 'MM-DD-YYYY').startOf('day');
-        var end_date = moment(dates[1], 'MM-DD-YYYY').endOf('day');
+        var start_date = moment(dates[0], 'DD/MM/YYYY').startOf('day')._d;
+        var end_date = moment(dates[1], 'DD/MM/YYYY').endOf('day')._d;
 
         // get zoom level
         var zoom_level = jQuery('#zoom_level').val();
@@ -336,8 +336,8 @@ require({
             var zoom_level = resource_column.guess_zoom_level(zoomed_dates.start, zoomed_dates.end);
             
             // update interface elements
-            var formatted_start_date = moment(zoomed_dates.start).format('MM/DD/YYYY');
-            var formatted_end_date = moment(zoomed_dates.end).format('MM/DD/YYYY');
+            var formatted_start_date = moment(zoomed_dates.start).format('DD/MM/YYYY');
+            var formatted_end_date = moment(zoomed_dates.end).format('DD/MM/YYYY');
             var start_end_date_range_picker = jQuery('#start_end_date_range_picker');
             start_end_date_range_picker.val(formatted_start_date + ' - ' + formatted_end_date);
             start_end_date_range_picker.data().daterangepicker.updateFromControl();
@@ -368,7 +368,11 @@ require({
 
     jQuery(function () {
         // initialize date picker
-        var start_end_date_range_picker = jQuery('#start_end_date_range_picker').daterangepicker();
+        var start_end_date_range_picker = jQuery('#start_end_date_range_picker').daterangepicker({
+            locale: {
+                format: 'DD/MM/YYYY'
+            }
+        });
 
         // also update the icon
         start_end_date_range_picker.next().on('click', function () {
@@ -381,7 +385,7 @@ require({
         var start_date = moment().subtract(1, 'month').startOf('day');
         var end_date = moment().add(11, 'month').endOf('day');
         start_end_date_range_picker.val(
-                start_date.format('DD/MM/YYYY') + ' - ' + end_date.format('DD/MM/YYYY')
+            start_date.format('DD/MM/YYYY') + ' - ' + end_date.format('DD/MM/YYYY')
         );
 
         start_end_date_range_picker.data().daterangepicker.updateFromControl();

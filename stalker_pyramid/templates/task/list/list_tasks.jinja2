@@ -1034,8 +1034,8 @@ require([
         // update date values
         var start_and_end_dates_as_string = $('#task_start_end_date_range_picker').val();
         var dates = start_and_end_dates_as_string.split(' - ');
-        var start_date = moment(dates[0], 'DD-MM-YYYY').startOf('day');
-        var end_date = moment(dates[1], 'DD-MM-YYYY').endOf('day');
+        var start_date = moment(dates[0], 'DD/MM/YYYY').startOf('day');
+        var end_date = moment(dates[1], 'DD/MM/YYYY').endOf('day');
 
         // get zoom level
         var zoom_level = $('#zoom_level').val();
