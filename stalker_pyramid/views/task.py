@@ -1854,12 +1854,12 @@ def cached_query_tasks(limit, offset, order_by_params, where_clause, task_id):
             tasks.id,
             tasks.entity_type,
             task_types.name as task_type,
-            tasks.name,
-            tasks.path,
-            tasks.full_path,
-            "Tasks".project_id,
-            "Tasks".parent_id,
-            "Task_SimpleEntities".description,
+            tasks.name as name,
+            tasks.path as path,
+            tasks.full_path as full_path,
+            "Tasks".project_id as project_id,
+            "Tasks".parent_id as parent_id,
+            "Task_SimpleEntities".description as description,
 
             -- audit info
             (extract(epoch from "Task_SimpleEntities".date_created) * 1000)::bigint as date_created,
@@ -1869,23 +1869,23 @@ def cached_query_tasks(limit, offset, order_by_params, where_clause, task_id):
                 select 1
                 from "Tasks" as "Child_Tasks"
                 where "Child_Tasks".parent_id = "Tasks".id
-            ) as has_children,
+            ) as "hasChildren",
 
             '/' || lower("Task_SimpleEntities".entity_type) || 's/' || "Tasks".id || '/view' as link,
 
             "Tasks".priority as priority,
 
-            dep_info.info as dep_info,
-            resource_info.info as resource_info,
-            tasks.responsible_id,
-            tasks.watcher_id,
+            dep_info.info as dependencies,
+            resource_info.info as resources,
+            tasks.responsible_id as responsible,
+            tasks.watcher_id as watcher,
 
-            "Tasks".bid_timing,
-            "Tasks".bid_unit,
+            "Tasks".bid_timing as bid_timing,
+            "Tasks".bid_unit as bid_unit,
 
-            "Tasks".schedule_timing,
-            "Tasks".schedule_unit,
-            "Tasks".schedule_model,
+            "Tasks".schedule_timing as schedule_timing,
+            "Tasks".schedule_unit as schedule_unit,
+            "Tasks".schedule_model as schedule_model,
             coalesce("Tasks".schedule_seconds,
                 "Tasks".schedule_timing * (case "Tasks".schedule_unit
                     when 'min' then 60
@@ -1923,20 +1923,21 @@ def cached_query_tasks(limit, offset, order_by_params, where_clause, task_id):
                         when 'y' then 9573418
                         else 0
                     end)) * 100.0
-            ) as percent_complete,
+            ) as completed,
 
             (extract(epoch from coalesce("Tasks".computed_start, "Tasks".end)) * 1000)::bigint as "start",
             (extract(epoch from coalesce("Tasks".computed_end, "Tasks".end)) * 1000)::bigint as "end",
 
             lower("Statuses".code) as status,
             "Status_SimpleEntities".name as status_name,
-            tasks.type_names
+            tasks.type_names as type_names
 
         from (
             %(tasks_hierarchical_name)s
         ) as tasks
         join "Tasks" on tasks.id = "Tasks".id
         join "SimpleEntities" as "Task_SimpleEntities" on tasks.id = "Task_SimpleEntities".id
+
         -- Dependencies
         left outer join (
             select
@@ -1946,6 +1947,7 @@ def cached_query_tasks(limit, offset, order_by_params, where_clause, task_id):
             join "SimpleEntities" on "Task_Dependencies".depends_to_id = "SimpleEntities".id
             group by task_id
         ) as dep_info on tasks.id = dep_info.task_id
+
         -- Resources
         left outer join (
             select
@@ -2006,9 +2008,9 @@ def cached_query_tasks(limit, offset, order_by_params, where_clause, task_id):
             "Project_SimpleEntities".name as name,
             "Projects".id as path,
             "Project_SimpleEntities".name as full_path,
-            NULL,
+            NULL as project_id,
             NULL as parent_id,
-            "Project_SimpleEntities".description,
+            "Project_SimpleEntities".description as description,
 
             -- audit info
             (extract(epoch from "Project_SimpleEntities".date_created) * 1000)::bigint as date_created,
@@ -2018,16 +2020,16 @@ def cached_query_tasks(limit, offset, order_by_params, where_clause, task_id):
                 select 1
                 from "Tasks" as "Child_Tasks"
                 where "Child_Tasks".project_id = "Projects".id
-            ) as has_children,
+            ) as "hasChildren",
 
             '/projects/' || "Projects".id || '/view' as link,
 
-            500,
+            500 as priority,
 
-            NULL,--array_agg((NULL, NULL)),
-            NULL,--array_agg((NULL, NULL)),
-            NULL,--array_agg((NULL, NULL)),
-            NULL,--array_agg((NULL, NULL)),
+            NULL as dependencies,--array_agg((NULL, NULL)),
+            NULL as resources,--array_agg((NULL, NULL)),
+            NULL as responsible,--array_agg((NULL, NULL)),
+            NULL as watcher,--array_agg((NULL, NULL)),
 
             0 as bid_timing,
             'min' as bid_unit,
@@ -2039,7 +2041,7 @@ def cached_query_tasks(limit, offset, order_by_params, where_clause, task_id):
 
             project_schedule_info.total_logged_seconds as total_logged_seconds,
 
-            project_schedule_info.total_logged_seconds / total_schedule_seconds  * 100 as percent_complete,
+            project_schedule_info.total_logged_seconds / total_schedule_seconds * 100 as completed,
 
             (extract(epoch from coalesce("Projects".computed_start, "Projects".end)) * 1000)::bigint as "start",
             (extract(epoch from coalesce("Projects".computed_end, "Projects".end)) * 1000)::bigint as "end",
@@ -2092,50 +2094,53 @@ def cached_query_tasks(limit, offset, order_by_params, where_clause, task_id):
                 sql_query,
                 'where "Projects".id = %s' % task_id
             )
+
     if offset:
         sql_query = '%s offset %s' % (sql_query, offset)
-    if limit:
+
+    if limit and limit > 0:
         sql_query = '%s limit %s' % (sql_query, limit)
+
     from sqlalchemy import text  # to be able to use "%" sign use this function
-    logger.debug("Big Fucking Query Starts")
-    #logger.debug("%s" % sql_query)
-    logger.debug("Big Fucking Query Ends")
+
     result = DBSession.connection().execute(text(sql_query))
+
+    # TODO: directly return the result don't interpret them
     # use local functions to speed things up
     local_raw_data_to_array = raw_data_to_array
     return_data = [
         {
-            'id': r[0],
-            'entity_type': r[1],
-            'task_type': r[2],
-            'name': r[3],
-            'path': r[4],
-            'full_path': r[5],
-            'project_id': r[6],
-            'parent_id': r[7],
-            'description': r[8],
-            'date_created': r[9],
-            'date_updated': r[10],
-            'hasChildren': r[11],
-            'link': r[12],
-            'priority': r[13],
-            'dependencies': local_raw_data_to_array(r[14]),
-            'resources': local_raw_data_to_array(r[15]),
-            'responsible': r[16],
-            'watcher': r[17],
-            'bid_timing': r[18],
-            'bid_unit': r[19],
-            'schedule_timing': r[20],
-            'schedule_unit': r[21],
-            'schedule_model': r[22],
-            'schedule_seconds': r[23],
-            'total_logged_seconds': r[24],
-            'completed': r[25],
-            'start': r[26],
-            'end': r[27],
-            'status': r[28],
-            'status_name': r[29],
-            'type_names': r[30]
+            'id': r['id'],
+            'entity_type': r['entity_type'],
+            'task_type': r['task_type'],
+            'name': r['name'],
+            'path': r['path'],
+            'full_path': r['full_path'],
+            'project_id': r['project_id'],
+            'parent_id': r['parent_id'],
+            'description': r['description'],
+            'date_created': r['date_created'],
+            'date_updated': r['date_updated'],
+            'hasChildren': r['hasChildren'],
+            'link': r['link'],
+            'priority': r['priority'],
+            'dependencies': local_raw_data_to_array(r['dependencies']),
+            'resources': local_raw_data_to_array(r['resources']),
+            'responsible': r['responsible'],
+            'watcher': r['watcher'],
+            'bid_timing': r['bid_timing'],
+            'bid_unit': r['bid_unit'],
+            'schedule_timing': r['schedule_timing'],
+            'schedule_unit': r['schedule_unit'],
+            'schedule_model': r['schedule_model'],
+            'schedule_seconds': r['schedule_seconds'],
+            'total_logged_seconds': r['total_logged_seconds'],
+            'completed': r['completed'],
+            'start': r['start'],
+            'end': r['end'],
+            'status': r['status'],
+            'status_name': r['status_name'],
+            'type_names': r['type_names']
         }
         for r in result.fetchall()
     ]
@@ -2158,17 +2163,11 @@ def get_tasks(request):
     global_start_time = start_time = time.time()
     # set the content range to prevent JSONRest Store to query the data twice
 
-    offset = request.params.get('offset', 0)
+    offset = int(request.params.get('offset', 0))
     limit = request.params.get('limit')
 
-    # instead of offset and limit
-    # the new dstore implementation uses start and end
-    start = request.params.get('start')
-    end = request.params.get('end')
-
-    if start is not None and end is not None:
-        offset = int(start)
-        limit = int(end) - int(start)
+    logger.debug('offset: %s' % offset)
+    logger.debug('limit: %s' % limit)
 
     order_by_params = request.GET.getall('order_by')
     logger.debug('order_by_params: %s' % order_by_params)
@@ -2505,7 +2504,6 @@ def get_tasks_count(request):
         where_clause = generate_where_clause(request.params.dict_of_lists())
 
     return get_cached_tasks_count(entity_type, where_clause, task_id)
-
 
 
 @view_config(
