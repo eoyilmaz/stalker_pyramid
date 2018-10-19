@@ -248,8 +248,10 @@
         <a href={{=it.link}}>
             <i class={{=it.icon}}></i>
             <span class="menu-text">{{=it.title}}</span>
+            {{ if (it.count !== 'no_badge') { }}
             <span id="{{=it.title }}_count"
                   class="badge {{ if (it.count > 0) { }}badge-important{{ } else { }}badge-success{{ } }}">{{=it.count}}</span>
+            {{ } }}
         </a>
     </li>
 </script>
@@ -261,8 +263,10 @@
         <a data-toggle="tab" href="" >
             <i class={{=it.icon}}></i>
             <span class="menu-text">{{=it.title}}</span>
+            {{ if (it.count !== 'no_badge') { }}
             <span id="{{=it.title }}_count"
                   class="badge {{ if (it.count > 0) { }}badge-important{{ } else { }}badge-success{{ } }}">{{=it.count}}</span>
+            {{ } }}
         </a>
     </li>
 </script>
@@ -282,7 +286,7 @@
             'state': state,
             'link': address,
             'icon': icon,
-            'count': typeof(count) === 'number' ? count : 0
+            'count': count
         };
 
         var rendered_template = $($.parseHTML(link_template(options)));
@@ -291,13 +295,14 @@
         var badge = rendered_template.find('.badge');
 
         // update the badge
-        if ( typeof(count) === 'string' ) {
+        if ( typeof(count) === 'string' && count !== 'no_badge') {
             // it is the address of the source
             $.getJSON(count).then(function (data) {
                 count = data;
                 // now update the side bar badge
+                badge.text(count);
                 if (count > 0){
-                    badge.text(count).removeClass('badge-success').addClass('badge-important');
+                    badge.removeClass('badge-success').addClass('badge-important');
                 }
             });
         }

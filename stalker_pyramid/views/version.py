@@ -217,7 +217,7 @@ def get_entity_versions(request):
     renderer='json'
 )
 def get_user_versions(request):
-    """returns all the Shots of the given Project
+    """returns all the Versions that the queried User has created
     """
     logger.debug('*******get_user_versions is running')
 
@@ -251,10 +251,10 @@ def get_user_versions(request):
         """
 
     sql_query = sql_query % {
-                                'user_id': user_id,
-                                'tasks_hierarchical_name':
-                                generate_recursive_task_query(ordered=False)
-                            }
+        'user_id': user_id,
+        'tasks_hierarchical_name':
+        generate_recursive_task_query(ordered=False)
+    }
 
     from sqlalchemy import text  # to be able to use "%" sign use this function
 
@@ -284,6 +284,37 @@ def get_user_versions(request):
     ]
 
     return return_data
+
+
+@view_config(
+    route_name='get_user_versions_count',
+    renderer='json'
+)
+def get_user_versions_count(request):
+    """returns user versions count
+    """
+    logger.debug('*******get_user_versions is running')
+
+    user_id = request.matchdict.get('id', -1)
+    user = User.query.filter_by(id=user_id).first()
+
+    sql_query = """
+        select
+            count("Versions".id)
+        from "Versions"
+            join "SimpleEntities" as "Version_SimpleEntities" on "Version_SimpleEntities".id = "Versions".id
+            join "Users" on "Version_SimpleEntities".created_by_id = "Users".id
+        where "Users".id = %(user_id)s
+    """
+
+    sql_query = sql_query % {
+        'user_id': user_id
+    }
+
+    from sqlalchemy import text
+    result = DBSession.connection().execute(text(sql_query))
+
+    return result.fetchone()[0]
 
 
 @view_config(

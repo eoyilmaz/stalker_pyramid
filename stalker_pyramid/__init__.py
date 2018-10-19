@@ -945,6 +945,7 @@ def main(global_config, **settings):
 
     config.add_route('get_task_versions',                   'tasks/{id}/versions/')  # jsons
     config.add_route('get_user_versions',                   'users/{id}/versions/')  # jsons
+    config.add_route('get_user_versions_count',             'users/{id}/versions/count')  # jsons
     config.add_route('get_entity_versions',                 'entities/{id}/versions/')  # json
     config.add_route('get_entity_versions_used_by_tasks',   'entities/{id}/version/used_by/tasks/') # json
 
