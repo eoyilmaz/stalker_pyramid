@@ -1392,34 +1392,6 @@ def depth_first_flatten(task, task_array=None):
     return task_array
 
 
-def raw_data_to_array(raw_data):
-    """converts the given string raw data in:
-
-        '{"(string, string)"},{"(string, string)"}...{"(string, string)"}'
-
-    format to a Python array of:
-
-        [[int, string], [int, string] ... [int, string]]
-    """
-    data = []
-    if raw_data is not None and len(raw_data) > 7:  # in which case it is not '{"(,)"}'
-        json_data = json.loads(
-            raw_data.replace('{', '[')
-            .replace('}', ']')
-            .replace('(', '[')
-            .replace(')', ']')
-        )  # it is an array of string
-        for j in json_data:
-            d = j[1:-1].split(',')
-            data.append(
-                {
-                    'id': int(d[0]),
-                    'name': d[1].replace('"', '')
-                }
-            )
-    return data
-
-
 def generate_where_clause(params):
     """Generates where clause strings from the given dictionary
 
@@ -1875,8 +1847,14 @@ def cached_query_tasks(limit, offset, order_by_params, where_clause, task_id):
 
             "Tasks".priority as priority,
 
-            dep_info.info as dependencies,
-            resource_info.info as resources,
+            -- dep_info.info as dependencies,
+            coalesce(dep_info.depends_to_id, '{}') as depends_to_ids,
+            coalesce(dep_info.depends_to_name, '{}') as depends_to_names,
+
+            -- resource_info.info as resources,
+            coalesce(resource_info.resource_ids, '{}') as resource_ids,
+            coalesce(resource_info.resource_names, '{}') as resource_names,
+
             tasks.responsible_id as responsible,
             tasks.watcher_id as watcher,
 
@@ -1942,7 +1920,8 @@ def cached_query_tasks(limit, offset, order_by_params, where_clause, task_id):
         left outer join (
             select
                 task_id,
-                array_agg((depends_to_id, "SimpleEntities".name)) as info
+                array_agg(depends_to_id) as depends_to_id,
+                array_agg("SimpleEntities".name) as depends_to_name
             from "Task_Dependencies"
             join "SimpleEntities" on "Task_Dependencies".depends_to_id = "SimpleEntities".id
             group by task_id
@@ -1952,9 +1931,8 @@ def cached_query_tasks(limit, offset, order_by_params, where_clause, task_id):
         left outer join (
             select
                 "Tasks".id as task_id,
-                array_agg(("Resource_SimpleEntities".id, "Resource_SimpleEntities".name)) as info,
-                array_agg("Resource_SimpleEntities".id) as resource_id,
-                array_agg("Resource_SimpleEntities".name) as resource_name
+                array_agg("Resource_SimpleEntities".id) as resource_ids,
+                array_agg("Resource_SimpleEntities".name) as resource_names
             from "Tasks"
             join "Task_Resources" on "Tasks".id = "Task_Resources".task_id
             join "SimpleEntities" as "Resource_SimpleEntities" on "Task_Resources".resource_id = "Resource_SimpleEntities".id
@@ -2026,10 +2004,14 @@ def cached_query_tasks(limit, offset, order_by_params, where_clause, task_id):
 
             500 as priority,
 
-            NULL as dependencies,--array_agg((NULL, NULL)),
-            NULL as resources,--array_agg((NULL, NULL)),
-            NULL as responsible,--array_agg((NULL, NULL)),
-            NULL as watcher,--array_agg((NULL, NULL)),
+            '{}' as depends_to_ids,--array_agg((NULL, NULL)),
+            '{}' as depends_to_names,--array_agg((NULL, NULL)),
+
+            '{}' as resource_ids,--array_agg((NULL, NULL)),
+            '{}' as resource_names,--array_agg((NULL, NULL)),
+
+            '{}' as responsible,--array_agg((NULL, NULL)),
+            '{}' as watcher,--array_agg((NULL, NULL)),
 
             0 as bid_timing,
             'min' as bid_unit,
@@ -2105,9 +2087,6 @@ def cached_query_tasks(limit, offset, order_by_params, where_clause, task_id):
 
     result = DBSession.connection().execute(text(sql_query))
 
-    # TODO: directly return the result don't interpret them
-    # use local functions to speed things up
-    local_raw_data_to_array = raw_data_to_array
     return_data = [
         {
             'id': r['id'],
@@ -2124,8 +2103,8 @@ def cached_query_tasks(limit, offset, order_by_params, where_clause, task_id):
             'hasChildren': r['hasChildren'],
             'link': r['link'],
             'priority': r['priority'],
-            'dependencies': local_raw_data_to_array(r['dependencies']),
-            'resources': local_raw_data_to_array(r['resources']),
+            'dependencies': zip(r['depends_to_ids'], r['depends_to_names']),
+            'resources': zip(r['resource_ids'], r['resource_names']),
             'responsible': r['responsible'],
             'watcher': r['watcher'],
             'bid_timing': r['bid_timing'],
