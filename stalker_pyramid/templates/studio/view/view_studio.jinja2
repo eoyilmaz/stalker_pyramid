@@ -29,11 +29,8 @@
     {% include 'page_header.jinja2' %}
 
     <div class="row-fluid">
-
         <div class="span6">
-
           <div id="pie_chart" style="margin-top:20px; margin-left:20px; width:300px; height:300px;"></div>
-
         </div>
     </div>
 
@@ -42,7 +39,20 @@
 {#EXTRA-SCRIPTS#}
 {% block extrascripts %}
     {% include 'charts/chart_extrascripts.jinja2' %}
-
     {% include 'charts/pie_chart.jinja2' %}
+    
+    {% raw %}
+    <script id="tmpl_itemThead" type="text/x-dot-template">
+
+    <tr>
+         <th>Ticket</th>
+            <th>Thumbnail</th>
+            <th>Resource</th>
+            <th>Total Time Log</th>
+            <th class="hidden-phone">Created At</th>
+    </tr>
+    </script>
+    {% endraw %}
+
 
 {% endblock extrascripts %}

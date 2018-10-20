@@ -1,5 +1,5 @@
 {# Stalker Pyramid a Web Base Production Asset Management System
- Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
+ Copyright (C) 2009-2018 Erkan Ozgur Yilmaz
 
  This file is part of Stalker Pyramid.
 
@@ -21,27 +21,217 @@
 
 {% extends "base.jinja2" %}
 
-
+{# BREADCRUMBS #}
 {% block breadcrumbs %}
     {% set listed_type=version.plural_class_name %}
     {% set page_title='version #'  %}
     {% include 'breadcrumb/breadcrumbs.jinja2' %}
 {% endblock breadcrumbs %}
 
+{#SIDEBAR#}
 {% block sidebar %}
     {% include 'sidebar.jinja2' %}
 {% endblock sidebar %}
 
+{#PRE-HEADER #}
+{% block pre_header %}
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/dropzone.css") }}'/>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/stalker/css/Paginator.css") }}'/>
+
+{% endblock pre_header %}
+
+{#PAGE-CONTENT#}
 {% block page_content %}
 
+{#    {% set page_title=version.filename %}#}
+{#    {% include 'page_header.jinja2' %}#}
+
+    <div class="widget-box transparent invoice-box">
+
+        <div class="widget-header widget-header-large ">
+            <h4 id='version_header' class="position-relative "></h4>
+
+            <div class="widget-toolbar no-border invoice-info">
+               {% if version.is_published %}
+                    <span class="label label-large label-success arrowed-in">Published</span>
+               {% else %}
+                    <span class="label label-large label-important arrowed-in">Unpublished</span>
+               {% endif %}
+
+            </div>
+            <div class="widget-toolbar hidden-480">
+                <a href='javascript:copyToClipboard("{{ version.absolute_full_path }}")'>
+                    <i class="icon-file"></i>
+                </a>
+            </div>
+        </div>
+
+        <div class="widget-body">
+            <div class="widget-main">
+                <div class="row-fluid">
+                    <div class="span8">
+                        <div class="profile-user-info profile-user-info-striped">
+                            <div class="profile-info-row">
+                                <div class="profile-info-name">Updated Date</div>
+                                <div class="profile-info-value">
+                                    <span>{{ version.date_updated }} (<span class="date">{{ version.date_updated }}</span>)</span>
+                                </div>
+                            </div>
+{#                            <div class="profile-info-row">#}
+{#                                <div class="profile-info-name">File</div>#}
+{#                                <div class="profile-info-value">#}
+{#                                    {% set file_name_split=version.full_path.split('/') %}#}
+{#                                    {% set full_path=file_name_split[file_name_split | count - 1 ] %}#}
+{#                                    <span><a href='javascript:copyToClipboard("{{ version.absolute_full_path }}")'>{{ full_path }}</a></span>#}
+{#                                </div>#}
+{#                            </div>#}
+                            {% if version.parent %}
+                                <div class="profile-info-row">
+                                    <div class="profile-info-name">Parent</div>
+                                    <div class="profile-info-value">
+                                        <span><a href="/versions/{{ version.parent.id }}/view">{{version.parent.take_name }} | {{ "%03i"|format(version.parent.version_number)}}</a></span>
+                                    </div>
+                                </div>
+                            {% endif %}
+
+                            <div class="profile-info-row">
+                                <div class="profile-info-name">Created By</div>
+                                <div class="profile-info-value">
+                                    <span><a href="/users/{{ version.created_by.id }}/view">{{ version.created_by.name }}</a></span>
+                                </div>
+                            </div>
+                            <div class="profile-info-row">
+                                <div class="profile-info-name">Created With</div>
+                                <div class="profile-info-value">
+                                    <span>{{ version.created_with }}</span>
+                                </div>
+                            </div>
+                            {% if version.description %}
+                                <div class="profile-info-row">
+                                    <div class="profile-info-name">Description</div>
+                                    <div class="profile-info-value">
+                                        <span>{{ version.description }}</span>
+                                    </div>
+                                </div>
+                            {% endif %}
+                            <div class="profile-info-row">
+                                <div class="profile-info-name">Download</div>
+                                <div class="profile-info-value">
+                                    <span>
+                                        <a class="btn btn-block btn-blue"
+                                           href='{{ request.route_url('forced_download_repository_files', id=version.task.project.repository.id, file_path=version.full_path) }}'>
+                                        Download
+                                        </a>
+                                    </span>
+                                    {% if '.ma' in version.full_path %}
+                                        <span>
+                                            <button id='download_as_zip_button' class="btn btn-block btn-purple">
+                                                <i class="icon-wrench bigger-120"></i>Download as self contained ZIP file
+                                            </button>
+                                        </span>
+
+                                        <div id="download-as-zip-dialog-message" class="hide">
+                                            <div id="zip-progress" class="progress progress-success progress-striped"
+                                                 data-percent="0%">
+                                                <div class="bar" style="width: 0%;"></div>
+                                            </div>
+
+                                            <div id="schedule-dialog-info">
+                                                <span>Preparing ZIP File... Be Patient!</span>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <div class="hr hr8 hr-double"></div>
+                <div class="row-fluid">
+                    {% include 'link/list_outputs.jinja2' %}
+                </div>
+
+            </div>
+        </div>
+    </div>
 
 {% endblock page_content %}
 
 {% block extrascripts %}
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery-ui-1.10.3.custom.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.ui.touch-punch.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery-ui-1.10.3.custom.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.ui.touch-punch.min.js") }}'></script>
+    <script type="text/javascript">
+        $(function () {
+            var icon_name = get_icon('version');
+            $('#version_header').append('<i class="' + icon_name + ' bigger-125"></i>{{ version.take_name }} | {{ "%03i"|format(version.version_number) }}');
 
+            $('.date').each(function () {
+                var date = moment.utc($(this).text());
+                $(this).text(date.fromNow());
+            });
 
+            var pack_version_url = "{{ request.route_url('pack_version', id=version.id) }}";
 
+            var download_as_zip_button = $('#download_as_zip_button');
+            download_as_zip_button.on('click', function () {
+            var dialog = $("#download-as-zip-dialog-message").dialog({
+                modal: true,
+                title: "Preparing ZIP File",
+                title_html: true,
+                width: 340,
+                height: 155
+            });
 
+            var timer_function;
+            var timer = 0;
+            // var last_scheduled_at = moment(data.last_scheduled_at);
+            var last_scheduling_took = 120;
+            var zip_progress = $('#zip-progress');
+            var zip_progress_bar = zip_progress.find('.bar');
+
+            // start timer
+            var current_scheduling_time = $('#current_scheduling_time');
+            function myTimer() {
+                timer += 1;
+                current_scheduling_time.html(timer);
+                // cycle
+                if ( timer >= last_scheduling_took){
+                    timer -= last_scheduling_took;
+                }
+                // extend the progress bar
+                var percent = Math.min(100, timer / last_scheduling_took * 100).toFixed(1);
+                zip_progress.attr('data-percent', percent + '%');
+                zip_progress_bar.css({'width': percent + '%'});
+            }
+            // run it every 1 seconds
+            timer_function = setInterval(function(){myTimer()}, 1000);
+
+            // set the system on scheduling
+            $.post(pack_version_url).done(function(){
+                // destroy the dialog
+                dialog.dialog('destroy');
+
+                // clear timer
+                clearInterval(timer_function);
+
+                // this is a very weird way of downloading a file, but it works
+                window.location = pack_version_url;
+            }).fail(function (jqXHR) {
+                // destroy the dialog
+                dialog.dialog('destroy');
+
+                // clear timer
+                clearInterval(timer_function);
+
+                var message = '<div>' + jqXHR.responseText + '</div>';
+                bootbox.alert(message);
+                $('.bootbox').prepend('<div class="modal-header alert-danger"><strong>Fail</strong></div>');
+            });
+
+        })
+        });
+    </script>
 {% endblock extrascripts %}

@@ -1,5 +1,5 @@
 {# Stalker Pyramid a Web Base Production Asset Management System
- Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
+ Copyright (C) 2009-2018 Erkan Ozgur Yilmaz
 
  This file is part of Stalker Pyramid.
 
@@ -17,7 +17,16 @@
  License along with this library; if not, write to the Free Software
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #}
+
 {% extends "base.jinja2" %}
+
+{# BREADCRUMBS #}
+{% block breadcrumbs %}
+
+    {% set page_title='Projects' %}
+    {% include 'breadcrumb/breadcrumbs.jinja2' %}
+
+{% endblock breadcrumbs %}
 
 {# SIDEBAR #}
 {% block sidebar %}
@@ -26,80 +35,127 @@
 
 {% endblock sidebar %}
 
-{# BREADCRUMBS #}
-{% block breadcrumbs %}
-    {% set page_title='Projects' %}
-    {% include 'breadcrumb/breadcrumbs.jinja2' %}
-{% endblock breadcrumbs %}
-
 {# PAGE-CONTENT #}
 {% block page_content %}
     {% set page_title='Projects' %}
     {% include 'page_header.jinja2' %}
 
+    <div id="new_project_button" class="btn-group pull-right">
+        <button class="btn btn-small btn-success">
+            <span class="icon-plus bigger-120"></span>
+            NEW
+        </button>
+    </div>
+    <div id="filter_lists">
 
-    {% set add_button_address=request.route_path('project_dialog', id=-1, mode='create') %}
-    {% set address=request.route_path('get_entity_projects', id=entity.id) %}
-    {% set list_item_type='Project' %}
-    {% include 'components/data_table.jinja2' %}
-
+    </div>
 {% endblock page_content %}
 
 {# EXTRA-SCRIPTS #}
 {% block extrascripts %}
+{% raw %}
+<script id="tmpl_filter_template" type="text/x-dot-template">
+<div class="row-fluid">
+    <div class="widget-box span12">
+        <div class="widget-header widget-header-small header-color-status_{{=it.status_code}}">
+            <h4 class="smaller">
+                <i class="{{=it.status_icon}}"></i>
+                {{=it.status}}
+            </h4>
+            <div class="widget-toolbar">
 
-    {% raw %}
-    <script id="tmpl_itemThead" type="text/x-dot-template">
+                <a href="#" data-action="collapse">
+                    <i class="icon-chevron-down"></i>
+                </a>
+             </div>
+        </div>
+        <div class="widget-body">
+            <div class="widget-main">
+                <div class="row-fluid">
+                <ul id='entity_projects_{{=it.status_code}}' class="ace-thumbnails">
 
-    <tr>
-        <th>Thumbnail</th>
-        <th>Project</th>
-        <th>Lead</th>
-        <th>Created By</th>
-        <th>Users</th>
-        <th>Completed</th>
-    </tr>
-    </script>
-    {% endraw %}
-
-    {% raw %}
-    <script id="tmpl_itemRow" type="text/x-dot-template">
-        <tr>
-            <td><img style='width:auto; height: 50px;'
-                     class="img-thumbnail"
-                     src="{{=it.thumbnail_full_path }}">
-            </td>
-            <td><a href='/projects/{{=it.id }}/view'>{{=it.name}}</a>
-            </td>
-            <td><a href='/users/{{=it.lead_id}}/view'>{{=it.lead_name}}</a>
-            </td>
-            <td><a href='/users/{{=it.created_by_id}}/view'>{{=it.created_by_name}}</a>
-            </td>
-            <td>{{=it.users_count}}</td>
-            <td>
-                <div>
-                    <span>{{=it.status}}</span>
-                </div>
-                <div class="progress progress-success">
-                    <div style="width:{{=it.completed}}%"
-                         class="bar">
-                        <span class="center">{{=it.percent_complete}}%</span>
+                </ul>
                     </div>
-                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</script>
+{% endraw %}
+{% raw %}
+<script id="tmpl_project_card" type="text/x-dot-template">
+    <li>
+        <a href="/projects/{{=it.id }}/view" data-rel="colorbox">
+            <img alt="150x150"
+                 style="height: 150px; width: auto;"
+                 src="{{=it.thumbnail_full_path }}" />
 
-            </td>
-        </tr>
-    </script>
-    {% endraw %}
+            <div class="text">
+                <div class="inner">{{=it.name }}</div>
+            </div>
+            <div class="tags">
+                <span class="label label-info">{{=it.name }}</span>
+                <span class="label label-status_{{=it.status_code}}">{{=it.status}}</span>
+                <!--<span class="label label-success">{{=it.type_name}}</span>-->
+                 <!--<span class="label label-orange">{{=it.archive_project}}</span>-->
+            </div>
+        </a>
+        <div class="tools tools-bottom">
+            <a href="/projects/{{=it.id }}/update/details/view?mode=Update">
+                <i class="icon-pencil"></i>
+            </a>
+            {{ if (it.item_remove_link) { }}
+                <a data-target="#dialog_template"
+                    data-toggle="modal"
+                    data-keyboard=false
+                    href="{{=it.item_remove_link}}">
+                    <i class="icon-remove red"></i>
+                </a>
+            {{ } }}
+        </div>
+    </li>
+ </script>
+{% endraw %}
+<script type="text/javascript">
+    $(function () {
 
-    <script>
 
-        var tableParameters = {}
-        var sortingParameters = [[0, 'asc'], [1, 'desc']]
-        var tableDataAddress = '{{ request.route_path('get_entity_projects', id=entity.id) }}'
+        $("#new_project_button").on('click', function (e) {
+             var event_dialog = $('#dialog_template');
 
-     console.log('tableDataAddress' + tableDataAddress)
+            event_dialog.modal({
+                'remote': '{{request.route_path('create_project_dialog', id=-1, _query={'mode': "Create" }) }}'
+            });
+        });
 
-    </script>
+        $.getJSON('/entities/{{ entity.id }}/projects/').then(function (data) {
 
+            var filter_template = doT.template($('#tmpl_filter_template').html());
+            var project_card_template = doT.template($('#tmpl_project_card').html());
+            var filter_lists = $('#filter_lists');
+
+
+            for(var i=0; i<data.length;i++){
+                if (data[i].thumbnail_full_path == null) {
+                    data[i].thumbnail_full_path = '{{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}';
+                }
+
+                else {
+                    data[i].thumbnail_full_path = '/' + data[i].thumbnail_full_path;
+                }
+
+                if(!data[i].status_icon){
+                   data[i].status_icon = get_icon(data[i].status_code.toUpperCase());
+                }
+
+                var entity_projects = $('#entity_projects_'+data[i].status_code);
+                if (entity_projects.length==0){
+                    filter_lists.append(filter_template(data[i]));
+                    entity_projects = $('#entity_projects_'+data[i].status_code);
+                }
+                entity_projects.append(project_card_template(data[i]));
+            }
+        });
+    });
+</script>
 {% endblock extrascripts %}

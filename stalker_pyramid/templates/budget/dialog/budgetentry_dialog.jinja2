@@ -1,0 +1,377 @@
+<script class="dialog_loaded"></script>
+
+<div class="row-fluid">
+
+    <form id='budgetentry_form'
+          class='form-horizontal'
+          role='form'
+          method="post">
+
+        <div class="row-fluid">
+
+            {# Price List #}
+            <div class='control-group'>
+                <label class='span3 control-label'
+                       for='good_pricelist'>Price List</label>
+                <div class="span5">
+                     <select id='good_pricelist'
+                            name='pricelist'
+                            data-placeholder='Price list'
+                            required>
+                    </select>
+{#                    <input id='good_pricelist'#}
+{#                               class='input-block-level'#}
+{#                               name='pricelist'#}
+{#                               type='text'#}
+{#                               placeholder='Price List'#}
+{#                               >#}
+                </div>
+            </div>
+
+            {# Good #}
+            <div class='control-group'>
+                <label class='span3 control-label'
+                       for='budgetentry_good'>Good</label>
+                <div class="span5">
+                     <select id='budgetentry_good'
+                            name='good_id'
+                            data-placeholder='Good'
+                            required>
+                    </select>
+                </div>
+            </div>
+
+            {# Name #}
+            <div class='control-group'>
+                <label class='span3 control-label'
+                       for='budgetentry_name'>Ad</label>
+                <div class="span5">
+                    <input id="budgetentry_name"
+                               name='name'
+                               type="text"
+                               class='input-block-level'
+                               placeholder="Name"
+                               {% if mode=='update' %}
+                                   value="{{ budgetentry.name }}"
+                               {% endif %}
+                               required>
+                </div>
+            </div>
+
+            {#Amount #}
+            <div class='control-group'>
+                <label class='span3 control-label'
+                       for='budgetentry_amount'>Birim</label>
+                <div class="span5">
+                    <input id='budgetentry_amount'
+                           name='amount'
+                           class="input-mini"
+                           type='text'
+                           min=1
+                           max=1000
+                           is_updating=false>
+                    <span id="good_unit_birim"> Hour</span>
+                </div>
+            </div>
+
+            {#Second Amount #}
+            <div class='control-group'>
+                <label class='span3 control-label'
+                       for='budgetentry_second_amount'>X</label>
+                <div class="span5">
+                    <input id='budgetentry_second_amount'
+                           name='second_amount'
+                           class="input-mini"
+                           type='text'
+                           min=1
+                           max=1000
+                           is_updating=false>
+                    <span id="good_unit_x"> Hour</span>
+                </div>
+            </div>
+
+            {# Cost #}
+            <div class="control-group">
+                <label class="span3 control-label"
+                       for="budgetentry_cost">Birim Fiyat</label>
+                <div class="span9">
+                    <input id="budgetentry_cost"
+                           class='input-block-level'
+                           name='cost'
+                           type="number"
+                           step="100"
+                           placeholder="Birim Fiyat"
+                           {% if mode=='update' %}
+                               value="{{ budgetentry.cost }}"
+                           {% endif %}
+                           required>
+                </div>
+            </div>
+
+            {# MSRP #}
+            <div class="control-group">
+                <label class="span3 control-label"
+                       for="budgetentry_msrp">Maliyet</label>
+                <div class="span9">
+                    <input id="budgetentry_msrp"
+                           class='input-block-level'
+                           name='total_msrp'
+                           type="number"
+                           step="100"
+                           placeholder="Maliyet"
+                           required>
+                </div>
+            </div>
+
+            {#Price #}
+            <div class="control-group">
+                <label class="span3 control-label"
+                       for="budgetentry_price">Toplam</label>
+                <div class="span9">
+                    <input id="budgetentry_price"
+                           class='input-block-level'
+                           name='price'
+                           step="100"
+                           type="number"
+                           placeholder="Toplam"
+                           {% if mode=='update' %}
+                               value="{{ budgetentry.price }}"
+                           {% endif %}
+                           required>
+                </div>
+            </div>
+
+            {#Description #}
+            <div class="control-group'">
+                <label for="budgetentry_description"
+                       class="span3 control-label">Tanim</label>
+                <div class="span9">
+                    <textarea id="budgetentry_description"
+                              name='description'
+                              class="autosize-transition"price
+                              style="overflow: hidden;
+                                     word-wrap: break-word;
+                                     resize: horizontal;
+                                     height: 50px;"
+                            ></textarea>
+                </div>
+            </div>
+
+        </div>
+    </form>
+</div>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.spinner.min.js") }}'></script>
+
+<script type="text/javascript">
+
+    function init_dialog() {
+
+        console.debug('starting to initialize budgetentry dialog!!! {{  mode  }}');
+
+        var dialog_label = $('#dialog_template_label');
+        dialog_label.find('span').remove();
+        dialog_label.append('<span>DIGER KALEMLER</span>');
+
+        var budgetentry_amount = $('#budgetentry_amount');
+        var budgetentry_second_amount = $('#budgetentry_second_amount');
+        var budgetentry_msrp = $('#budgetentry_msrp');
+        var budgetentry_cost = $('#budgetentry_cost');
+        var budgetentry_price = $('#budgetentry_price');
+        var filtered_goods= [];
+        var price_lists = [];
+        var msrp = 0;
+
+        {# Good ******************************************************* #}
+        {% raw %}
+            var pl_option_template = doT.template(
+                    '<option value={{=it.id}}>{{=it.name}}</option>'
+            );
+        {% endraw %}
+        {% raw %}
+            var good_option_template = doT.template(
+                    '<option value={{=it.id}}_{{=it.unit }}>{{=it.name}}</option>'
+            );
+        {% endraw %}
+
+        var budgetentry_good = $('#budgetentry_good');
+        var good_pricelist = $('#good_pricelist');
+        $.getJSON('/goods/').then(function (g_data) {
+            filtered_goods= [];
+            price_lists = [];
+            for (var i=0;i<g_data.length;i++){
+                if(g_data[i].type_name == "Custom"){
+                    var index = findArrayElement(price_lists,'id', g_data[i].price_list_id);
+                    if(index ==-1){
+                       price_lists.push({
+                                            'name':g_data[i].price_list_name,
+                                            'id':g_data[i].price_list_id}
+                        );
+                    }
+
+                    filtered_goods.push(g_data[i]);
+                }
+            }
+
+            chosen_searchable_field_creator_by_data(good_pricelist, pl_option_template, price_lists);
+            good_pricelist.trigger('liszt:updated');
+
+            {% if mode=='update' %}
+                var pricelist_id = '{{ budgetentry.good.price_lists[0].id }}';
+                good_pricelist.val(pricelist_id);
+                var new_good_list = [];
+                for (var i=0;i<filtered_goods.length;i++){
+                    if(filtered_goods[i].price_list_id == pricelist_id){
+                        new_good_list.push(filtered_goods[i]);
+                    }
+                }
+                chosen_searchable_field_creator_by_data(budgetentry_good, good_option_template, new_good_list);
+                budgetentry_good.trigger('liszt:updated');
+
+                budgetentry_good.val('{{ budgetentry.good.id }}_{{ budgetentry.good.unit }}');
+            {% endif %}
+            good_pricelist.trigger('liszt:updated');
+            budgetentry_good.trigger('liszt:updated');
+
+            good_pricelist.on('change', function(){
+                var new_good_list = [];
+                for (var i=0;i<filtered_goods.length;i++){
+                    if(filtered_goods[i].price_list_id == $(this).val()){
+                        new_good_list.push(filtered_goods[i]);
+                    }
+                }
+                chosen_searchable_field_creator_by_data(budgetentry_good, good_option_template, new_good_list);
+                budgetentry_good.trigger('liszt:updated');
+            });
+
+        });
+
+        {# Amount ******************************************************* #}
+        budgetentry_amount.ace_spinner({
+            value: 1,
+            min: 1,
+            step: 1,
+            btn_up_class: 'btn-info',
+            btn_down_class: 'btn-info'
+        });
+
+
+
+        {# Second Amount  ******************************************************* #}
+        budgetentry_second_amount.ace_spinner({
+            value: 1,
+            min: 1,
+            step: 1,
+            btn_up_class: 'btn-info',
+            btn_down_class: 'btn-info'
+        });
+        {# Unit ******************************************************* #}
+
+        {% if mode=='update' %}
+            var amount = '{{ budgetentry.get_generic_text_attr("secondaryFactor")[0].amount}}';
+            var second_amount = '{{ budgetentry.get_generic_text_attr("secondaryFactor")[0].second_amount}}';
+            msrp = '{{ budgetentry.msrp}}';
+
+            budgetentry_amount.val(amount);
+            budgetentry_second_amount.val(second_amount);
+            budgetentry_msrp.val(amount*second_amount*msrp);
+
+        {% endif %}
+
+        budgetentry_good.on('change', function(){
+            var good_id = $(this).val().split('_')[0];
+            var unit = $(this).val().split('_')[1];
+
+            $('#good_unit_birim').text(unit.split('*')[0]);
+            budgetentry_amount.val(1);
+
+            $('#good_unit_x').text(unit.split('*')[1]);
+            budgetentry_second_amount.val(1);
+
+            var index = findArrayElement(filtered_goods,'id', good_id);
+            msrp = filtered_goods[index].msrp;
+            budgetentry_msrp.val(msrp);
+            budgetentry_cost.val(filtered_goods[index].cost);
+            budgetentry_price.val(filtered_goods[index].cost);
+        });
+
+        {# Price ******************************************************* #}
+
+        budgetentry_amount.on('change', function(){
+            calculate_msrp_price();
+        });
+
+        budgetentry_second_amount.on('change', function(){
+            calculate_msrp_price();
+        });
+
+        budgetentry_msrp.on('keyup', function(){
+           msrp = calculate_birim_msrp();
+        });
+
+        budgetentry_cost.on('keyup', function(){
+            calculate_msrp_price();
+        });
+
+
+        function calculate_birim_msrp(){
+            var maliyet = parseFloat(budgetentry_msrp.val());
+            var amount = parseFloat(budgetentry_amount.val());
+            var second_amount = parseFloat(budgetentry_second_amount.val());
+
+            return maliyet / (amount*second_amount);
+        }
+
+        function calculate_msrp_price(){
+            var birim_fiyat = parseFloat(budgetentry_cost.val());
+            var amount = parseFloat(budgetentry_amount.val());
+            var second_amount = parseFloat(budgetentry_second_amount.val());
+
+            var price = birim_fiyat*amount*second_amount;
+            budgetentry_price.val(price);
+            budgetentry_msrp.val(msrp*amount*second_amount);
+        }
+
+        {# ***************************************************************** #}
+        {# Submit Button #}
+        var submit_button = $('#dialog_template_submit_button');
+        submit_button.on('click', function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+
+            submit_button.button('loading');
+            var budgetentry_form = $('#budgetentry_form');
+
+            var url = '{{ action }}';
+            $.post(
+                url,
+                budgetentry_form.serialize() + '&' +
+                $.param({
+                    'budget_id': {{ budget.id }},
+                    'good_id':budgetentry_good.val().split('_')[0],
+                    'msrp':calculate_birim_msrp()
+                })
+            ).done(function (jqXHR) {
+                //$('#new_outputs_storage').text(JSON.stringify(jqXHR));
+                window.location.reload();
+            }).fail(function (jqXHR) {
+                bootbox.alert(jqXHR.responseText);
+                submit_button.button('reset');
+            });
+        });
+
+        console.debug('finished initializing the budgetentry dialog!')
+    }
+</script>
+
+<script type="text/javascript">
+    function destruct_dialog() {
+        $('#budgetentry_name').unbind();
+        $('#budgetentry_description').unbind();
+        $('#dialog_template_submit_button').unbind();
+
+        $('#dialog_template').data('modal', null);
+    }
+</script>
+
+
+

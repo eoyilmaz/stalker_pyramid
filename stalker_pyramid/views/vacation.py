@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Stalker Pyramid a Web Base Production Asset Management System
-# Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
+# Copyright (C) 2009-2018 Erkan Ozgur Yilmaz
 #
 # This file is part of Stalker Pyramid.
 #
@@ -24,15 +24,17 @@ from pyramid.response import Response
 from pyramid.httpexceptions import HTTPOk, HTTPServerError
 from pyramid.view import view_config
 
-from stalker.db import DBSession
+from stalker.db.session import DBSession
 from stalker import defaults, User, Studio, Vacation, Type, Entity
 
 from stalker_pyramid.views import (get_logged_in_user, PermissionChecker,
                                    milliseconds_since_epoch, get_date,
                                    StdErrToHTMLConverter)
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+#logger = logging.getLogger(__name__)
+#logger.setLevel(logging.DEBUG)
+from stalker_pyramid import logger_name
+logger = logging.getLogger(logger_name)
 
 
 @view_config(

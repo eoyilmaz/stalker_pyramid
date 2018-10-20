@@ -1,5 +1,5 @@
 {# Stalker Pyramid a Web Base Production Asset Management System
- Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
+ Copyright (C) 2009-2018 Erkan Ozgur Yilmaz
 
  This file is part of Stalker Pyramid.
 
@@ -37,12 +37,11 @@
 
 {# PAGE-CONTENT #}
 {% block page_content %}
-    {% set page_title='Departments' %}
-    {% include 'page_header.jinja2' %}
+{#    {% set page_title='Departments' %}#}
+{#    {% include 'page_header.jinja2' %}#}
 
 
     {% set add_button_address='/departments/create/dialog?came_from='+ request.current_route_path() %}
-    {% set address=request.route_path('get_entity_departments', id=entity.id) %}
     {% set list_item_type='Department' %}
     {% include 'components/data_table.jinja2' %}
 
@@ -76,7 +75,7 @@
             </td>
             <td><a href='/users/{{=it.lead_id}}/view'>{{=it.lead_name}}</a>
             </td>
-            <td>{{=it.users_count}}</td>
+            <td>{{=it.description}}</td>
             <td><a href='/users/{{=it.created_by_id}}/view'>{{=it.created_by_name}}</a>
             </td>
 
@@ -103,13 +102,9 @@
     {% endraw %}
 
     <script>
-
-        var tableParameters = {}
-        var sortingParameters = [[0, 'asc'], [1, 'desc']]
-        var tableDataAddress = '{{ request.route_path('get_entity_departments', id=entity.id) }}'
-
-     console.log('tableDataAddress' + tableDataAddress)
-
+        var tableParameters = {};
+        var sortingParameters = [[0, 'asc'], [1, 'desc']];
+        var tableDataAddress = '{{ request.route_path('get_entity_departments', id=entity.id) }}';
     </script>
 
 {% endblock extrascripts %}

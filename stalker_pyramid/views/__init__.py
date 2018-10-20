@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Stalker Pyramid a Web Base Production Asset Management System
-# Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
+# Copyright (C) 2009-2018 Erkan Ozgur Yilmaz
 #
 # This file is part of Stalker Pyramid.
 #
@@ -19,54 +19,55 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 
 import logging
-import calendar
+import pytz
 import datetime
+import json
 
 from pyramid.httpexceptions import HTTPServerError, HTTPForbidden
 from pyramid.view import view_config
 from pyramid.response import Response
 from pyramid.security import has_permission, authenticated_userid
 
-from stalker import log, User, Tag
-from stalker.db import DBSession
+from stalker import User, Tag
+from stalker.db.session import DBSession
 import transaction
 
 
-logger = logging.getLogger(__name__)
-logger.setLevel(log.logging_level)
+from stalker_pyramid import logger_name
+logger = logging.getLogger(logger_name)
 
 # this is a dummy mail address change it in the config (*.ini) file
 dummy_email_address = "Stalker Pyramid <stalker.pyramid@stalker.pyramid.com>"
 
 
-def utc_to_local(utc_dt):
-    """converts utc time to local time
-
-    based on the answer of J.F. Sebastian on
-    http://stackoverflow.com/questions/4563272/how-to-convert-a-python-utc-datetime-to-a-local-datetime-using-only-python-stand/13287083#13287083
-    """
-    # get integer timestamp to avoid precision lost
-    timestamp = calendar.timegm(utc_dt.timetuple())
-    local_dt = datetime.datetime.fromtimestamp(timestamp)
-    assert utc_dt.resolution >= datetime.timedelta(microseconds=1)
-    return local_dt.replace(microsecond=utc_dt.microsecond)
+def to_seconds(timing, unit):
+    """converts timing to seconds"""
+    return timing*seconds_in_unit(unit)
 
 
-def local_to_utc(local_dt):
-    """converts local datetime to utc datetime
+def seconds_in_unit(unit):
+    # logger.debug("seconds_in_unit: %s" % unit)
+    if unit == 'min':
+        return 60
+    elif unit == 'h':
+        return 3600
+    elif unit == 'd':
+        return 32400
+        # TODO: please use: stalker.defaults.daily_working_hours
+    elif unit == 'w':
+        return 183600
+        # TODO: please use: stalker.defaults.weekly_working_hours
+    elif unit == 'm':
+        return 734400
+        # TODO: please use: 4 * stalker.defaults.weekly_working_hours
+    elif unit == 'y':
+        return 9573418
+        # TODO: please use: stalker.defaults.yearly_working_days * stalker.defaults.daily_working_hours
+    else:
+        return 0
 
-    based on the answer of J.F. Sebastian on
-    http://stackoverflow.com/questions/4563272/how-to-convert-a-python-utc-datetime-to-a-local-datetime-using-only-python-stand/13287083#13287083
-    """
-    # get the utc_dt as if the local_dt is utc and calculate the timezone
-    # difference and add it to the local dt object
-    logger.debug('utc_to_local(local_dt) : %s' % utc_to_local(local_dt))
-    logger.debug('utc - local            : %s' % (utc_to_local(local_dt) - local_dt))
-    logger.debug('local - (utc - local)  : %s' % (local_dt - (utc_to_local(local_dt) - local_dt)))
-    return local_dt - (utc_to_local(local_dt) - local_dt)
 
-
-class StdErrToHTMLConverter():
+class StdErrToHTMLConverter(object):
     """Converts stderr, stdout messages of TaskJuggler to html
 
     :param error: An exception
@@ -89,15 +90,16 @@ class StdErrToHTMLConverter():
 
     def __init__(self, error):
         if isinstance(error, Exception):
-            self.error_message = error.message
+            self.error_message = str(error)
         else:
             self.error_message = error
 
-    def replace_tjp_ids(self, message):
+    @classmethod
+    def replace_tjp_ids(cls, message):
         """replaces tjp ids in error messages with proper links
         """
         import re
-        pattern = r"Project[\w0-9\._]+[0-9]"
+        pattern = r"Task[\w0-9\._]+[0-9]"
 
         all_tjp_ids = re.findall(pattern, message)
         new_message = message
@@ -182,8 +184,13 @@ def log_param(request, param):
     context=HTTPServerError
 )
 def server_error(exc, request):
+    """Default server_error view
+    :param exc:
+    :param request:
+    :return:
+    """
     msg = exc.args[0] if exc.args else ''
-    response = Response('Server Error: %s' % msg, 500)
+    response = Response('Server Error: %s' % str(exc), 500)
     transaction.abort()
     return response
 
@@ -206,6 +213,41 @@ def get_time(request, time_attr):
     )
 
 
+def convert_seconds_to_time_range(seconds):
+
+    if seconds == 0:
+        return '0'
+
+    units = ['y', 'm', 'w', 'd', 'h', 'min']
+    time_range_string = ''
+    # remainder = 0
+    # integer_division = 0
+    # current_unit = ''
+    # sec_in_unit = ''
+    logger.debug("seconds %s " % seconds)
+    for i in range(0, len(units)):
+        current_unit = units[i]
+        logger.debug("i %s " % i)
+        logger.debug("current_unit %s " % current_unit)
+
+        sec_in_unit = seconds_in_unit(current_unit)
+        logger.debug("sec_in_unit %s " % sec_in_unit)
+
+        integer_division = int(seconds / sec_in_unit)
+        logger.debug("integer_division %s " % integer_division)
+
+        remainder = seconds % sec_in_unit
+        logger.debug("remainder %s " % remainder)
+
+        if integer_division > 0:
+            if time_range_string != ' ':
+                time_range_string += ' '
+            time_range_string += '%s %s' % (integer_division, current_unit)
+
+        seconds = remainder
+    return time_range_string
+
+
 def get_date(request, date_attr):
     """Extracts a UTC datetime object from the given request
 
@@ -217,7 +259,7 @@ def get_date(request, date_attr):
     return datetime.datetime.strptime(
         request.params[date_attr][:-4],
         '%a, %d %b %Y %H:%M:%S'
-    )
+    ).replace(tzinfo=pytz.utc)
 
 
 def get_date_range(request, date_range_attr):
@@ -227,17 +269,21 @@ def get_date_range(request, date_range_attr):
     :param date_range_attr: the attribute name
     :return: datetime.datetime
     """
+    import tzlocal
+    local_tz = tzlocal.get_localzone()
+
     date_range_string = request.params.get(date_range_attr)
     start_str, end_str = date_range_string.split(' - ')
-    start = datetime.datetime.strptime(start_str, '%m/%d/%Y')
-    end = datetime.datetime.strptime(end_str, '%m/%d/%Y')
+    start = datetime.datetime.strptime(start_str, '%d/%m/%Y').replace(tzinfo=local_tz)
+    end = datetime.datetime.strptime(end_str, '%d/%m/%Y').replace(tzinfo=local_tz)
     return start, end
 
 
 def get_datetime(request, date_attr, time_attr):
     """Extracts a UTC  datetime object from the given request
     :param request: the request object
-    :param date_attr: the attribute name
+    :param date_attr: the date attribute name
+    :param time_attr: the time attribute name
     :return: datetime.datetime
     """
     date_part = datetime.datetime.strptime(
@@ -275,6 +321,7 @@ def get_multi_integer(request, attr_name, method='POST'):
 
     :param request: Request object
     :param attr_name: Attribute name to extract data from
+    :param method: HTTP request method
     :return:
     """
     data = request.POST
@@ -304,6 +351,7 @@ def get_tags(request, parameter='tags[]'):
     """Extracts Tags from the given request
 
     :param request: Request object
+    :param parameter: the name of the parameter
     :return: A list of stalker.models.tag.Tag instances
     """
     # Tags
@@ -335,6 +383,24 @@ def get_user_os(request):
         return 'osx'
 
 
+def get_path_converter(request, task):
+    """returns a partial function that converts the given path to another path
+    that is visible to other OSes.
+    """
+
+    user_os = get_user_os(request)
+    repo = task.project.repository
+
+    if user_os == 'windows':
+        return repo.to_windows_path
+    elif user_os == 'linux':
+        return repo.to_linux_path
+    elif user_os == 'osx':
+        return repo.to_osx_path
+
+    return lambda x: x
+
+
 def seconds_since_epoch(dt):
     """converts the given datetime.datetime instance to an integer showing the
     seconds from epoch, and does it without using the strftime('%s') which
@@ -343,7 +409,7 @@ def seconds_since_epoch(dt):
     :param dt: datetime.datetime instance to be converted
     :returns int: showing the seconds since epoch
     """
-    dts = dt - datetime.datetime(1970, 1, 1)
+    dts = dt - datetime.datetime(1970, 1, 1, tzinfo=pytz.utc)
     return dts.days * 86400 + dts.seconds
 
 
@@ -355,7 +421,11 @@ def milliseconds_since_epoch(dt):
     :param dt: datetime.datetime instance to be converted
     :returns int: showing the milliseconds since epoch
     """
-    dts = dt - datetime.datetime(1970, 1, 1)
+    if dt.tzinfo is None:
+        dts = dt - datetime.datetime(1970, 1, 1)
+    else:
+        import pytz
+        dts = dt - datetime.datetime(1970, 1, 1, tzinfo=pytz.utc)
     return dts.days * 86400000 + dts.seconds * 1000
 
 
@@ -363,7 +433,7 @@ def from_microseconds(t):
     """converts the given microseconds showing the time since epoch to datetime
     instance
     """
-    epoch = datetime.datetime(1970, 1, 1)
+    epoch = datetime.datetime(1970, 1, 1, tzinfo=pytz.utc)
     delta = datetime.timedelta(microseconds=t)
     return epoch + delta
 
@@ -373,3 +443,110 @@ def from_milliseconds(t):
     instance
     """
     return from_microseconds(t * 1000)
+
+
+def get_parent_task_status(children_statuses):
+
+    binary_status_codes = {
+        'WFD':  256,
+        'RTS':  128,
+        'WIP':  64,
+        'PREV': 32,
+        'HREV': 16,
+        'DREV': 8,
+        'OH':   4,
+        'STOP': 2,
+        'CMPL': 1
+    }
+
+    children_to_parent_statuses_lut = [
+        0, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+        2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+        2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+        2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+        2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+        2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 1, 2,
+        2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+        2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+        2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+        2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+        2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+        2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 0, 2, 2, 2, 2, 2,
+        2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+        2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+        2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+        2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+        2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+        2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+        2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+        2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+        2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+        2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+        2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+        2, 2, 2, 2, 2, 2
+    ]
+
+    parent_statuses_lut = ['WFD', 'RTS', 'WIP', 'CMPL']
+
+    binary_status = 0
+    for child_status_code in children_statuses:
+        binary_status += binary_status_codes[child_status_code]
+
+    status_index = children_to_parent_statuses_lut[binary_status]
+    status = parent_statuses_lut[status_index]
+
+    return status
+
+
+def invalidate_all_caches():
+    """invalidates all cache values.
+    Based on: http://stackoverflow.com/a/14251064/3259351
+    """
+    from beaker.cache import cache_managers
+    for _cache in cache_managers.values():
+        _cache.clear()
+
+
+def update_generic_text(generic_text, attr, data, action):
+
+    list_attr = []
+    generic_data = {}
+    logger.debug('update_generic_text %s ' % generic_text)
+    logger.debug('attr %s ' % attr)
+    logger.debug('data %s ' % data)
+    if generic_text and generic_text != "":
+        generic_data = json.loads(generic_text)
+        if attr in generic_data:
+            list_attr = generic_data[attr]
+
+    if action == 'add':
+        list_attr.append(data)
+
+    elif action == 'remove':
+        for obj in list_attr:
+            if "id" in obj:
+                if obj["id"] == data["id"]:
+                    list_attr.remove(obj)
+
+    elif action == 'equal':
+        list_attr = data
+
+    generic_data[attr] = list_attr
+    generic_text = json.dumps(generic_data)
+
+    logger.debug(generic_text)
+
+    return generic_text
+
+
+def measure_time(f):
+    import time
+
+    def inner_f():
+        start = time.time()
+        return_data = f()
+        end = time.time()
+        logger.debug('%s: %0.3f sec' % (f.__name__, (end - start)))
+        return return_data
+
+    return inner_f

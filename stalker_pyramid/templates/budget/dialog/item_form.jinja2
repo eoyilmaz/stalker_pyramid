@@ -1,0 +1,74 @@
+<form id='item_form'
+      class='form-horizontal'
+      role='form'
+      method="post">
+
+    <div class="row-fluid">
+        {# Name #}
+        <div class="control-group">
+            <label class="span3 control-label"
+                   for="name">Adi</label>
+
+            <div class="span5">
+                <input id="name"
+                       name='name'
+                       type="text"
+                       class="form-control"
+                       placeholder="Adi"
+                       required>
+            </div>
+        </div>
+
+        {#Start Date #}
+        <div class='control-group'>
+            <label class='span3 control-label'
+                   for='calendar_start_date'>Baslangic Tarihi</label>
+            <div class="span5">
+                <input id='calendar_start_date'
+                       name='calendar_start_date'
+                       class="date-picker"
+                       data-date-format="dd/mm/yyyy"
+                       is_updating=false>
+                <span class="add-on">
+                    <i class="icon-calendar"></i>
+                </span>
+            </div>
+        </div>
+
+        {#Description #}
+        <div class="control-group'">
+            <label for="description"
+                   class="span3 control-label">Not</label>
+            <div class="span9">
+                <textarea id="description"
+                          name='description'
+                          class="autosize-transition"
+                          style="overflow: hidden;
+                                     word-wrap: break-word;
+                                     resize: horizontal;
+                                     height: 50px;"
+                        ></textarea>
+            </div>
+        </div>
+
+    </div>
+</form>
+
+<script type="text/javascript">
+    function init_item_form_objects() {}
+    function destruct_dialog() {
+        $('#name').unbind();
+        $('#calendar_start_date').unbind();
+        $('#description').unbind();
+
+        var submit_btn = $('#dialog_template_submit_button');
+        submit_btn.button('reset');
+        submit_btn.unbind();
+
+        var delete_btn = $('#dialog_template_delete_button');
+        delete_btn.button('reset');
+        delete_btn.unbind();
+
+        $('#dialog_template').data('modal', null);
+    }
+</script>

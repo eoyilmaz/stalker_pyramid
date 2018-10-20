@@ -1,0 +1,175 @@
+<div class="space-5"></div>
+<div id="items_table_wrapper" class="dataTables_wrapper" role="grid">
+    <div class="row-fluid">
+        <div class="span6">
+        </div>
+        <div class="span6">
+            <div class="dataTables_filter" id="items_table_filter">
+                <label>Search: <input type="text" id="search_cells" aria-controls="items_table">
+                </label>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row-fluid">
+    <div class="span12" id="tasks_table">
+    </div>
+    <script type="text/javascript">
+        var $path_base = "/";
+    </script>
+</div>
+
+
+<script type="text/javascript">
+            if("ontouchend" in document) document.write("<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.mobile.custom.min.js") }}'>"+"<"+"/script>");
+        </script>
+<script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/i18n/grid.locale-en.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/jquery.jqGrid.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/accounting.min.js") }}'></script>
+
+<script>
+    $.jgrid.defaults.autowidth = true;
+    $.jgrid.defaults.responsive = true;
+    $.jgrid.defaults.styleUI = 'Bootstrap';
+</script>
+<script type="text/javascript">
+
+        var unloadTableData = function(){
+             $('#loading_spinner').show();
+            var tasks_table = $('#tasks_table');
+            tasks_table.hide();
+            tasks_table.find("#table_container").remove();
+            tasks_table.find("#grid-pager").remove();
+        }
+
+        var loadTableData = function (entry_data, tableId, cNames, cModel, footerData) {
+
+            console.log("loadTableData is started");
+            $('#loading_spinner').hide();
+
+            var tasks_table = $('#tasks_table');
+            tasks_table.show();
+            tasks_table.find("#table_container").remove();
+            tasks_table.find("#grid-pager").remove();
+            var grid_selector = "#grid-table";
+            var pager_selector = "#grid-pager";
+
+            var grid_data = entry_data;
+
+            tasks_table.append('<div id="table_container">' +
+                                '<table id="grid-table"></table>' +
+                                '</div>' +
+                                '<div id="grid-pager">' +
+                                '</div>');
+
+            jQuery(function($) {
+
+                jQuery(grid_selector).jqGrid({
+                    data: grid_data,
+                    datatype: "local",
+                    height: 'auto',
+                    width: 'auto',
+                    colNames:cNames,
+                    colModel:cModel,
+                    viewrecords : true,
+                    rowNum:10,
+                    rowList:[10, 25, 50],
+                    pager : pager_selector,
+                    altRows: true,
+                    multiselect: true,
+                    multiboxonly: true,
+                    loadonce: true,
+                    sortname:'ful_path',
+                    footerrow: true, // set a footer row
+                    userDataOnFooter: false, // the calculated sums and/or strings from server are put at footer row.
+                    grouping: false,
+                    gridview: true,
+                    editurl: '',
+                    caption: "",
+                    loadComplete : function() {
+
+                        var table = this;
+                        setTimeout(function(){
+                            styleCheckbox(table);
+                            updateActionIcons(table);
+                            updatePagerIcons(table);
+                            enableTooltips(table);
+
+                            jQuery(grid_selector).jqGrid("footerData", "set", footerData);
+                            $('#lui_grid-table').hide();
+                        }, 0);
+                    }
+                });
+
+                var timer;
+                $("#search_cells").on("keyup", function() {
+                    var self = this;
+                    if(timer) {
+                        clearTimeout(timer);
+                    }
+
+                    timer = setTimeout(function(){
+                        jQuery(grid_selector).jqGrid('filterInput', self.value);
+                    },0);
+                });
+
+                function styleCheckbox(table) {
+                /**
+                    $(table).find('input:checkbox').addClass('ace')
+                    .wrap('<label />')
+                    .after('<span class="lbl align-top" />')
+
+
+                    $('.ui-jqgrid-labels th[id*="_cb"]:first-child')
+                    .find('input.cbox[type=checkbox]').addClass('ace')
+                    .wrap('<label />').after('<span class="lbl align-top" />');
+                */
+                }
+
+
+                //unlike navButtons icons, action icons in rows seem to be hard-coded
+                //you can change them like this in here if you want
+                function updateActionIcons(table) {
+                    /**
+                    var replacement =
+                    {
+                        'ui-icon-pencil' : 'icon-pencil blue',
+                        'ui-icon-trash' : 'icon-trash red',
+                        'ui-icon-disk' : 'icon-ok green',
+                        'ui-icon-cancel' : 'icon-remove red'
+                    };
+                    $(table).find('.ui-pg-div span.ui-icon').each(function(){
+                        var icon = $(this);
+                        var $class = $.trim(icon.attr('class').replace('ui-icon', ''));
+                        if($class in replacement) icon.attr('class', 'ui-icon '+replacement[$class]);
+                    })
+                    */
+                }
+
+                //replace icons with FontAwesome icons like above
+                function updatePagerIcons(table) {
+                    var replacement =
+                    {
+                        'ui-icon-seek-first' : 'icon-double-angle-left bigger-140',
+                        'ui-icon-seek-prev' : 'icon-angle-left bigger-140',
+                        'ui-icon-seek-next' : 'icon-angle-right bigger-140',
+                        'ui-icon-seek-end' : 'icon-double-angle-right bigger-140'
+                    };
+                    $('.ui-pg-table:not(.navtable) > tbody > tr > .ui-pg-button > .ui-icon').each(function(){
+                        var icon = $(this);
+                        var $class = $.trim(icon.attr('class').replace('ui-icon', ''));
+
+                        if($class in replacement) icon.attr('class', 'ui-icon '+replacement[$class]);
+                    });
+                }
+
+                function enableTooltips(table) {
+                    $('.navtable .ui-pg-button').tooltip({container:'body'});
+                    $(table).find('.ui-pg-div').tooltip({container:'body'});
+                }
+                //var selr = jQuery(grid_selector).jqGrid('getGridParam','selrow');
+            });
+        };
+
+
+</script>

@@ -1,0 +1,204 @@
+<script class="dialog_loaded"></script>
+
+<div class="row-fluid">
+    <div class='span10'>
+        <form id='scene_form'
+              class='form-horizontal'
+              role='form'
+              method="post">
+            <div class="row-fluid">
+                <div class='control-group'>
+                    <label class='span3 control-label' for='scene_name'>Scene Name</label>
+                    <div class='span9'>
+                        <input type='text'
+                               id='scene_name'
+                               class='input-block-level'
+                               name='name'
+                               {% if mode=='Update'%}
+                                    value="{{ scene.name }}" disabled="true"
+                                {% endif %}
+                               required>
+                    </div>
+                </div>
+                {# Sequence #}
+                <div class='control-group'>
+                    <label class='span3 control-label' for='sequence'>Sequence</label>
+                    <div class='span9'>
+                    {% if mode=='Update'%}
+                        <input type='text'
+                                   id='sequence_id'
+                                   class='input-block-level'
+                                   name='sequence_id'
+                                   value="{{ sequence.name }}"
+                                   disabled="true"
+                                   required>
+                    {% else %}
+                        <select id='sequence'
+                                name='sequence_id'
+                                class='input-block-level span11'
+                                is_updating=false
+                                data-placeholder='Sequence'
+                                required></select>
+                    {% endif %}
+                    </div>
+                </div>
+
+                {# Temp Scene #}
+                <div class='control-group {% if mode=='Update'%}hide{% endif %}' >
+                    <label class='span3 control-label' for='temp_scene'>Temp Scene</label>
+                    <div class='span9'>
+                        <select id='temp_scene'
+                                name='temp_scene_id'
+                                class='input-block-level span11'
+                                is_updating=false
+                                data-placeholder='Temp Scene'
+                                required></select>
+                    </div>
+                </div>
+                {# Temp Shot #}
+                <div class='control-group'>
+                    <label class='span3 control-label' for='temp_shot'>Temp Shot</label>
+                    <div class='span9'>
+                        <select id='temp_shot'
+                                name='temp_shot_id'
+                                class='input-block-level span11'
+                                is_updating=false
+                                data-placeholder='Temp Shot'
+                                required></select>
+                    </div>
+                </div>
+                {# Shot Count #}
+                <div class='control-group'>
+                    <label for='shot_count' class='span3 control-label'># Shots</label>
+                    <div class='span9'>
+                        <input id='shot_count'
+                               name='shot_count'
+                               min=1
+                               max=999
+                               type='text'
+                               placeholder='Shot Count'
+                               value={{ shot_count }}
+                               required />
+                    </div>
+                </div>
+                {#Description #}
+                <div class="control-group'">
+                    <label for="scene_description"
+                           class="span3 control-label">Description</label>
+                    <div class="span9">
+                        <textarea id="scene_description"
+                                  name='description'
+                                  class='input-block-level'
+                                  style="overflow: hidden;
+                                             word-wrap: break-word;
+                                             resize: horizontal;
+                                             height: 150px;"
+                        ></textarea>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.spinner.min.js") }}'></script>
+<script type="text/javascript">
+    function init_dialog() {
+        console.debug('starting to initialize scene dialog!!!');
+        var dialog_label = $('#dialog_template_label');
+        dialog_label.find('span').remove();
+        dialog_label.append('<span>{{ mode }} Scene</span>');
+
+        {% raw %}
+            var option_template = doT.template(
+                '<option value={{=it.id}}>{{=it.name}}</option>'
+            );
+        {% endraw %}
+
+
+        {# ***************************************************************** #}
+        {# Sequence #}
+        var sequence = $('#sequence');
+        var deferred = chosen_searchable_field_creator(sequence, '/entities/{{ project.id }}/sequences/', option_template);
+        {% if sequence %}
+            deferred.then(function () {
+                    sequence.val({{ sequence.id }}).trigger('liszt:updated');
+                });
+        {% endif %}
+
+
+        {# ***************************************************************** #}
+        {# Temp Scene #}
+        var temp_scene = $('#temp_scene');
+        var deferred = chosen_searchable_field_creator(temp_scene, '/entities/{{ project.id }}/scenes/simple/', option_template);
+        deferred.then(function () {
+                    temp_scene.trigger('liszt:updated');
+                });
+        {# ***************************************************************** #}
+        {# Temp Shot #}
+        var temp_shot = $('#temp_shot');
+        var deferred = chosen_searchable_field_creator(temp_shot, '/entities/{{ project.id }}/shots/simple/', option_template);
+        deferred.then(function () {
+            temp_shot.trigger('liszt:updated');
+        });
+
+        {# ***************************************************************** #}
+        {# Shots #}
+         $('#shot_count').ace_spinner({
+            value:{{ shot_count }},
+            min:{{ shot_count }},
+            max:99,
+            step:1,
+            btn_up_class:'btn-info',
+            btn_down_class:'btn-info'}).on('change', function(){
+            // check if it is in the range
+            var curr_value = $(this).val();
+            $(this).val(curr_value <= 1 ? 1 : curr_value);
+        });
+        {# ***************************************************************** #}
+        {# Submit Button #}
+        var submit_button = $('#dialog_template_submit_button');
+        submit_button.on('click', function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+
+            submit_button.button('loading');
+            var scene_form = $('#scene_form');
+
+            var url = '/scenes/{{ mode.lower() }}'
+            {% if mode == 'Update' %}
+                url = '/scenes/{{ scene.id }}/{{ mode.lower() }}'
+            {% endif %}
+
+            $.post(
+                url,
+                scene_form.serialize()
+            ).done(function (jqXHR) {
+                //$('#new_outputs_storage').text(JSON.stringify(jqXHR));
+                window.location.reload();
+            }).fail(function (jqXHR) {
+                bootbox.alert(jqXHR.responseText);
+                submit_button.button('reset');
+            });
+        });
+
+        console.debug('finished initializing the scene dialog!')
+    }
+</script>
+
+<script type="text/javascript">
+    function destruct_dialog() {
+        $('#scene_name').unbind();
+        $('#scene_msrp').unbind();
+        $('#scene_cost').unbind();
+        $('#scene_unit').unbind();
+        $('#scene_price_list').unbind();
+        $('#scene_description').unbind();
+        $('#dialog_template_submit_button').unbind();
+
+        $('#dialog_template').data('modal', null);
+    }
+</script>
+
+
+

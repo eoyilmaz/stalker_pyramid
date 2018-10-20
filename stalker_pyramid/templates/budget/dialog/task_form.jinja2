@@ -1,0 +1,178 @@
+<form id='item_form'
+      class='form-horizontal'
+      role='form'
+      method="post">
+
+    <div class="row-fluid">
+
+        {# Name #}
+        <div class="control-group">
+            <label class="span3 control-label"
+                   for="name">Adi</label>
+            <div class="span9">
+                <input id="name"
+                       name='name'
+                       type="text"
+                       class="form-control"
+                       placeholder="Adi"
+                       required>
+            </div>
+        </div>
+
+        {# Good #}
+        <div class='control-group'>
+            <label class='span3 control-label'
+                   for='calendar_task_good'>Good</label>
+            <div class="span5">
+                 <select id='calendar_task_good'
+                        name='good_id'
+                        data-placeholder='Good'
+                        required>
+                </select>
+            </div>
+        </div>
+
+        {#Start Date #}
+        <div class='control-group'>
+            <label class='span3 control-label'
+                   for='calendar_start_date'>Baslangic Tarihi</label>
+            <div class="span5">
+                <input id='calendar_start_date'
+                       name='calendar_start_date'
+                       class="date-picker"
+                       data-date-format="dd/mm/yyyy"
+                       is_updating=false>
+                <span class="add-on">
+                    <i class="icon-calendar"></i>
+                </span>
+            </div>
+        </div>
+
+        {#Duration #}
+        <div class='control-group'>
+            <label class='span3 control-label'
+                   for='calendar_task_duration'>Sure</label>
+            <div class="span5">
+                <input id='calendar_task_duration'
+                       name='amount'
+                       class="input-mini"
+                       type='text'
+                       min=1
+                       max=1000
+                       is_updating=false>
+                <span> Day</span>
+            </div>
+        </div>
+
+        {#Resources #}
+        <div class='control-group'>
+            <label class='span3 control-label'
+                   for='calendar_task_num_of_resources'>Calisan Sayisi</label>
+            <div class="span5">
+                <input id='calendar_task_num_of_resources'
+                       name='second_amount'
+                       class="input-mini"
+                       type='text'
+                       min=1
+                       max=1000
+                       is_updating=false>
+                <span> Resources</span>
+            </div>
+        </div>
+
+        {#Description #}
+        <div class="control-group'">
+            <label for="description"
+                   class="span3 control-label">Not</label>
+            <div class="span9">
+                <textarea id="description"
+                          name='description'
+                          class="autosize-transition"
+                          style="overflow: hidden;
+                                     word-wrap: break-word;
+                                     resize: horizontal;
+                                     height: 50px;"
+                        ></textarea>
+            </div>
+        </div>
+    </div>
+</form>
+
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.spinner.min.js") }}'></script>
+
+
+<script type="text/javascript">
+
+    function init_item_form_objects() {
+
+
+        {# Good ******************************************************* #}
+        {% raw %}
+            var good_option_template = doT.template(
+                    '<option value={{=it.id}}>{{=it.name}}</option>'
+            );
+        {% endraw %}
+        var calendar_task_good = $('#calendar_task_good');
+        $.getJSON('/goods/').then(function (g_data) {
+            var filtered_goods= [];
+            for (var i=0;i<g_data.length;i++){
+                if(g_data[i].unit == "GUN*KISI"){
+                    filtered_goods.push(g_data[i]);
+                }
+            }
+            chosen_searchable_field_creator_by_data(calendar_task_good, good_option_template, filtered_goods);
+            {% if mode=='Update' %}
+                 calendar_task_good.val('{{ item.good_id }}').trigger('liszt:updated');
+            {% endif %}
+
+        });
+
+
+        {# Duration ******************************************************* #}
+        var calendar_task_duration = 1;
+        {% if mode=='Update' %}
+            calendar_task_duration = parseInt('{{ item.amount }}');
+        {% endif %}
+
+        $('#calendar_task_duration').ace_spinner({
+            value: calendar_task_duration,
+            min: 1,
+            step: 1,
+            btn_up_class: 'btn-info',
+            btn_down_class: 'btn-info'
+        });
+
+        {# Resources ******************************************************* #}
+        var calendar_task_num_of_resources = 1;
+        {% if mode=='Update' %}
+            calendar_task_num_of_resources = parseInt('{{ item.second_amount }}');
+        {% endif %}
+
+        $('#calendar_task_num_of_resources').ace_spinner({
+            value: calendar_task_num_of_resources,
+            min: 1,
+            step: 1,
+            btn_up_class: 'btn-info',
+            btn_down_class: 'btn-info'
+        });
+    }
+
+    function destruct_dialog() {
+        $('#name').unbind();
+        $('#calendar_task_good').unbind();
+        $('#calendar_start_date').unbind();
+        $('#calendar_task_duration').unbind();
+        $('#calendar_task_num_of_resources').unbind();
+        $('#description').unbind();
+
+        var submit_btn = $('#dialog_template_submit_button');
+        submit_btn.button('reset');
+        submit_btn.unbind();
+
+        var delete_btn = $('#dialog_template_delete_button');
+        delete_btn.button('reset');
+        delete_btn.unbind();
+
+        $('#dialog_template').data('modal', null);
+    }
+</script>

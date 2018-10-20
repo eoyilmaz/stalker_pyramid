@@ -1,0 +1,273 @@
+{# Stalker Pyramid a Web Base Production Asset Management System
+ Copyright (C) 2009-2018 Erkan Ozgur Yilmaz
+
+ This file is part of Stalker Pyramid.
+
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation;
+ version 2.1 of the License.
+
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+#}
+
+<script class="dialog_loaded"></script>
+
+<div class="row-fluid">
+     <form id='upload_output_form'
+          class='form-horizontal'
+          role='form'
+          method='post'>
+        <div class="span12">
+            <label class="inline">
+                Send To A Daily:
+                <input id="add_to_daily"  type="checkbox" class="ace ace-switch ace-switch-5" />
+                <span class="lbl"></span>
+            </label>
+        </div>
+
+        {# Dailies #}
+        <div class='control-group hide' id="dailies_list" >
+
+            <label class='span2 control-label'
+                   for='daily'>Dailies : </label>
+            <select id='daily'
+                    class='span10 input-block-level'
+                    name='daily_id'
+                    data-placeholder='Select a daily'
+                    required>
+            </select>
+        </div>
+    </form>
+
+    <div class="hr dotted"></div>
+
+    <div id="information" class="alert alert-danger bigger-110 hide">
+        <span>
+            Task status is {{ entity.task.status.code }}. To able to send a
+            daily the task status has to be one of statuses: *WIP, *PREV, *DREV,
+            *HREV, *CMPL.
+    
+            Please check if you enter your time log or ask responsible to change
+            the status of task.
+        </span>
+    </div>
+    <div class="hr dotted"></div>
+
+    {# Dropzone #}
+    <div id="dropzone">
+        <form action="/upload_files" class="dropzone" enctype="multipart/form-data">
+            <div class="fallback">
+                <input name="file" type="file" multiple="" />
+            </div>
+        </form>
+    </div>
+
+</div>
+
+<!--inline scripts related to this page-->
+
+
+<script>
+    var counter = 0;
+    function init_dialog(){
+        if (counter>0){
+            return;
+        }
+        counter +=1;
+
+        // init dialog
+        console.debug('init dialog from upload_version_output.jinja2 running!');
+
+        // update dialog header
+        $('.modal-header>h3').text('Upload Outputs');
+
+        var submit_button = $('#dialog_template_submit_button');
+        //This is for holding info about the uploaded link ids
+        var entity_id = {{ entity.id }};
+        var files = [];
+
+        var uploading_file_counter = 0;
+
+        var dzone = new Dropzone($(".dropzone")[0], {
+            init: function(){
+                this.on("addedfile", function(file){
+                    // set the submit button to loading state
+                    uploading_file_counter += 1;
+                    submit_button.data('loading-text', 'Uploading Files, Please Wait...');
+                    submit_button.button('loading');
+                }).on("success", function(file, response){
+                    // store the full_path in file object
+                    file.full_path = response.files[0].full_path;
+                    file.original_filename = response.files[0].original_filename;
+                }).on("complete", function(file){
+                    // restore the button state
+                    uploading_file_counter -= 1;
+                    if (uploading_file_counter == 0){
+                        submit_button.button('reset');
+                    }
+{#                }).on("removedfile", function(file){#}
+{#                    console.debug('file has removed:', file);#}
+                }).on("canceled", function(){
+                    uploading_file_counter -= 1;
+                    if (uploading_file_counter == 0){
+                        submit_button.button('reset');
+                    }
+                });
+            },
+            paramName: "file", // The name that will be used to transfer the file
+            maxFilesize: 500, // MB
+
+            addRemoveLinks: true,
+            dictDefaultMessage: '<span class="bigger-150 bolder"><i class="icon-caret-right red"></i> Drop files</span> to upload \
+<span class="smaller-80 grey">(or click)</span> <br /> \
+<i class="upload-icon icon-cloud-upload blue icon-3x"></i>',
+            dictResponseError: 'Error while uploading file!',
+
+            //change the previewTemplate to use Bootstrap progress bars
+            previewTemplate: "<div class=\"dz-preview dz-file-preview\">\n  <div class=\"dz-details\">\n    <div class=\"dz-filename\"><span data-dz-name></span></div>\n    <div class=\"dz-size\" data-dz-size></div>\n    <img data-dz-thumbnail />\n  </div>\n  <div class=\"progress progress-small progress-success progress-striped active\"><span class=\"bar\" data-dz-uploadprogress></span></div>\n  <div class=\"dz-success-mark\"><span></span></div>\n  <div class=\"dz-error-mark\"><span></span></div>\n  <div class=\"dz-error-message\"><span data-dz-errormessage></span></div>\n</div>"
+        });
+
+
+        {# Daily #}
+        {% raw %}
+            var daily_option_template = doT.template(
+                '<option value={{=it.id}}>{{=it.name}}</option>'
+            );
+        {% endraw %}
+
+
+         var daily = $('#daily');
+
+        $('#add_to_daily').on('click', function () {
+            if(this.checked){
+
+{#                {% if entity.task.status.code not in ['WIP','DREV','PREV','CMPL'] %}#}
+{#                    $('#information').show();#}
+{#                {% else %}#}
+{#                    $('#dailies_list').show();#}
+{#                    daily.find('option').remove();#}
+{##}
+{#                    $.getJSON('{{ request.route_path('get_project_dailies', id=entity.task.project.id, _query={'status_code':'OPEN'}) }}').then(function (data) {#}
+            {#            // append an empty one first#}
+            {#            daily.append('<option value="-1">&nbsp;</option>');#}
+{#                        for (var i = 0; i < data.length; i++) {#}
+{#                            daily.append(daily_option_template(data[i]));#}
+{#                        }#}
+{##}
+{#                        daily.chosen({#}
+{#                            search_contains: true,#}
+{#                            enable_split_word_search: true,#}
+{#                            allow_single_deselect: true#}
+{#                        });#}
+{##}
+{#                    });#}
+{#                {% endif %}#}
+                $('#dailies_list').show();
+                daily.find('option').remove();
+
+                $.getJSON('{{ request.route_path('get_project_dailies', id=entity.task.project.id, _query={'status_code':'OPEN'}) }}').then(function (data) {
+        {#            // append an empty one first#}
+        {#            daily.append('<option value="-1">&nbsp;</option>');#}
+                    for (var i = 0; i < data.length; i++) {
+                        daily.append(daily_option_template(data[i]));
+                    }
+
+                    daily.chosen({
+                        search_contains: true,
+                        enable_split_word_search: true,
+                        allow_single_deselect: true
+                    });
+
+                });
+
+            } else {
+                $('#dailies_list').hide();
+                daily.find('option').remove();
+                $('#information').hide();
+            }
+        });
+
+        // register submit event
+        submit_button.on('click', function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            // disable it
+            // disable the Submit button
+            setTimeout(function(){
+                submit_button.data('loading-text', 'Converting Files, Please Wait...');
+                submit_button.button('loading')}, 0
+            );
+
+            // prepare data
+            var file_info = [];
+            var full_paths = [];
+            var original_filenames = [];
+            var accepted_files = dzone.getAcceptedFiles();
+            var f;
+            for (var i=0; i < accepted_files.length; i++){
+                f = accepted_files[i];
+                full_paths.push(f.full_path);
+                original_filenames.push(f.original_filename);
+                file_info.push({
+                    'full_path': f.full_path,
+                    'original_filename': f.original_filename
+                })
+            }
+            var daily_id = -1;
+{#            {% if entity.task.status.code in ['WIP', 'DREV', 'PREV', 'CMPL'] %}#}
+{#                if($('#add_to_daily').prop('checked')){#}
+{#                    daily_id = daily.val()#}
+{#                }#}
+{#            {% endif %}#}
+            if($('#add_to_daily').prop('checked')){
+                    daily_id = daily.val()
+                }
+
+            console.debug('daily_id: ', daily_id);
+
+            $.post('{{ request.route_url('assign_output') }}', {
+                entity_id: entity_id,
+                file_info: file_info,
+                full_paths: full_paths,
+                original_filenames: original_filenames,
+                tags: [],
+                daily_id: daily_id
+            }).done(function(jqXHR){
+                // alert the user about the added files
+                // reload outputs
+                // get the data in jqXHR
+{#                console.debug('jqXHR : ', jqXHR);#}
+                $('#new_outputs_storage').text(JSON.stringify(jqXHR));
+                $('#dialog_template').modal('hide');
+            }).fail(function(jqXHR){
+                // alert the user about what is failed
+                bootbox.alert(jqXHR.responseText);
+                // enable the Submit button
+                setTimeout(function(){submit_button.button('reset')}, 0);
+            });
+
+        });
+    }
+
+    function destruct_dialog(){
+        // reduce counter
+        counter -= 1;
+
+        // unbind events
+        $(".dropzone").unbind();
+        $("#daily").unbind();
+        $("#dialog_template_submit_button").unbind();
+
+        // destroy dialog
+        console.debug('destroy dialog from upload_output.jinja2 running!');
+        $('#dialog_template').data('modal', null);
+    }
+</script>

@@ -1,9 +1,5 @@
 {% extends "base.jinja2" %}
 
-{% block pre_header %}
-    {% include 'task/list/list_tasks_preheader.jinja2' %}
-{% endblock pre_header %}
-
 {% block breadcrumbs %}
     {% set page_title='Tasks' %}
     {% include 'breadcrumb/breadcrumbs.jinja2' %}
@@ -22,27 +18,19 @@
             <h5 id="items_header" class="smaller"></h5>
 
             <div class="widget-toolbar">
-
-                <a href="#" data-action="collapse">
-                    <i class="icon-chevron-down"></i>
-                </a>
-
+                <div id="button_list">
+                </div>
             </div>
 
         </div>
         <div class="widget-body">
             <div class="widget-main no-padding">
-
+                {# TODO: use query_str instead of filter #}
                 {% set filter=entity %}
                 {% include 'task/list/list_entity_tasks_by_filter.jinja2' %}
-
             </div>
         </div>
     </div>
-
-
-
-
 
 {% endblock page_content %}
 
@@ -52,6 +40,13 @@
     {% raw %}
     <script id="tmpl_itemThead" type="text/x-dot-template">
         <tr>
+            <th class="center">
+                <label>
+                    <input type="checkbox" class="ace"/>
+                    <span class="lbl"></span>
+                </label>
+            </th>
+            <th>Start</th>
             <th>Project</th>
             <th>Name</th>
             <th>Resource</th>
@@ -63,37 +58,66 @@
     </script>
     {% endraw %}
 
-
     {% raw %}
     <script id="tmpl_itemRow" type="text/x-dot-template">
         <tr>
+            <td class="center">
+                <label>
+                    <input id="{{=it.id}}"
+                           type="checkbox"
+                           class="ace ace-checkbox-2"
+                    >
+                    <span class="lbl"></span>
+                </label>
+            </td>
+            <td>{{=it.start}}</td>
             <td><a href='/projects/{{=it.project_id}}/view'>{{=it.project_name}}</a>
             </td>
-            <td><a href='/tasks/{{=it.id}}/view'>{{=it.name}}</a></td>
-            <td>{{ for (var i=0; i< it.resource_id.length;i++) { }}<a
-                    href='/users/{{=it.resource_id[i]}}/view'>{{=it.resource_name[i]}}</a><br/>{{
-                } }}
-            </td>
-            <td>{{=it.type}}</td>
+            <td><a href='/tasks/{{=it.id}}/view'>{{=it.full_path}}</a></td>
+            <td>{{ for(var i=0;i<it.resources.length;i++){ }}<a href='/users/{{=it.resources[i].id}}/view'>{{=it.resources[i].name}}</a>{{ } }}</td>
+
+            <td>{{=it.task_type}}</td>
             <td data-sType="num-html">
                 <div class="progress progress-success">
-                    <div style="width:{{=it.percent_complete}}%"
+                    <div style="width:{{=it.completed}}%"
                          class="bar">
-                        <span class="pull-left">{{= it.percent_complete.toFixed(0) }}%</span>
+                        <span class="pull-left">{{= it.completed.toFixed(0) }}%</span>
                     </div>
                 </div>
             </td>
             <td>
-                <span class="label label-{{=it.status_color}}">{{=it.status}}</span>
+                <span class="label label-status_{{=it.status}}">{{=it.status}}</span>
             </td>
             <td>
                 <div class="hidden-phone visible-desktop action-buttons">
-                    <a class="blue" href='/tasks/{{=it.id}}/view'>
-                        <i class="icon-zoom-in bigger-130"></i>
+
+                    {{=it.actions }}
+
+                    <a id='update_task_item'
+                       data-target="#dialog_template"
+                       data-toggle="modal"
+                       data-keyboard=false
+                       href="/tasks/{{=it.id}}/update/dialog"
+                       tabindex="-1">
+                        <i class="icon-pencil bigger-120">&nbsp</i>
                     </a>
 
+                    {{ if (it.request_extra_time)  { }}
+                        <a
+                            class="red"
+                            data-target="#dialog_template"
+                            data-toggle="modal"
+                            data-keyboard=false
+                            data-rel="tooltip"
+                            data-placement="top"
+                            title="Request Extra Time"
+                            href="{{=it.request_extra_time}}">
+                            <i class="icon-time bigger-130"></i>
+                        </a>
+                    {{ } }}
+
                     {{ if (it.request_review) { }}
-                    <a
+                        <a
                             class="green"
                             data-target="#dialog_template"
                             data-toggle="modal"
@@ -101,12 +125,13 @@
                             data-rel="tooltip"
                             data-placement="top"
                             title="Request Review"
-                            href="/tasks/{{=it.id}}/request_review/dialog?came_from={{=it.came_from }}">
-                        <i class="icon-comment-alt bigger-130"></i>
-                    </a>
+                            href="{{=it.request_review}}">
+                            <i class="icon-comment-alt bigger-130"></i>
+                        </a>
                     {{ } }}
+
                     {{ if (it.review) { }}
-                    <a
+                        <a
                             class="purple"
                             data-target="#dialog_template"
                             data-toggle="modal"
@@ -114,9 +139,9 @@
                             data-rel="tooltip"
                             data-placement="top"
                             title="Review"
-                            href="/tasks/{{=it.id}}/review/dialog?came_from={{=it.came_from }}">
-                        <i class="icon-comments bigger-130"></i>
-                    </a>
+                            href="{{=it.review }}">
+                            <i class="icon-comments bigger-130"></i>
+                        </a>
                     {{ } }}
 
                 </div>
@@ -126,11 +151,38 @@
     </script>
     {% endraw %}
 
-    <script>
-        $(document).ready(function () {
-            init_html_modal()
-        })
 
+    {% raw %}
+<script id="tmpl_itemFooterRow" type="text/x-dot-template">
+    <tr>
+       <td>TOTAL</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+    </tr>
+</script>
+{% endraw %}
+
+    <script>
+        $(function () {
+            init_table_data({"aoColumns": [
+                                                            { "bSortable": false },
+                                                                null,
+                                                                null,
+                                                                null,
+                                                                null,
+                                                                null,
+                                                                null,
+                                                                null,
+                                                            { "bSortable": false }
+                                                            ]
+                })
+        })
     </script>
 
 {% endblock extrascripts %}

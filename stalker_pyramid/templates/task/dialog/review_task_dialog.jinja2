@@ -1,8 +1,28 @@
+<script class="dialog_loaded"></script>
+
 <div class='row-fluid'>
     <div class='span12'>
 
             <div id="version_message">
-                {% include 'version/view/version_card.jinja2' %}
+                {% if version %}
+                    {% include 'version/view/version_card.jinja2' %}
+                {% endif %}
+            </div>
+
+            <div id="resource_message">
+                <div id="message" class="alert alert-warning bigger-110">
+{#                    <ul class="unstyled spaced">#}
+{#                        <li><strong>Review Requested by:</strong>#}
+{#                            <a href="/users/{{ review.created_by.id }}/view"#}
+{#                               target="_blank">{{ review.created_by.name }}</a>#}
+{#                        </li>#}
+{#                        <li><strong>Note :</strong><i class="icon-heart"></i> {{ review.description | safe}}#}
+{#                        </li>#}
+{#                    </ul>#}
+                    {% if review_description != '' %}
+                        {{ review_description | safe }}
+                    {% endif %}
+                </div>
             </div>
 
 
@@ -14,45 +34,29 @@
 
                 {# Review Type #}
                 <div class="control-group">
-                    <label class="span3 control-label" for="task_review_mode">Review
-                        Type</label>
+                    <label class="span3 control-label" for="task_review_mode">Review Type</label>
 
                     <div class="span9">
                         <select id='task_review_mode'
                                 class='input-block-level'
                                 name='review'>
-                            <option value="approve">Approve</option>
-                            <option value="request_revision">Request Revision
-                            </option>
+                            {% if review_type in [None, '', 'Final'] %}
+                                <option value="approve">Approve</option>
+                                <option value="request_revision">Request Revision</option>
+                            {% elif review_type == 'Extra Time' %}
+                                <option value="request_revision">Accept Extra Time Request</option>
+                                <option value="approve">Reject Extra Time Request</option>
+                            {% endif %}
                         </select>
                     </div>
                 </div>
 
                 {# Description #}
                 <div>
-                    <div class='control-group'>
-                        <label class='span3 control-label'
-                               for='task_description'>Description</label>
-
-                        <div class='span9'>
-                            <textarea id="task_description"
-                                      name='description'
-                                      class="autosize-transition span12"
-                                      style="overflow: hidden;
-                                         word-wrap: break-word;
-                                         resize: horizontal;
-                                         height: 250px;"
-                                    >{% if mode=='update' %}
-                                {{ task.description }}{% endif %}</textarea>
-                        </div>
-                    </div>
-
                     {# Schedule Timing #}
                     <div class='control-group hide' id="revision_controls">
                         <label class='span3 control-label'
-                               for='task_schedule_timing'>Schedule
-                            Timing</label>
-
+                               for='task_schedule_timing'>Schedule Timing</label>
                         <div class='span9'>
                             <div class='span2'>
                                 <input id='task_schedule_timing'
@@ -67,6 +71,7 @@
                                 <select id='task_schedule_unit'
                                         class='input-block-level'
                                         name='schedule_unit'>
+                                    <option value='min'>Minutes</option>
                                     <option value='h'>Hours</option>
                                     <option value='d'>Days</option>
                                     <option value='w'>Weeks</option>
@@ -85,12 +90,28 @@
                             </div>
                         </div>
                     </div>
+                    <div class='control-group'>
+                        <label class='span3 control-label'
+                               for='task_description'>Description</label>
+
+                        <div class='span9'>
+                            <textarea id="task_description"
+                                      name='description'
+                                      class="autosize-transition span12"
+                                      style="overflow: hidden;
+                                         word-wrap: break-word;
+                                         resize: horizontal;
+                                         height: 250px;"
+                                    >{% if mode=='update' %}
+                                {{ task.description }}{% endif %}</textarea>
+                        </div>
+                    </div>
                 </div>
             </form>
     </div>
 </div>
 
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/moment.min.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/moment.min.js") }}'></script>#}
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.autosize-min.js") }}'></script>
 
 
@@ -125,6 +146,7 @@
 {% endraw %}
 
 <script>
+
     function init_dialog() {
         console.log('initialize review task dialog start');
 
@@ -133,10 +155,13 @@
         dialog_template_label.find('span').remove();
         dialog_template_label.append('<span class="green">Review Task Dialog</span>');
 
-        {% if version == None %}
-
-            $('#version_message').append('<strong>{{ task.name }}</strong> is <strong>{{task.type.name }}</strong> type task. For <strong>{{task.type.name }} </strong> type task no version is saved to server. Ask resource for details.');
-
+        {% if not version %}
+            $('#version_message').append(
+                "<div class='alert alert-error bigger-110'>" +
+                "<strong>{{ task.name }}</strong> is <strong>{{task.type.name }}</strong> type task." +
+                "For <strong>{{task.type.name }} </strong> type task no version is saved to server. Ask resource for details." +
+                "</div>"
+            );
         {% endif %}
 
         // generate default values;
@@ -152,56 +177,58 @@
 
         var submit_button = $('#dialog_template_submit_button');
 
+        var task_review_mode = $('#task_review_mode');
+    
         {% if review_mode %}
-
-            $('#task_review_mode').val('{{ review_mode }}')
+            task_review_mode.val('{{ review_mode }}');
 
             {% if review_mode == 'request_revision' %}
-
-                {% if review == None %}
-
-                    $('#task_review_mode').attr('disabled','disabled');
-
-                {% endif %}
-
                 $('#revision_controls').show();
-
             {% endif %}
 
-            submit_form_url = '/tasks/{{ task.id }}/'+ $('#task_review_mode').val()
+            submit_form_url = '/tasks/{{ task.id }}/'+ task_review_mode.val();
 
         {% endif %}
 
-        $('#task_review_mode').on('change', function () {
-            // disable or enable revision_controls
-            $('#revision_controls').toggle();
 
-            submit_form_url = '/tasks/{{ task.id }}/'+$(this).val()
+        {% if forced %}
+            task_review_mode.attr('disabled','disabled');
+        {% else %}
+            task_review_mode.on('change', function () {
+                // disable or enable revision_controls
+                $('#revision_controls').toggle();
 
-        });
+                submit_form_url = '/tasks/{{ task.id }}/'+$(this).val()
+
+            });
+
+         {% endif %}
 
         {# ***************************************************************** #}
         {# Schedule Unit and Model #}
-        $('#task_schedule_unit').val(schedule_unit);
+        var task_schedule_unit = $('#task_schedule_unit');
+        var task_schedule_timing = $('#task_schedule_timing');
         $('#task_schedule_model').val(schedule_model);
+
+
 
         {# ***************************************************************** #}
         {# Priority Spinner #}
         var priority = 500;
         priority = {{ task.priority }};
 
-        $('#task_priority').ace_spinner({
-            value: priority,
-            min: 1,
-            max: 1000,
-            step: 1,
-            btn_up_class: 'btn-info',
-            btn_down_class: 'btn-info'
-        }).on('change', function () {
-                    // check if it is in the range
-                    var curr_value = $(this).val();
-                    $(this).val(curr_value <= 1000 ? curr_value >= 1 ? curr_value : 1 : 1000);
-                });
+{#        $('#task_priority').ace_spinner({#}
+{#            value: priority,#}
+{#            min: 1,#}
+{#            max: 1000,#}
+{#            step: 1,#}
+{#            btn_up_class: 'btn-info',#}
+{#            btn_down_class: 'btn-info'#}
+{#        }).on('change', function () {#}
+{#                    // check if it is in the range#}
+{#                    var curr_value = $(this).val();#}
+{#                    $(this).val(curr_value <= 1000 ? curr_value >= 1 ? curr_value : 1 : 1000);#}
+{#                });#}
 
         {# ***************************************************************** #}
         {# Submit Button #}
@@ -215,7 +242,14 @@
 
             var task_form = $('#review_task_form');
             var form_data = task_form.serialize();
-            console.log('form_data :', form_data);
+
+            {% if forced  %}
+               form_data += '&' +
+                $.param({
+                    'forced': 'forced'
+                });
+            {% endif %}
+
 
             // prevent multiple sends
             if (task_form.attr('is_sending') == 'true') {
@@ -223,26 +257,55 @@
             } else {
                 task_form.attr('is_sending', true);
             }
-            $.post(
-                            submit_form_url,
-                            form_data
-                    ).done(function () {
-                        $('#dialog_template').modal('hide');
-                        // reload page
-                        setTimeout(function () { // wait for hide event to finish
-                            window.location.reload();
-                        }, 0);
-                    }).fail(function (jqXHR) {
-                        task_form.attr('is_sending', false);
 
-                        // reset submit button
-                        submit_button.button('reset');
-                        bootbox.alert('<h6 class="red"><i class="icon-warning-sign"></i> Failed</h6>' + jqXHR.responseText);
+            // validate the data first
+            var form_is_valid, error_messages;
+            form_is_valid = true;
+            error_messages = [];
 
-                    });
+            if ($('#task_review_mode').val() === 'request_revision'){
+                var schedule_unit_value = task_schedule_unit.val();
+                var current_timing_value = task_schedule_timing.val();
+
+                var validation_result = validate_timing_value({
+                    value: current_timing_value,
+                    unit: schedule_unit_value
+                });
+
+                form_is_valid = validation_result.is_valid;
+                error_messages = error_messages.concat(validation_result.errors);
+            }
+
+            if (form_is_valid) {
+                $.post(
+                    submit_form_url,
+                    form_data
+                ).done(function () {
+                    $('#dialog_template').modal('hide');
+                    // reload page
+                    setTimeout(function () { // wait for hide event to finish
+                        window.location.reload();
+                    }, 0);
+                }).fail(function (jqXHR) {
+                    task_form.attr('is_sending', false);
+
+                    // reset submit button
+                    submit_button.button('reset');
+                    bootbox.alert('<h6 class="red"><i class="icon-warning-sign"></i> Failed</h6>' + jqXHR.responseText);
+                });
+            } else {
+                var combined_error_messages = '';
+                for (var i=0; i < error_messages.length; i++){
+                    combined_error_messages += error_messages[i] + '<br/>';
+                }
+                // reset submit button
+                task_form.attr('is_sending', false);
+                submit_button.button('reset');
+            }
+
         });
 
-                $('.date').each(function () {
+        $('.date').each(function () {
             var date = moment.utc($(this).text());
             $(this).text(date.fromNow());
         });
@@ -256,7 +319,7 @@
         console.log('destruct review task dialog start');
         // unbind events
         $('#task_review_mode').unbind();
-        $('#task_priority').unbind();
+{#        $('#task_priority').unbind();#}
         $('#dialog_template_submit_button').unbind();
 
         // remove dialog

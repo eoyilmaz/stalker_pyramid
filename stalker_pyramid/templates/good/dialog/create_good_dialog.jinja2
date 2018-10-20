@@ -1,0 +1,254 @@
+<script class="dialog_loaded"></script>
+
+<div class="row-fluid">
+    <div class='span10'>
+        <form id='good_form'
+              class='form-horizontal'
+              role='form'
+              method="post">
+            <div class="row-fluid">
+                {# Name #}
+                <div class="control-group">
+                    <label class="span3 control-label"
+                           for="good_name">Name</label>
+                    <div class="span9">
+                        <input id="good_name"
+                               name='name'
+                               type="text"
+                               class='input-block-level'
+                               placeholder="Name"
+                               required>
+                    </div>
+                </div>
+                {# MSRP #}
+                <div class="control-group">
+                    <label class="span3 control-label"
+                           for="good_msrp">MSRP</label>
+                    <div class="span9">
+                        <input id="good_msrp"
+                               name='msrp'
+                               type="text"
+                               class='input-block-level'
+                               placeholder="MSRP"
+                               required>
+                    </div>
+                </div>
+                {# Cost #}
+                <div class="control-group">
+                    <label class="span3 control-label"
+                           for="good_cost">Cost</label>
+                    <div class="span9">
+                        <input id="good_cost"
+                               class='input-block-level'
+                               name='cost'
+                               type="number"
+                               placeholder="Cost"
+                               required>
+                    </div>
+                </div>
+                {# Unit #}
+                <div class="control-group">
+                    <label class="span3 control-label"
+                           for="good_unit">Unit</label>
+                    <div class="span9">
+                        <input id="good_unit"
+                               class="input-block-level"
+                               name='unit'
+                               type="text"
+                               placeholder="Unit"
+                               required>
+                    </div>
+                </div>
+                {#Price List #}
+                <div class='control-group'>
+                    <label class='span3 control-label'
+                           for='good_price_list'>Price List</label>
+                    <div class="span9">
+                        <input id='good_price_list'
+                               class='input-block-level'
+                               name='price_list_name'
+                               type='text'
+                               placeholder='Price List'
+                               >
+                    </div>
+                </div>
+
+                {# Stopage Ratio#}
+                <div class="control-group">
+                    <label class="span3 control-label"
+                           for="good_stopage_ratio">Stopage Ratio</label>
+                    <div class="span9">
+                        <input id="good_stopage_ratio"
+                               class='input-block-level'
+                               name='stopage_ratio'
+                               type="text"
+                               placeholder="Stopage Ratio"
+                               required>
+                    </div>
+                </div>
+                {#Type #}
+                <div class='control-group'>
+                    <label class='span3 control-label'
+                           for='good_type'>Type</label>
+                    <div class="span5">
+
+                        <input id='good_type'
+                               class='input-block-level'
+                               name='type_name'
+                               type='text'
+                               placeholder='Type'
+                               >
+
+                    </div>
+                </div>
+
+                {#Description #}
+                <div class="control-group">
+                    <label for="good_description"
+                           class="span3 control-label">Description</label>
+                    <div class="span9">
+                        <textarea id="good_description"
+                                  name='description'
+                                  class='input-block-level'
+                                  style="overflow: hidden;
+                                             word-wrap: break-word;
+                                             resize: horizontal;
+                                             height: 50px;"
+                                ></textarea>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<script type="text/javascript">
+    function init_dialog() {
+        console.debug('starting to initialize good dialog!!!');
+        var dialog_label = $('#dialog_template_label');
+        dialog_label.find('span').remove();
+        dialog_label.append('<span>Create Good</span>');
+
+        {# ***************************************************************** #}
+        {# Unit #}
+
+
+        $.getJSON('/goods/').then(function (data) {
+            var good_unit = $('#good_unit');
+
+            var available_good_units_as_list = [];
+            for (var i=0; i < data.length; i++){
+                if (available_good_units_as_list.indexOf(data[i].unit) == -1){
+                    available_good_units_as_list.push(data[i].unit);
+                }
+            }
+
+            good_unit.autocomplete({
+                delay: 0,
+                source: available_good_units_as_list,
+                minLength: 0
+            });
+        });
+
+        {# ***************************************************************** #}
+        {# Price List #}
+
+        $.getJSON('/price_lists/').then(function (data) {
+            var good_price_list = $('#good_price_list');
+
+            var available_priceList_as_list = [];
+            for (var i=0; i < data.length; i++){
+                available_priceList_as_list.push(data[i].name);
+            }
+
+            good_price_list.autocomplete({
+                delay: 0,
+                source: available_priceList_as_list,
+                minLength: 0
+            });
+
+
+        });
+        {# ***************************************************************** #}
+        {# Type #}
+
+        {% raw %}
+            var good_type_option_template = doT.template(
+                '<option value={{=it.name}}>{{=it.name}}</option>'
+            );
+        {% endraw %}
+
+        $.getJSON('/types/?target_entity_type=Good').then(function (data) {
+            var good_type = $('#good_type');
+
+            var available_types_list = [];
+            for (var i=0; i < data.length; i++){
+                available_types_list.push(data[i].name);
+            }
+
+            good_type.autocomplete({
+                delay: 0,
+                source: available_types_list,
+                minLength: 0
+            });
+
+{#            for (var i = 0; i < data.length; i++) {#}
+{#                good_type.append(good_type_option_template(data[i]));#}
+{#            }#}
+{##}
+{#            good_type.chosen({#}
+{#                search_contains: true,#}
+{#                enable_split_word_search: true,#}
+{#                allow_single_deselect: true#}
+{#            });#}
+
+        });
+        {# ***************************************************************** #}
+        {# Submit Button #}
+        var submit_button = $('#dialog_template_submit_button');
+        submit_button.on('click', function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+
+            submit_button.button('loading');
+            var good_form = $('#good_form');
+
+            var url = '/goods/create';
+
+
+            $.post(
+                url,
+                good_form.serialize() + '&' +
+                $.param({
+                    'studio_id': {{ studio.id }}
+                })
+            ).done(function (jqXHR) {
+                //$('#new_outputs_storage').text(JSON.stringify(jqXHR));
+                window.location.reload();
+            }).fail(function (jqXHR) {
+                bootbox.alert(jqXHR.responseText);
+                submit_button.button('reset');
+            });
+        });
+
+        console.debug('finished initializing the good dialog!')
+    }
+</script>
+
+<script type="text/javascript">
+    function destruct_dialog() {
+        $('#good_name').unbind();
+        $('#good_msrp').unbind();
+        $('#good_cost').unbind();
+        $('#good_unit').unbind();
+        $('#good_price_list').unbind();
+        $('#good_description').unbind();
+        $('#dialog_template_submit_button').unbind();
+
+        $('#dialog_template').data('modal', null);
+    }
+</script>
+
+
+

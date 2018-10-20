@@ -1,81 +1,133 @@
-<div id='bid_alert' class="pull-right alert alert-block">
-        <ul class="unstyled spaced">
-            <li>
+<div class="widget-box">
+    <div class="widget-header widget-header-flat widget-header-small">
+        <h5><i class="icon-time"></i>Timing ({{ entity.time_logs | count}} TimeLogs)</h5>
+    </div>
 
-                <b>Bid
-                    : </b>
-                <span id="bid"></span>
-            </li>
-            <li>
+    <div class="widget-body no-padding">
+        <div class="widget-main no-padding">
+            <div id='bid_alert' class="alert alert-block no-padding" style="margin-bottom: 0;">
 
-                <b>Schedule Hours
-                    : </b> {{ entity.schedule_seconds/3600 }}
-                h
-            </li>
-            <li>
-                <b>Total Logged Hours
-                    : </b> {{ entity.total_logged_seconds/3600 }}
-                h
-            </li>
-            <li>
-                <b>Hours to Complete
-                    : </b> {{ (entity.schedule_seconds - entity.total_logged_seconds)/3600 }}
-                h
-            </li>
-        </ul>
-</div>
+                <table class="table">
+                    <tbody>
+                        <tr>
+                            <td style="text-align: right"><strong>Bid</strong></td>
+                            <td><span id="bid"></span></td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: right"><strong>Schedule Timing</strong></td>
+                            <td><span id="schedule_timing"></span></td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: right"><strong>Total Time Logs</strong></td>
+                            <td><span id="total_logged"></span></td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: right"><strong>Time to Complete</strong></td>
+                            <td><span id="time_to_complete"></span></td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: right"><strong>Schedule Model</strong></td>
+                            <td><span id="schedule_model">{{ entity.schedule_model }}</span></td>
+                        </tr>
 
+                    </tbody>
+                </table>
+            </div>
+            <div class="progress no-padding" style="margin-top: 0; margin-bottom: 0;">
+                    <div id='bid_bar' class="bar bar-cmpl" style="width: 0;"></div>
+                    <div id='separator_bar' class="bar bar-grey" style="width: 0;"></div>
+                    <div id='total_logged_bar' class="bar" style="width: 0;"></div>
+                    <div id='schedule_timing_bar' class="bar bar-rts" style="width: 0;"></div>
+            </div>
+        </div><!--/widget-main-->
+        {% if entity.status.code=='WIP' and (logged_in_user in entity.resources or has_permission('Create_Review') and (entity.project in logged_in_user.projects)) %}
+            <div class="widget-toolbox clearfix">
+                <button id='task_request_review_button'
+                            class="btn btn-small btn-warning span6"
+                            data-placement="bottom"
+                            title="Request Review"
+                            data-target="#dialog_template"
+                            data-toggle="modal"
+                            data-keyboard="false"
+                            href='/tasks/{{ entity.id }}/request_review/dialog?came_from={{ request.current_route_path() }}&request_review_mode=Final'
+                            >
+                        <i class="icon-comment-alt bigger-130"></i> Request Review</button>
+                {% if (entity.schedule_seconds - entity.total_logged_seconds)==0 %}
 
-<script class="code" type="text/javascript">
-    $(document).ready(function () {
+                    <button id='task_review_button'
+                            class="btn btn-small btn-danger span6"
+                            data-placement="bottom"
+                            title="Request Extra Time"
+                            data-target="#dialog_template"
+                            data-toggle="modal"
+                            data-keyboard="false"
+                            href="/tasks/{{entity.id}}/request_extra_time/dialog?came_from={{request.current_route_path() }}"
+                            >
+                        <i class="icon-time bigger-130"></i> Request Extra Time</button>
+                {% else %}
+                    <button
+                            disabled="true"
+                            class="btn btn-small btn-danger span6"
+                            data-placement="bottom"
+                            title="Request Extra Time">
+                        <i class="icon-time bigger-130"></i> Request Extra Time</button>
+                {% endif %}
 
+            </div>
+        {% endif %}
+    </div><!--/widget-body-->
+</div><!--/widget-box-->
 
+<script>
+    $(function () {
+        var schedule_unit_seconds = seconds_in_unit('{{ entity.schedule_unit }}');
 
-        var unit_by_hour = function(unit){
+        var bid_seconds = to_seconds({{ entity.bid_timing }}, '{{ entity.bid_unit }}');
+        var schedule_timing_seconds = to_seconds({{ entity.schedule_timing }}, '{{ entity.schedule_unit }}');
+        var total_logged_seconds = {{entity.total_logged_seconds}};
 
-             switch (unit) {
-                case 'h':
-                    return 1;
-                    break;
-                case 'd':
-                    return 9;
-                    break;
-                 case 'w':
-                    return 9*6;
-                    break;
-                 case 'm':
-                    return 1;
-                    break;
-                 case 'y':
-                    return 1;
-                    break;
-            }
-        }
+        var bid = convert_seconds_to_time_range(bid_seconds);
+        var bid_lmt = meaningful_time(bid_seconds);
+        var schedule_timing = convert_seconds_to_time_range(schedule_timing_seconds);
+        var schedule_timing_lmt = meaningful_time(schedule_timing_seconds);
+        var total_logged = convert_seconds_to_time_range(total_logged_seconds);
+        var total_logged_lmt = meaningful_time(total_logged_seconds);
+        var time_to_complete = convert_seconds_to_time_range(schedule_timing_seconds - total_logged_seconds);
+        var time_to_complete_lmt = meaningful_time(schedule_timing_seconds - total_logged_seconds);
 
-        var calculate_bid_hour = function(bid,unit){
+        $('#bid').text(bid + ' (' + bid_lmt + ')');
+        $('#schedule_timing').text(schedule_timing + ' (' + schedule_timing_lmt + ')');
+        $('#total_logged').text(total_logged + ' (' + total_logged_lmt + ')');
+        $('#time_to_complete').text(time_to_complete + ' (' + time_to_complete_lmt + ')');
 
-
-           console.log(bid)
-           var uhour = unit_by_hour(unit)
-
-           return  bid*uhour;
-
-        }
-
-        var bid_hour = calculate_bid_hour({{ entity.bid_timing }}, '{{ entity.bid_unit }}')
-        $('#bid').text(bid_hour+' h')
-
-
-        console.log(bid_hour)
-
-        if(bid_hour< {{ entity.total_logged_seconds/3600 }})
+        var bid_bar_percent = 0;
+        var separator_bar_percent = 0;
+        var total_logged_bar_percent = (total_logged_seconds / schedule_timing_seconds)*100;
+        var schedule_timing_bar_percent = 100-total_logged_bar_percent;
+        if(bid_seconds < total_logged_seconds)
         {
-            $('#bid_alert').addClass('alert-danger')
+            $('#bid_alert').addClass('alert-danger');
 
+            bid_bar_percent = (bid_seconds/schedule_timing_seconds)*100;
+            separator_bar_percent = 1;
+            total_logged_bar_percent -= (bid_bar_percent+separator_bar_percent);
+            schedule_timing_bar_percent = 100 -(bid_bar_percent+separator_bar_percent+total_logged_bar_percent);
         }
         else{
-             $('#bid_alert').addClass('alert-info')
+            $('#bid_alert').addClass('alert-info');
 
         }
+
+        if(schedule_timing_seconds == total_logged_seconds) {
+            $('#total_logged_bar').addClass('bar-cmpl');
+        }
+        else{
+            $('#total_logged_bar').addClass('bar-wip');
+        }
+
+        $('#bid_bar').attr('style','width: ' + bid_bar_percent + '%;');
+        $('#separator_bar').attr('style','width: ' + separator_bar_percent + '%;');
+        $('#total_logged_bar').attr('style','width: ' + total_logged_bar_percent + '%;');
+        $('#schedule_timing_bar').attr('style','width: ' + schedule_timing_bar_percent + '%;');
     });
 </script>

@@ -1,0 +1,58 @@
+<div class="row-fluid">
+    <div class="span12 label label-large label-success arrowed-in arrowed-right">
+        <b>Project Info</b>
+    </div>
+</div>
+<div class="row-fluid">
+    <ul class="unstyled spaced" id="project_role_list">
+
+{#        <li id="creative_director">#}
+{##}
+{#        </li>#}
+{#        <li id="customer_director">#}
+{#            <i class="icon-caret-right blue" ></i>#}
+{#        </li>#}
+{#        <li id="agency_producer">#}
+{#            <i class="icon-caret-right blue" ></i>#}
+{#        </li>#}
+{#        <li id="director">#}
+{#            <i class="icon-caret-right blue" ></i>#}
+{#        </li>#}
+{#        <li id="producer">#}
+{#            <i class="icon-caret-right blue" ></i>#}
+{#        </li>#}
+
+    </ul>
+</div>
+
+<div class="hr hr8 hr-double hr-dotted"></div>
+
+
+<script type="text/javascript">
+
+
+    $(document).ready(function () {
+        function set_field_value(role_name, url){
+            console.log("set_field_value");
+            var  project_role_list = $("#project_role_list");
+            $.getJSON(url).then(function (data) {
+                console.log("loaded: " +data);
+{#                if(data.name != ""){#}
+                    project_role_list.append("<li><span><i class='icon-caret-right blue' ></i> <b>"+role_name+ "</b>: "+data.name+"</span></li>");
+{#                }#}
+
+
+            });
+        }
+
+        set_field_value("Yaratici Yonetmen", '/entities/{{ project.id }}/role_user/?role_name=Yaratici%20Yonetmen');
+        set_field_value("Musteri Direktoru", '/entities/{{ project.id }}/role_user/?role_name=Musteri%20Direktoru');
+        set_field_value("Ajans Yapimcisi", '/entities/{{ project.id }}/role_user/?role_name=Ajans%20Yapimcisi');
+        set_field_value("Yonetmen", '/entities/{{ project.id }}/role_user/?role_name=Yonetmen');
+        set_field_value( "Yapimci", '/entities/{{ project.id }}/role_user/?role_name=Yapimci');
+
+
+    });
+
+
+</script>

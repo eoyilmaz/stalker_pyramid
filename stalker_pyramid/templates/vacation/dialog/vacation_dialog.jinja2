@@ -1,3 +1,5 @@
+<script class="dialog_loaded"></script>
+
 <div class='row-fluid'>
 
     <div class='span12'>
@@ -5,8 +7,6 @@
              class="flash-message alert alert-danger text-center hide">
 
         </div>
-
-
         <form id='vacation_form'
               class='form-horizontal'
               role='form'
@@ -101,14 +101,15 @@
 
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/chosen.jquery.min.js") }}'></script>
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/moment.min.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/moment.min.js") }}'></script>#}
+
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/daterangepicker.min.js") }}'></script>
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-timepicker.min.js") }}'></script>
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap-colorpicker.min.js") }}'></script>
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.autosize-min.js") }}'></script>
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.inputlimiter.1.3.1.min.js") }}'></script>
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.maskedinput.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap-tag.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/bootstrap-tag.js") }}'></script>
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.validate.min.js") }}'></script>
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/additional-methods.min.js") }}'></script>
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.spinner.min.js") }}'></script>
@@ -117,8 +118,6 @@
 
 <script>
 function init_dialog() {
-
-
     console.debug('starting to initialize vacation dialog!!!');
 
     $('#dialog_template_label').find('span').remove();
@@ -151,15 +150,16 @@ function init_dialog() {
 
 
     $.getJSON('/types/?target_entity_type=Vacation').then(function (available_types) {
+        var available_types_as_list = [];
+        for (var i=0; i < available_types.length; i++){
+            available_types_as_list.push(available_types[i].name);
+        }
+        
         vacation_type.autocomplete({
             delay: 0,
-            source: available_types,
+            source: available_types_as_list,
             minLength: 0
         });
-        {#            if (type !== ''){#}
-        {#                vacation_type.val(type);#}
-        {#            }#}
-
     });
 
     {% if entity.entity_type == 'Studio' %}
@@ -301,8 +301,8 @@ function init_dialog() {
         var end_time_string = $('#end_time').val().split(':');
 
 
-        var start = new Date(parseInt(start_date_string[2]), parseInt(start_date_string[0]) - 1, parseInt(start_date_string[1]), parseInt(start_time_string[0]), parseInt(start_time_string[1]), 0, 0);
-        var end = new Date(parseInt(end_date_string[2]), parseInt(end_date_string[0]) - 1, parseInt(end_date_string[1]), parseInt(end_time_string[0]), parseInt(end_time_string[1]), 0, 0);
+        var start = new Date(parseInt(start_date_string[2]), parseInt(start_date_string[1]) - 1, parseInt(start_date_string[0]), parseInt(start_time_string[0]), parseInt(start_time_string[1]), 0, 0);
+        var end = new Date(parseInt(end_date_string[2]), parseInt(end_date_string[1]) - 1, parseInt(end_date_string[0]), parseInt(end_time_string[0]), parseInt(end_time_string[1]), 0, 0);
 
         return [start, end];
 
@@ -331,7 +331,7 @@ function init_dialog() {
 
 
         start_end_date_range_picker.val(
-                start_date_value.format('mm/dd/yyyy') + ' - ' + end_date_value.format('mm/dd/yyyy')
+                start_date_value.format('dd/mm/yyyy') + ' - ' + end_date_value.format('dd/mm/yyyy')
         );
 
         start_end_date_range_picker.data().daterangepicker.updateFromControl();
@@ -352,7 +352,7 @@ function init_dialog() {
         var start_time = $('#start_time');
         start_time.val(start_time_value.format('HH:MM'));
         start_time.timepicker({
-            minuteStep: 1,
+            minuteStep: 10,
             showSeconds: false,
             showMeridian: false
         });
@@ -366,7 +366,7 @@ function init_dialog() {
         var end_time = $('#end_time');
         end_time.val(end_time_value.format('HH:MM'));
         end_time.timepicker({
-            minuteStep: 1,
+            minuteStep: 10,
             showSeconds: false,
             showMeridian: false
         });

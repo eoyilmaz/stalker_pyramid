@@ -92,7 +92,7 @@
 
             for (var k = 0; k < label_data.length; k++) {
 
-                $('#' + mode + '_' + type + '_' + label_data[k].label).prop('checked',isChecked);
+                $('#' + mode + '_' + type + '_' + label_data[k].label).prop('checked', isChecked);
                 $('#' + mode + '_' + type + '_' + label_data[k].label).attr('value', isChecked ? 'Allow' : '');
             }
 
@@ -104,14 +104,14 @@
             label_data = data;
             var permission_template = doT.template($('#tmpl_permission').html());
 
-            var table_id = '{{mode }}_permission'
+            var table_id = '{{mode }}_permission';
             var table_body = $('#' + table_id + '>tbody');
 
             table_body.append(permission_template({'label': 'All', 'mode': '{{mode}}', 'Create': '', 'Read': '', 'Update': '', 'Delete': '', 'List': ''}));
 
             for (var i = 0; i < data.length; i++) {
 
-                data[i].mode = '{{ mode }}'
+                data[i].mode = '{{ mode }}';
 
                 table_body.append(permission_template(data[i]));
 
@@ -124,7 +124,7 @@
 
             $('.ace-checkbox-2').on('click', function () {
 
-                console.log(this.id + ' ' + this.checked)
+{#                console.log(this.id + ' ' + this.checked)#}
                 if (!this.checked) {
                     this.value = '';
                     return;
@@ -136,22 +136,22 @@
 
 
             $('#' + mode + '_Create_All').on('click', function () {
-                checkedAll(this.checked, 'Create')
+                checkedAll(this.checked, 'Create');
             });
             $('#' + mode + '_Read_All').on('click', function () {
-                checkedAll(this.checked, 'Read')
+                checkedAll(this.checked, 'Read');
             });
             $('#' + mode + '_Update_All').on('click', function () {
-                checkedAll(this.checked, 'Update')
+                checkedAll(this.checked, 'Update');
             });
             $('#' + mode + '_Delete_All').on('click', function () {
-                checkedAll(this.checked, 'Delete')
+                checkedAll(this.checked, 'Delete');
             });
             $('#' + mode + '_List_All').on('click', function () {
-                checkedAll(this.checked, 'List')
+                checkedAll(this.checked, 'List');
             });
 
-            permissions_loaded()
+            permissions_loaded();
         });
 
     });

@@ -1,0 +1,176 @@
+{% extends "base.jinja2" %}
+
+{% block breadcrumbs %}
+    {% set page_title='Tasks' %}
+    {% include 'breadcrumb/breadcrumbs.jinja2' %}
+{% endblock breadcrumbs %}
+
+{% block sidebar %}
+    {% include 'sidebar.jinja2' %}
+{% endblock sidebar %}
+
+{% block page_content %}
+    {% set page_title='You are assigned to these tasks ' %}
+    {% include 'page_header.jinja2' %}
+
+    <div class="widget-box {{ collapsed }}">
+        <div class="widget-header widget-header-small header-color-grey">
+            <h5 id="items_header" class="smaller"></h5>
+
+            <div class="widget-toolbar">
+
+                    <a data-target="#dialog_template"
+                       data-toggle="modal"
+                       data-keyboard=false
+                       href="{{ request.route_url("change_tasks_priority_dialog") }}"
+                       class="white">
+                        Priority
+                    </a>
+                <a href="#" data-action="collapse">
+                    <i class="icon-chevron-down"></i>
+                </a>
+            </div>
+
+        </div>
+        <div class="widget-body">
+            <div class="widget-main no-padding">
+                {% set query_str='resource_id=%s&status=RTS&status=WIP&status=WFD&status=HREV&status=DREV' % entity.id %}
+                {% include 'task/list/list_entity_tasks_by_filter.jinja2' %}
+            </div>
+        </div>
+    </div>
+
+{% endblock page_content %}
+
+{# EXTRA-SCRIPTS #}
+{% block extrascripts %}
+
+    {% raw %}
+    <script id="tmpl_itemThead" type="text/x-dot-template">
+        <tr>
+            <th>Start</th>
+            <th>End</th>
+            <th>Project</th>
+            <th>Name</th>
+            <th>Resource</th>
+            <th>Type</th>
+            <th>Completed</th>
+            <th>Status</th>
+            <th>Priority</th>
+            <th></th>
+        </tr>
+    </script>
+    {% endraw %}
+
+    {% raw %}
+    <script id="tmpl_itemRow" type="text/x-dot-template">
+        <tr>
+            <td>{{=it.start}}</td>
+            <td>{{=it.end}}</td>
+            <td><a href='/projects/{{=it.project_id}}/view'>{{=it.project_name}}</a>
+            </td>
+            <td><a href='/tasks/{{=it.id}}/view'>{{=it.full_path}}</a></td>
+            <td>{{ for(var i=0;i<it.resources.length;i++){ }}<a href='/users/{{=it.resources[i].id}}/view'>{{=it.resources[i].name}}</a>{{ } }}</td>
+
+            <td>{{=it.task_type}}</td>
+            <td data-sType="num-html">
+                <div class="progress progress-success">
+                    <div style="width:{{=it.completed}}%"
+                         class="bar">
+                        <span class="pull-left">{{= it.completed.toFixed(0) }}%</span>
+                    </div>
+                </div>
+            </td>
+            <td>
+                <span class="label label-status_{{=it.status}}">{{=it.status}}</span>
+            </td>
+            <td>{{=it.priority}}</td>
+            <td>
+                <div class="hidden-phone visible-desktop action-buttons">
+                    {{=it.actions }}
+
+                    <a id='update_task_item'
+                       data-target="#dialog_template"
+                       data-toggle="modal"
+                       data-keyboard=false
+                       href="/tasks/{{=it.id}}/update/dialog"
+                       tabindex="-1">
+                        <i class="icon-pencil bigger-120">&nbsp</i>
+                    </a>
+                    {{ if (it.request_extra_time)  { }}
+                        <a
+                            class="red"
+                            data-target="#dialog_template"
+                            data-toggle="modal"
+                            data-keyboard=false
+                            data-rel="tooltip"
+                            data-placement="top"
+                            title="Request Extra Time"
+                            href="{{=it.request_extra_time}}">
+                            <i class="icon-time bigger-130"></i>
+                        </a>
+                    {{ } }}
+
+                    {{ if (it.request_review) { }}
+                        <a
+                            class="green"
+                            data-target="#dialog_template"
+                            data-toggle="modal"
+                            data-keyboard=false
+                            data-rel="tooltip"
+                            data-placement="top"
+                            title="Request Review"
+                            href="{{=it.request_review}}">
+                            <i class="icon-comment-alt bigger-130"></i>
+                        </a>
+                    {{ } }}
+                    {{ if (it.review) { }}
+                        <a
+                            class="purple"
+                            data-target="#dialog_template"
+                            data-toggle="modal"
+                            data-keyboard=false
+                            data-rel="tooltip"
+                            data-placement="top"
+                            title="Review"
+                            href="{{=it.review }}">
+                            <i class="icon-comments bigger-130"></i>
+                        </a>
+                    {{ } }}
+
+                </div>
+
+            </td>
+
+        </tr>
+    </script>
+    {% endraw %}
+
+
+{% raw %}
+<script id="tmpl_itemFooterRow" type="text/x-dot-template">
+    <tr>
+       <td>TOTAL</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+
+    </tr>
+</script>
+{% endraw %}
+
+    <script>
+
+        $(function () {
+            init_table_data(-1);
+        })
+
+    </script>
+
+{% endblock extrascripts %}

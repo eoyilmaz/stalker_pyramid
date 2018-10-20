@@ -1,0 +1,146 @@
+{# Stalker Pyramid a Web Base Production Asset Management System
+ Copyright (C) 2009-2018 Erkan Ozgur Yilmaz
+
+ This file is part of Stalker Pyramid.
+
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation;
+ version 2.1 of the License.
+
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+#}
+
+{% extends "base.jinja2" %}
+
+{# BREADCRUMBS #}
+{% block breadcrumbs %}
+
+    {% set page_title='clients' %}
+    {% include 'breadcrumb/breadcrumbs.jinja2' %}
+
+{% endblock breadcrumbs %}
+
+{# SIDEBAR #}
+{% block sidebar %}
+
+    {% include 'sidebar.jinja2' %}
+
+{% endblock sidebar %}
+
+{# PAGE-CONTENT #}
+{% block page_content %}
+    {% set page_title='Projects' %}
+    {% include 'page_header.jinja2' %}
+    <div id="status_lists">
+
+    </div>
+{% endblock page_content %}
+
+{# EXTRA-SCRIPTS #}
+{% block extrascripts %}
+{% raw %}
+<script id="tmpl_status_template" type="text/x-dot-template">
+<div class="row-fluid">
+    <div class="widget-box span8">
+        <div class="widget-header widget-header-small header-color-status_{{=it.status_code}}">
+            <h4 class="smaller">
+                <i class="{{=it.status_icon}}"></i>
+                {{=it.status}}
+            </h4>
+            <div class="widget-toolbar">
+
+                <a href="#" data-action="collapse">
+                    <i class="icon-chevron-down"></i>
+                </a>
+             </div>
+        </div>
+        <div class="widget-body">
+            <div class="widget-main">
+                <div class="row-fluid">
+                <ul id='entity_projects_{{=it.status_code}}' class="ace-thumbnails">
+
+                </ul>
+                    </div>
+            </div>
+        </div>
+    </div>
+</div>
+</script>
+{% endraw %}
+{% raw %}
+<script id="tmpl_project_card" type="text/x-dot-template">
+    <li>
+        <a href="/projects/{{=it.id }}/view" data-rel="colorbox">
+            <img alt="150x150"
+                 style="height: 150px; width: auto;"
+                 src="{{=it.thumbnail_full_path }}" />
+
+            <div class="text">
+                <div class="inner">{{=it.name }}</div>
+            </div>
+            <div class="tags">
+                <span class="label label-info">{{=it.percent_complete.toFixed(1)}}%</span>
+                <span class="label label-status_{{=it.status_code}}">{{=it.status}}</span>
+            </div>
+        </a>
+        <div class="tools tools-bottom">
+            <a href="#">
+                <i class="icon-link"></i>
+            </a>
+            <a href="#">
+                <i class="icon-paper-clip"></i>
+            </a>
+
+            <a href="/projects/{{=it.id }}/update/details/view?mode=Update">
+                <i class="icon-pencil"></i>
+            </a>
+
+            <a href="#">
+                <i class="icon-remove red"></i>
+            </a>
+        </div>
+    </li>
+ </script>
+{% endraw %}
+<script type="text/javascript">
+    $(function () {
+
+        $.getJSON('/entities/{{ entity.id }}/projects/').then(function (data) {
+
+            var status_template = doT.template($('#tmpl_status_template').html());
+            var project_card_template = doT.template($('#tmpl_project_card').html());
+            var status_lists = $('#status_lists');
+
+
+            for(var i=0; i<data.length;i++){
+                if (data[i].thumbnail_full_path == null) {
+                    data[i].thumbnail_full_path = '{{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}';
+                }
+
+                else {
+                    data[i].thumbnail_full_path = '/' + data[i].thumbnail_full_path;
+                }
+
+                if(!data[i].status_icon){
+                   data[i].status_icon = get_icon(data[i].status_code.toUpperCase());
+                }
+
+                var entity_projects = $('#entity_projects_'+data[i].status_code);
+                if (entity_projects.length==0){
+                    status_lists.append(status_template(data[i]));
+                    entity_projects = $('#entity_projects_'+data[i].status_code);
+                }
+                entity_projects.append(project_card_template(data[i]));
+            }
+        });
+    });
+</script>
+{% endblock extrascripts %}

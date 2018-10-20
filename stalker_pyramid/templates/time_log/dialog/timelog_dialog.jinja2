@@ -1,0 +1,822 @@
+<script class="dialog_loaded"></script>
+
+<div class='row-fluid'>
+    <div class="row-fluid">
+        <div class="span8">
+            <div id="information" class="infobox-content"></div>
+        </div>
+        <div class="span4">
+            <div id="task_status_info" class="pull-right infobox infobox-small infobox-dark hide">
+                <div class="infobox-progress">
+                    <div id="pie_chart" class="easy-pie-chart percentage" data-percent="0" data-size="39">
+                        <span id="pie_chart_text" class="percent">0</span>
+                        %
+                    </div>
+                </div>
+
+                <div class="infobox-data">
+                    <div id="task_status_name" class="infobox-content"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="hr dotted"></div>
+    <form id='time_log_form'
+          class='form-horizontal'
+          role='form'
+          method='post'>
+        <div class='row-fluid'>
+            {# Task #}
+            <div class='control-group'>
+                <label class='span2 control-label'
+                       for='time_log_task'>Task</label>
+
+                <div class='span9'>
+                    <select id='time_log_task'
+                            name='task_id'
+                            class='input-block-level'
+                            data-placeholder='Task'></select>
+                </div>
+                <div class='span1'>
+                    <a target="_blank" id="task_view_page_btn" class="btn btn-mini btn-info">View
+                            </a>
+                </div>
+            </div>
+
+            {# Resource #}
+            <div class='control-group'>
+                <label class='span2 control-label'
+                       for='time_log_resource'>Resource</label>
+
+                <div class='span9'>
+                    <select id='time_log_resource'
+                            class='input-block-level'
+                            name='resource_id'
+                            required></select>
+                </div>
+
+{#                <div class='span1'>#}
+{#                    <a target="_blank" id="user_view_page_btn" class="btn btn-mini btn-info">View#}
+{#                            </a>#}
+{#                </div>#}
+            </div>
+
+            {# Start & End Dates #}
+            <div class="control-group">
+                <label for="start_end_date_range_picker"
+                       class="span2 control-label">Date</label>
+
+                <div class="span10 input-prepend">
+                    <input class="date-picker"
+                           id='start_end_date_range_picker'
+                           name='start_and_end_dates'
+                           type="text"
+                           data-date-format="dd-mm-yyyy"
+                           placeholder="Start & End Dates"
+                            >
+                    <span class="add-on">
+                        <i class="icon-calendar"></i>
+                    </span>
+                </div>
+            </div>
+
+            {# Auto-Split #}
+{#            <div id="auto_split_wh_cg" class="control-group hide">#}
+{#                <label class="span2 control-label" for="auto_split_wh">#}
+{#                </label>#}
+{#                <div class="span10">#}
+{#                    <input id="auto_split_wh"#}
+{#                           name="auto_split_wh"#}
+{#                           type="checkbox"#}
+{#                           class="ace ace-checkbox-2" checked>#}
+{#                    <label class="lbl blue" for="auto_split_wh"> In Working Hours of Studio</label>#}
+{#                </div>#}
+{#            </div>#}
+
+
+            {# Start Time#}
+            <div class="control-group">
+                <label class='span2 control-label' for='start_time'>From</label>
+
+                <div class="span10 input-append bootstrap-timepicker">
+                    <input id="start_time" name="start_time" type="text"
+                           class="input-small"/>
+                    <span class="add-on">
+                        <i class="icon-time"></i>
+                    </span>
+                </div>
+            </div>
+
+            {# End Time#}
+            <div class="control-group">
+                <label class='span2 control-label' for="end_time">
+                    To
+                </label>
+                <div class="span10 input-append bootstrap-timepicker">
+                    <input id="end_time" name="end_time" type="text"
+                           class="input-small"/>
+                    <span class="add-on">
+                        <i class="icon-time"></i>
+                    </span>
+                </div>
+            </div>
+            <div class="row-fluid">
+                <label class='span2 control-label'>
+                </label>
+                <div id="alert_information" class="infobox-content span10"></div>
+            </div>
+
+
+            <div id="revision_type_cg" class='control-group hide'>
+                <label class='span2 control-label' for='revision_type'>Revision Type</label>
+                <div class='span10'>
+                    <select id='revision_type'
+                            class='input-block-level'
+                            name='revision_type'
+                            required>
+                        <option value="Ajans">Ajans</option>
+                        <option value="Yonetmen">Yonetmen</option>
+                        <option value="Ic_Revizyon">Ic Revizyon</option>
+                        <option value="Yetistiremedim">Yetistiremedim</option>
+                    </select>
+                </div>
+            </div>
+
+            {# Description #}
+            <div class="control-group">
+                <label class="span2 control-label" for="time_log_description">
+                    Description
+                </label>
+
+                <div class="span10">
+                    <textarea id="time_log_description"
+                              name="description" rows="3"
+                              style="width: inherit"></textarea>
+                </div>
+            </div>
+
+            <div class="control-group" id="selection_rb">
+                <label class="span2 control-label">Select</label>
+                <div index="final_action_rb" class="span10 controls">
+
+                    <label>
+                        <input name="final_action" type="radio" class="ace" value="wip" checked="checked"/>
+                        <span class="lbl" > Not Finished Yet </span>
+                    </label>
+
+                    <label>
+                        <input name="final_action" type="radio" class="ace" value="force_complete"/>
+                        <span class="lbl" > Set As Completed </span>
+                    </label>
+
+                    <label>
+                        <input name="final_action" type="radio" class="ace" value="request_final_review"/>
+                        <span class="lbl" > Submit For Final Review </span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <div class="space-5"></div>
+    <div class="hr dotted"></div>
+    <div class="space-5"></div>
+
+    <div class='row-fluid'>
+        {% if time_log %}
+        <p>This timelog is created by <a href="/users/{{ time_log.created_by.id }}/view "> {{ time_log.created_by.name }}</a> and updated by  <a href="/users/{{ time_log.updated_by.id }}/view "> {{ time_log.updated_by.name }}</a>
+                </p>
+        {% endif %}
+    </div>
+
+</div>
+
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/chosen.jquery.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/daterangepicker.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-timepicker.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.autosize-min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.inputlimiter.1.3.1.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.validate.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.easy-pie-chart.min.js") }}'></script>
+
+
+<script>
+function init_dialog() {
+    console.debug('starting to initialize time_log dialog!!!');
+
+    var completed_percent;
+    var time_log_form = $("#time_log_form");
+    var time_log_task = $('#time_log_task');
+    var time_log_resource = $('#time_log_resource');
+    {# ***************************************************************** #}
+    {# Date Time Objects #}
+    var start_end_date_range_picker = $('#start_end_date_range_picker');
+    var start_time = $('#start_time');
+    var end_time = $('#end_time');
+    {# ***************************************************************** #}
+    {# Schedule Unit and Model #}
+    var task_schedule_unit = $('#task_schedule_unit');
+    var task_schedule_timing = $('#task_schedule_timing');
+
+    var time_log_description = $('#time_log_description');
+    var parent_name = '';
+    var parent = '';
+
+    var dialog_template_label = $('#dialog_template_label');
+    dialog_template_label.find('span').remove();
+    dialog_template_label.append('<span>Timelog</span>');
+
+    var submit_button = $('#dialog_template_submit_button');
+    var information = $('#information');
+    var alert_information = $('#alert_information');
+    var task_status_info = $('#task_status_info');
+    var task_view_page_btn = $('#task_view_page_btn');
+    task_status_info.hide();
+    task_view_page_btn.hide();
+
+    submit_button.attr('disabled', false);
+
+    var submit_finalize_form_url = null;
+    var remaining_minutes_after_this_time_log_string = "";
+
+    {# ***************************************************************** #}
+    var event_dialog = $('#dialog_template');
+    var start_date_value;
+    var end_date_value;
+    if(event_dialog.attr('start') && event_dialog.attr('end')){
+        start_date_value = new Date(event_dialog.attr('start'));
+        end_date_value = new Date(event_dialog.attr('end'));
+    }
+    else{
+        start_date_value = new Date();
+        end_date_value = new Date();
+        event_dialog.attr('allDay', 'true');
+    }
+
+    var start_time_value = start_date_value;
+    var end_time_value = end_date_value;
+
+    if (event_dialog.attr('allDay') == 'true') {
+        start_time_value.setHours(10);
+        start_time_value.setMinutes(0);
+        end_time_value.setHours(19);
+        end_time_value.setMinutes(0);
+    }
+
+    {# ***************************************************************** #}
+    {# Get Start End  #}
+    var get_start_end = function () {
+
+        var date_string = start_end_date_range_picker.datepicker().val().split('-');
+
+        var start_time_string = start_time.val().split(':');
+        var end_time_string = end_time.val().split(':');
+
+        var start = new Date(
+            parseInt(date_string[2]),
+            parseInt(date_string[1]) - 1,
+            parseInt(date_string[0]),
+            parseInt(start_time_string[0]),
+            parseInt(start_time_string[1]),
+            0, 0
+        );
+
+        var end = new Date(
+            parseInt(date_string[2]),
+            parseInt(date_string[1]) - 1,
+            parseInt(date_string[0]),
+            parseInt(end_time_string[0]),
+            parseInt(end_time_string[1]),
+            0, 0
+        );
+
+        return [start, end];
+    };
+
+    {# ***************************************************************** #}
+    {# Update Remaining Hours #}
+    // Calculate remaining hours
+    var update_hours_to_complete = function () {
+        // total hours of time_logs should have been given by Stalker
+        // calculate the remaining hours
+        var task_id = parseInt(time_log_task.val());
+        if (task_id === -1){ return }
+
+        $.getJSON('/tasks/' + task_id + '/').then(function (data) {
+
+            var sch_unit  = 'h';
+
+            $('#task_status_name').text(data[0].status_name);
+            task_status_info.show();
+            task_status_info.attr('class', 'pull-right infobox infobox-small infobox-dark infobox-status_'+data[0].status);
+            task_view_page_btn.show();
+
+            task_view_page_btn.attr('href', "/tasks/"+task_id+"/view");
+            var schedule_unit_seconds = seconds_in_unit(sch_unit);
+
+            var bid_seconds = to_seconds(parseFloat(data[0].bid_timing), data[0].bid_unit);
+            var schedule_timing_seconds = parseFloat(data[0].schedule_seconds);
+            var total_logged_seconds = parseFloat(data[0].total_logged_seconds);
+
+            var bid = bid_seconds/schedule_unit_seconds;
+            var schedule_timing = schedule_timing_seconds/schedule_unit_seconds;
+            var total_logged = total_logged_seconds/schedule_unit_seconds;
+            var time_to_complete = schedule_timing-total_logged;
+
+            var total_extended_time = (schedule_timing - bid)>0?(schedule_timing - bid):0;
+
+            var remaining_seconds = schedule_timing_seconds - total_logged_seconds;
+
+            var start_end = get_start_end();
+            var start = start_end[0];
+            var end = start_end[1];
+
+            var timing_resolution = 600000; // 1 hour
+            var duration_millis = end.getTime() - start.getTime();
+
+            // round the duration millis
+            duration_millis = (((duration_millis + timing_resolution * 0.5) / timing_resolution) >> 0 ) * timing_resolution;
+
+            {% if mode == 'update' %}
+                duration_millis -= (end_date_value.getTime() - start_date_value.getTime());
+            {% endif %}
+
+            var duration_seconds = duration_millis / 1000;
+
+            // subtract already logged time
+            var remaining_seconds_after_this_time_log = remaining_seconds - duration_seconds;
+            var remaining_hours = parseInt(remaining_seconds/3600);
+
+            var remaining_minutes_after_this_time_log = parseInt(remaining_seconds_after_this_time_log / 60);
+            information.find('span').remove();
+            remaining_minutes_after_this_time_log_string = convert_seconds_to_time_range(Math.abs(remaining_seconds_after_this_time_log));
+
+            var total_logged_hours_msg = time_to_complete<=0?'spent all scheduled hours':'you can enter max <strong>'+ time_to_complete +sch_unit +'</strong>';
+
+            if(total_extended_time==0){
+
+                information.append(
+                    '<span class="pull_left"><div id="message" class="alert alert-success bigger-110">' +
+                    '<strong>Bid: </strong>' + bid + sch_unit +
+                    '<br/><strong>Scheduled Time: </strong>' + schedule_timing + sch_unit +
+                    '<br/><strong>Total Time Logged: </strong>' + total_logged +sch_unit + ' ( '+total_logged_hours_msg+' )'+
+                    '</div></span>'
+                );
+            }
+            else{
+                information.append(
+                    '<span class="pull_left"><div id="message" class="alert alert-danger bigger-110">' +
+                    '<strong>Bid: </strong>' + bid +sch_unit +
+                    '<br/><strong>Scheduled Time: </strong>' + schedule_timing + sch_unit +' ( extendeded <strong>'+ total_extended_time +sch_unit +'</strong> )' +
+                    '<br/><strong>Total Time Logged: </strong>' + total_logged + sch_unit +' ( '+total_logged_hours_msg+' )'+
+                    '</div></span>'
+                );
+            }
+
+
+            alert_information.find('span').remove();
+
+            if (remaining_minutes_after_this_time_log >= 0) {
+                alert_information.append(
+                    "<span class='pull_left'>If you enter this time log, <strong>" +
+                    remaining_minutes_after_this_time_log_string +
+                    "</strong> will remain to complete this task.</span>"
+                );
+                $('#revision_type_cg').hide();
+                completed_percent = (100 - ((remaining_seconds_after_this_time_log / parseFloat(data[0].schedule_seconds)) * 100)).toFixed(1);
+            } else {
+
+                var exceeding_message ='<span><div id="message" class="alert alert-error bigger-110">' +
+                    '<span class="pull_left ">You need <strong>' + remaining_minutes_after_this_time_log_string +
+                    '</strong> extra time. If you enter this time log, time of the task will be extended. Are you sure? </span>' +
+                    '</div></span>';
+
+                alert_information.append(exceeding_message);
+                completed_percent = 100;
+
+                $('#revision_type_cg').show();
+            }
+
+
+            $('#pie_chart').attr('data-percent', completed_percent);
+            $('#pie_chart_text').text(parseInt(completed_percent));
+
+            $('.easy-pie-chart.percentage').each(function(){
+                var $box = $(this).closest('.infobox');
+                var barColor = $(this).data('color') || (!$box.hasClass('infobox-dark') ? $box.css('color') : 'rgba(255,255,255,0.95)');
+                var trackColor = barColor == 'rgba(255,255,255,0.95)' ? 'rgba(255,255,255,0.25)' : '#E2E2E2';
+                var size = parseInt($(this).data('size')) || 50;
+                $(this).easyPieChart({
+                    barColor: barColor,
+                    trackColor: trackColor,
+                    scaleColor: false,
+                    lineCap: 'butt',
+                    lineWidth: parseInt(size/10),
+                    animate: /msie\s*(8|7|6)/.test(navigator.userAgent.toLowerCase()) ? false : 1000,
+                    size: size
+                });
+            });
+        });
+    };
+
+
+
+    {% if mode == 'create' %}
+        time_log_form.attr("action", "{{ request.route_url('create_time_log') }}");
+
+        {% if entity.entity_type  == 'User' %}
+
+            information.append(
+                '<span class="pull_left"><div id="message" class="alert alert-info bigger-110">' +
+                '<i class="icon-exclamation-sign bigger-120 red"></i> Please select a task' +
+                '</div></span>'
+            );
+            {# ***************************************************************** #}
+            {# Resource #}
+            time_log_resource.append('<option value={{ entity.id }} selected>{{ entity.name }}</option>');
+
+            {# ***************************************************************** #}
+            {# Task #}
+            {% raw %}
+                var task_option_template = doT.template(
+                    '<option value={{=it.id}}>{{=it.name}}</option>'
+                );
+            {% endraw %}
+
+            time_log_task.find('option').remove();
+
+            $.getJSON('/users/{{ entity.id }}/tasks/?status=RTS&status=WIP&status=HREV&status=DREV').then(function (data) {
+                // append an empty one first
+                time_log_task.append('<option value="-1">&nbsp;</option>');
+                for (var i = 0; i < data.length; i++) {
+                    time_log_task.append(task_option_template(data[i]));
+                }
+
+                time_log_task.chosen({
+                    search_contains: true,
+                    enable_split_word_search: true,
+                    allow_single_deselect: true
+                });
+
+                time_log_task.on('change', function () {
+                    update_hours_to_complete()
+                });
+
+                update_hours_to_complete();
+            });
+
+        {% elif entity.entity_type == 'Task'%}
+            information.append(
+                '<span class="pull_left"><div id="message" class="alert alert-info bigger-110">' +
+                '<i class="icon-exclamation-sign bigger-120 red"></i> Please select a user' +
+                '</div></span>'
+            );
+
+            {# ***************************************************************** #}
+            {# Task #}
+
+            parent_name = '{{ entity.project.code }}';
+            {% for parent in entity.parents %}
+                parent_name += ' | {{parent.name}}';
+            {% endfor %}
+
+            time_log_task.append('<option value={{ entity.id }} selected>{{ entity.name }} (' + parent_name + ')</option>');
+
+            {# ***************************************************************** #}
+            {# Resource #}
+            {% raw %}
+                var user_option_template = doT.template(
+                    '<option value={{=it.id}}>{{=it.name}}</option>'
+                );
+            {% endraw %}
+
+            time_log_resource.find('option').remove();
+
+            {% for resource in entity.resources %}
+                var data = {id: '{{ resource.id }}', name: '{{ resource.name }}'};
+                time_log_resource.append(user_option_template(data));
+            {% endfor %}
+
+            time_log_resource.chosen({
+                search_contains: true,
+                enable_split_word_search: true
+            });
+
+            update_hours_to_complete();
+
+        {% endif %}
+
+    {% elif mode == 'update' %}
+
+{#        $('#task_status_name').text('{{ time_log.task.status.name }}');#}
+{#        console.log('{{time_log.task.status.code.lower()}}');#}
+{#        $('#task_status_info').attr('class', 'pull-right infobox infobox-small infobox-dark infobox-status_{{time_log.task.status.code.lower()}}');#}
+
+        time_log_form.attr("action", "{{ request.route_url('update_time_log', id=time_log.id) }}");
+        time_log_resource.append('<option value={{ time_log.resource.id }} selected>{{ time_log.resource.name }}</option>');
+
+        time_log_description.text("{{ time_log.description }}");
+
+        parent_name = '{{ entity.project.code }}';
+        {% for parent in time_log.task.parents %}
+            parent_name += ' | {{parent.name}}';
+        {% endfor %}
+
+        time_log_task.append('<option value={{ time_log.task.id }} selected>{{ time_log.task.name }} (' + parent_name + ')</option>');
+
+        start_date_value = new Date(parseInt({{ milliseconds_since_epoch(time_log.start) }}));
+        end_date_value = new Date(parseInt({{ milliseconds_since_epoch(time_log.end) }}));
+
+        start_time_value = start_date_value;
+        end_time_value = end_date_value;
+
+        {% if time_log.task.status.code in ['PREV','CMPL'] %}
+            var selection_rb = $('#selection_rb');
+            selection_rb.hide();
+
+            alert_information.hide();
+
+            start_end_date_range_picker.attr('disabled', 'true');
+            start_time.attr('disabled', true);
+            end_time.attr('disabled', true);
+            submit_button.attr('disabled', true);
+            time_log_description.attr('disabled', true);
+
+        {% endif %}
+
+        information.append(
+                '<span class="pull_left"><div id="message" class="alert alert-warning bigger-110">' +
+                '<strong>Created By: </strong> {{ time_log.created_by.name }}'+
+                '<br/><strong>Updated By: </strong> {{ time_log.updated_by.name }}' +
+                '</div></span>'
+            );
+
+        update_hours_to_complete();
+
+        {% if has_permission('Delete_TimeLog') and time_log.task.status.code not in ['PREV','CMPL'] %}
+            var dialog_template_delete_button = $('#dialog_template_delete_button');
+            dialog_template_delete_button.show();
+
+            dialog_template_delete_button.on('click', function (e) {
+                e.stopPropagation();
+                e.preventDefault();
+
+                // disable the submit_button
+                var delete_button = $(this);
+                delete_button.button('loading');
+
+                var confirm_message =
+                    '<h3 class="header red"><i class="icon-warning-sign">' +
+                    '</i> Warning</h3>' +
+                    '<div id="message" class="alert alert-info bigger-110">' +
+                    'Are you sure you want to  delete this time log?' +
+                    '</div>';
+
+                bootbox.confirm(confirm_message, function (result) {
+                    if (result) {
+                        $.post('/time_logs/{{ time_log.id}}/delete'
+                        ).done(function (response_text) {
+                            bootbox.alert('<div id="message" class="alert alert-success bigger-110">'+response_text+'</div>');
+                            window.location.assign('{{ came_from }}');
+                        }).fail(function (jqXHR) {
+                            bootbox.alert('<div id="message" class="alert alert-danger bigger-110">'+jqXHR.responseText+'</div>');
+                            delete_button.button('reset');
+                        });
+                    } else {
+                        delete_button.button('reset');
+                    }
+                });
+            });
+        {% endif %}
+
+    {% endif %}
+
+    {# ***************************************************************** #}
+    {# Start & End Date Picker #}
+
+    start_end_date_range_picker.datepicker('setDate', start_date_value);
+    $('.date-picker').datepicker('setEndDate', new Date());
+
+    $('.date-picker').datepicker().next().on(ace.click_event, function(){
+                $(this).prev().focus();
+            });
+
+    start_end_date_range_picker.on('shown', function (e) {
+        e.stopPropagation();
+    });
+    start_end_date_range_picker.on('hidden', function (e) {
+        e.stopPropagation();
+        update_hours_to_complete();
+    });
+
+
+    {# ***************************************************************** #}
+    {# Start Time #}
+
+    start_time.val(start_time_value.format('HH:MM'));
+    start_time.timepicker({
+        minuteStep: 10,
+        showSeconds: false,
+        showMeridian: false
+    });
+
+    // TODO: Change the listener action type
+    start_time.on('hide.timepicker', function () {
+        update_hours_to_complete()
+    });
+
+    {# ***************************************************************** #}
+    {# End Time #}
+
+    end_time.val(end_time_value.format('HH:MM'));
+    end_time.timepicker({
+        minuteStep: 10,
+        showSeconds: false,
+        showMeridian: false
+    });
+
+    // TODO: Change the listener action type
+    end_time.on('hide.timepicker', function () {
+        update_hours_to_complete();
+    });
+
+    {# ***************************************************************** #}
+    {# Radio Select #}
+    $('.controls input[type="radio"]').on('change', function(){
+
+        var task_id = parseInt(time_log_task.val());
+        submit_finalize_form_url = null;
+
+        var final_action = $('input[name="final_action"]:checked', '.controls').val();
+
+        switch(final_action){
+            case 'force_complete':
+                submit_finalize_form_url = '/tasks/'+task_id+'/force_status/CMPL';
+                break;
+            case 'request_final_review':
+                submit_finalize_form_url = '/tasks/'+task_id+'/request_review?request_review_mode=Final';
+                break;
+            case 'wip':
+                submit_finalize_form_url = null;
+                break;
+        }
+
+    });
+
+    var post_finalize_action = function () {
+
+        submit_button.button('loading');
+        $.post(
+            submit_finalize_form_url
+        ).done(function (response_text) {
+            refresh_page();
+        }).fail(function (jqXHR) {
+            bootbox.alert('<div id="message" class="alert alert-danger bigger-110">'+jqXHR.responseText+'</div>');
+            refresh_page();
+{#            submit_button.button('reset');#}
+        });
+    };
+
+    var refresh_page = function(){
+
+        setTimeout(function () { // wait for hide event to finish
+            window.location.reload();
+        }, 0);
+        submit_button.button('reset');
+        $('#dialog_template').modal('hide');
+
+    };
+
+    {# ***************************************************************** #}
+    {# Submit Button #}
+    submit_button.on('click', function (e) {
+        e.stopPropagation();
+        e.preventDefault();
+
+        // disable the submit_button
+        var time_log_form = $('#time_log_form');
+        submit_button.button('loading');
+        // merge end_date and end_time
+        var start_end = get_start_end();
+        var start = start_end[0];
+        var end = start_end[1];
+
+        if(start.getDate() == end.getDate() && start.getMonth()==end.getMonth()) {
+            $('#auto_split_wh').prop('checked','');
+        }
+
+        // validate the data first
+        var form_is_valid, error_messages;
+        error_messages = [];
+        form_is_valid = true;
+
+        if (form_is_valid) {
+            $.post(
+                time_log_form.attr('action'),
+                time_log_form.serialize() + '&' +
+                $.param({
+                    'start': start.toUTCString(),
+                    'end': end.toUTCString(),
+                    'revision_type': $('#revision_type').val()
+                })
+            ).done(function (response_text) {
+                if (submit_finalize_form_url){
+                    setTimeout(function () { // wait for hide event to finish
+                        post_finalize_action();
+                    }, 0);
+                } else {
+                    refresh_page();
+                }
+            }).fail(function (jqXHR) {
+                bootbox.alert('<div id="message" class="alert alert-danger bigger-110">'+jqXHR.responseText+'</div>');
+                submit_button.button('reset');
+            });
+        } else {
+            var combined_error_messages = '';
+            for (var i=0; i < error_messages.length; i++){
+                combined_error_messages += error_messages[i] + '<br/>';
+            }
+
+            bootbox.alert('<div id="message" class="alert alert-danger bigger-110">' + combined_error_messages + '</div>');
+            submit_button.button('reset');
+        }
+
+    });
+
+    $('#time_log_form').validate({
+        errorElement: 'span',
+        errorClass: 'help-inline',
+        focusInvalid: true,
+        rules: {
+            resource_id: {
+                required: true
+            },
+            task_id: {
+                required: true
+            },
+            comment: {
+                required: true
+            }
+        },
+
+        messages: {
+        },
+
+        invalidHandler: function (event, validator) { //display error alert on form submit
+            $('.alert-error', $('.login-form')).show();
+        },
+
+        highlight: function (e) {
+            $(e).closest('.control-group').removeClass('info').addClass('error');
+        },
+
+        success: function (e) {
+            $(e).closest('.control-group').removeClass('error').addClass('info');
+            $(e).remove();
+        },
+
+        errorPlacement: function (error, element) {
+            if (element.is(':checkbox') || element.is(':radio')) {
+                var controls = element.closest('.controls');
+                if (controls.find(':checkbox,:radio').length > 1) controls.append(error);
+                else error.insertAfter(element.nextAll('.lbl:eq(0)').eq(0));
+            }
+            else if (element.is('.select2')) {
+                error.insertAfter(element.siblings('[class*="select2-container"]:eq(0)'));
+            }
+            else if (element.is('.chosen-select')) {
+                error.insertAfter(element.siblings('[class*="chosen-container"]:eq(0)'));
+            }
+            else error.insertAfter(element);
+        },
+
+        submitHandler: function (form) {
+            form.submit();
+        }
+
+    });
+
+    console.debug('finished initializing the time_log dialog!')
+}
+</script>
+
+<script type="text/javascript">
+    function destruct_dialog() {
+        console.debug('started un-initializing the time_log dialog!');
+
+        $('#submit_button').unbind();
+        $('#time_log_task').unbind();
+        $('#time_log_resource').unbind();
+        $('#start_end_date_range_picker').unbind();
+        $('#start_time').unbind();
+        $('#end_time').unbind();
+        $('#dialog_template_submit_button').unbind();
+        $('#dialog_template_delete_button').hide();
+        $('#dialog_template_delete_button').unbind();
+
+        $('#dialog_template').data('modal', null);
+
+        console.debug('finished un-initializing the time_log dialog!');
+    }
+</script>

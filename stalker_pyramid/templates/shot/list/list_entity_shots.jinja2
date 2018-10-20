@@ -1,5 +1,5 @@
 {# Stalker Pyramid a Web Base Production Asset Management System
- Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
+ Copyright (C) 2009-2018 Erkan Ozgur Yilmaz
 
  This file is part of Stalker Pyramid.
 
@@ -33,8 +33,8 @@
 {# PAGE-CONTENT #}
 {% block page_content %}
 
-    {% set page_title='Shots' %}
-    {% include 'page_header.jinja2' %}
+{#    {% set page_title='Shots' %}#}
+{#    {% include 'page_header.jinja2' %}#}
 
     <div id="loading_spinner" class="well well-sm">
 
@@ -54,7 +54,7 @@
                     <a data-target="#dialog_template"
                        data-toggle="modal"
                        data-keyboard=false
-                       href="{{ request.route_url("create_shot_dialog", id=-1, _query={'project_id': entity.id }) }}"
+                       href="{{ request.route_url("create_shot_dialog", id=-1, _query={'project_id': entity.project.id }) }}"
                        class="white">
                         <i class="icon-plus"></i>
                         New
@@ -76,10 +76,10 @@
 
                     <thead>
                     <tr id="shots_table_column">
-                        <th>Sequence</th>
-                        <th>Status</th>
-                        <th>Thumbnail</th>
-                        <th>Name</th>
+                        <th style="width: 40px">Sequence</th>
+                        <th style="width: 40px">Status</th>
+                        <th style="width: 150px">Thumbnail</th>
+                        <th style="width: 150px">Name</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -120,19 +120,25 @@
     {% raw %}
     <script id="tmpl_shotRow" type="text/x-dot-template">
         <tr id="shot_row_{{=it.id}}">
-            <td style="width:20px;">
+            <td style="width:15px;">
                 <a href='/tasks/{{=it.sequence_id}}/view'>{{=it.sequence_name}}</a><br/>
             </td>
-            <td style="width:20px;"><span
-                    class="label label-{{=it.status_color}}">{{=it.status}}</span><br/><br/>
+            <td style="width:15px;"><span
+                    class="label label-status_{{=it.status_color}}">{{=it.status}}</span><br/>
             </td>
             <td>
-                <img style='width:auto; height: 100px;'
+                <img style="width:auto; height: auto; max-height: 80px;"
                      class="img-thumbnail"
                      src="{{=it.thumbnail_full_path }}">
             </td>
             <td id="shot_summary_cell_{{=it.id}}">
-                <a href='{{=it.link}}'>{{=it.name}}</a>
+
+                <a href='{{=it.link}}'>{{=it.name}}</a><br/>
+                {{=it.cut_in}} - {{=it.cut_out}} = {{=it.duration}}
+                <br/>
+                {{=it.fps}} fps
+                <br/>
+                {{=it.description}}
                 {{ if (it.update_shot_action) { }}
                 <a class="blue pull-right"
                    data-target="#dialog_template"
@@ -140,8 +146,8 @@
                    data-keyboard=false
                    href="{{=it.update_shot_action}}">
                     <i class="icon-edit bigger-130"></i>
-                </a>{{ } }}<br/>
-                {{=it.description}}<br/>
+                </a>{{ } }}
+
             </td>
         </tr>
     </script>
@@ -160,140 +166,188 @@
 
     {% raw %}
     <script id="tmpl_taskCell" type="text/x-dot-template">
-        <td class="no-padding" style="width:120px;">
-            <div class="{{=it.status_color}}"
-                 style="width:120px; height:105px; padding:5px;">
+        <td class="no-padding" style="width:125px;">
+            <div class="status_{{=it.status_color}}"
+                 style="padding:5px; height: 65px"">
                 <span>
-                    <a class="white" href="/tasks/{{=it.id }}/view">{{=it.name}}</a>
-
+                    <strong><a class="white" href="/tasks/{{=it.id }}/view">{{=it.name}}</a></strong>
                     {{ if (it.update_shot_action) { }}
-                    <a class="white pull-right"
-                       data-target="#dialog_template"
-                       data-toggle="modal"
-                       data-keyboard=false
-                       href="/tasks/{{=it.id }}/update/dialog">
-                        <i class="icon-edit bigger-130"></i>
-                    </a>{{ } }}<br/><br/><br/>
 
-                    {{ if (it.percent_complete!='') { }}
-                        {{=it.status}}
-                        <div class="progress progress-success no-padding">
-                                <div style="width:{{=it.percent_complete}}%" class="bar">
-                                    <span>{{= it.percent_complete}}%</span>
+                        <a class="white pull-right"
+                           data-target="#dialog_template"
+                           data-toggle="modal"
+                           data-keyboard=false
+                           href="/tasks/change/properties/dialog?task_ids={{=it.id }}">
+                           <i class="icon-edit bigger-130"></i>
+                        </a>
 
-                                </div>
-                         </div>
+                    <br/>
+                    {{ } }}
+                    <div class="no-padding">
+                        <!--{{ if(it.bid_timing){ }}-->
+                            <!--<strong>Bid: </strong>-->
+                            <!--<span id='bid_timing_{{=it.id}}'>{{=it.bid_timing}}</span>-->
+                            <!--<span id='bid_unit_{{=it.id}}'>{{=it.bid_unit }}</span>-->
+                            <!--<br/>-->
+                            <!--<strong>S_T: </strong>-->
+                            <!--<span id='schedule_timing_{{=it.id}}'>{{=it.schedule_timing}}</span>-->
+                            <!--<span id='schedule_unit_{{=it.id}}'>{{=it.schedule_unit }}</span>-->
+                        <!--{{ } }}-->
+                        <!--<br/>-->
+                        <span><a href='/users/{{=it.resource_id}}/view'>{{=it.resource_name}}</a></span>
+                    </div>
+
+                    {{ if (it.percent_complete !== '') { }}
+                        <!--{{=it.status}}-->
+                        <div class="progress progress-mini progress-success no-padding">
+                            <div style="width:{{=it.percent_complete}}%" class="bar">
+                                <span>{{= it.percent_complete.toFixed(1)}}%</span>
+                            </div>
+                        </div>
+
                     {{ } else {}}
 
-                        <br/>
-                        {{=it.status}}
+                        <!--{{=it.status}}-->
+
+                    {{ } }}
+                    {{ if (it.review_count > 0) { }}
+                        <!--{{=it.status}}-->
+                        <span class="label label-large label-pink arrowed-right"><a
+                               data-target="#html_template"
+                               data-toggle="modal"
+                               data-keyboard=false href="/entities/{{=it.id }}/notes/list/inmodal"
+                               tabindex="-1">
+                               HREV</a></span>
                     {{ } }}
 
                 </span>
-
-
-
             </div>
         </td>
     </script>
     {% endraw %}
 
-
-
     <script>
-        $(document).ready(function () {
-
+        $(function(){
             var icon_name = get_icon('shot');
             $('#items_header').append('<i class=' + icon_name + '></i>');
-            // fill shots table with dynamic data
-            $.getJSON('/shots/children/task_type/').then(function (types_data) {
+        });
+    </script>
+    
+    <script>
 
-                var types = types_data;
+        var all_tasks_list = [];
+
+        // fill shots table with dynamic data
+        // first get all the children task types
+        // to define the columns
+        $.getJSON('/shots/children/task_type/?entity_id={{ entity.id }}').then(function (types_data) {
+
+            var types = types_data;
+
+            $(function () {
                 var column_template = doT.template($('#tmpl_shotColumn').html());
+                var k;
+                var table_column = $('#shots_table_column');
+                for (k = 0; k < types_data.length; k++) {
+                    table_column.append(column_template(types[k]));
+                }
 
-                $(function () {
-                    var k;
-                    var table_column = $('#shots_table_column');
-                    for (k = 0; k < types_data.length; k++) {
+                $.getJSON('/entities/{{ entity.id }}/shots/').then(function (data) {
 
-                        // append it to the table
-                        table_column.append(column_template(types[k]));
-                    }
+                    var shots = data;
+                    var shot_template = doT.template($('#tmpl_shotRow').html());
+                    // wait until document is ready
+                    $(function () {
+                        var i;
+                        var table_body = $('#shots_table').find('tbody');
 
+                        for (i = 0; i < data.length; i++) {
+                            data[i].link = '/shots/' + data[i].id + '/view';
+                            data[i].status_color = data[i].status.toLowerCase();
+                            data[i].duration = data[i].cut_out - data[i].cut_in;
 
-                    $.getJSON('/entities/{{ entity.id }}/shots/').then(function (data) {
-
-                        var shots = data;
-                        var shot_template = doT.template($('#tmpl_shotRow').html());
-
-
-                        // wait until document is ready
-                        $(function () {
-                            var i;
-                            var table_body = $('#shots_table>tbody');
-                            for (i = 0; i < data.length; i++) {
-
-                                data[i].link = '/shots/' + data[i].id + '/view';
-
-                                if (data[i].thumbnail_full_path == null) {
-                                    data[i].thumbnail_full_path = '{{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}';
-                                }
-                                else {
-                                    data[i].thumbnail_full_path = '/' + data[i].thumbnail_full_path;
-                                }
-
-                                data[i].came_from = '{{ request.current_route_path() }}'
-
-
-                                // append it to the table
-                                table_body.append(shot_template(data[i]));
-
-                                var cell_template = doT.template($('#tmpl_taskCell').html());
-
-                                var shot_row = $('#shot_row_' + data[i].id);
-
-                                for (var j = 0; j < types_data.length; j++) {
-
-                                    var tasks = data[i][types_data[j].name];
-
-
-                                    if (tasks) {
-
-                                        var task = tasks[0];
-
-                                        console.log('task '+task[0])
-
-                                        shot_row.append(cell_template({'id': task[0], 'name': task[1], 'status': task[2], 'status_color': task[2].toLowerCase(), 'percent_complete':(task[2]=='WIP'?task[3]:''),'update_shot_action': data[i].update_shot_action}));
-
-                                    } else {
-                                        shot_row.append(cell_template({'id': '', 'name': '', 'status': '', 'status_color': 'black2','percent_complete':''}));
-                                    }
-
-                                }
-
-                                var shot_summary_cell = $('#shot_summary_cell_' + data[i].id);
-                                var shot_summary_cell_template = doT.template($('#tmpl_shotSummaryCell').html());
-
-                                for (var n = 0; n < data[i]['nulls'].length; n++) {
-                                    var null_type_task = data[i]['nulls'][n];
-                                    shot_summary_cell.append(shot_summary_cell_template({'link': '/tasks/' + null_type_task[0] + '/update/dialog', 'name': null_type_task[1], 'status': null_type_task[2], 'status_color': null_type_task[3]}));
-                                }
-
+                            if(data[i].fps == null){
+                                data[i].fps = '{{ entity.project.fps }}';
                             }
 
-                            var oTable1 = $('#shots_table').dataTable();
+                            if (data[i].description.length>30){
+                                data[i].description = data[i].description.substring(0,30)+"...";
+                            }
 
-                            $('#loading_spinner').hide();
-                            $('#content').show();
+                            if (data[i].thumbnail_full_path === null) {
+                                data[i].thumbnail_full_path = '{{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}';
+                            } else {
+                                data[i].thumbnail_full_path = '/' + data[i].thumbnail_full_path;
+                            }
 
-                        });
+                            data[i].came_from = '{{ request.current_route_path() }}';
+
+                            // append it to the table
+                            table_body.append(shot_template(data[i]));
+
+                            var cell_template = doT.template($('#tmpl_taskCell').html());
+                            var shot_row = $('#shot_row_' + data[i].id);
+
+                            for (var j = 0; j < types_data.length; j++) {
+                                var tasks = data[i][types_data[j].name];
+                                if (tasks) {
+                                    var task = tasks[0];
+
+                                    shot_row.append(
+                                        cell_template({
+                                            'id': task.id,
+                                            'name': task.name,
+                                            'status': task.status,
+                                            'status_color': task.status.toLowerCase(),
+                                            'percent_complete':(task.status=='WIP'?task.percent:''),
+                                            'update_shot_action': data[i].update_shot_action,
+                                            'bid_timing':task.bid_timing,
+                                            'bid_unit':task.bid_unit,
+                                            'schedule_timing':task.schedule_timing,
+                                            'schedule_unit':task.schedule_unit,
+                                            'resource_name':task.resource_name,
+                                            'resource_id':task.resource_id,
+                                            'review_count': task.review_count
+                                        })
+                                    );
+                                } else {
+                                    shot_row.append(
+                                        cell_template({
+                                            'id': '',
+                                            'name': '',
+                                            'status': '',
+                                            'status_color': 'black2',
+                                            'percent_complete':'',
+                                            'resource_name':''
+                                        })
+                                    );
+                                }
+                            }
+
+                            var shot_summary_cell = $('#shot_summary_cell_' + data[i].id);
+                            var shot_summary_cell_template = doT.template($('#tmpl_shotSummaryCell').html());
+
+                            for (var n = 0; n < data[i]['nulls'].length; n++) {
+                                var null_type_task = data[i]['nulls'][n];
+                                shot_summary_cell.append(shot_summary_cell_template({'link': '/tasks/' + null_type_task[0] + '/update/dialog', 'name': null_type_task[1], 'status': null_type_task[2], 'status_color': null_type_task[3]}));
+                            }
+                        }
+
+                        var oTable1 = $('#shots_table').dataTable();
+
+                        $('#loading_spinner').hide();
+                        $('#content').show();
+
                     });
-
-
                 });
-            })
-
+            });
         });
+    </script>
+    <script type="text/javascript">
+        function destruct_html_modal() {
+            $('#items_table').unbind();
+            $('#html_template').data('modal', null);
+        }
     </script>
 
 

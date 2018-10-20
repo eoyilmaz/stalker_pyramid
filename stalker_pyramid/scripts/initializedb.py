@@ -1,3 +1,22 @@
+# -*- coding: utf-8 -*-
+# Stalker Pyramid a Web Base Production Asset Management System
+# Copyright (C) 2009-2018 Erkan Ozgur Yilmaz
+#
+# This file is part of Stalker Pyramid.
+#
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation;
+# version 2.1 of the License.
+#
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public
+# License along with this library; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 import os
 import sys
 
@@ -7,6 +26,7 @@ from pyramid.paster import (
 )
 
 from stalker import db, StatusList, Status, Type
+from stalker.db.session import DBSession
 
 
 def usage(argv):
@@ -38,10 +58,10 @@ def create_statuses_and_status_lists():
     project_status_list.statuses = [new, wip, cmpl]
 
     # Warning! Not using scoped_session here, it is the plain old session
-    db.DBSession.add_all([
+    DBSession.add_all([
         project_status_list,
     ])
-    db.DBSession.commit()
+    DBSession.commit()
 
 
 def create_ticket_types():
@@ -58,8 +78,8 @@ def create_ticket_types():
         )
 
     # Warning! Not using scoped_session here, it is the plain old session
-    db.DBSession.add(review)
-    db.DBSession.commit()
+    DBSession.add(review)
+    DBSession.commit()
 
 
 def main(argv=sys.argv):

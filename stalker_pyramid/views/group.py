@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Stalker Pyramid a Web Base Production Asset Management System
-# Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
+# Copyright (C) 2009-2018 Erkan Ozgur Yilmaz
 #
 # This file is part of Stalker Pyramid.
 #
@@ -17,13 +17,14 @@
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
+import pytz
 import datetime
 import transaction
 from pyramid.httpexceptions import HTTPFound
 from pyramid.view import view_config
 from webob import Response
 
-from stalker.db import DBSession
+from stalker.db.session import DBSession
 from stalker import (defaults, Group, Project, Entity, Studio, Permission,
                      EntityType)
 
@@ -35,8 +36,10 @@ from stalker_pyramid.views import (log_param, get_logged_in_user,
 import logging
 from stalker_pyramid.views.auth import get_permissions_from_multi_dict
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+#logger = logging.getLogger(__name__)
+#logger.setLevel(logging.DEBUG)
+from stalker_pyramid import logger_name
+logger = logging.getLogger(logger_name)
 
 
 @view_config(
@@ -91,7 +94,7 @@ def create_group(request):
             logger.debug('***create group method ends ***')
 
         except BaseException as e:
-            request.session.flash('error:' + e.message)
+            request.session.flash('error: %s' % e)
             HTTPFound(location=came_from)
     else:
         logger.debug('not all parameters are in request.params')
@@ -103,7 +106,7 @@ def create_group(request):
         transaction.abort()
         return response
 
-    response = Response('successfully updated %s group!' % name)
+    response = Response('successfully created %s group!' % name)
     return response
 
 
@@ -141,7 +144,8 @@ def update_group(request):
         group.description = description
         group.permissions = permissions
         group.updated_by = logged_in_user
-        group.date_updated = datetime.datetime.now()
+        utc_now = datetime.datetime.now(pytz.utc)
+        group.date_updated = utc_now
 
         DBSession.add(group)
 
@@ -313,25 +317,21 @@ def get_group_permissions(request):
 def get_groups(request):
     """returns all the groups in database
     """
-    update_group_permission = PermissionChecker(request)('Update_Department')
-    delete_group_permission = PermissionChecker(request)('Delete_Department')
+    logger.debug('***get_groups method starts ***')
+
+    update_group_permission = PermissionChecker(request)('Update_Group')
+    delete_group_permission = PermissionChecker(request)('Delete_Group')
 
     return [
         {
             'id': group.id,
             'name': group.name,
-            'thumbnail_full_path':
-                group.thumbnail.full_path if group.thumbnail else None,
-            'created_by_id': group.created_by.id,
-            'created_by_name': group.created_by.name,
+            'thumbnail_full_path': group.thumbnail.full_path if group.thumbnail else None,
+            'created_by_id': group.created_by.id if group.created_by else None,
+            'created_by_name': group.created_by.name if group.created_by else None,
             'users_count': len(group.users),
-            'update_group_action':
-                '/groups/%s/update/dialog' % group.id
-                if update_group_permission else None,
-            'delete_group_action':
-                '/groups/%s/delete/dialog' % group.id
-                if delete_group_permission else None
-
+            'update_group_action': '/groups/%s/update/dialog' % group.id if update_group_permission else None,
+            'delete_group_action': '/groups/%s/delete/dialog' % group.id if delete_group_permission else None
         }
         for group in Group.query.order_by(Group.name.asc()).all()
     ]
@@ -353,7 +353,7 @@ def get_group(request):
             'id': group.id,
             'name': group.name,
             'thumbnail_full_path':
-                group.thumbnail.full_path if group.thumbnail else None,
+            group.thumbnail.full_path if group.thumbnail else None,
             'created_by_id': group.created_by.id,
             'created_by_name': group.created_by.name,
             'users_count': len(group.users),
@@ -364,38 +364,42 @@ def get_group(request):
 
 @view_config(
     route_name='get_entity_groups',
-    renderer='json',
-    permission='List_Group'
+    renderer='json'
 )
 @view_config(
     route_name='get_user_groups',
-    renderer='json',
-    permission='List_Group'
+    renderer='json'
 )
 def get_entity_groups(request):
     """returns all the groups of a given Entity
     """
+
+    logger.debug('***get_entity_groups method starts ***')
+
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
 
-    update_group_permission = PermissionChecker(request)('Update_Department')
-    delete_group_permission = PermissionChecker(request)('Delete_Department')
+    update_group_permission = PermissionChecker(request)('Update_Group')
+    delete_group_permission = PermissionChecker(request)('Delete_Group')
 
     return [
         {
             'id': group.id,
             'name': group.name,
             'thumbnail_full_path':
-                group.thumbnail.full_path if group.thumbnail else None,
-            'created_by_id': group.created_by.id,
-            'created_by_name': group.created_by.name,
-            'users_count': len(group.users),
-            'update_group_action':
-                '/groups/%s/update/dialog' % group.id
-                if update_group_permission else None,
-            'delete_group_action':
-                '/groups/%s/delete/dialog' % group.id
-                if delete_group_permission else None
+            group.thumbnail.full_path if group.thumbnail else None,
+            'created_by_id': group.created_by.id if group.created_by else None,
+            'created_by_name': group.created_by.name if group.created_by else None,
+            'description': len(group.users),
+            'item_view_link': '/groups/%s/view' % group.id,
+            'item_update_link': '/groups/%s/update/dialog' % group.id
+            if update_group_permission else None,
+            'item_remove_link':
+            '/entities/%s/%s/remove/dialog?came_from=%s' % (
+                entity.id,
+                group.id,
+                request.current_route_path()
+            ) if delete_group_permission else None
         }
         for group in sorted(entity.groups, key=lambda x: x.name.lower())
     ]

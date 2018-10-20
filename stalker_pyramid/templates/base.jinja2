@@ -1,5 +1,5 @@
 <!-- Stalker a Production Asset Management System
- Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
+ Copyright (C) 2009-2018 Erkan Ozgur Yilmaz
 
  This library is free software; you can redistribute it and/or
  modify it under the terms of the GNU Lesser General Public
@@ -19,13 +19,16 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Stalker Pyramid</title>
+    {% if entity %}
+        <title>STALKER / {{ entity.name }}</title>
+    {% else %}
+        <title>Stalker Pyramid</title>
+    {% endif %}
 
     {#    <meta name="description" content="with draggable and editable events"/>#}
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-
 
     {# special case for doT it needs to be the very first script to let Gantt Chart view #}
     <script src='{{ request.static_url("stalker_pyramid:static/doT/doT.min.js") }}'></script>
@@ -33,6 +36,7 @@
     {# PRE-HEADER #}
     {% block pre_header %}
     {% endblock pre_header %}
+
 
     <link rel="stylesheet"
           href='{{ request.static_url("stalker_pyramid:static/ace/css/chosen.css") }}'/>
@@ -43,12 +47,25 @@
     <link rel="stylesheet"
           href='{{ request.static_url("stalker_pyramid:static/ace/css/daterangepicker.css") }}'/>
     <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/datepicker.css") }}'/>
+    <link rel="stylesheet"
           href='{{ request.static_url("stalker_pyramid:static/ace/css/colorpicker.css") }}'/>
     <link rel="stylesheet"
           href='{{ request.static_url("stalker_pyramid:static/ace/css/jquery-ui-1.10.3.custom.min.css") }}'/>
     <link rel="stylesheet"
           href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap-editable.css") }}'/>
-
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/jqGrid/css/ui.jqgrid.css") }}'/>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/jqGrid/css/ui.jqgrid-bootstarp.css") }}'/>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/jqGrid/css/ui.multiselect.css") }}'/>
+    <link rel="stylesheet"
+              href='{{ request.static_url("stalker_pyramid:static/jqPlot/syntaxhighlighter/styles/shCoreDefault.min.css") }}'/>
+    <link rel="stylesheet"
+              href='{{ request.static_url("stalker_pyramid:static/jqPlot/syntaxhighlighter/styles/shThemejqPlot.min.css") }}'/>
+    <link rel="stylesheet"
+             href='{{ request.static_url("stalker_pyramid:static/jqPlot/jquery.jqplot.min.css") }}' />
 
 
     <!--basic styles-->
@@ -69,13 +86,8 @@
     <![endif]-->
 
     <!--page specific plugin styles-->
-
-    <link rel="stylesheet"
-          href='{{ request.static_url("stalker_pyramid:static/ace/css/jquery-ui-1.10.3.full.min.css") }}'>
     <link rel="stylesheet"
           href='{{ request.static_url("stalker_pyramid:static/ace/css/jquery.gritter.css") }}'>
-    <link rel="stylesheet"
-          href='{{ request.static_url("stalker_pyramid:static/ace/css/colorbox.css") }}'>
 
     <!--fonts-->
     <link rel="stylesheet"
@@ -95,6 +107,10 @@
           href='{{ request.static_url("stalker_pyramid:static/ace/css/ace-ie.min.css") }}'/>
     <![endif]-->
 
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/stalker/css/colorbox.css") }}'>
+
+{#    <script class="include" type="text/javascript" src="{{ request.static_url("stalker_pyramid:static/jquery/jquery-1.11.1.min.js") }}"></script>#}
     <style>
         .spinner-preview {
             width: 100px;
@@ -115,7 +131,7 @@
         }
 
         .modal-body {
-            max-height: 650px;
+            max-height: 90% {# 650px #};
         }
 
         {# fix for autocomplete and jquery-ui#}
@@ -134,9 +150,9 @@
           href='{{ request.static_url("stalker_pyramid:static/stalker/css/stalker.css") }}'/>
 
     {# TODO: some scripts need to be here - will fix later #}
-    <script src='{{ request.static_url("stalker_pyramid:static/jquery/jquery-2.1.0.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/jquery/jquery-2.1.1.min.js") }}'></script>
     <!--ace settings handler-->
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.colorbox-min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/jquery.colorbox-min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/ace-extra.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/moment/moment.min.js") }}'></script>
 
@@ -145,38 +161,18 @@
     {% endblock templates %}
 
 </head>
-<body class="navbar-fixed breadcrumbs-fixed skin-1">
-{% for message in request.session.pop_flash() %}
-    {% set message_type=message.split(':')[0] %}
-    {% set message_content=message.split(':')[1] %}
-    <div class="flash-message alert alert-{{ message_type }} text-center hide">
-        <button type="button" class="close" data-dismiss="alert">
-            <i class="icon-remove"></i>
-        </button>
-        <p>
-            <strong>
-                {{ message_type.title() }}!
-            </strong>
-            {{ message_content|safe }}
-        </p>
-    </div>
-{% endfor %}
 
-{% raw %}
-<script id="tmpl_flash_message" type="text/x-dot-template">
-    <div class="flash-message alert alert-{{= it.type }} text-center hide">
-        <button type="button" class="close" data-dismiss="alert">
-            <i class="icon-remove"></i>
-        </button>
-        <p>
-            <strong>
-                {{= it.title }}!
-            </strong>
-            {{= it.message }}
-        </p>
-    </div>
+<body class="navbar-fixed breadcrumbs-fixed skin-1">
+
+<script id="tmpl_flash_message" type="text/x-messages">
+    {% for message in request.session.pop_flash() %}
+        {% set message_type=message.split(':')[0] %}
+        {% set message_content=message.split(':')[1] %}
+        <div type='{{ message_type }}' title='{{ message_type.title() }}!'>
+            {{ message_content|safe }}
+        </div>
+    {% endfor %}
 </script>
-{% endraw %}
 
 
 {% raw %}
@@ -187,7 +183,7 @@
                href="#"
                style="text-align: center; overflow: hidden; width: 100px">
                 <img id="sidebar_avatar"
-                     style="height: 100px; width: auto; max-width: none;
+                     style="height: auto; width: 100%; max-width: none;
                       position: relative; left: 100%; margin-left: -200%"
                      class="img-thumbnail"
                      src={{=it.thumbnail_full_path}}>
@@ -197,11 +193,18 @@
                 <h5 class="media-heading"><span style='color: #b1bac1;'>{{=it.name}}</span>
                     <small>{{=it.code}}</small>
                 </h5>
-                <a href={{=it.update_link}}
-                   class="menu-text">
-                    <i class="icon-edit"></i>
-                    Update
-                </a>
+                {{ if (it.update_link) { }}
+                    <a href={{=it.update_link}}
+                       {{ if (it.modal_view) { }}
+                        data-target="#dialog_template"
+                        data-toggle="modal"
+                        data-keyboard=false
+                       {{ } }}
+                       class="menu-text">
+                        <i class="icon-edit"></i>
+                        Update
+                    </a>
+                {{ } }}
             </div>
         </div>
     </li>
@@ -229,7 +232,7 @@
 {% raw %}
 <script id="tmpl_sidebar_tree_sublink" type="text/x-dot-template">
 
-    <li>
+    <li class="{{=it.state}}">
         <a href={{=it.link}}>
             <i class="icon-double-angle-right"></i>
             {{=it.name }}
@@ -245,76 +248,155 @@
         <a href={{=it.link}}>
             <i class={{=it.icon}}></i>
             <span class="menu-text">{{=it.title}}</span>
+            {{ if (it.count !== 'no_badge') { }}
             <span id="{{=it.title }}_count"
                   class="badge {{ if (it.count > 0) { }}badge-important{{ } else { }}badge-success{{ } }}">{{=it.count}}</span>
+            {{ } }}
         </a>
     </li>
 </script>
 {% endraw %}
 
-<script>
-    var page_of = function (name, code, thumbnail_full_path, update_link) {
-        var sidebar_list = $('#sidebar_list');
-        var media_template = doT.template($('#tmpl_sidebar_media').html());
-
-
-        sidebar_list.append(media_template({
-            'name': name,
-            'thumbnail_full_path': thumbnail_full_path,
-            'code': code,
-            'update_link': update_link
-        }));
-    }
+{% raw %}
+<script id="tmpl_pillsbar_link" type="text/x-dot-template">
+    <li class="{{=it.state}}" link={{=it.link}}>
+        <a data-toggle="tab" href="" >
+            <i class={{=it.icon}}></i>
+            <span class="menu-text">{{=it.title}}</span>
+            {{ if (it.count !== 'no_badge') { }}
+            <span id="{{=it.title }}_count"
+                  class="badge {{ if (it.count > 0) { }}badge-important{{ } else { }}badge-success{{ } }}">{{=it.count}}</span>
+            {{ } }}
+        </a>
+    </li>
 </script>
+{% endraw %}
+
+
+<script></script>
+
+
 <script>
     var menu_of = function (title, state, address, icon, count) {
         var sidebar_list = $('#sidebar_list');
         var link_template = doT.template($('#tmpl_sidebar_link').html());
 
-
-        sidebar_list.append(link_template({
+        var options = {
             'title': title,
             'state': state,
             'link': address,
             'icon': icon,
             'count': count
-        }));
+        };
+
+        var rendered_template = $($.parseHTML(link_template(options)));
+        sidebar_list.append(rendered_template);
+
+        var badge = rendered_template.find('.badge');
+
+        // update the badge
+        if ( typeof(count) === 'string' && count !== 'no_badge') {
+            // it is the address of the source
+            $.getJSON(count).then(function (data) {
+                count = data;
+                // now update the side bar badge
+                badge.text(count);
+                if (count > 0){
+                    badge.removeClass('badge-success').addClass('badge-important');
+                }
+            });
+        }
     }
 </script>
+
 <script>
     var submenu_of = function (id, treeItemType) {
-
         $.getJSON('/entities/' + id + '/' + treeItemType.toLowerCase() + 's/').then(function (data) {
-
-            $(document).ready(function () {
-
+            $(function () {
                 var sidebar_list = $('#sidebar_list');
                 var tree_link_template = doT.template($('#tmpl_sidebar_tree_link').html());
                 var data_counts = data.length;
 
                 if (data_counts > 0) {
-
                     sidebar_list.append(tree_link_template({
                         'title': treeItemType + 's',
                         'icon': get_icon(treeItemType.toLowerCase())
                     }));
-
                 }
 
                 var item_sublink = $('#' + treeItemType + 's_sublink');
                 var tree_sublink_template = doT.template($('#tmpl_sidebar_tree_sublink').html());
 
-
                 for (var i = 0; i < data_counts; i++) {
-
-                    data[i].link = '/' + treeItemType.toLowerCase() + 's/' + data[i].id + '/view'
-
-                    item_sublink.append(tree_sublink_template(data[i]))
-
+                    data[i].link = '/' + treeItemType.toLowerCase() + 's/' + data[i].id + '/view';
+                    item_sublink.append(tree_sublink_template(data[i]));
                 }
             });
         });
     }
+</script>
+
+<script>
+    var menus_under_title = function (title, icon, menuItems) {
+        $(function () {
+            var sidebar_list = $('#sidebar_list');
+            var tree_link_template = doT.template($('#tmpl_sidebar_tree_link').html());
+            var data_counts = menuItems.length;
+
+            if (data_counts > 0) {
+                sidebar_list.append(tree_link_template({
+                    'title': title,
+                    'icon': get_icon(icon)
+                }));
+            }
+
+            var item_sublink = $('#' + title + '_sublink');
+            var tree_sublink_template = doT.template($('#tmpl_sidebar_tree_sublink').html());
+
+            for (var i = 0; i < data_counts; i++) {
+                item_sublink.append(tree_sublink_template(menuItems[i]));
+            }
+        });
+    }
+</script>
+
+<script>
+    // cache user ids and names
+    var all_users = [];
+    var all_projects = [];
+
+    $.getJSON('/users/').then(function (data) {
+        all_users = data;
+    });
+
+    $.getJSON('/projects/').then(function (data) {
+        all_projects = data;
+    });
+
+    var get_entity_name = function(id, entity_list){
+        var user = objectFindByKey(entity_list, 'id', id);
+        if(user != null){
+            return user.name;
+        }
+        return id;
+    };
+
+    function objectFindByKey(array, key, value) {
+        for (var i = 0; i < array.length; i++) {
+            if (array[i][key] == value){
+                return array[i];
+            }
+        }
+        return null;
+    }
+
+    var get_user_name = function(id){
+        return get_entity_name(id, all_users);
+    };
+
+    var get_project_name = function(id){
+        return get_entity_name(id, all_projects);
+    };
 </script>
 
 
@@ -350,39 +432,6 @@
                         {% block page_content %}
                         {% endblock page_content %}
 
-                        {#                        <div class="ace-settings-container"#}
-                        {#                         id="ace-settings-container">#}
-                        {#                        <div class="btn btn-app btn-mini btn-warning ace-settings-btn open"#}
-                        {#                             id="ace-settings-btn">#}
-                        {#                            <i class="icon-cog bigger-150"></i>#}
-                        {#                        </div>#}
-                        {##}
-                        {#                        <div class="ace-settings-box open"#}
-                        {#                             id="ace-settings-box">#}
-                        {#                            <div>#}
-                        {#                                <div class="pull-left">#}
-                        {#                                    <select id="skin-colorpicker"#}
-                        {#                                            class="hide"#}
-                        {#                                            style="display: none;">#}
-                        {#                                        <option data-skin="default"#}
-                        {#                                                value="#438EB9">#438EB9#}
-                        {#                                        </option>#}
-                        {#                                        <option data-skin="skin-1"#}
-                        {#                                                value="#222A2D">#222A2D#}
-                        {#                                        </option>#}
-                        {#                                        <option data-skin="skin-2"#}
-                        {#                                                value="#C6487E">#C6487E#}
-                        {#                                        </option>#}
-                        {#                                        <option data-skin="skin-3"#}
-                        {#                                                value="#D0D0D0">#D0D0D0#}
-                        {#                                        </option>#}
-                        {#                                    </select>#}
-                        {#                                </div>#}
-                        {#                                <span>&nbsp; Choose Skin</span>#}
-                        {#                            </div>#}
-                        {#                        </div>#}
-                        {#                    </div>#}
-
                     </div>
 
                 </div>
@@ -396,8 +445,6 @@
 {% block modals %}
     {% include 'modals/html_template.jinja2' %}
     {% include 'modals/dialog_template.jinja2' %}
-
-
 {% endblock modals %}
 
 {# SCRIPTS #}
@@ -412,15 +459,19 @@
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/x-editable/ace-editable.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/date.format.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/date.stalker.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.gritter.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/utils.js") }}'></script>
 
     <script type="text/javascript">
         // choose default skin
-        var skin_class = 'skin-1';
-        var body = $(document.body);
-        body.removeClass('skin-1 skin-2 skin-3');
-        body.addClass(skin_class);
-        $('.ace-nav > li.grey').addClass('dark');
-
+        $(function () {
+            var skin_class = 'skin-1';
+            var body = $(document.body);
+            body.removeClass('skin-1 skin-2 skin-3');
+            body.addClass(skin_class);
+            $('.ace-nav > li.grey').addClass('dark');
+        });
+        
         // if it is smaller resize the page content to the window height
         var resize_page_content = function () {
             var page_content = $('.page-content');
@@ -440,109 +491,15 @@
         $(function () {
             resize_page_content();
         });
-
     </script>
 
     <script type="text/javascript">
         if ("ontouchend" in document) document.write("<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.mobile.custom.min.js") }}'>" + "<" + "/script>");
     </script>
 
-    <script type="text/javascript">
-        var get_icon = function (entity_type) {
-            switch (entity_type) {
-                case 'PREV':
-                    return 'icon-pencil';
-                    break;
-                case 'HREV':
-                    return 'icon-mail-reply-all';
-                    break;
-                case 'RTS':
-                    return 'icon-circle-blank';
-                    break;
-                case 'CMPL':
-                    return 'icon-check';
-                    break;
-                case 'WIP':
-                    return 'icon-play';
-                    break;
-                case 'WFD':
-                    return 'icon-circle';
-                    break;
-                case 'DREV':
-                    return 'icon-step-backward';
-                    break;
-                case 'OH':
-                    return 'icon-pause';
-                    break;
-                case 'STOP':
-                    return 'icon-stop';
-                    break;
-                case 'asset':
-                    return 'icon-puzzle-piece';
-                    break;
-                case 'dashboard':
-                    return 'icon-dashboard';
-                    break;
-                case 'department':
-                    return 'icon-group';
-                    break;
-                case 'group':
-                    return 'icon-key';
-                    break;
-                case 'project':
-                    return 'icon-folder-close-alt';
-                    break;
-                case 'permission':
-                    return 'icon-key';
-                    break;
-                case 'reference':
-                    return 'icon-book';
-                    break;
-                case 'resource':
-                    return 'icon-calendar';
-                    break;
-                case 'review':
-                    return 'icon-comments-alt';
-                    break;
-                case 'sequence':
-                    return 'icon-film';
-                    break;
-                case 'shot':
-                    return 'icon-camera';
-                    break;
-                case 'task':
-                    return 'icon-tasks';
-                    break;
-                case 'ticket':
-                    return 'icon-ticket';
-                    break;
-                case 'vacation':
-                    return 'icon-sun';
-                    break;
-                case 'version':
-                    return 'icon-sitemap';
-                    break;
-                case 'user':
-                    return 'icon-user';
-                    break;
-                default:
-                    return 'icon-key';
-                    break;
-            }
-        };
-    </script>
-
-    <script type="text/javascript">
-        {% if entity %}
-            $(document).ready(function () {
-                document.title = 'STALKER / {{ entity.name }}'
-            });
-        {% endif %}
-    </script>
-
     {# Ace Settings Box #}
     <script type="text/javascript">
-        $(document).ready(function () {
+        $(function () {
             // hide ace-settings bar
             $('#ace-settings-box').toggleClass('open');
         });
@@ -557,24 +514,38 @@
 
     {# Pop Flash Messages #}
     <script type='text/javascript'>
-        $(function () {
-            $('.flash-message').slideToggle().removeClass('hide');
-        });
-
         var flash_message = function (settings) {
-            console.debug('settings: ', settings);
             settings.container = settings.container || 'body';
             settings.title = settings.title || '';
             settings.message = settings.message || '';
-            settings.type = settings.type || 'success';
-            console.debug('settings: ', settings);
+            settings.type = settings.type || 'success'; // success, warning, error
 
-            var template = doT.template($('#tmpl_flash_message').text());
-            $(settings.container).prepend($.parseHTML(template(settings)));
+            $.gritter.add({
+                title: settings.title,
+                text: settings.message,
+                class_name: 'gritter-' + settings.type
+            });
+        };
 
-            var visible_flash_messages = $('.flash-message.hide');
-            visible_flash_messages.slideToggle().removeClass('hide');
-        }
+        // flash all session messages as gritter
+        $(function () {
+
+            var item, title, type, message;
+            var all_messages = $.parseHTML($('#tmpl_flash_message').text());
+            for (var i=0; i < all_messages.length; i++){
+                item = $(all_messages[i]);
+                title = item.attr('title');
+                type = item.attr('type');
+                message = item.text();
+                if (title !== undefined && type !== undefined) {
+                    flash_message({
+                        type: type,
+                        title: title,
+                        message: message
+                    });
+                }
+            }
+        });
     </script>
 
     {# Add came_from attribute to all a's #}
@@ -596,54 +567,33 @@
         };
     </script>
 
-    {# Chosen Field Creator #}
-    <script>
-        var chosen_field_creator = function (field, url, data_template,
-                                             selected_id, chosen_options) {
-            // Creates a chosen field
-
-            // fill field with new json data
-            // set the field to updating mode
-            field.attr('is_updating', true);
-            return $.getJSON(url).then(function (data) {
-                // remove current data
-                field.empty();
-
-                // append new options to the select
-                var data_count = data.length;
-                for (var i = 0; i < data_count; i++) {
-
-                    data[i].selected = '';
-
-                    if (data[i].id == selected_id) {
-                        data[i].selected = 'selected';
-                    }
-
-                    field.append(data_template(data[i]));
-                }
-                // set the field to normal mode
-                field.attr('is_updating', false);
-            });
-        };
-    </script>
-
     {# Event Dialog Initialize #}
     <script type="text/javascript">
         $(function () {
             var event_dialog = $('#dialog_template');
+
+            var init_them_all = function(){
+                if (event_dialog.find('script.dialog_loaded')[0] !== undefined){
+                    try {
+                        setTimeout(function(){
+                            // init_dialog() will be loaded with the dialog itself
+                            init_dialog();
+                        });
+                    } catch (e) {
+                        console.log(e);
+                    }
+                } else {
+                    setTimeout(init_them_all, 500);
+                }
+            };
+
             event_dialog.on('shown', function (e) {
-                $('#dialog_template_delete_button').hide()
+                $('#dialog_template_delete_button').hide();
                 e.stopPropagation();
                 e.preventDefault();
-                try {
-                    setTimeout(function(){
-                        // init_dialog() will be loaded with the dialog itself
-                        init_dialog();
-                    });
-                } catch (e) {
-                    console.log(e);
-                }
+                init_them_all();
             });
+
             event_dialog.on('hidden', function (e) {
                 e.stopPropagation();
                 e.preventDefault();
@@ -664,16 +614,16 @@
         $(function () {
             var html_dialog = $('#html_template');
             html_dialog.on('shown', function (e) {
-                 e.stopPropagation();
+                e.stopPropagation();
                 e.preventDefault();
                 try {
-                    init_html_modal();
+                    init_html_modal(-1);
                 } catch (e) {
                     console.log(e)
                 }
             });
             html_dialog.on('hidden', function (e) {
-                 e.stopPropagation();
+                e.stopPropagation();
                 e.preventDefault();
 
                 try {

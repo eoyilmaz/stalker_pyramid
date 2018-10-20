@@ -1,0 +1,133 @@
+<script class="dialog_loaded"></script>
+
+{#<div class="row-fluid">#}
+{#    <table id="good_relation_grid-table"></table>#}
+{#</div>#}
+<div class="row-fluid">
+    <form id='related_good_form'
+      class='form-horizontal'
+      role='form'
+      method="post">
+        <div class="control-group">
+            <div class="span5">
+                <select id='related_good'
+                        name='related_good_id'
+                        required>
+                </select>
+            </div>
+            <div class='span4'>
+                <input id='ratio'
+                       class='input-block-level'
+                       name='ratio'
+                       min=0
+                       max=100
+                       required />
+            </div>
+            <button id='dialog_template_submit_button'
+                type="button"
+                class="btn btn-small btn-primary span2">
+            <i class="icon-ok"></i>
+            Add
+        </button>
+        </div>
+    </form>
+
+
+</div>
+
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.spinner.min.js") }}'></script>
+<script type="text/javascript">
+    function init_dialog() {
+        console.debug('starting to initialize good dialog!!!');
+        var dialog_label = $('#dialog_template_label');
+        dialog_label.find('span').remove();
+        dialog_label.append('<span>{{ good.name }}</span>');
+
+        {% raw %}
+            var good_option_template = doT.template(
+                '<option value={{=it.id}}>{{=it.name}}</option>'
+            );
+        {% endraw %}
+        var related_good = $('#related_good');
+
+        $.getJSON('/goods/').then(function (all_goods) {
+            $.getJSON('/goods/{{ good.id }}/related_goods/').then(function (related_goods) {
+                console.log('data loaded')
+                // remove current data
+                related_good.empty();
+
+                var i, data_count = all_goods.length;
+                for (i = 0; i < data_count; i += 1) {
+                    var in_related_list = false;
+                    for (var j = 0; j < related_goods.length; j += 1) {
+                        if(related_goods[j]['id'] == all_goods[i].id || '{{ good.id }}' == all_goods[i].id ){
+                            in_related_list = true;
+                        }
+                    }
+                    if(!in_related_list){
+                        related_good.append(good_option_template(all_goods[i]));
+                    }
+
+                }
+                // set the field to normal mode
+                related_good.attr('is_updating', false);
+            });
+        });
+
+        $('#ratio').ace_spinner({
+            value:1,
+            min:0,
+            max:100,
+            step:0.1,
+            icon_up:'icon-caret-up',
+            icon_down:'icon-caret-down',
+            btn_up_class:'btn-info',
+            btn_down_class:'btn-info'}).on('change', function(){
+            // check if it is in the range
+            var curr_value = $(this).val();
+{#            $(this).val(curr_value <= 1 ? 1 : curr_value);#}
+        });
+
+
+
+        $('#dialog_template_footer').hide();
+        {# ***************************************************************** #}
+        {# Submit Button #}
+        var submit_button = $('#dialog_template_submit_button');
+        submit_button.on('click', function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+
+            submit_button.button('loading');
+            var related_good_form = $('#related_good_form');
+
+            var url = '/goods/{{ good.id }}/update/relation';
+
+            $.post(
+                url,
+                related_good_form.serialize()
+            ).done(function (jqXHR) {
+                //$('#new_outputs_storage').text(JSON.stringify(jqXHR));
+                window.location.reload();
+            }).fail(function (jqXHR) {
+                bootbox.alert(jqXHR.responseText);
+                submit_button.button('reset');
+            });
+        });
+
+        console.debug('finished initializing the good dialog!')
+    }
+</script>
+
+<script type="text/javascript">
+    function destruct_dialog() {
+        $('#related_good').unbind();
+        $('#ratio').unbind();
+        $('#dialog_template_submit_button').unbind();
+
+        $('#dialog_template').data('modal', null);
+    }
+</script>
+
+
+

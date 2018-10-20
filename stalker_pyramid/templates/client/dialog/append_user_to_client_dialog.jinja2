@@ -1,0 +1,179 @@
+<script class="dialog_loaded"></script>
+
+<div class="row-fluid" >
+    <form id='append_form'
+              class='form-horizontal'
+              role='form'
+              method='post'>
+        <div class='control-group'>
+            <label for='client_user'
+                   class="span2 control-label">User</label>
+            <div class="span10">
+                <select id='client_user'
+                        name='user_id'
+                        data-placeholder='User'
+                        required>
+                </select>
+            </div>
+        </div>
+        <div class='control-group'>
+            <label for='role'
+                   class='span2 control-label'>Role</label>
+            <div class='span10'>
+                <input id='role'
+                       name='role_name'
+                       type='text'
+                       data-placeholder='Role'
+                       is_updating=false
+                       >
+            </div>
+        </div>
+    </form>
+{#    <form id='user_form'#}
+{#      class='form-horizontal'#}
+{#      role='form'#}
+{#      method="post"#}
+{#            >#}
+        {# Name #}
+{#        <div class="control-group">#}
+{#            <label class="span2 control-label"#}
+{#                   for="user_name">Name</label>#}
+{##}
+{#            <div class="span6">#}
+{#                <input id="user_name"#}
+{#                       name='name'#}
+{#                       type="text"#}
+{#                       class="form-control"#}
+{#                       placeholder="Name"#}
+{#                       required>#}
+{#            </div>#}
+{#        </div>#}
+        {# Login #}
+{#        <div class="control-group">#}
+{#            <label for="user_login"#}
+{#                   class="span2 control-label">Login</label>#}
+{##}
+{#            <div class="span6">#}
+{#                <input id="user_login"#}
+{#                       name='login'#}
+{#                       type="text"#}
+{#                       class="form-control"#}
+{#                       placeholder="Login"#}
+{#                        {% if mode == 'Update' %}#}
+{#                       value='{{ user.login }}'#}
+{#                        {% endif %}#}
+{#                       required>#}
+{#            </div>#}
+{#        </div>#}
+        {# Type #}
+{#        <div class="control-group">#}
+{#            <label for="user_type"#}
+{#                   class="span2 control-label">Type</label>#}
+{##}
+{#            <div class="span6">#}
+{#                  <input id="user_type"#}
+{#                         name='type_name'#}
+{#                         placeholder="Type"#}
+{#                         class='input-block-level'#}
+{#                         type='text'#}
+{#                          {% if mode == 'Update' %}#}
+{#                         value='{{ user.type.name }}'#}
+{#                          {% endif %}#}
+{#                         required>#}
+{##}
+{#            </div>#}
+{#        </div>#}
+        {# Email #}
+{#        <div class="control-group">#}
+{#            <label for="user_email"#}
+{#                   class="span2 control-label">Email</label>#}
+{##}
+{#            <div class="span6">#}
+{#                  <span class="input-icon input-icon-left">#}
+{#                      <input id="user_email"#}
+{#                             name='email'#}
+{#                             type="email"#}
+{#                             class="form-control"#}
+{#                             placeholder="Email"#}
+{#                              {% if mode == 'Update' %}#}
+{#                             value='{{ user.email }}'#}
+{#                              {% endif %}#}
+{#                             required>#}
+{#                      <i class="icon-envelope icon-flip-horizontal"></i>#}
+{#                   </span>#}
+{#            </div>#}
+{#        </div>#}
+{#    </form>#}
+</div>
+
+<script type="text/javascript">
+
+    function init_dialog() {
+        console.debug('starting to initialize append_class_to_entity dialog!!!555555');
+
+        $('#dialog_template_label').find('span').remove();
+        $('#dialog_template_label').append('<span>Append User</span>');
+
+        {# ***************************************************************** #}
+        {# CLIENT #}
+        var client_user = $('#client_user');
+        {% raw %}
+            var client_user_option_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
+        {% endraw %}
+        $.getJSON('/clients/{{ client.id }}/user/out_stack/').then(function (u_data) {
+            chosen_searchable_field_creator_by_data(client_user, client_user_option_template, u_data);
+        });
+
+        {# ***************************************************************** #}
+        {# ROLE #}
+        var role = $('#role');
+        {% raw %}
+            var role_option_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
+        {% endraw %}
+        $.getJSON('/roles/').then(function(available_roles){
+            // map available types to an array
+            var available_roles_as_list = [];
+            for (var i=0; i < available_roles.length; i++){
+                available_roles_as_list.push(available_roles[i].name);
+            }
+
+            role.autocomplete({
+                delay: 0,
+                source: available_roles_as_list,
+                minLength: 0
+            });
+
+            role.attr('is_updating', false);
+        });
+
+        {# ***************************************************************** #}
+        {# SUBMIT #}
+        var submit_button = $('#dialog_template_submit_button');
+        submit_button.on('click', function (e) {
+
+            e.stopPropagation();
+            e.preventDefault();
+            submit_button.button('loading');
+
+            var append_form = $("#append_form");
+
+            $.post('/clients/{{ client.id }}/user/append', append_form.serialize() ).done(function (response_text) {
+                window.location.reload();
+                submit_button.button('reset');
+                $('#dialog_template').modal('hide');
+            }).fail(function (jqXHR) {
+                bootbox.alert(jqXHR.responseText);
+                submit_button.button('reset');
+            });
+        });
+
+        console.debug('finished initializing the append_class_to_entity dialog!')
+    }
+</script>
+
+<script type="text/javascript">
+    function destruct_dialog() {
+        $('#dialog_template_submit_button').unbind();
+        $('#dialog_template').data('modal', null);
+    }
+</script>

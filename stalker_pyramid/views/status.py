@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Stalker Pyramid a Web Base Production Asset Management System
-# Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
+# Copyright (C) 2009-2018 Erkan Ozgur Yilmaz
 #
 # This file is part of Stalker Pyramid.
 #
@@ -18,19 +18,22 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 import logging
+import pytz
 import datetime
 
 from pyramid.httpexceptions import HTTPOk
 from pyramid.view import view_config
 
-from stalker.db import DBSession
+from stalker.db.session import DBSession
 from stalker import Status, StatusList, EntityType
 
 from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
                                    get_multi_integer)
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.WARNING)
+#logger = logging.getLogger(__name__)
+#logger.setLevel(logging.WARNING)
+from stalker_pyramid import logger_name
+logger = logging.getLogger(logger_name)
 
 
 # *******************
@@ -112,7 +115,8 @@ def update_status(request):
         status.name = name
         status.code = code
         status.updated_by = logged_in_user
-        status.date_updated = datetime.datetime.now()
+        utc_now = datetime.datetime.now(pytz.utc)
+        status.date_updated = utc_now
         DBSession.add(status)
 
     return HTTPOk()
@@ -222,7 +226,8 @@ def update_status_list(request):
         logger.debug('status_list.statuses : %s' % status_list.statuses)
 
         status_list.updated_by = logged_in_user
-        status_list.date_updated = datetime.datetime.now()
+        utc_now = datetime.datetime.now(pytz.utc)
+        status_list.date_updated = utc_now
 
         DBSession.add(status_list)
 
@@ -258,7 +263,8 @@ def get_statuses_of(request):
     return [
         {
             'id': status.id,
-            'name': status.name + " (" + status.code + ")"
+            'name': status.name + " (" + status.code + ")",
+            'code': status.code
         }
         for status in status_list.statuses
     ]
@@ -278,7 +284,8 @@ def get_statuses_for(request):
     return [
         {
             'id': status.id,
-            'name': status.name + " (" + status.code + ")"
+            'name': status.name + " (" + status.code + ")",
+            'code': status.code
         }
         for status in status_list.statuses
     ] if status_list else []

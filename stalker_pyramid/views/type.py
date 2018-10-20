@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Stalker a Production Asset Management System
-# Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
+# Copyright (C) 2009-2018 Erkan Ozgur Yilmaz
 #
 # This file is part of Stalker.
 #
@@ -20,12 +20,15 @@
 
 from pyramid.view import view_config
 
-from stalker.db import DBSession
+from stalker import db
+from stalker.db.session import DBSession
 from stalker import Type
 
 import logging
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+#logger = logging.getLogger(__name__)
+#logger.setLevel(logging.DEBUG)
+from stalker_pyramid import logger_name
+logger = logging.getLogger(logger_name)
 
 
 @view_config(
@@ -37,18 +40,32 @@ def get_types(request):
     of for the desired type with the given target_entity_type
     """
     target_entity_type = request.params.get('target_entity_type')
+
+    sql_query = """select
+    "SimpleEntities".id,
+    "SimpleEntities".name
+from "Types"
+join "SimpleEntities" on "Types".id = "SimpleEntities".id
+"""
+
     if target_entity_type:
-        return [
-            {
-                'name': type_.name,
-                'id': type_.id
-            }
-            for type_ in Type.query.filter(
-                Type._target_entity_type == target_entity_type
-            ).all()
-        ]
-    else:
-        return [type_.name for type_ in Type.query.all()]
+        sql_query += \
+            """where "Types".target_entity_type = '%s'
+            """ % target_entity_type
+
+    sql_query += """order by "SimpleEntities".name"""
+
+
+
+    result = DBSession.connection().execute(sql_query)
+
+    return [
+        {
+            'id': r[0],
+            'name': r[1]
+        }
+        for r in result.fetchall()
+    ]
 
 
 def query_type(entity_type, type_name):

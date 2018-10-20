@@ -1,0 +1,163 @@
+{# Stalker Pyramid a Web Base Production Asset Management System
+ Copyright (C) 2009-2018 Erkan Ozgur Yilmaz
+
+ This file is part of Stalker Pyramid.
+
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation;
+ version 2.1 of the License.
+
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+#}
+{% extends 'base.jinja2' %}
+
+{# PRE-HEADER #}
+{% block pre_header %}
+
+    <meta name="description" content="3 styles with inline editable feature" />
+
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/chosen.min.css") }}'/>
+
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/jquery-ui-1.10.3.custom.min.css") }}'/>
+{#    <link rel="stylesheet"#}
+{#          href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap-editable.css") }}'/>#}
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/jquery.gritter.css") }}'/>
+{#    <link rel="stylesheet"#}
+{#          href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap-editable.css") }}'/>#}
+
+
+
+{% endblock pre_header %}
+
+{# SIDEBAR #}
+{% block sidebar %}
+
+    {% if entity %}
+        {% include 'sidebar.jinja2' %}
+    {% endif %}
+
+{% endblock sidebar %}
+
+{# BREADCRUMBS #}
+{% block breadcrumbs %}
+
+    {% set page_title='Update' %}
+    {% include 'breadcrumb/breadcrumbs.jinja2' %}
+
+{% endblock breadcrumbs %}
+
+{# PAGE-CONTENT #}
+{% block page_content %}
+
+    {% set page_title='Update' %}
+    {% include 'page_header.jinja2' %}
+
+    {% set project=entity %}
+    <div class="row-fluid">
+
+        <div class="span5">
+            <div class="widget-box">
+                <div class="widget-header widget-header-small header-color-grey">
+                    <h4 class="smaller">
+                        <i class="icon-info-sign"></i>
+                        Basic Information
+                    </h4>
+                </div>
+                <div class="widget-body">
+                    <div class="widget-main">
+{#                        {% set mode='Update' %}#}
+                        {% include 'project/dialog/project_basic_information_form.jinja2' %}
+                        <div class="form-actions">
+                            <button id='submit_button' type="button"
+                                    class="btn btn-info btn-primary">
+                                <i class="icon-ok"></i>Ok
+                            </button>
+                            <button type="button" class="btn">
+                                <i class="icon-remove"></i>Cancel
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="span7">
+            {% set project=entity %}
+            {% include 'project/dialog/project_roles.jinja2' %}
+        </div>
+    </div>
+{% endblock page_content %}
+
+{# EXTRA-SCRIPTS #}
+{% block extrascripts %}
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        {# ***************************************************************** #}
+        {# Submit Button #}
+        var submit_button = $('#submit_button');
+        submit_button.on('click', function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+
+            submit_button.button('loading');
+
+            var project_form = $('#project_form');
+
+            var brand = $('#brand');
+            var production_firm = $('#production_firm');
+            var adv_agency = $('#adv_agency');
+            var product_project_name = $('#product_project_name');
+            var mark_name = $('#mark_name');
+
+            var g_data = {
+                'product_project_name' : product_project_name.val(),
+                'mark_name': mark_name.val()
+            };
+            var generic_text =  JSON.stringify(g_data);
+
+            var _client_query = '';
+            if (production_firm.val()){
+                _client_query +="&client_ids="+production_firm.val();
+            }
+            if (adv_agency.val()){
+                _client_query +="&client_ids="+adv_agency.val();
+            }
+            if (brand.val()){
+                _client_query +="&client_ids="+brand.val();
+            }
+            console.log("project_form.serialize(): _client_query="+_client_query);
+
+
+            if (project_form.validate()) {
+                $.post(
+                    project_form.attr('action'),
+                    project_form.serialize()+"&generic_text="+generic_text+_client_query
+                ).done(function () {
+                    window.location.reload();
+                }).fail(function (jqXHR) {
+                    bootbox.alert(jqXHR.responseText);
+                    submit_button.button('reset');
+                });
+            }
+        });
+    });
+
+
+</script>
+
+{% endblock extrascripts %}
+

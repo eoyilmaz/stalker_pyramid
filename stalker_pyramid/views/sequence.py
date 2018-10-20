@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Stalker Pyramid a Web Base Production Asset Management System
-# Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
+# Copyright (C) 2009-2018 Erkan Ozgur Yilmaz
 #
 # This file is part of Stalker Pyramid.
 #
@@ -18,18 +18,21 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 import logging
+import pytz
 import datetime
 
 from pyramid.httpexceptions import HTTPServerError, HTTPOk
 from pyramid.view import view_config
 
-from stalker.db import DBSession
-from stalker import Project, StatusList, Status, Sequence, Entity
+from stalker.db.session import DBSession
+from stalker import Project, StatusList, Status, Sequence, Entity, Studio
+import stalker_pyramid
 
-from stalker_pyramid.views import get_logged_in_user, milliseconds_since_epoch
+from stalker_pyramid.views import get_logged_in_user, milliseconds_since_epoch, \
+    PermissionChecker
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+from stalker_pyramid import logger_name
+logger = logging.getLogger(logger_name)
 
 
 @view_config(
@@ -115,8 +118,8 @@ def update_sequence(request):
         sequence.description = description
         sequence.status = status
         sequence.updated_by = logged_in_user
-        sequence.date_updated = datetime.datetime.now()
-
+        date_updated = datetime.datetime.now(pytz.utc)
+        sequence.date_updated = date_updated
         DBSession.add(sequence)
 
     else:
@@ -183,6 +186,7 @@ def get_project_sequences_count(request):
 def get_project_sequences(request):
     """returns the related sequences of the given project as a json data
     """
+    # TODO: use pure SQL query
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
 
@@ -204,3 +208,43 @@ def get_project_sequences(request):
         }
         for sequence in entity.sequences
     ]
+
+
+@view_config(
+    route_name='list_sequence_tasks',
+    renderer='templates/task/list/list_sequence_tasks.jinja2'
+)
+def list_sequence_tasks(request):
+    """called when reviewing tasks
+    """
+    logger.debug('list_sequence_tasks starts******************')
+    logged_in_user = get_logged_in_user(request)
+
+    studio = Studio.query.first()
+
+    entity_id = request.matchdict.get('id')
+    if not entity_id:
+        entity = studio
+    else:
+        entity = Entity.query.filter_by(id=entity_id).first()
+
+    task_type = request.params.get('task_type', None)
+
+    logger.debug('task_type %s', task_type)
+
+    projects = Project.query.all()
+    mode = request.matchdict.get('mode', None)
+    came_from = request.params.get('came_from', request.url)
+
+    return {
+        'mode': mode,
+        'entity': entity,
+        'has_permission': PermissionChecker(request),
+        'logged_in_user': logged_in_user,
+        'milliseconds_since_epoch': milliseconds_since_epoch,
+        'stalker_pyramid': stalker_pyramid,
+        'projects': projects,
+        'studio': studio,
+        'came_from': came_from,
+        'task_type':task_type
+    }

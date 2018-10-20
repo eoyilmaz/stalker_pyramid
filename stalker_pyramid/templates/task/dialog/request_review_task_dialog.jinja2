@@ -1,9 +1,15 @@
+<script class="dialog_loaded"></script>
+
 <div class='row-fluid'>
     <div class='span12'>
 
         <div id="version_message">
-            {% include 'version/view/version_card.jinja2' %}
+            {% if version %}
+                {% include 'version/view/version_card.jinja2' %}
+            {%  endif %}
         </div>
+
+        <div class="space"></div>
 
 
         <form id="request_review_task_form"
@@ -37,7 +43,7 @@
 
                 <div class='span9'>
                     <textarea id="note"
-                              name='note'
+                              name='description'
                               class="autosize-transition span12"
                               style="overflow: hidden;
                                          word-wrap: break-word;
@@ -87,7 +93,7 @@
 </script>
 {% endraw %}
 
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap-tag.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/bootstrap-tag.js") }}'></script>
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/chosen.jquery.min.js") }}'></script>
 
 <script>
@@ -95,7 +101,9 @@
     function init_dialog() {
         console.debug('starting to initialize confirm dialog!!!');
 
-        $('#dialog_template_label').text('Request Review Dialog');
+        var dialog_template_label = $('#dialog_template_label');
+        dialog_template_label.find('span').remove();
+        dialog_template_label.append('<span class="green">Request Review Dialog</span>');
 
         {% if selected_responsible == None  %}
 
@@ -115,19 +123,20 @@
             // append a single empty option to the responsible field
             task_responsible.append('<option value=""></option>');
 
-            var responsible_ids = []
+            var responsible_ids = [];
             {% for responsible in task.responsible %}
 
                 task_responsible.append(responsible_template({'id': '{{ responsible.id }}', 'name': '{{responsible.name}}' }));
-                responsible_ids.push('{{ responsible.id }}')
+                responsible_ids.push('{{ responsible.id }}');
 
             {% endfor %}
 
-            task_responsible.val(responsible_ids)
+            task_responsible.val(responsible_ids);
             task_responsible.trigger('liszt:updated');
         {% endif %}
 
         var url = '{{ action }}';
+{#        console.log('url : '+url);#}
         {% if action != '' %}
             var warning_template_id = '#alert-for-{{request_review_mode}}';
 
@@ -171,7 +180,7 @@
                 var request_review_task_form_data = request_review_task_form.serialize() + '&request_review_mode={{ request_review_mode }}';
 
                 {% if selected_responsible %}
-                    request_review_task_form_data += "&selected_responsible_ids='{{ selected_responsible.id }}'";
+                    request_review_task_form_data += "&selected_responsible_ids={{ selected_responsible.id }}";
                 {% endif %}
 
                 $.post(url, request_review_task_form_data).done(function (response) {

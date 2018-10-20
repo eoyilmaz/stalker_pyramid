@@ -1,0 +1,500 @@
+<form id='project_form'
+      class='form-horizontal'
+      role='form'
+      method="post"
+         {% if mode == 'Create' %}
+      action="{{ request.route_url(mode.lower()+'_project') }}"
+        {% elif mode == 'Update' %}
+      action="{{ request.route_url(mode.lower()+'_project', id=project.id) }}"
+        {% endif %}
+      >
+    <div class="row-fluid">
+        {% if mode == 'Update' %}
+            <div class="span3">
+                {% include 'components/avatar.jinja2' %}
+            </div>
+            <div class="span9">
+        {% else %}
+            <div class="span12">
+        {% endif %}
+            {# Name #}
+            <div class="control-group">
+                <label class="span2 control-label"
+                       for="project_name">Name</label>
+
+                <div class="span10">
+                    <input id="project_name"
+                           name='name'
+                           type="text"
+                           class="form-control"
+                           placeholder="Name"
+                            {% if mode == 'Update' %}
+                           value='{{ project.name }}'
+                            {% endif %}
+                           required>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label for='mark_name'
+                       class="span2 control-label">Marka</label>
+
+                <div class="span10">
+                    <input id="mark_name"
+                           name='mark_name'
+                           type="text"
+                           class="form-control"
+                           placeholder="Marka"
+
+                           required>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label for='product_project_name'
+                       class="span2 control-label">Ürün-Film Adı</label>
+
+                <div class="span10">
+                    <input id="product_project_name"
+                           name='product_project_name'
+                           type="text"
+                           class="form-control"
+                           placeholder="Ürün-Film Adı"
+
+                           required>
+                </div>
+            </div>
+
+            {# Code #}
+            <div class="control-group">
+                <label for="project_code"
+                       class="span2 control-label">Code</label>
+
+                <div class="span10">
+                    <input id="project_code"
+                           name='code'
+                           type="text"
+                           class="form-control"
+                           placeholder="Code"
+                            {% if mode == 'Update' %}
+                           value='{{ project.code }}'
+                            {% endif %}
+                           required>
+                </div>
+            </div>
+
+            {# Start & End Dates #}
+            <div class="control-group">
+                <label for="start_end_date_range_picker"
+                       class="span2 control-label">Date</label>
+
+                <div class="span10 input-prepend">
+                    <input id='start_end_date_range_picker'
+                           name='start_and_end_dates'
+                           type="text"
+                           data-date-format="yyyy-mm-dd"
+                           placeholder="Start & End Dates">
+                        <span class="add-on">
+                            <i class="icon-calendar"></i>
+                        </span>
+                </div>
+            </div>
+            {% if mode == 'Update' %}
+                {# Image Format #}
+                <div class="control-group">
+                    <label for='image_format' class="span2 control-label">Image
+                        Format</label>
+
+                    <div class="span10">
+                        <select id='image_format'
+                                name='image_format_id'
+                                data-placeholder='Image Format'
+                                 {% if mode == 'Update' %}
+                                value='{{ project.image_format.name }}'
+                                 {% endif %}
+                                required>
+                        </select>
+                    </div>
+                </div>
+
+                {# FPS #}
+                <div class='control-group'>
+                    <label for='project_fps' class='span2 control-label'>FPS</label>
+
+                    <div class='span10'>
+                        <input id='project_fps'
+                               class='input-block-level'
+                               name='fps'
+                               {% if mode == 'Update' %}
+                                value={{ (project.fps) }}
+                             {% endif %}
+                               required />
+                    </div>
+                </div>
+
+                {# Repository #}
+                <div class="control-group">
+                    <label for='repository'
+                           class="span2 control-label">Repository</label>
+
+                    <div class="span10">
+                        <select id='repository'
+                                name='repository_id'
+                                data-placeholder='Repository'
+                                required>
+                        </select>
+                    </div>
+                </div>
+
+                {# Structure #}
+                <div class="control-group">
+                    <label for='structure'
+                           class="span2 control-label">Structure</label>
+
+                    <div class="span10">
+                        <select id='structure'
+                                name='structure_id'
+                                data-placeholder='Structure'
+                                required>
+                        </select>
+                    </div>
+                </div>
+
+                {# Status #}
+                <div class="control-group">
+                    <label for='status'
+                           class="span2 control-label">Status</label>
+
+                    <div class="span10">
+                        <select id='status'
+                                name='status_id'
+                                data-placeholder='Status'
+                                required>
+                        </select>
+                    </div>
+                </div>
+            {% endif %}
+             {# Type #}
+            <div class="control-group">
+                <label for="project_type"
+                       class="span2 control-label">Type</label>
+
+                <div class="span10">
+                     <select id='project_type'
+                            name='type_id'
+                            data-placeholder='Type'
+                            required>
+                    </select>
+                </div>
+            </div>
+
+            <h4 class="header blue bolder smaller">Clients & Roles</h4>
+            {# Client #}
+            <div class="control-group">
+                <label for='brand'
+                       class="span2 control-label">Brand</label>
+                <div class="span10">
+                    <input id='brand'
+                           name='brand_name'
+                           type='text'
+                           data-placeholder='Brand'
+                           required>
+                </div>
+            </div>
+            <div class="control-group">
+                <label for='adv_agency'
+                       class="span2 control-label">Reklam Ajansı</label>
+                <div class="span10">
+                    <input id='adv_agency'
+                            name='agency_name'
+                            type='text'
+                            data-placeholder='Reklam Ajansı'
+                            required>
+                </div>
+            </div>
+            <div class="control-group">
+                <label for='production_house'
+                       class="span2 control-label">Yapım Şirketi</label>
+
+                <div class="span10">
+                    <input id='production_house'
+                            name='production_house_name'
+                            type='text'
+                            data-placeholder='Yapım Şirketi'
+                            required>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</form>
+
+
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/chosen.jquery.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/daterangepicker.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap-colorpicker.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.autosize-min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.inputlimiter.1.3.1.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.maskedinput.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/bootstrap-tag.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.validate.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/additional-methods.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.spinner.min.js") }}'></script>
+
+
+
+<script type="text/javascript">
+    function get_project_client_by_type(client_type){
+            var client_id = -1;
+            var client_name = "";
+            var client_type_name = '';
+
+            {% for client in project.clients %}
+                client_type_name = '{{ client.type.name }}';
+                console.log("client_type_name: "+ client_type_name);
+                if (client_type_name == client_type ){
+                    client_id = '{{ client.id }}';
+                    client_name = '{{ client.name }}';
+                }
+            {% endfor %}
+            return {'id':client_id, 'name':client_name};
+        }
+    $(document).ready(function () {
+
+        function get_client_data(client_type, field_name ){
+
+            $.getJSON('/clients/?type_name='+client_type).then(function(available_clients){
+                // map available types to an array
+                var field = $('#'+field_name);
+                var available_client_as_list = [];
+
+                for (var i=0; i < available_clients.length; i++){
+                    available_client_as_list.push(available_clients[i].name);
+                }
+
+                field.autocomplete({
+                    delay: 0,
+                    source: available_client_as_list,
+                    minLength: 0
+                });
+
+                {% if mode == 'Update' %}
+                    field.val(get_project_client_by_type(client_type)['id']).trigger('liszt:updated');
+                {% endif %}
+
+            });
+
+{#            {% raw %}#}
+{#                var option_template = doT.template(#}
+{#                    '<option value={{=it.id}}>{{=it.name}}</option>'#}
+{#                );#}
+{#            {% endraw %}#}
+{#            $.getJSON('/clients/?type_name='+client_type).then(function (c_data) {#}
+{#                var field = $('#'+field_name);#}
+{#                var clients_data = c_data;#}
+{#                chosen_searchable_field_creator_by_data(field, option_template, clients_data);#}
+{##}
+{#                {% if mode == 'Update' %}#}
+{#                    field.val(get_project_client_by_type(client_type)['id']).trigger('liszt:updated');#}
+{#                {% endif %}#}
+{##}
+{#                field.trigger('liszt:updated');#}
+{#            });#}
+        }
+
+        var product_project_name = $('#product_project_name');
+        var mark_name = $('#mark_name');
+
+        {% if mode == 'Update' %}
+            product_project_name.val('{{ project.get_generic_text_attr("product_project_name") }}');
+            mark_name.val('{{ project.get_generic_text_attr("mark_name") }}');
+        {% endif %}
+
+        {% raw %}
+            var option_template = doT.template(
+                '<option value={{=it.id}}>{{=it.name}}</option>'
+            );
+        {% endraw %}
+
+
+        var start_end_date_range_picker = $('#start_end_date_range_picker').daterangepicker();
+        start_end_date_range_picker.next().on('click', function () {
+            $(this).prev().focus();
+        });
+
+        // fix z-index of the container
+{#            start_end_date_range_picker.data().daterangepicker.container.css({'z-index': 1060});#}
+        start_end_date_range_picker.on('shown', function (e) {
+            e.stopPropagation();
+        });
+        start_end_date_range_picker.on('hidden', function (e) {
+            e.stopPropagation();
+        });
+
+        // fill data if mode is update
+        {% if mode == 'Update' %}
+
+            var start_date = new Date({{ milliseconds_since_epoch(project.start) }});
+            var end_date = new Date({{ milliseconds_since_epoch(project.end) }});
+            start_end_date_range_picker.val(
+                    start_date.format('dd/mm/yyyy') + ' - ' + end_date.format('dd/mm/yyyy')
+            );
+            start_end_date_range_picker.data().daterangepicker.updateFromControl();
+
+        {% endif %}
+
+        {# FPS Spinner #}
+        var fps = 25;
+        console.log('{{ project.fps }}');
+        {% if mode == 'Update' %}
+            fps = {{ project.fps }};
+        {% endif %}
+        $('#project_fps').ace_spinner({
+            value:fps,
+            min:1,
+            max:50,
+            step:1,
+            btn_up_class:'btn-info',
+            btn_down_class:'btn-info'}).on('change', function(){
+            // check if it is in the range
+            var curr_value = $(this).val();
+            $(this).val(curr_value <= 1 ? 1 : curr_value);
+        });
+
+        {# ***************************************************************** #}
+        {# IMAGE FORMAT #}
+
+        {% raw %}
+            var image_format_option_template = doT.template(
+                '<option value={{=it.id}}>{{=it.name}} ({{=it.width}} x {{=it.height}} x {{=it.pixel_aspect}})</option>'
+            );
+        {% endraw %}
+        var image_format = $('#image_format');
+        var deferred = chosen_field_creator(image_format, '/image_formats/', image_format_option_template);
+        {% if mode == 'Update' %}
+            deferred.then(function () {
+                image_format.val({{ project.image_format.id }}).trigger('liszt:updated');
+            });
+        {% endif %}
+
+        {# ***************************************************************** #}
+        {# REPOSITORY #}
+        var repository = $('#repository');
+        var deferred = chosen_field_creator(repository, '/repositories/', option_template);
+        {% if mode == 'Update' %}
+            deferred.then(function () {
+                    repository.val({{ project.repository.id }}).trigger('liszt:updated');
+                });
+        {% endif %}
+
+
+        {# ***************************************************************** #}
+        {# STRUCTURE #}
+        var structure = $('#structure');
+        var deferred = chosen_field_creator(structure, '/structures/', option_template);
+        {% if mode == 'Update' %}
+            deferred.then(function () {
+                    structure.val({{ project.structure.id }}).trigger('liszt:updated');
+                });
+        {% endif %}
+
+        {# ***************************************************************** #}
+        {# STATUS #}
+        var status = $('#status');
+        var deferred = chosen_field_creator(status,'/statuses/Project/', option_template);
+        {% if mode == 'Update' %}
+            deferred.then(function () {
+                status.val({{ project.status.id }}).trigger('liszt:updated');
+            });
+        {% endif %}
+
+
+        {# ***************************************************************** #}
+        {# TYPE #}
+        var project_type = $('#project_type');
+        var deferred = chosen_field_creator(project_type, '/types/?target_entity_type=Project', option_template);
+        {% if mode == 'Update' %}
+            deferred.then(function () {
+                project_type.val({{ project.type.id }}).trigger('liszt:updated');
+            });
+        {% endif %}
+
+        get_client_data("Brand", "brand" );
+        get_client_data("Production House", "production_house" );
+        get_client_data("Agency", "adv_agency" );
+
+
+        $('#project_form').validate({
+            errorElement: 'span',
+            errorClass: 'help-inline',
+            focusInvalid: true,
+            rules: {
+                    email: {
+                        required: true,
+                        email: true
+                    },
+                    password: {
+                        required: true,
+                        minlength: 5
+                    },
+                    password2: {
+                        required: true,
+                        minlength: 5,
+                        equalTo: "#user_password"
+                    },
+                name: {
+                    required: true
+                },
+                login: {
+                    required: true
+                }
+            },
+
+            messages: {
+                email: {
+                    required: "Please provide a valid email.",
+                    email: "Please provide a valid email."
+                },
+                password: {
+                    required: "Please specify a password.",
+                    minlength: "Please specify a secure password."
+                }
+            },
+
+            invalidHandler: function (event, validator) { //display error alert on form submit
+                $('.alert-error', $('.login-form')).show();
+            },
+
+            highlight: function (e) {
+                $(e).closest('.control-group').removeClass('info').addClass('error');
+            },
+
+            success: function (e) {
+                $(e).closest('.control-group').removeClass('error').addClass('info');
+                $(e).remove();
+            },
+
+            errorPlacement: function (error, element) {
+                if (element.is(':checkbox') || element.is(':radio')) {
+                    var controls = element.closest('.controls');
+                    if (controls.find(':checkbox,:radio').length > 1) controls.append(error);
+                    else error.insertAfter(element.nextAll('.lbl:eq(0)').eq(0));
+                }
+                else if (element.is('.select2')) {
+                    error.insertAfter(element.siblings('[class*="select2-container"]:eq(0)'));
+                }
+                else if (element.is('.chosen-select')) {
+                    error.insertAfter(element.siblings('[class*="chosen-container"]:eq(0)'));
+                }
+                else error.insertAfter(element);
+            },
+
+            submitHandler: function (form) {
+                form.submit();
+            }
+        });
+    });
+
+</script>

@@ -1,4 +1,5 @@
 {% set user=entity %}
+<script class="dialog_loaded"></script>
 
 <div class="row-fluid padding-2">
 
@@ -14,37 +15,37 @@
     function init_dialog() {
         console.debug('starting to initialize user dialog!!!');
 
-        $('#dialog_template_label').find('span').remove();
-        $('#dialog_template_label').append('<span>New User</span>')
+        var dialog_template_label = $('#dialog_template_label');
+        dialog_template_label.find('span').remove();
+        dialog_template_label.append('<span>New User</span>');
 
         //$('#dialog_template').attr('style', "width:700px; height:800px");
 
 
-        {# ***************************************************************** #}
-        {# Submit Button #}
+        // {# ***************************************************************** #}
+        // {# Submit Button #}
         var submit_button = $('#dialog_template_submit_button');
         submit_button.on('click', function (e) {
             e.stopPropagation();
             e.preventDefault();
 
-            submit_button.button('loading');
+            setTimeout(function(){submit_button.button('loading')}, 0)
 
             var user_form = $('#user_form');
-
-            if (user_form.validate()) {
-
+            if (user_form.validate().errorList.length === 0) {
                 $.post(
-                                user_form.attr('action'),
-                                user_form.serialize()
-                        ).done(function () {
-
-                            window.location.assign('{{ came_from }}');
-                        }).fail(function (jqXHR) {
-                            bootbox.alert(jqXHR.responseText);
-                            submit_button.button('reset');
-                        });
-
-
+                    user_form.attr('action'),
+                    user_form.serialize()
+                ).done(function () {
+                    //window.location.assign('{{ came_from }}');
+                    window.location.reload();
+                }).fail(function (jqXHR) {
+                    bootbox.alert(jqXHR.responseText);
+                    setTimeout(function(){submit_button.button('reset')}, 0);
+                });
+            } else {
+                setTimeout(function(){submit_button.button('reset')}, 0);
+                bootbox.alert("There are invalid fields!");
             }
         });
 

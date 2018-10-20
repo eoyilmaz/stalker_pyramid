@@ -1,0 +1,231 @@
+{# Stalker Pyramid a Web Base Production Asset Management System
+ Copyright (C) 2009-2018 Erkan Ozgur Yilmaz
+
+ This file is part of Stalker Pyramid.
+
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation;
+ version 2.1 of the License.
+
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+#}
+
+{% extends "base.jinja2" %}
+
+{# BREADCRUMBS #}
+{% block breadcrumbs %}
+
+    {% set page_title='Users' %}
+    {% include 'breadcrumb/breadcrumbs.jinja2' %}
+
+{% endblock breadcrumbs %}
+
+{# SIDEBAR #}
+{% block sidebar %}
+
+    {% include 'sidebar.jinja2' %}
+
+{% endblock sidebar %}
+
+{# PAGE-CONTENT #}
+{% block page_content %}
+
+{#    {% set page_title='Users' %}#}
+{#    {% include 'page_header.jinja2' %}#}
+
+    <div class="row-fluid">
+        <div id="tasks_list" class="widget-box">
+            <div id="html_template_header" class="widget-header widget-header-small header-color-grey ">
+                <h5 id="items_header">Authentication Logs</h5>
+                <div class="widget-toolbar">
+
+                </div>
+            </div>
+            <div class="widget-body">
+                <div class="widget-main no-padding">
+
+                    <div id="loading_spinner" class="well well-sm">
+
+                        <div class="inline middle blue bigger-110">
+                            <i class="icon-spinner icon-spin orange bigger-125"></i>
+                            Loading
+                            content...
+                        </div>
+                    </div>
+                    {% include 'components/jgrid_table.jinja2' %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock page_content %}
+
+{% block extrascripts %}
+    <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/i18n/grid.locale-en.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/jquery.jqGrid.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/jquery.jqGrid.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/plugins/ui.multiselect.js") }}'></script>
+
+    <script>
+
+        function clear_html_modal(){
+            $('#tasks_list').hide();
+            $('#button_list').find('button').remove();
+            unloadTableData();
+
+        }
+
+        function findArrayElement(array, attr_name, attr_value,s_attr_name, s_attr_value) {
+                for(var i=0;i<array.length;i++){
+                    if(array[i][attr_name] == attr_value && array[i][s_attr_name] == s_attr_value){
+                        return i;
+                    }
+                }
+                return -1;
+            }
+
+        $(document).ready(function () {
+
+            console.debug('starting to initialize init_html_modal dialog!!!');
+
+
+            var colNames = ['User Name', 'Role', 'Date', 'Login', 'Logout', 'Hour'];
+            var colModel = [
+                            {
+                                name:'user_name',
+                                index:'user_name',
+                                width:200,
+                                editable: false
+                            },
+                            {
+                                name:'role_name',
+                                index:'role_name',
+                                width:100,
+                                editable: false
+                            },
+                            {
+                                name:'date',
+                                index:'date',
+                                width:25,
+                                editable: false
+                            },
+                            {
+                                name:'login',
+                                index:'login',
+                                width:25,
+                                editable: false
+                            },
+                            {
+                                name:'logout',
+                                index:'logout',
+                                width:25,
+                                editable: false
+                            },
+                            {
+                                name:'hour',
+                                index:'hour',
+                                width:25,
+                                editable: false
+                            }
+
+                    ];
+
+            var tableDataAddress = '/entities/{{ entity.id }}/authlogs/';
+            $('#loading_spinner').show();
+
+            $.getJSON(tableDataAddress).then(function (data) {
+                $('#loading_spinner').hide();
+                console.log("tableDataAddress is loaded");
+
+                var new_list = [];
+                var total_hour = 0;
+                for (var i = 0; i < data.length; i++) {
+                    var new_data = {};
+                    new_data.user_id = data[i].user_id;
+                    new_data.date = new Date(data[i].date_created).format('yyyy-mm-dd');
+                    var index = findArrayElement(new_list,'date', new_data.date, 'user_id',new_data.user_id );
+                    console.log("new_data.user_id: " + new_data.user_id);
+                    if(index == -1){
+                        for (var j = 0; j < data.length; j++) {
+                            var data_date = data[j].date_created;
+                            var data_action = data[j].action;
+                            var c_date = new Date(data_date).format('yyyy-mm-dd');
+                            var c_hour = new Date(data_date).format('HH:MM');
+                            if(new_data.date == c_date && new_data.user_id == data[j].user_id){
+                                if(data_action == 'login'){
+                                    if(new_data.login){
+                                        if(new_data.login_date_created>data_date){
+                                            new_data.login = c_hour;
+                                            new_data.login_date_created = data_date;
+                                        }
+                                    }
+                                    else{
+                                        new_data.login = c_hour;
+                                        new_data.login_date_created = data_date;
+                                    }
+                                }
+
+                                if(data_action == 'logout'){
+                                    if(new_data.logout){
+                                        if(new_data.logout_date_created<data_date){
+                                            new_data.logout = c_hour;
+                                            new_data.logout_date_created = data_date;
+                                        }
+                                    }
+                                    else{
+                                        new_data.logout = c_hour;
+                                        new_data.logout_date_created = data_date;
+                                    }
+                                }
+
+                            }
+                        }
+
+                        var seconds_between = (new_data.logout_date_created - new_data.login_date_created)/1000;
+                        new_data.hour = convert_seconds_to_hour(seconds_between);
+                        if(seconds_between && seconds_between>0){
+                            total_hour += seconds_between;
+                        }
+                        new_data.user_name = '<a href="/users/'+data[i].user_id+'/view">'+get_user_name(data[i].user_id)+'</a>';
+                        new_data.role_name = data[i].role_name;
+                        new_list.push(new_data);
+                    }
+                }
+
+                var footerData = {
+                    user_name:'TOTAL',
+                    hour: convert_seconds_to_hour(total_hour)
+                };
+
+                loadTableData(
+                        new_list,
+                        "grid-table",
+                        colNames,
+                        colModel,
+                        footerData
+                    );
+            });
+
+            console.debug('finished initializing the init_html_modal dialog!')
+        });
+    </script>
+
+    <script type="text/javascript">
+        function destruct_html_modal() {
+            $('#items_table').unbind();
+            $('#html_template').data('modal', null);
+        }
+    </script>
+{% endblock extrascripts %}
+
+
+
+

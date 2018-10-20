@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Stalker Pyramid a Web Base Production Asset Management System
-# Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
+# Copyright (C) 2009-2018 Erkan Ozgur Yilmaz
 #
 # This file is part of Stalker Pyramid.
 #
@@ -19,17 +19,20 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 
 import logging
+import pytz
 import datetime
 from pyramid.httpexceptions import HTTPOk
 from pyramid.view import view_config
 
-from stalker.db import DBSession
+from stalker.db.session import DBSession
 from stalker import Repository
 
 from stalker_pyramid.views import PermissionChecker, get_logged_in_user
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.WARNING)
+#logger = logging.getLogger(__name__)
+#logger.setLevel(logging.WARNING)
+from stalker_pyramid import logger_name
+logger = logging.getLogger(logger_name)
 
 
 @view_config(
@@ -113,7 +116,8 @@ def update_repository(request):
         repo.linux_path = linux_path
         repo.osx_path = osx_path
         repo.updated_by = logged_in_user
-        repo.date_updated = datetime.datetime.now()
+        utc_now = datetime.datetime.now(pytz.utc)
+        repo.date_updated = utc_now
 
         DBSession.add(repo)
 

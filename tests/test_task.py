@@ -18,11 +18,13 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 
+# from fpformat import fix_task_computed_time
+
 import mocker
 
 import datetime
 
-import unittest2
+import unittest
 import transaction
 
 from pyramid import testing
@@ -35,12 +37,16 @@ from stalker.db.session import DBSession
 from stalker_pyramid.views import task, milliseconds_since_epoch, local_to_utc
 
 import logging
-from tests import DummyMultiDict
+from stalker_pyramid.testing import DummyMultiDict, DummySession
+from stalker_pyramid.views.task import (fix_task_computed_time,
+                                        fix_task_statuses,
+                                        get_actual_start_time,
+                                        get_actual_end_time)
 
 logger = logging.getLogger(__name__)
 
 
-class TaskViewTestCase(unittest2.TestCase):
+class TaskViewBaseTestCase(unittest.TestCase):
     """tests task view
     """
 
@@ -70,16 +76,14 @@ class TaskViewTestCase(unittest2.TestCase):
         DBSession.add(self.test_user2)
 
         # create a couple of tasks
-        self.status_new = Status(name='New', code='NEW')
-        self.status_rts = Status(name='Ready To Start', code='RTS')
-        self.status_wip = Status(name='Work In Progress', code='WIP')
-        self.status_prev = Status(name='Pending Review', code='PREV')
-        self.status_hrev = Status(name='Has Revision', code='HREV')
-        self.status_cmpl = Status(name='Completed', code='CMPL')
-        DBSession.add_all([
-            self.status_new, self.status_rts, self.status_wip,
-            self.status_prev, self.status_hrev, self.status_cmpl
-        ])
+        self.status_new = Status.query.filter_by(code='NEW').first()
+        self.status_wts = Status.query.filter_by(code='WTS').first()
+        self.status_rts = Status.query.filter_by(code='RTS').first()
+        self.status_wip = Status.query.filter_by(code='WIP').first()
+        self.status_prev = Status.query.filter_by(code='PREV').first()
+        self.status_hrev = Status.query.filter_by(code='HREV').first()
+        self.status_drev = Status.query.filter_by(code='DREV').first()
+        self.status_cmpl = Status.query.filter_by(code='CMPL').first()
 
         self.test_project_status_list = StatusList(
             name='Project Statuses',
@@ -89,14 +93,8 @@ class TaskViewTestCase(unittest2.TestCase):
         )
         DBSession.add(self.test_project_status_list)
 
-        self.test_task_statuses = StatusList(
-            name='Task Statuses',
-            target_entity_type='Task',
-            statuses=[self.status_new, self.status_rts, self.status_wip,
-                      self.status_prev, self.status_hrev,
-                      self.status_cmpl]
-        )
-        DBSession.add(self.test_task_statuses)
+        self.test_task_statuses = \
+            StatusList.query.filter_by(target_entity_type='Task').first()
 
         # repository
         self.test_repo = Repository(
@@ -123,7 +121,6 @@ class TaskViewTestCase(unittest2.TestCase):
         self.test_task1 = Task(
             name='Test Task 1',
             project=self.test_project1,
-            status_list=self.test_task_statuses,
             start=datetime.datetime(2013, 6, 20, 0, 0),
             end=datetime.datetime(2013, 6, 30, 0, 0),
             schedule_model='effort',
@@ -135,7 +132,6 @@ class TaskViewTestCase(unittest2.TestCase):
         self.test_task2 = Task(
             name='Test Task 2',
             project=self.test_project1,
-            status_list=self.test_task_statuses,
             start=datetime.datetime(2013, 6, 20, 0, 0),
             end=datetime.datetime(2013, 6, 30, 0, 0),
             schedule_model='effort',
@@ -147,7 +143,6 @@ class TaskViewTestCase(unittest2.TestCase):
         self.test_task3 = Task(
             name='Test Task 3',
             project=self.test_project1,
-            status_list=self.test_task_statuses,
             resources=[self.test_user1, self.test_user2],
             start=datetime.datetime(2013, 6, 20, 0, 0),
             end=datetime.datetime(2013, 6, 30, 0, 0),
@@ -163,8 +158,6 @@ class TaskViewTestCase(unittest2.TestCase):
         self.test_task4 = Task(
             name='Test Task 4',
             parent=self.test_task1,
-            status=self.status_new,
-            status_list=self.test_task_statuses,
             resources=[self.test_user1],
             depends=[self.test_task3],
             start=datetime.datetime(2013, 6, 20, 0, 0),
@@ -178,7 +171,6 @@ class TaskViewTestCase(unittest2.TestCase):
         self.test_task5 = Task(
             name='Test Task 5',
             parent=self.test_task1,
-            status_list=self.test_task_statuses,
             resources=[self.test_user1],
             depends=[self.test_task4],
             start=datetime.datetime(2013, 6, 20, 0, 0),
@@ -192,7 +184,6 @@ class TaskViewTestCase(unittest2.TestCase):
         self.test_task6 = Task(
             name='Test Task 6',
             parent=self.test_task1,
-            status_list=self.test_task_statuses,
             resources=[self.test_user1],
             start=datetime.datetime(2013, 6, 20, 0, 0),
             end=datetime.datetime(2013, 6, 30, 0, 0),
@@ -206,7 +197,6 @@ class TaskViewTestCase(unittest2.TestCase):
         self.test_task7 = Task(
             name='Test Task 7',
             parent=self.test_task2,
-            status_list=self.test_task_statuses,
             resources=[self.test_user2],
             start=datetime.datetime(2013, 6, 20, 0, 0),
             end=datetime.datetime(2013, 6, 30, 0, 0),
@@ -219,7 +209,6 @@ class TaskViewTestCase(unittest2.TestCase):
         self.test_task8 = Task(
             name='Test Task 8',
             parent=self.test_task2,
-            status_list=self.test_task_statuses,
             resources=[self.test_user2],
             start=datetime.datetime(2013, 6, 20, 0, 0),
             end=datetime.datetime(2013, 6, 30, 0, 0),
@@ -229,12 +218,8 @@ class TaskViewTestCase(unittest2.TestCase):
         )
         DBSession.add(self.test_task8)
 
-        self.test_asset_status_list = StatusList(
-            statuses=[self.status_new, self.status_wip,
-                      self.status_prev],
-            target_entity_type='Asset'
-        )
-        DBSession.add(self.test_asset_status_list)
+        self.test_asset_status_list = \
+            StatusList.query.filter_by(target_entity_type='Asset').first()
 
         # create an asset in between
         self.test_asset1 = Asset(
@@ -262,6 +247,7 @@ class TaskViewTestCase(unittest2.TestCase):
             schedule_unit='d'
         )
         DBSession.add(self.test_task9)
+
         DBSession.flush()
         transaction.commit()
 
@@ -300,6 +286,11 @@ class TaskViewTestCase(unittest2.TestCase):
     def tearDown(self):
         DBSession.remove()
         testing.tearDown()
+
+
+class TaskViewTestCase(TaskViewBaseTestCase):
+    """tests the generic functionality
+    """
 
     def test_find_leafs_in_hierarchy_is_working_properly(self):
         """testing if the find_leafs_in_hierarchy() is working properly
@@ -615,14 +606,11 @@ class TaskViewTestCase(unittest2.TestCase):
         data = task.convert_to_dgrid_gantt_task_format(self.all_tasks)
         self.maxDiff = None
 
-        print data,
-        print '#########################'
-        print expected_data
+        print(data)
+        print('#########################')
+        print(expected_data)
 
-        self.assertItemsEqual(
-            data,
-            expected_data
-        )
+        self.assertEqual(data, expected_data)
 
     def test_duplicate_task_hierarchy_task_is_not_existing(self):
         """testing if None will be returned if the task is not existing
@@ -674,8 +662,8 @@ class TaskViewTestCase(unittest2.TestCase):
         self.assertEqual(dup_task2.thumbnail, self.test_task2.thumbnail)
         if self.test_task2.time_logs:
             self.assertNotEqual(dup_task2.time_logs, self.test_task2.time_logs)
-        self.assertEqual(dup_task2.timing_resolution,
-                         self.test_task2.timing_resolution)
+        # self.assertEqual(dup_task2.timing_resolution,
+        #                  self.test_task2.timing_resolution)
         self.assertEqual(dup_task2.type, self.test_task2.type)
         self.assertEqual(dup_task2.updated_by,
                          self.test_task2.updated_by)
@@ -1723,7 +1711,7 @@ class TaskViewTestCase(unittest2.TestCase):
 
         # find the newly created task
         new_task = Task.query.filter(Task.name == 'New Task 1').first()
-        self.assertIsNotNone(new_task)
+        self.assertTrue(new_task is not None)
 
         # now check the status
         self.assertEqual(
@@ -1752,4 +1740,809 @@ class TaskViewTestCase(unittest2.TestCase):
         self.assertEqual(self.test_task8.status, self.status_new)
         task.update_task_statuses_with_dependencies(self.test_task8)
         self.assertEqual(self.test_task8.status, self.status_rts)
+
+
+class TaskViewSimpleFunctionsTestCase(unittest.TestCase):
+    """tests the simple functions that doesn't need a request
+    """
+
+    def test_generate_where_clause_case1(self):
+        """testing if the view.tasks.generate_where_clause() is working
+        properly
+        """
+        test_value = {
+            'id': [23],
+            'name': ['Lighting'],
+            'entity_type': ['Task'],
+            'task_type': ['Lighting'],
+            'resource_name': ['Ozgur']
+        }
+
+        result = task.generate_where_clause(test_value)
+
+        expected_result = """where (
+    tasks.id = 23
+    and tasks.name ilike '%Lighting%'
+    and tasks.entity_type = 'Task'
+    and task_types.name ilike '%Lighting%'
+    and exists (
+        select * from (
+            select unnest(resource_info.resource_name)
+        ) x(resource_name)
+        where x.resource_name like '%Ozgur%'
+    )
+)"""
+
+        print(expected_result)
+        print('--------------------')
+        print(result)
+
+        self.assertEqual(expected_result, result)
+
+    def test_generate_where_clause_case2(self):
+        """testing if the view.tasks.generate_where_clause() is working
+        properly
+        """
+        test_value = {
+            'id': [23],
+            'task_type': ['Lighting'],
+            'resource_name': ['Ozgur']
+        }
+
+        result = task.generate_where_clause(test_value)
+
+        self.assertEqual("""where (
+    tasks.id = 23
+    and task_types.name ilike '%Lighting%'
+    and exists (
+        select * from (
+            select unnest(resource_info.resource_name)
+        ) x(resource_name)
+        where x.resource_name like '%Ozgur%'
+    )
+)""", result)
+
+    def test_generate_where_clause_case3(self):
+        """testing if the view.tasks.generate_where_clause() is working
+        properly
+        """
+        test_value = {
+            'resource_name': ['Ozgur']
+        }
+
+        result = task.generate_where_clause(test_value)
+
+        self.assertEqual("""where (
+    exists (
+        select * from (
+            select unnest(resource_info.resource_name)
+        ) x(resource_name)
+        where x.resource_name like '%Ozgur%'
+    )
+)""", result)
+
+    def test_generate_where_clause_case4(self):
+        """testing if the view.tasks.generate_where_clause() is working
+        properly
+        """
+        test_value = {
+            'resource_id': [26]
+        }
+
+        result = task.generate_where_clause(test_value)
+
+        self.assertEqual("""where (
+    exists (
+        select * from (
+            select unnest(resource_info.resource_id)
+        ) x(resource_id)
+        where x.resource_id = 26
+    )
+)""", result)
+
+    def test_generate_where_clause_case5(self):
+        """testing if the view.tasks.generate_where_clause() is working
+        properly
+        """
+        test_value = {
+            'task_type': ['Lighting', 'Comp'],
+        }
+
+        result = task.generate_where_clause(test_value)
+
+        expected_result = """where (
+    (task_types.name ilike '%Lighting%' or task_types.name ilike '%Comp%')
+)"""
+        print(expected_result)
+        print('--------------------')
+        print(result)
+        self.assertEqual(expected_result, result)
+
+    def test_generate_where_clause_case6(self):
+        """testing if the view.tasks.generate_where_clause() is working
+        properly
+        """
+        test_value = {
+            'project_id': [23],
+        }
+
+        result = task.generate_where_clause(test_value)
+
+        self.assertEqual("""where (
+    "Tasks".project_id = 23
+)""", result)
+
+    def test_generate_where_clause_case7(self):
+        """testing if the view.tasks.generate_where_clause() is working
+        properly
+        """
+        test_value = {
+            'status': ['WFD', 'RTS', 'WIP', 'DREV', 'HREV'],
+        }
+
+        result = task.generate_where_clause(test_value)
+
+        self.maxDiff = None
+
+        expected_result = """where (
+    (
+    "Statuses".code ilike '%WFD%'
+    or "Statuses".code ilike '%RTS%'
+    or "Statuses".code ilike '%WIP%'
+    or "Statuses".code ilike '%DREV%'
+    or "Statuses".code ilike '%HREV%'
+    )
+)"""
+
+        print(expected_result)
+        print('--------------------')
+        print(result)
+
+        self.assertEqual(expected_result, result)
+
+    def test_generate_where_clause_case8(self):
+        """testing if the view.tasks.generate_where_clause() is working
+        properly
+        """
+        test_value = {
+            'status': ['WIP', 'DREV'],
+            'leaf_only': 1
+        }
+
+        result = task.generate_where_clause(test_value)
+
+
+        expected_result = """where (
+    (
+    "Statuses".code ilike '%WIP%'
+    or "Statuses".code ilike '%DREV%'
+    )
+    and not exists (
+        select 1 from "Tasks"
+        where "Tasks".parent_id = tasks.id
+    )
+)"""
+        print(expected_result)
+        print('--------------------')
+        print(result)
+
+        self.assertEqual(expected_result, result)
+
+    def test_generate_where_clause_case9(self):
+        """testing if the view.tasks.generate_where_clause() is working
+        properly
+        """
+        test_value = {
+            'leaf_only': 1
+        }
+
+        result = task.generate_where_clause(test_value)
+
+        self.assertEqual("""where (
+    not exists (
+        select 1 from "Tasks"
+        where "Tasks".parent_id = tasks.id
+    )
+)""", result)
+
+    def test_generate_where_clause_case10(self):
+        """testing if the view.tasks.generate_where_clause() is working
+        properly
+        """
+        test_value = {
+            'responsible_id': [25, 26]
+        }
+
+        result = task.generate_where_clause(test_value)
+
+        expected_result = """where (
+    (25 = any (tasks.responsible_id) or 26 = any (tasks.responsible_id))
+)"""
+        print(expected_result)
+        print('--------------------')
+        print(result)
+
+        self.assertEqual(expected_result, result)
+
+    def test_generate_where_clause_case11(self):
+        """testing if the view.tasks.generate_where_clause() is working
+        properly
+        """
+        test_value = {
+            'has_resource': 1
+        }
+
+        result = task.generate_where_clause(test_value)
+
+        self.assertEqual("""where (
+    resource_info.info is not NULL
+)""", result)
+
+
+
+    def test_generate_where_clause_case12(self):
+        """testing if the view.tasks.generate_where_clause() is working
+        properly
+        """
+        test_value = {
+            'has_no_resource': 1
+        }
+
+        result = task.generate_where_clause(test_value)
+
+        self.assertEqual("""where (
+    resource_info.info is NULL
+)""", result)
+
+    def test_generate_where_clause_case13(self):
+        """testing if the view.tasks.generate_where_clause() is working
+        properly
+        """
+        test_value = {
+            'watcher_id': [26]
+        }
+
+        result = task.generate_where_clause(test_value)
+
+        self.assertEqual("""where (
+    26 = any (tasks.watcher_id)
+)""", result)
+
+    def test_generate_where_clause_case14(self):
+        """testing if the view.tasks.generate_where_clause() is working
+        properly
+        """
+        test_value = {
+            'parent_id': [98422]
+        }
+
+        result = task.generate_where_clause(test_value)
+
+        expected_result = """where (
+    tasks.parent_id = 98422
+)"""
+        print(expected_result)
+        print('--------------------')
+        print(result)
+
+        self.assertEqual(expected_result, result)
+
+    def test_generate_where_clause_case15(self):
+        """testing if the view.tasks.generate_where_clause() is working
+        properly
+        """
+        test_value = {
+            'path': ['108|207']
+        }
+
+        result = task.generate_where_clause(test_value)
+
+        expected_result = """where (
+    tasks.path ilike '%108|207%'
+)"""
+        print(expected_result)
+        print('--------------------')
+        print(result)
+
+        self.assertEqual(expected_result, result)
+
+    def test_generate_where_clause_case16(self):
+        """testing if the view.tasks.generate_where_clause() is working
+        properly
+        """
+        test_value = {
+            'path': ['108|207', '108|210']
+        }
+
+        result = task.generate_where_clause(test_value)
+
+        expected_result = """where (
+    (tasks.path ilike '%108|207%' or tasks.path ilike '%108|210%')
+)"""
+        print(expected_result)
+        print('--------------------')
+        print(result)
+
+        self.assertEqual(expected_result, result)
+
+    def test_generate_where_clause_case17(self):
+        """testing if the view.tasks.generate_where_clause() is working
+        properly
+        """
+        test_value = {
+            'responsible_id': [25, 26],
+            'has_no_resource': 1,
+            'watcher_id': [26, 456],
+            'parent_id': [98422, 8454],
+            'path': ['108|207', '108|210']
+        }
+
+        result = task.generate_where_clause(test_value)
+
+        expected_result = """where (
+    (tasks.parent_id = 98422 or tasks.parent_id = 8454)
+    and (tasks.path ilike '%108|207%' or tasks.path ilike '%108|210%')
+    and (25 = any (tasks.responsible_id) or 26 = any (tasks.responsible_id))
+    and (26 = any (tasks.watcher_id) or 456 = any (tasks.watcher_id))
+    and resource_info.info is NULL
+)"""
+        print(expected_result)
+        print('--------------------')
+        print(result)
+
+        self.assertEqual(expected_result, result)
+
+
+
+
+
+
+
+
+    def test_generate_order_by_clause_case_1(self):
+        """testing if the view.tasks.generate_order_by_clause() is working
+        properly
+        """
+        test_value = [
+            'id', 'name', 'full_path', 'parent_id',
+            'resource', 'status', 'project_id',
+            'task_type', 'entity_type', 'percent_complete'
+        ]
+
+        result = task.generate_order_by_clause(test_value)
+        self.assertEqual(
+            """order by tasks.id, tasks.name, tasks.full_path, """
+            """tasks.parent_id, resource_info.info, "Statuses".code, """
+            """"Tasks".project_id, task_types.name, tasks.entity_type, """
+            """percent_complete""", result
+        )
+
+
+class FixTimeLogTestCase(TaskViewBaseTestCase):
+    """tests the time log fixing functionality
+    """
+
+    def setUp(self):
+        """set up once
+        """
+        super(FixTimeLogTestCase, self).setUp()
+
+        self.test_task9.computed_start = datetime.datetime(2014, 9, 1, 18, 0)
+        self.test_task9.computed_start = datetime.datetime(2014, 9, 15, 18, 0)
+
+    def test_fix_task_computed_time_is_working_properly(self):
+        """testing if a TypeError will be raised when the task argument is
+        None
+        """
+        self.test_task9.resources=[self.test_user2]
+
+        # timelogs for task 9
+        time_log1_task9 = TimeLog(
+            resource=self.test_task9.resources[0],
+            task=self.test_task9,
+            start=datetime.datetime(2014, 6, 20, 10, 0),
+            end=datetime.datetime(2014, 6, 20, 19, 0)
+        )
+        DBSession.add(time_log1_task9)
+
+        time_log2_task9 = TimeLog(
+            resource=self.test_task9.resources[0],
+            task=self.test_task9,
+            start=datetime.datetime(2014, 6, 22, 10, 0),
+            end=datetime.datetime(2014, 6, 22, 19, 0)
+        )
+        DBSession.add(time_log2_task9)
+
+        time_log3_task9 = TimeLog(
+            resource=self.test_task9.resources[0],
+            task=self.test_task9,
+            start=datetime.datetime(2014, 7, 20, 10, 0),
+            end=datetime.datetime(2014, 7, 20, 19, 0)
+        )
+        DBSession.add(time_log3_task9)
+        self.test_task9.status = self.status_cmpl
+
+        fix_task_computed_time(self.test_task9)
+
+        self.assertEqual(self.test_task9.computed_start, time_log1_task9.start)
+        self.assertEqual(self.test_task9.computed_end, time_log1_task9.end)
+
+    def test_get_actual_start_time_task_argument_is_none(self):
+        """testing if a TypeError will be raised when the task argument is
+        None
+        """
+        with self.assertRaises(TypeError) as cm:
+            get_actual_start_time(None)
+
+        self.assertEqual(
+            str(cm.exception),
+            'task should be an instance of stalker.models.task.Task, not NoneType'
+        )
+
+    def test_get_actual_start_time_task_argument_is_not_a_task_instance(self):
+        """testing if a TypeError will be raised when the task argument is
+        not a stalker Task instance
+        """
+        with self.assertRaises(TypeError) as cm:
+            get_actual_start_time(None)
+
+        self.assertEqual(
+            str(cm.exception),
+            'task should be an instance of stalker.models.task.Task, not NoneType'
+        )
+
+    def test_get_actual_start_time_for_a_task_with_no_time_logs(self):
+        """testing if get_actual_start_time() will return the computed_start of the
+        given when the task has no time logs.
+        """
+
+        result = get_actual_start_time(self.test_task9)
+        self.assertEqual(self.test_task9.computed_start, result)
+
+    def test_get_actual_start_time_is_working_properly(self):
+        """testing if views.task.get_actual_start_time() is working properly
+        """
+
+        self.test_task9.resources=[self.test_user2]
+
+        # timelogs for task 9
+        time_log1_task9 = TimeLog(
+            resource=self.test_task9.resources[0],
+            task=self.test_task9,
+            start=datetime.datetime(2014, 6, 20, 10, 0),
+            end=datetime.datetime(2014, 6, 20, 19, 0)
+        )
+        DBSession.add(time_log1_task9)
+
+        time_log2_task9 = TimeLog(
+            resource=self.test_task9.resources[0],
+            task=self.test_task9,
+            start=datetime.datetime(2014, 6, 22, 10, 0),
+            end=datetime.datetime(2014, 6, 22, 19, 0)
+        )
+        DBSession.add(time_log2_task9)
+
+        time_log3_task9 = TimeLog(
+            resource=self.test_task9.resources[0],
+            task=self.test_task9,
+            start=datetime.datetime(2014, 7, 20, 10, 0),
+            end=datetime.datetime(2014, 7, 20, 19, 0)
+        )
+        DBSession.add(time_log3_task9)
+        self.test_task9.status = self.status_cmpl
+
+        result = get_actual_start_time(self.test_task9)
+        self.assertEqual(time_log1_task9.start, result)
+
+    def test_get_actual_end_time_task_argument_is_none(self):
+        """testing if a TypeError will be raised when the task argument is
+        None
+        """
+        with self.assertRaises(TypeError) as cm:
+            get_actual_end_time(None)
+
+        self.assertEqual(
+            str(cm.exception),
+            'task should be an instance of stalker.models.task.Task, not NoneType'
+        )
+
+    def test_get_actual_end_time_task_argument_is_not_a_task_instance(self):
+        """testing if a TypeError will be raised when the task argument is
+        not a stalker Task instance
+        """
+        with self.assertRaises(TypeError) as cm:
+            get_actual_end_time(None)
+
+        self.assertEqual(
+            str(cm.exception),
+            'task should be an instance of stalker.models.task.Task, not NoneType'
+        )
+
+    def test_get_actual_end_time_for_a_task_with_no_time_logs(self):
+        """testing if get_actual_start_time() will return the computed_start of the
+        given when the task has no time logs.
+        """
+
+        result = get_actual_end_time(self.test_task9)
+        self.assertEqual(self.test_task9.computed_end, result)
+
+    def test_get_actual_end_time_is_working_properly(self):
+        """testing if views.task.get_actual_start_time() is working properly
+        """
+
+        self.test_task9.resources=[self.test_user2]
+
+        # timelogs for task 9
+        time_log1_task9 = TimeLog(
+            resource=self.test_task9.resources[0],
+            task=self.test_task9,
+            start=datetime.datetime(2014, 6, 20, 10, 0),
+            end=datetime.datetime(2014, 6, 20, 19, 0)
+        )
+        DBSession.add(time_log1_task9)
+
+        time_log2_task9 = TimeLog(
+            resource=self.test_task9.resources[0],
+            task=self.test_task9,
+            start=datetime.datetime(2014, 6, 22, 10, 0),
+            end=datetime.datetime(2014, 6, 22, 19, 0)
+        )
+        DBSession.add(time_log2_task9)
+
+        time_log3_task9 = TimeLog(
+            resource=self.test_task9.resources[0],
+            task=self.test_task9,
+            start=datetime.datetime(2014, 7, 20, 10, 0),
+            end=datetime.datetime(2014, 7, 20, 19, 0)
+        )
+        DBSession.add(time_log3_task9)
+        self.test_task9.status = self.status_cmpl
+
+        result = get_actual_end_time(self.test_task9)
+        self.assertEqual(time_log3_task9.end, result)
+
+    def test_fix_task_statuses_is_working_properly_for_a_duration_task(self):
+        """testing if the fix_task_statuses() is working properly for a
+        "duration" based task
+        """
+        self.test_task9.resources = []
+        self.test_task9.schedule_model = 'duration'
+        schedule_seconds = self.test_task9.schedule_seconds
+        schedule_timing = self.test_task9.schedule_timing
+        schedule_unit = self.test_task9.schedule_unit
+
+        self.assertEqual(self.test_task9.time_logs, [])
+
+        dummy_request = DummyMultiDict()
+        dummy_request.session = DummySession()
+        dummy_request.matchdict = {
+            'id': self.test_task9.id,
+        }
+        fix_task_statuses(dummy_request)
+
+        self.assertEqual(self.test_task9.schedule_seconds, schedule_seconds)
+        self.assertEqual(self.test_task9.schedule_timing, schedule_timing)
+        self.assertEqual(self.test_task9.schedule_unit, schedule_unit)
+
+
+class TaskForceStatusTestCase(unittest.TestCase):
+    """tests views.task.force_task_status function
+    """
+
+    def setUp(self):
+        """set the test up
+        """
+
+        db.setup()
+        db.init()
+
+        self.status_new = Status.query.filter_by(code='NEW').first()
+        self.status_wfd = Status.query.filter_by(code='WFD').first()
+        self.status_rts = Status.query.filter_by(code='RTS').first()
+        self.status_wip = Status.query.filter_by(code='WIP').first()
+        self.status_prev = Status.query.filter_by(code='PREV').first()
+        self.status_hrev = Status.query.filter_by(code='HREV').first()
+        self.status_drev = Status.query.filter_by(code='DREV').first()
+        self.status_stop = Status.query.filter_by(code='STOP').first()
+        self.status_oh = Status.query.filter_by(code='OH').first()
+        self.status_cmpl = Status.query.filter_by(code='CMPL').first()
+
+        self.test_project_statuses = StatusList(
+            name='Project Statuses',
+            target_entity_type='Project',
+            statuses=[self.status_new, self.status_wip, self.status_cmpl]
+        )
+
+        self.test_repo = Repository(
+            name='Test Repository'
+        )
+
+        self.test_project = Project(
+            name='Test Project',
+            code='TP',
+            status_list=self.test_project_statuses,
+            repository=self.test_repo
+        )
+
+        self.test_task1 = Task(name='Task1', project=self.test_project)
+
+        DBSession.add_all([self.test_project])
+        DBSession.commit()
+
+    def test_force_status_in_WFD_task(self):
+        """testing if a force_status() will return a response with code 500 if
+        the task is an WFD task
+        """
+        self.test_task1.status = self.status_wfd
+
+        request = testing.DummyRequest()
+        request.matchdict = {
+            'id': self.test_task1.id,
+            'status_code':'CMPL'
+        }
+        response = task.force_task_status(request)
+
+        self.assertEqual(response.status_code, 500)
+
+        self.assertEqual(response.text, 'Cannot force WFD tasks')
+
+    def test_force_status_in_RTS_task(self):
+        """testing if a force_status() will return a response with code 500 if
+        the task is an RTS task
+        """
+        self.test_task1.status = self.status_rts
+
+        request = testing.DummyRequest()
+        request.matchdict = {
+            'id': self.test_task1.id,
+            'status_code':'CMPL'
+        }
+        response = task.force_task_status(request)
+
+        self.assertEqual(response.status_code, 500)
+
+        self.assertEqual(response.text, 'Cannot force RTS tasks')
+
+    def test_force_status_in_DREV_task(self):
+        """testing if a force_status() will return a response with code 500 if
+        the task is an DREV task
+        """
+        self.test_task1.status = self.status_drev
+
+        request = testing.DummyRequest()
+        request.matchdict = {
+            'id': self.test_task1.id,
+            'status_code':'CMPL'
+        }
+        response = task.force_task_status(request)
+
+        self.assertEqual(response.status_code, 500)
+
+        self.assertEqual(response.text, 'Cannot force DREV tasks')
+
+    def test_force_status_in_PREV_task(self):
+        """testing if a force_status() will return a response with code 500 if
+        the task is an PREV task
+        """
+        self.test_task1.status = self.status_prev
+
+        request = testing.DummyRequest()
+        request.matchdict = {
+            'id': self.test_task1.id,
+            'status_code':'CMPL'
+        }
+        response = task.force_task_status(request)
+
+        self.assertEqual(response.status_code, 500)
+
+        self.assertEqual(response.text, 'Cannot force PREV tasks')
+
+    def test_force_status_task_to_WFD(self):
+        """testing if a force_status() will return a response with code 500 if
+        new status code is WFD
+        """
+        self.test_task1.status = self.status_wip
+
+        request = testing.DummyRequest()
+        request.matchdict = {
+            'id': self.test_task1.id,
+            'status_code':'WFD'
+        }
+        response = task.force_task_status(request)
+
+        self.assertEqual(response.status_code, 500)
+
+        self.assertEqual(response.text, 'Can not set status to: WFD')
+
+    def test_force_status_task_to_RTS(self):
+        """testing if a force_status() will return a response with code 500 if
+        new status code is RTS
+        """
+        self.test_task1.status = self.status_wip
+
+        request = testing.DummyRequest()
+        request.matchdict = {
+            'id': self.test_task1.id,
+            'status_code':'RTS'
+        }
+        response = task.force_task_status(request)
+
+        self.assertEqual(response.status_code, 500)
+
+        self.assertEqual(response.text, 'Can not set status to: RTS')
+
+    def test_force_status_task_to_WIP(self):
+        """testing if a force_status() will return a response with code 500 if
+        new status code is WIP
+        """
+        self.test_task1.status = self.status_wip
+
+        request = testing.DummyRequest()
+        request.matchdict = {
+            'id': self.test_task1.id,
+            'status_code':'WIP'
+        }
+        response = task.force_task_status(request)
+
+        self.assertEqual(response.status_code, 500)
+
+        self.assertEqual(response.text, 'Can not set status to: WIP')
+
+    def test_force_status_task_to_HREV(self):
+        """testing if a force_status() will return a response with code 500 if
+        new status code is HREV
+        """
+        self.test_task1.status = self.status_wip
+
+        request = testing.DummyRequest()
+        request.matchdict = {
+            'id': self.test_task1.id,
+            'status_code':'HREV'
+        }
+        response = task.force_task_status(request)
+
+        self.assertEqual(response.status_code, 500)
+
+        self.assertEqual(response.text, 'Can not set status to: HREV')
+
+    def test_force_status_task_to_PREV(self):
+        """testing if a force_status() will return a response with code 500 if
+        new status code is PREV
+        """
+        self.test_task1.status = self.status_wip
+
+        request = testing.DummyRequest()
+        request.matchdict = {
+            'id': self.test_task1.id,
+            'status_code':'PREV'
+        }
+        response = task.force_task_status(request)
+
+        self.assertEqual(response.status_code, 500)
+
+        self.assertEqual(response.text, 'Can not set status to: PREV')
+
+    def test_force_status_task_to_DREV(self):
+        """testing if a force_status() will return a response with code 500 if
+        new status code is DREV
+        """
+        self.test_task1.status = self.status_wip
+
+        request = testing.DummyRequest()
+        request.matchdict = {
+            'id': self.test_task1.id,
+            'status_code':'DREV'
+        }
+        response = task.force_task_status(request)
+
+        self.assertEqual(response.status_code, 500)
+
+        self.assertEqual(response.text, 'Can not set status to: DREV')
+
+    def test_task_schedule_timing_values_are_trimmed(self):
+        """testing if the task.schedule_timing value is trimmed to the total
+        logged seconds value
+        """
+        self.fail('test is not implemented yet')
+
 

@@ -1,0 +1,107 @@
+<script class="dialog_loaded"></script>
+
+<div class="row-fluid">
+
+    <form id='project_form'
+          class='form-horizontal'
+          role='form'
+          method="post"
+            >
+        <div class="row-fluid">
+            {% if status_code=='CMPL' %}
+                <div class='control-group'>
+                    <label class="span3 control-label" for="archive_project">Archive</label>
+                    <div class="span9">
+                        <input id="archive_project"
+                               name="archive_project"
+                               type="checkbox"
+                                class="ace ace-checkbox-2"/>
+                        <span class="lbl"></span>
+                    </div>
+                </div>
+            {% endif %}
+            {#Description #}
+            <div class="control-group'">
+                <label for="project_note"
+                       class="span3 control-label">NOTE</label>
+                <div class="span9">
+                    <textarea id="project_note"
+                              name='note'
+                              class="autosize-transition span12"
+                              style="overflow: hidden;
+                                     word-wrap: break-word;
+                                     resize: horizontal;
+                                     height: 100px;"
+                            ></textarea>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.inputlimiter.1.3.1.min.js") }}'></script>
+
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/additional-methods.min.js") }}'></script>
+<script type="text/javascript">
+
+    function init_dialog() {
+
+        console.debug('starting to initialize project dialog!!!');
+
+        var dialog_label = $('#dialog_template_label');
+        dialog_label.find('span').remove();
+        dialog_label.append('<span>Change Project Status</span>');
+
+        {# ***************************************************************** #}
+        $('.ace-checkbox-2').on('click', function () {
+
+{#                console.log(this.id + ' ' + this.checked)#}
+                if (!this.checked) {
+                    this.value = false;
+                    return;
+                }
+                this.value = true;
+            });
+
+
+        {# ***************************************************************** #}
+        {# Submit Button #}
+        var submit_button = $('#dialog_template_submit_button');
+        submit_button.on('click', function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+
+            submit_button.button('loading');
+            var project_form = $('#project_form');
+
+            var url = '/projects/{{ project.id }}/status/{{ status_code }}';
+            console.log("url: "+url);
+
+            $.post(
+                url,
+                project_form.serialize()
+            ).done(function (jqXHR) {
+                //$('#new_outputs_storage').text(JSON.stringify(jqXHR));
+                window.location.reload();
+            }).fail(function (jqXHR) {
+                bootbox.alert(jqXHR.responseText);
+                submit_button.button('reset');
+            });
+        });
+
+        console.debug('finished initializing the project dialog!')
+    }
+</script>
+
+<script type="text/javascript">
+    function destruct_dialog() {
+        $('#project_name').unbind();
+        $('#project_description').unbind();
+        $('#dialog_template_submit_button').unbind();
+
+        $('#dialog_template').data('modal', null);
+    }
+</script>
+
+
+

@@ -1,0 +1,405 @@
+{# Stalker Pyramid a Web Base Production Asset Management System
+ Copyright (C) 2009-2018 Erkan Ozgur Yilmaz
+
+ This file is part of Stalker Pyramid.
+
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation;
+ version 2.1 of the License.
+
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+#}
+
+
+{% extends "base.jinja2" %}
+
+{# BREADCRUMBS #}
+{% block breadcrumbs %}
+    {% include 'breadcrumb/breadcrumbs.jinja2' %}
+{% endblock breadcrumbs %}
+
+{#SIDEBAR#}
+{% block sidebar %}
+    {% include 'sidebar.jinja2' %}
+{% endblock sidebar %}
+
+{#PAGE-CONTENT#}
+{% block page_content %}
+
+    {% set page_title=entity.name %}
+    {% include 'page_header.jinja2' %}
+    <div id="daily_tasks" class="row-fluid">
+    </div>
+
+
+{% endblock page_content %}
+{% block extrascripts %}
+    {% raw %}
+        <script id="tmpl_output_item" type="text/x-dot-template">
+            <li id="Output_{{=it.id}}">
+                <a href="/{{=it.webres_full_path}}"
+
+                   thumbnail_full_path="{{=it.thumbnail_full_path}}"
+                   webres_full_path="{{=it.webres_full_path}}"
+                   hires_full_path="{{=it.hires_full_path}}"
+
+                   webres_download_path="{{=it.webres_download_path}}"
+                   hires_download_path="{{=it.hires_download_path}}"
+
+                   original_filename="{{=it.original_filename}}"
+    
+                   tags="{{=it.tags }}"
+    
+                   title="{{=it.original_filename}}&#013;{{=it.entity_names}}&#013;&#013;{{=it.tags }}"
+                   data-rel="colorbox"
+                   class="cboxElement">
+                    <div style="text-align: center; overflow: hidden; width: 150px">
+                        <img alt="150x150"
+                             style="height: 150px; width: auto; max-width: none;
+                                position: relative; left: 100%; margin-left: -200%;"
+                             src="/{{=it.thumbnail_full_path ? it.thumbnail_full_path : 'static/stalker/images/Placeholder_0.png' }}">
+                        <div class="tags">
+                            {{?it.version_is_published }}
+                                <span class="label label-success arrowed-in">published</span>
+                            {{?}}
+                            {{? it.webres_full_path.indexOf('.webm') !== -1 }}
+                                <span class="label label-success">
+                                    <i class="icon-film"></i>
+                                </span>
+                            {{?}}
+                            <span class="label label-info">{{=it.version_take_name }} | {{'000'.substring(0, 3 - it.version_number.toString().length) + it.version_number.toString() }} </span>
+                        </div>
+                    </div>
+                </a>
+               <div class="tools">
+                    <a href="/FD{{=it.webres_download_path}}" title="Download Web Version"><i class="icon-cloud-download green"></i></a>
+                    <a href="/FD{{=it.hires_download_path}}" title="Download Original"><i class="icon-cloud-download blue"></i></a>
+
+                    <a href="/versions/{{=it.version_id}}/view" title="View Version"><i class="icon-zoom-in"></i></a>
+
+                    <a class='output-deleter'
+                       ref_id="{{=it.id}}"
+                       ref_file_name="{{=it.original_filename}}"
+                       href="#"
+                       title="Delete"><i class="icon-remove red"></i></a>
+                </div>
+            </li>
+        </script>
+    {% endraw %}
+
+    {% raw %}
+        <script id="tmpl_note_item" type="text/x-dot-template">
+            <div class="timeline-item clearfix">
+                <div class="timeline-info">
+                   <a href="/users/{{=it.created_by_id}}/view"><img alt="" src="{{=it.created_by_thumbnail}}"/></a>
+                </div>
+                <div class="widget-box transparent">
+                    <div class="widget-header widget-header-small">
+                        <h5 class="smaller">{{=it.note_type_name}}
+                        </h5>
+                        <span class="widget-toolbar no-border date">
+                        <i class="icon-time bigger-110"></i>
+                            {{=it.created_date}}
+                        </span>
+                        <span class="widget-toolbar">
+                            <a href="#" data-action="collapse">
+                                <i class="icon-chevron-up"></i>
+                            </a>
+                        </span>
+                    </div>
+                    <div class="widget-body">
+                        <div class="widget-main">
+                            {{=it.content.replace(/[\n]/g,'<br>')}}
+
+                            <div class="space-3"></div>
+
+                            <div class="widget-toolbox clearfix">
+
+                                <div class="pull-right action-buttons">
+
+                                    {{ if (it.delete_note_action) {  }}
+                                    <a class="red"
+                                       data-target="#dialog_template"
+                                       data-toggle="modal"
+                                       data-keyboard=false
+                                       href={{=it.delete_note_action}} >
+                                        <i class="icon-remove red bigger-125"></i>
+                                    </a>
+                                    {{ } }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </script>
+    {% endraw %}
+    {% raw %}
+        <script id="tmpl_daily_task" type="text/x-dot-template">
+            <div id="daily_task_{{=it.task_id }}" class="row-fluid">
+                <div class="widget-box">
+                    <div class="widget-header widget-header-small header-color-daily ">
+                        <h5>
+                            <a href='/tasks/{{=it.task_id }}/view' class="white">
+                                <i class="icon-tasks bigger-125"></i>
+                                {{=it.task_name }}
+                            </a>
+                        </h5>
+                        <span class="widget-toolbar no-border">
+                            <span class="label label-large label-status_{{=it.task_status_code}}"> {{=it.task_status_name}}</span>
+
+                        </span>
+                        <div class="widget-toolbar action-buttons">
+                            <a href="#" data-action="collapse">
+                                <i class="icon-chevron-up"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="widget-body">
+                        <div class="row-fluid">
+                               <span  class="pull-right">
+                                   Resource :
+                                   <a href='/users/{{=it.task_resource_id }}/view'>
+                                        {{=it.task_resource_name }}&nbsp;&nbsp;&nbsp;
+                                   </a>
+                               </span>
+                         </div>
+                        <div class="row-fluid">
+                            <div class="span6">
+                                <ul id="outputs_{{=it.task_id }}"  class="ace-thumbnails"></ul>
+                            </div>
+                            <div class="span6">
+                                <div class="timeline-container">
+                                    <div class="timeline-items" id="notes_{{=it.task_id }}">
+                                    </div>
+                                </div>
+                                <form id="add_note_form_{{=it.task_id }}">
+                                    <div class="form-actions input-append">
+                                        <div class="itemdiv span1">
+                                            <div class="user">
+                                                <img alt=""
+                                                     src="{{=it.logged_in_user_thumbnail}}"/>
+                                            </div>
+                                        </div>
+                                        <div class="span11">
+                                            <input placeholder="Type your message here ..."
+                                                   type="text" class="width-90"
+                                                   name="content"/>
+                                            <button id="add_note_button_{{=it.task_id }}"
+                                                    class="btn btn-small btn-info no-radius">
+                                                <i class="icon-share-alt"></i>
+                                                <span class="hidden-phone">Send</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="space-8"></div>
+        </script>
+    {% endraw %}
+
+    <script type="text/javascript">
+        var colorbox_params = {
+            rel: 'Outputs',
+            loop: true,
+            reposition: true,
+            scalePhotos: true,
+            scrolling: true,
+            previous: '<i class="icon-arrow-left"></i>',
+            next: '<i class="icon-arrow-right"></i>',
+            close: '&times;',
+            current: '{current} of {total}',
+            maxWidth: '100%',
+            maxHeight: '100%',
+            width: '100%',
+            height: '100%',
+            transition: 'none',
+            title: function () {
+                // Filename (Tags)| Hires (DL)
+
+                var url = $(this).attr('href');
+
+                var original_title = $(this).attr('original_filename');
+
+                var tags = $(this).attr('tags');
+
+                var view_hires_url = '/' + $(this).attr('hires_full_path');
+                var download_hires_url = '/FD' + $(this).attr('hires_download_path');
+
+                var view_webres_url = '/' + $(this).attr('webres_full_path');
+                var download_webres_url = '/FD' + $(this).attr('webres_download_path');
+
+                var open_hires_in_new_tab_link = '<a title="View Original in new Tab"  href="' + view_hires_url + '" target="_blank">Original</a></span>';
+                var download_hires_link = '<span><a title="Download Original" class="icon-cloud-download blue" href="' + download_hires_url + '">&nbsp</a></span>';
+
+                var open_webres_in_new_tab_link = '<a title="View Web Version in new Tab"  href="' + view_webres_url + '" target="_blank">Web Version</a></span>';
+                var download_webres_link = '<span><a title="Download Web Version" class="icon-cloud-download green" href="' + download_webres_url + '">&nbsp</a></span>';
+
+                return original_title + '&nbsp(' + tags + ')&nbsp|&nbsp' +
+                       open_webres_in_new_tab_link + ' &nbsp ' + download_webres_link + '&nbsp|&nbsp' +
+                       open_hires_in_new_tab_link + ' &nbsp ' + download_hires_link;
+            },
+            onOpen: function () {
+                document.body.style.overflow = 'hidden';
+                // get the element and check if it is the last element
+            },
+            onClosed: function () {
+                document.body.style.overflow = 'auto';
+            },
+            onComplete: function () {
+                // fit image to colorBox
+                var photo = $('.cboxPhoto');
+                var photo_width = photo.width();
+                var photo_height = photo.height();
+                var photo_ratio = photo_width / photo_height;
+    
+                var cbox = $('#cboxContent');
+                var cbox_width = cbox.width();
+                var cbox_height = cbox.height();
+                var cbox_ratio = cbox_width / cbox_height;
+    
+                var multiplier;
+                var css_options = {
+                    'margin-left': 0,
+                    'margin-right': 0,
+                    'margin-top': 0,
+                    'margin-bottom': 0,
+                    position: 'relative'
+                };
+    
+                if (photo_ratio > cbox_ratio) {
+                    multiplier = cbox_width / photo_width;
+                    photo_height *= multiplier;
+    
+                    photo.css($.extend(css_options, {
+                        width: '100%',
+                        height: 'auto',
+                        left: 0,
+                        top: (cbox_height - photo_height) * 0.5 - 20 + 'px'
+                    }));
+                } else {
+                    multiplier = cbox_height / photo_height;
+                    photo_width *= multiplier;
+    
+                    photo.css($.extend(css_options, {
+                        width: 'auto',
+                        height: '100%',
+                        left: (cbox_width - photo_width) * 0.5 + 'px',
+                        top: 0
+                    }));
+                }
+            }
+        };
+
+        $.getJSON('/dailies/{{ entity.id }}/outputs/').then(function (data) {
+            $(function () {
+                var daily_task_template = doT.template($('#tmpl_daily_task').html());
+                var daily_tasks_list = $('#daily_tasks');
+
+                for(var i=0; i< data.length; i++){
+                    var task = data[i];
+                    var task_div = $('#daily_task_'+task.task_id);
+                    if (task_div.length==0){
+
+                        {% if logged_in_user.thumbnail %}
+                            task.logged_in_user_thumbnail = '/{{ logged_in_user.thumbnail.full_path }}';
+                        {% else %}
+                            task.logged_in_user_thumbnail = '{{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_0.png") }}';
+                        {% endif %}
+
+                        daily_tasks_list.append(daily_task_template(task));
+                        $('#add_note_button_'+data[i].task_id).on('click', function (e) {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            var submit_button = $(this);
+                            submit_button.button('loading');
+                            var task_id = parseInt($(this).attr('id').split('add_note_button_')[1]);
+                            var add_note_form = $('#add_note_form_'+task_id);
+
+                            var content = $('#message').val();
+
+                            console.log(add_note_form.serialize());
+
+                            $.post(
+                                "/note/create",
+                                add_note_form.serialize()+'&entity_ids='+task_id+'&entity_ids={{ entity.id }}&'+$.param({'type': "Daily_Note"})
+                            ).done(function () {
+                                window.location.assign('{{ came_from }}');
+                            }).fail(function (jqXHR) {
+                                bootbox.alert('<div id="message" class="alert alert-danger bigger-110">' + jqXHR.responseText + '</div>');
+                                submit_button.button('reset');
+                            });
+                        });
+
+                        var local_colorbox_params = {};
+                        $.extend(local_colorbox_params, colorbox_params);
+                        local_colorbox_params['rel'] = 'Group' + data[i]['task_id'];
+
+                        var output_template = doT.template($('#tmpl_output_item').html());
+                        var outputs = $('#outputs_' + task.task_id);
+
+                        // order the data according to the filename
+                        task.links = task.links.sort(
+                            function(a, b){
+                                if(a.original_filename > b.original_filename){
+                                    return 1;
+                                } else {
+                                    return -1;
+                                }
+                            }
+                        );
+
+                        for (var j=0; j < task.links.length; j++){
+                            var link = task.links[j];
+                            append_thumbnail({
+                                data: link,
+                                template: output_template,
+                                colorbox_params: local_colorbox_params,
+                                container: outputs
+                            });
+                        }
+
+                        var note_template = doT.template($('#tmpl_note_item').html());
+                        var notes = $('#notes_' + task.task_id);
+                        for (var k=0; k<task.notes.length; k++){
+                            var note = task.notes[k];
+
+                            {% if has_permission('Delete_Note') %}
+                               if(note.created_by_id === '{{ logged_in_user.id }}'){
+                                 note.delete_note_action = "/notes/"+note.id+"/delete/dialog?came_from="
+                               }
+                            {% endif %}
+
+                            if (note.created_by_thumbnail == null) {
+                                note.created_by_thumbnail = '{{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_0.png") }}';
+                            }
+                            else {
+                                note.created_by_thumbnail = '/' + note.created_by_thumbnail;
+                            }
+                            notes.append(note_template(note));
+                        }
+                    }
+                }
+
+                $('.date').each(function () {
+                    var date = moment.utc($(this).text());
+                    $(this).text(date.fromNow());
+                });
+
+            });
+        })
+    </script>
+
+{% endblock extrascripts %}

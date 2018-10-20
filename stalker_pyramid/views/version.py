@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Stalker Pyramid a Web Base Production Asset Management System
-# Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
+# Copyright (C) 2009-2018 Erkan Ozgur Yilmaz
 #
 # This file is part of Stalker Pyramid.
 #
@@ -17,29 +17,31 @@
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
-import os
 import logging
-import shutil
+import os
 
-from pyramid.httpexceptions import HTTPOk
 from pyramid.view import view_config
+from pyramid.response import Response
 
 from sqlalchemy import distinct
 
-from stalker.db import DBSession
-from stalker import Task, TimeLog, Version, Link, Entity, defaults
+from stalker import db, Task, Version, Entity, User, defaults
+from stalker.db.session import DBSession
 
 from stalker_pyramid.views import (get_logged_in_user, get_user_os,
-                                   PermissionChecker, get_multi_integer)
-from stalker_pyramid.views.link import convert_file_link_to_full_path
+                                   PermissionChecker, milliseconds_since_epoch)
+from stalker_pyramid.views.link import MediaManager
+from stalker_pyramid.views.task import generate_recursive_task_query
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+#logger = logging.getLogger(__name__)
+#logger.setLevel(logging.DEBUG)
+from stalker_pyramid import logger_name
+logger = logging.getLogger(logger_name)
 
 
 @view_config(
-    route_name='dialog_create_task_version',
-    renderer='templates/version/dialog_create_version.jinja2',
+    route_name='create_version_dialog',
+    renderer='templates/version/dialog/create_version_dialog.jinja2',
 )
 def create_version_dialog(request):
     """creates a create_version_dialog by using the given task
@@ -49,7 +51,7 @@ def create_version_dialog(request):
     # get logged in user
     logged_in_user = get_logged_in_user(request)
 
-    task_id = request.matchdict.get('id', -1)
+    task_id = request.matchdict.get('tid', -1)
     task = Task.query.filter(Task.task_id == task_id).first()
 
     takes = map(
@@ -63,7 +65,6 @@ def create_version_dialog(request):
         takes.append(defaults.version_take_name)
 
     return {
-        'mode': 'CREATE',
         'has_permission': PermissionChecker(request),
         'logged_in_user': logged_in_user,
         'task': task,
@@ -73,8 +74,8 @@ def create_version_dialog(request):
 
 
 @view_config(
-    route_name='dialog_update_version',
-    renderer='templates/version/dialog_create_version.jinja2',
+    route_name='update_version_dialog',
+    renderer='templates/version/dialog/update_version_dialog.jinja2',
 )
 def update_version_dialog(request):
     """updates a create_version_dialog by using the given task
@@ -94,119 +95,60 @@ def update_version_dialog(request):
     }
 
 
-# @view_config(
-#     route_name='create_version'
-# )
-# def create_version(request):
-#     """runs when creating a version
-#     """
-#     logged_in_user = get_logged_in_user(request)
-#
-#     task_id = request.params.get('task_id')
-#     task = Task.query.filter(Task.id==task_id).first()
-#
-#     if task:
-#
-#         version = Version(
-#             task=task,
-#             created_by=logged_in_user,
-#         )
-#
-#         DBSession.add(version)
-#     else:
-#         HTTPServerError()
-#
-#     return HTTPOk()
-
-
 @view_config(
-    route_name='assign_version',
+    route_name='create_version',
+    permission='Create_Version'
 )
-def assign_version(request):
-    """assigns the version to the given entity
+def create_version(request):
+    """runs when creating a version
     """
     logged_in_user = get_logged_in_user(request)
 
-    # TODO: this should be renamed to create version
-    # collect data
-    link_ids = get_multi_integer(request, 'link_ids')
-    task_id = request.params.get('task_id', -1)
+    task_id = request.params.get('task_id')
+    task = Task.query.filter(Task.id == task_id).first()
 
-    link = Link.query.filter(Link.id.in_(link_ids)).first()
-    task = Task.query.filter_by(id=task_id).first()
+    take_name = request.params.get('take_name', 'Main')
+    is_published = \
+        True if request.params.get('is_published') == 'true' else False
+    description = request.params.get('description')
+    bind_to_originals = \
+        True if request.params.get('bind_to_originals') == 'true' else False
 
-    logger.debug('link_ids  : %s' % link_ids)
-    logger.debug('link      : %s' % link)
-    logger.debug('task_id   : %s' % task_id)
-    logger.debug('task      : %s' % task)
+    file_object = request.POST.getall('file_object')[0]
 
-    if task and link:
-        # delete the link and create a version instead
-        full_path = convert_file_link_to_full_path(link.full_path)
-        take_name = request.params.get('take_name', defaults.version_take_name)
-        publish = bool(request.params.get('publish'))
+    logger.debug('file_object: %s' % file_object)
+    logger.debug('take_name: %s' % take_name)
+    logger.debug('is_published: %s' % is_published)
+    logger.debug('description: %s' % description)
+    logger.debug('bind_to_originals: %s' % bind_to_originals)
 
-        logger.debug('publish : %s' % publish)
+    if task:
+        extension = os.path.splitext(file_object.filename)[-1]
+        mm = MediaManager()
+        v = mm.upload_version(
+            task=task,
+            file_object=file_object.file,
+            take_name=take_name,
+            extension=extension
+        )
 
-        path_and_filename, extension = os.path.splitext(full_path)
+        v.created_by = logged_in_user
+        v.is_published = is_published
+        v.created_with = "StalkerPyramid"
+        v.description = description
 
-        version = Version(task=task, take_name=take_name,
-                          created_by=logged_in_user)
-        version.is_published = publish
+        # check if bind_to_originals is true
+        if bind_to_originals and extension == '.ma':
+            from stalker_pyramid.views import archive
+            arch = archive.Archiver()
+            arch.bind_to_original(v.absolute_full_path)
 
-        # generate path values
-        version.update_paths()
-        version.extension = extension
-
-        # specify that this version is created with Stalker Pyramid
-        version.created_with = 'StalkerPyramid'  # TODO: that should also be a
-                                                 #       config value
-
-        # now move the link file to the version.absolute_full_path
-        try:
-            os.makedirs(
-                os.path.dirname(version.absolute_full_path)
-            )
-        except OSError:
-            # dir exists
-            pass
-
-        logger.debug('full_path : %s' % full_path)
-        logger.debug('version.absolute_full_path : %s' %
-                     version.absolute_full_path)
-
-        shutil.copyfile(full_path, version.absolute_full_path)
-        os.remove(full_path)
-
-        # it is now safe to delete the link
-        DBSession.add(task)
-        DBSession.delete(link)
-        DBSession.add(version)
-
-    return HTTPOk()
-
-
-@view_config(
-    route_name='update_version'
-)
-def update_version(request):
-    """runs when updating a version
-    """
-    logged_in_user = get_logged_in_user(request)
-
-    version_id = request.params.get('version_id')
-    version = TimeLog.query.filter_by(id=version_id).first()
-
-    name = request.params.get('name')
-
-    if version and name:
-
-        version.name = name
-        version.updated_by = logged_in_user
+        DBSession.add(v)
+        logger.debug('version added to: %s' % v.absolute_full_path)
     else:
-        DBSession.add(version)
+        return Response('No task with id: %s' % task_id, 500)
 
-    return HTTPOk()
+    return Response('Version is uploaded successfully!')
 
 
 @view_config(
@@ -241,24 +183,138 @@ def get_entity_versions(request):
         elif user_os == 'osx':
             path_converter = repo.to_osx_path
 
-    return [{
-        'id': version.id,
-        'task': {'id': version.task.id,
-                 'name': version.task.name},
-        'take_name': version.take_name,
-        'parent': {
-            'id': version.parent.id,
-            'version_number': version.parent.version_number,
-            'take_name': version.parent.take_name
-            } if version.parent else None,
-        'absolute_full_path': path_converter(version.absolute_full_path),
-        'created_by': {
-            'id': version.created_by.id,
-            'name': version.created_by.name
-        },
-        'is_published': version.is_published,
-        'version_number': version.version_number,
-    } for version in entity.versions]
+    return_data = [
+        {
+            'id': version.id,
+            'task': {'id': version.task.id,
+                     'name': version.task.name},
+            'take_name': version.take_name,
+            'parent': {
+                'id': version.parent.id,
+                'version_number': version.parent.version_number,
+                'take_name': version.parent.take_name
+                } if version.parent else None,
+            'absolute_full_path': path_converter(version.absolute_full_path),
+            'created_by': {
+                'id': version.created_by.id if version.created_by else None,
+                'name': version.created_by.name if version.created_by else None
+            },
+            'is_published': version.is_published,
+            'version_number': version.version_number,
+            'date_created': milliseconds_since_epoch(version.date_updated),
+            'created_with': version.created_with,
+            'description': version.description,
+            'task_full_path': version.task.name
+        }
+        for version in entity.versions
+    ]
+
+    return return_data
+
+
+@view_config(
+    route_name='get_user_versions',
+    renderer='json'
+)
+def get_user_versions(request):
+    """returns all the Versions that the queried User has created
+    """
+    logger.debug('*******get_user_versions is running')
+
+    user_id = request.matchdict.get('id', -1)
+    user = User.query.filter_by(id=user_id).first()
+
+    sql_query = """
+        select
+            "Versions".id,
+            "Versions".is_published,
+            "Version_SimpleEntities".date_updated,
+            "Versions".take_name,
+            "Versions".version_number,
+            "Versions".created_with,
+            "Version_SimpleEntities".description,
+            tasks.id,
+            tasks.name,
+            tasks.path,
+            tasks.full_path
+
+        from "Versions"
+        join "SimpleEntities" as "Version_SimpleEntities" on "Version_SimpleEntities".id = "Versions".id
+        join "Users" on "Version_SimpleEntities".created_by_id = "Users".id
+        join (
+            %(tasks_hierarchical_name)s
+        ) as tasks on tasks.id = "Versions".task_id
+
+        where "Users".id = %(user_id)s
+        order by "Version_SimpleEntities".date_updated desc
+
+        """
+
+    sql_query = sql_query % {
+        'user_id': user_id,
+        'tasks_hierarchical_name':
+        generate_recursive_task_query(ordered=False)
+    }
+
+    from sqlalchemy import text  # to be able to use "%" sign use this function
+
+    result = DBSession.connection().execute(text(sql_query))
+
+    return_data = [
+        {
+            'id': r[0],
+            'is_published':r[1],
+            'date_created': milliseconds_since_epoch(r[2]),
+            'take_name': r[3],
+            'version_number': r[4],
+            'created_with': r[5],
+            'description': r[6],
+            'task_name': r[8],
+            'task_path': r[9],
+            'task_full_path': r[10],
+            'task': {'id': r[7],
+                     'name': r[10]},
+            'absolute_full_path':'',
+            'created_by': {
+                'id': user.id,
+                'name': user.name
+            }
+        }
+        for r in result.fetchall()
+    ]
+
+    return return_data
+
+
+@view_config(
+    route_name='get_user_versions_count',
+    renderer='json'
+)
+def get_user_versions_count(request):
+    """returns user versions count
+    """
+    logger.debug('*******get_user_versions is running')
+
+    user_id = request.matchdict.get('id', -1)
+    user = User.query.filter_by(id=user_id).first()
+
+    sql_query = """
+        select
+            count("Versions".id)
+        from "Versions"
+            join "SimpleEntities" as "Version_SimpleEntities" on "Version_SimpleEntities".id = "Versions".id
+            join "Users" on "Version_SimpleEntities".created_by_id = "Users".id
+        where "Users".id = %(user_id)s
+    """
+
+    sql_query = sql_query % {
+        'user_id': user_id
+    }
+
+    from sqlalchemy import text
+    result = DBSession.connection().execute(text(sql_query))
+
+    return result.fetchone()[0]
 
 
 @view_config(
@@ -268,9 +324,6 @@ def get_entity_versions(request):
 def list_version_outputs(request):
     """lists the versions of the given task
     """
-
-    logger.debug('list_version_outputs is running')
-
     version_id = request.matchdict.get('id', -1)
     version = Version.query.filter_by(id=version_id).first()
 
@@ -317,3 +370,174 @@ def list_version_children(request):
         'version': version,
         'has_permission': PermissionChecker(request)
     }
+
+
+# @view_config(
+#     route_name='get_version_outputs_count',
+#     renderer='json'
+# )
+# def get_version_outputs_count(request):
+#     """returns the count of the given version
+#     """
+#     version_id = request.params.get('id')
+#
+#     sql_query = """select
+# count("Links".id)
+# from "Versions"
+# join "Version_Outputs" on "Versions".id = "Version_Outputs".version_id
+# join "Links" on "Version_Outputs".link_id = "Links".id
+# where "Versions".id = %(id)s
+#     """ % {'id': version_id}
+#
+#     return DBSession.connection().execute(sql_query).fetchone()[0]
+
+#
+# @view_config(
+#     route_name='get_task_version_outputs_count',
+#     renderer='json'
+# )
+# def get_task_version_outputs_count(request):
+#     """returns the count of the given version
+#     """
+#     task_id = request.params.get('id')
+#
+#     sql_query = """select
+#     count("Links".id)
+# from "Tasks"
+# join "Versions" on "Tasks".id = "Versions".task_id
+# join "Version_Outputs" on "Versions".id = "Version_Outputs".version_id
+# join "Links" on "Version_Outputs".link_id = "Links".id
+# where "Tasks".id = %(id)s
+#     """ % {'id': task_id}
+#
+#     return DBSession.connection().execute(sql_query).fetchone()[0]
+
+
+@view_config(
+    route_name='pack_version'
+)
+def pack_version(request):
+    """packs the requested version and returns a download link for it
+    """
+    version_id = request.matchdict.get('id')
+    version = Version.query.get(version_id)
+
+    if version:
+        # before doing anything check if the file exists
+        import os
+
+        version_filename_without_extension = \
+            os.path.splitext(version.filename)[0]
+        archive_name = '%s%s' % (version_filename_without_extension, '.zip')
+        archive_path = os.path.join(version.absolute_path, archive_name)
+
+        # create a temp file so this process knows that there is another process
+        # zipping the file
+        archive_lock_file_path = '%s.lock' % archive_path
+
+        logger.debug('ZIP Path: %s' % archive_path)
+        if os.path.exists(archive_path):
+            # just serve the same file
+            logger.debug('ZIP exists, not creating it again!')
+            new_zip_path = archive_path
+        elif os.path.exists(archive_lock_file_path):
+            # somebody else is preparing the file
+            # so wait
+            logger.debug('ZIP is created by another process, waiting!')
+
+            # check the utime of the lock file
+            # if it is longer than 30 minutes delete the file
+            # and return an Error
+            import datetime
+            file_date = datetime.datetime.fromtimestamp(
+                os.path.getmtime(archive_lock_file_path)
+            )
+            now = datetime.datetime.now()
+
+            if now - file_date > datetime.timedelta(minutes=30):
+                os.remove(archive_lock_file_path)
+                from pyramid.httpexceptions import HTTPError
+                raise HTTPError('Lock File deleted please refresh!')
+
+            import time
+            while os.path.exists(archive_lock_file_path):
+                # sleep for 10 seconds
+                time.sleep(10)
+                logger.debug('ZIP is created by another process, still waiting!')
+            new_zip_path = archive_path
+        else:
+            # create the zip file
+            logger.debug('ZIP does not exists, creating it!')
+
+            # create lock file
+            with open(archive_lock_file_path, 'a'):
+                os.utime(archive_lock_file_path, None)
+
+            import shutil
+            from stalker_pyramid.views.archive import Archiver
+
+            path = version.absolute_full_path
+
+            exclude_mask = [
+                '.jpg', '.jpeg', '.png', '.tga', '.tif', '.tiff', '.ass',
+                '.bmp', '.gif'
+            ]
+
+            arch = Archiver(exclude_mask=exclude_mask)
+            task = version.task
+            if False:
+                assert(isinstance(version, Version))
+                assert(isinstance(task, Task))
+            project_name = version_filename_without_extension
+            project_path = arch.flatten(path, project_name=project_name)
+
+            # append link file
+            stalker_link_file_path = os.path.join(project_path,
+                                                  'scenes/stalker_links.txt')
+
+            import stalker_pyramid
+            version_upload_link = '%s/tasks/%s/versions/list' % (
+                stalker_pyramid.stalker_server_external_url,
+                task.id
+            )
+            request_review_link = '%s/tasks/%s/view' % (
+                stalker_pyramid.stalker_server_external_url,
+                task.id
+            )
+            with open(stalker_link_file_path, 'w+') as f:
+                f.write("Version Upload Link: %s\n"
+                        "Request Review Link: %s\n" % (version_upload_link,
+                                                       request_review_link))
+            zip_path = arch.archive(project_path)
+
+            new_zip_path = os.path.join(
+                version.absolute_path,
+                os.path.basename(zip_path)
+            )
+
+            # move the zip right beside the original version file
+            shutil.move(zip_path, new_zip_path)
+
+            # now remove the temp files
+            shutil.rmtree(project_path, ignore_errors=True)
+
+            # remove the lock file
+            os.remove(archive_lock_file_path)
+
+        # open the zip file in browser
+        # serve the file new_zip_path
+        from pyramid.response import FileResponse
+
+        logger.debug('serving packed version file: %s' % new_zip_path)
+
+        response = FileResponse(
+            new_zip_path,
+            request=request,
+            content_type='application/force-download',
+        )
+
+        # update the content-disposition header
+        response.headers['content-disposition'] = \
+            str('attachment; filename=' + os.path.basename(new_zip_path))
+
+        return response

@@ -1,0 +1,184 @@
+<script class="dialog_loaded"></script>
+
+<div class='row-fluid'>
+    <div class='span12'>
+            <div id="message" class="alert alert-danger bigger-110">
+                How many hours do you need?
+            </div>
+
+            <form id="request_extra_time_form"
+                  class='form-horizontal'
+                  role='form'
+                  method='post'
+                  action="">
+
+                {# Description #}
+                <div>
+                    <div class='control-group'>
+                        <label class='span3 control-label'
+                               for='task_description'>Description</label>
+
+                        <div class='span9'>
+                            <textarea id="task_description"
+                                      name='description'
+                                      class="autosize-transition span12"
+                                      style="overflow: hidden;
+                                         word-wrap: break-word;
+                                         resize: horizontal;
+                                         height: 250px;"
+                                    >{% if mode=='update' %}
+                                {{ task.description }}{% endif %}</textarea>
+                        </div>
+                    </div>
+
+                    {# Schedule Timing #}
+                    <div class='control-group' id="revision_controls">
+                        <label class='span3 control-label'
+                               for='task_schedule_timing'>Schedule Timing</label>
+
+                        <div class='span9'>
+                            <div class='span2'>
+                                <input id='task_schedule_timing'
+                                       class='input-block-level'
+                                       name='schedule_timing'
+                                       type='text'
+                                       value=1
+                                       min=1
+                                       required>
+                            </div>
+                            <div class='span3'>
+                                <select id='task_schedule_unit'
+                                        class='input-block-level'
+                                        name='schedule_unit'>
+                                    <option value='min'>Minutes</option>
+                                    <option value='h'>Hours</option>
+                                    <option value='d'>Days</option>
+                                    <option value='w'>Weeks</option>
+                                    <option value='m'>Months</option>
+                                    <option value='y'>Years</option>
+                                </select>
+                            </div>
+                            <div class='span3'>
+                                <select id='task_schedule_model'
+                                        class='input-block-level'
+                                        name='schedule_model'>
+                                    <option value='effort'>Effort</option>
+                                    <option value='duration'>Duration</option>
+                                    <option value='length'>Length</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+    </div>
+</div>
+
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.autosize-min.js") }}'></script>
+
+<script>
+    function init_dialog() {
+        console.log('initialize request extra time dialog start');
+
+        // update dialog header
+        var dialog_template_label = $('#dialog_template_label');
+        dialog_template_label.find('span').remove();
+        dialog_template_label.append('<span class="green">Request Extra Time Dialog</span>');
+
+
+        var submit_form_url = '{{ action }}';
+
+        var schedule_timing = '{{ task.schedule_timing }}';
+        var schedule_unit = '{{ task.schedule_unit }}';
+        var schedule_model = '{{ task.schedule_model }}';
+
+        var submit_button = $('#dialog_template_submit_button');
+
+
+        {# ***************************************************************** #}
+        {# Schedule Unit and Model #}
+        var task_schedule_unit = $('#task_schedule_unit');
+        var task_schedule_timing = $('#task_schedule_timing');
+
+        var schedule_timing_setter = function(){
+            // set minimum
+            var value = task_schedule_unit.val();
+            if (value === 'min') {
+                // need to be multiple of 10
+                var timing_value = task_schedule_timing.val();
+                timing_value = (timing_value / 10).toFixed(0) * 10;
+                timing_value = Math.max(10, timing_value);
+                task_schedule_timing.val(timing_value);
+            }
+        };
+
+        task_schedule_timing.on('change', schedule_timing_setter);
+        schedule_timing_setter();
+    
+        task_schedule_unit.on('change', function(e){
+            var value = $(this).val();
+            if(value === 'min'){
+                // set the minimum to 10min
+                // TODO: get studio minimum schedule unit
+                task_schedule_timing.val(10);
+            }
+        });
+
+        task_schedule_unit.val(schedule_unit);
+
+        $('#task_schedule_model').val(schedule_model);
+
+        {# ***************************************************************** #}
+        {# Submit Button #}
+
+        submit_button.on('click', function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+
+            // disable submit button
+            submit_button.button('loading');
+
+            var task_form = $('#request_extra_time_form');
+            var form_data = task_form.serialize();
+
+            // prevent multiple sends
+            if (task_form.attr('is_sending') == 'true') {
+                return;
+            } else {
+                task_form.attr('is_sending', true);
+            }
+            $.post(
+                submit_form_url,
+                form_data
+            ).done(function () {
+                $('#dialog_template').modal('hide');
+                // reload page
+                setTimeout(function () { // wait for hide event to finish
+                    window.location.reload();
+                }, 0);
+            }).fail(function (jqXHR) {
+                task_form.attr('is_sending', false);
+
+                // reset submit button
+                submit_button.button('reset');
+                bootbox.alert('<h6 class="red"><i class="icon-warning-sign"></i> Failed</h6>' + jqXHR.responseText);
+
+            });
+        });
+
+        console.log('initialize request extra time dialog end')
+    }
+</script>
+
+<script type="text/javascript">
+    function destruct_dialog() {
+        console.log('destruct request extra time dialog start');
+        // unbind events
+        $('#revision_controls').unbind();
+        $('#dialog_template_submit_button').unbind();
+
+        // remove dialog
+        $('#dialog_template').data('modal', null);
+        console.log('destruct request extra time dialog end');
+    }
+</script>

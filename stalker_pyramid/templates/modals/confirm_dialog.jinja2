@@ -1,6 +1,35 @@
-<div id="message" class="alert alert-info bigger-110">
+<script class="dialog_loaded"></script>
+<div class='row-fluid'>
+    <div class='span12'>
+        <div id="message" class="alert alert-info bigger-110">
+        </div>
+        <div class="space"></div>
+        <form id="confirm_form"
+                  class='form-horizontal'
+                  role='form'
+                  method='post'
+                  action="">
 
+            {# Notes #}
+            <div class='control-group'>
+                <label class='span3 control-label'
+                       for='description'>Note:</label>
+
+                <div class='span9'>
+                    <textarea id="description"
+                              name='description'
+                              class="autosize-transition span12"
+                              style="overflow: hidden;
+                                         word-wrap: break-word;
+                                         resize: horizontal;
+                                         height: 150px;"
+                            ></textarea>
+                </div>
+            </div>
+        </form>
+    </div>
 </div>
+
 <script>
     function init_dialog() {
         console.debug('starting to initialize confirm dialog!!!');
@@ -11,47 +40,40 @@
 
         $('#message').append('{{ message | safe}}');
 
-
         {# ***************************************************************** #}
         {# Submit Button #}
         $('#dialog_template_submit_button').on('click', function (e) {
             e.stopPropagation();
             e.preventDefault();
-
             // disable the submit_button
             var submit_button = $(this);
 
-
-            var url;
-            url = '{{ action }}';
-
-            console.debug('url: '+url)
-
+            var url= '{{ action | safe}}';
             if(url==''){
                 $('#dialog_template').modal('hide');
             }
             else{
                 submit_button.button('loading');
+                var confirm_form = $('#confirm_form');
+                var confirm_form_data = confirm_form.serialize();
 
-                $.post(url).done(function (response) {
+                $.post(url, confirm_form_data).done(function (response) {
                     $('#dialog_template').modal('hide');
                     // reload page
                     setTimeout(function () { // wait for hide event to finish
                         window.location.reload();
                     }, 0);
                 }).fail(function (jqXHR) {
-                            bootbox.alert('<h6 class="red"><i class="icon-warning-sign"></i> Failed</h6>' +jqXHR.responseText);
-                            submit_button.button('reset');
-                        });
+                    bootbox.alert('<h6 class="red"><i class="icon-warning-sign"></i> Failed</h6>' +jqXHR.responseText);
+                    submit_button.button('reset');
+                });
             }
         });
-
 
         $('.date').each(function () {
             var date = moment.utc($(this).text());
             $(this).text(date.fromNow());
         });
-
 
         console.debug('finished initializing the confirm dialog!')
     }
@@ -60,12 +82,7 @@
 
 <script type="text/javascript">
     function destruct_dialog() {
-
-
-
         $('#dialog_template_submit_button').unbind();
-
         $('#dialog_template').data('modal', null);
-
     }
 </script>

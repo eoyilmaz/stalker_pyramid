@@ -1,0 +1,208 @@
+<script class="dialog_loaded"></script>
+<div class="row-fluid">
+    <form id='budget_form'
+          class='form-horizontal'
+          role='form'
+          method="post"
+            >
+        <div class="row-fluid">
+            {# Name #}
+            <div class="control-group">
+                <label class="span3 control-label"
+                       for="budget_name">Adi</label>
+                <div class="span9">
+
+                    <input id="budget_name"
+                           name='name'
+                           type="text"
+                           class="form-control"
+                           placeholder="Adi"
+                           {% if mode=='Update' %}
+                            value='{{ budget.name }}'
+                           {% endif %}
+                           required>
+                </div>
+            </div>
+            {#Type #}
+            <div class='control-group'>
+                <label class='span3 control-label'
+                       for='budget_type'>Tip</label>
+                <div class="span5">
+                    <select id='budget_type'
+                            class='input'
+                            name='type_id'
+                            required>
+                    </select>
+                </div>
+            </div>
+        {% if mode=='Update' %}
+            {# Start Date #}
+            <div class="control-group">
+                <label for="start_date_picker"
+                       class="span3 control-label">Tarih</label>
+                <div class="span9 input-prepend">
+                    <input class="date-picker"
+                           id='start_date_picker'
+                           name='start_and_end_dates'
+                           type="text"
+                           data-date-format="dd/mm/yyyy"
+                           placeholder="Start & End Dates"
+                            >
+                    <span class="add-on">
+                        <i class="icon-calendar"></i>
+                    </span>
+
+                    <span id="duration" class="add-on">
+                    </span>
+                </div>
+            </div>
+        {% endif %}
+            {#Description #}
+            <div class="control-group'">
+                <label for="budget_description"
+                       class="span3 control-label">Tanim</label>
+                <div class="span9">
+                    <textarea id="budget_description"
+                              name='description'
+                              class="autosize-transition"
+                              style="overflow: hidden;
+                                     word-wrap: break-word;
+                                     resize: horizontal;
+                                     height: 50px;"
+                            >{% if mode=='Update' %}{{ budget.description }}{% endif %}</textarea>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/daterangepicker.min.js") }}'></script>
+<script type="text/javascript">
+    function init_dialog() {
+
+        console.debug('starting to initialize budget dialog!!!');
+
+        var dialog_label = $('#dialog_template_label');
+        dialog_label.find('span').remove();
+
+        dialog_label.append('<span>Teklif</span>');
+
+        var duration = 0;
+
+        {#Type ----------------------------------------------------------------#}
+        {% raw %}
+            var budget_type_option_template = doT.template(
+                '<option value={{=it.id}}>{{=it.name}}</option>'
+            );
+        {% endraw %}
+
+        $.getJSON('/types/?target_entity_type=Budget').then(function (data) {
+            var budget_type = $('#budget_type');
+
+            for (var i = 0; i < data.length; i++) {
+                budget_type.append(budget_type_option_template(data[i]));
+            }
+
+            budget_type.chosen({
+                search_contains: true,
+                enable_split_word_search: true,
+                allow_single_deselect: true
+            });
+
+            {% if mode=='Update' %}
+                budget_type.val('{{ budget.type.id }}');
+            {% endif %}
+            budget_type.trigger('liszt:updated');
+        });
+
+        {#Start Date ----------------------------------------------------------#}
+        {% if mode == 'Update' %}
+            var start_date_picker = $('#start_date_picker').datepicker();
+
+            $('.date-picker').datepicker().next().on(ace.click_event, function(){
+                        $(this).prev().focus();
+                    });
+
+            start_date_picker.on('shown', function (e) {
+                e.stopPropagation();
+            });
+            start_date_picker.on('hidden', function (e) {
+                e.stopPropagation();
+            });
+
+            var start_date = moment({{ budget.get_generic_text_attr('start_date') }});
+            var end_date = moment({{ budget.get_generic_text_attr('end_date') }});
+            duration = end_date.diff(start_date, 'days');
+
+            $('#duration').text(duration+ " Days");
+            start_date_picker.val(start_date.format('DD/MM/YYYY'));
+;
+        {% endif %}
+
+        {# ***************************************************************** #}
+        {# Submit Button #}
+        var submit_button = $('#dialog_template_submit_button');
+        submit_button.on('click', function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+
+            submit_button.button('loading');
+            var budget_form = $('#budget_form');
+
+            var url = '/budgets/create';
+            var params = null;
+            {% if mode=='Update' %}
+                url='/budgets/{{ budget.id }}/update';
+
+                var start_date = get_date_picker('start_date_picker');
+                start_date.setDate(start_date.getDate() + 1);
+                var end_date = new Date(start_date);
+                end_date.setDate(end_date.getDate() + duration);
+
+                params = {
+                    'project_id': {{ budget.project.id }},
+                    'start_date':start_date.getTime(),
+                    'end_date':end_date.getTime()
+                }
+            {% else %}
+                params = {
+                    'project_id': {{ project.id }}
+                }
+            {% endif %}
+
+            $.post(
+                url,
+                budget_form.serialize() + '&' +
+                $.param(params)
+            ).done(function (new_url) {
+                {% if mode=='Update' %}
+                    window.location.reload();
+                {% else %}
+                    window.location.assign(new_url);
+                {% endif %}
+                //$('#new_outputs_storage').text(JSON.stringify(jqXHR));
+
+            }).fail(function (jqXHR) {
+                bootbox.alert(jqXHR.responseText);
+                submit_button.button('reset');
+            });
+        });
+
+        console.debug('finished initializing the budget dialog!')
+    }
+</script>
+
+<script type="text/javascript">
+    function destruct_dialog() {
+        $('#budget_name').unbind();
+        $('#budget_type').unbind();
+        $('#start_date_picker').unbind();
+        $('#budget_description').unbind();
+        $('#dialog_template_submit_button').unbind();
+
+        $('#dialog_template').data('modal', null);
+    }
+</script>
+
+
+

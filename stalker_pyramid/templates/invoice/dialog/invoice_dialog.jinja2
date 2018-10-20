@@ -1,0 +1,145 @@
+<script class="dialog_loaded"></script>
+
+<div class="row-fluid">
+
+    <form id='invoice_form'
+          class='form-horizontal'
+          role='form'
+          method="post"
+            >
+        <div class="row-fluid">
+            <div class="control-group">
+                <label class="span3 control-label"
+                       for="client">Client</label>
+                <div class="span9">
+                    <select id='client'
+                            name='client_id'
+                            data-placeholder='Client'
+                            required>
+                    </select>
+                </div>
+            </div>
+            {# Cost #}
+            <div class="control-group">
+                <label class="span3 control-label"
+                       for="amount">Amount</label>
+                <div class="span9">
+                    <input id="amount"
+                           class='input-block-level'
+                           name='amount'
+                           type="number"
+                           placeholder="Amount"
+                           required>
+                </div>
+            </div>
+            {# Unit #}
+            <div class="control-group">
+                <label class="span3 control-label"
+                       for="unit">Unit</label>
+                <div class="span9">
+                    <select id='unit'
+                               class='input-block-level'
+                               name='unit'>
+                            <option value='TL'>TL</option>
+                            <option value='$'>$</option>
+                        </select>
+                </div>
+            </div>
+
+            {#Description #}
+            <div class="control-group'">
+                <label for="budget_description"
+                       class="span3 control-label">Description</label>
+                <div class="span9">
+                    <textarea id="budget_description"
+                              name='description'
+                              class="autosize-transition"
+                              style="overflow: hidden;
+                                     word-wrap: break-word;
+                                     resize: horizontal;
+                                     height: 50px;"
+                            ></textarea>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/daterangepicker.min.js") }}'></script>
+<script type="text/javascript">
+
+    function init_dialog() {
+
+        console.debug('starting to initialize invoice dialog!!!');
+
+        var dialog_label = $('#dialog_template_label');
+        dialog_label.find('span').remove();
+        dialog_label.append('<span>{{mode}} Invoice</span>');
+
+        {% raw %}
+            var invoice_type_option_template = doT.template(
+                '<option value={{=it.id}}>{{=it.name}}</option>'
+            );
+        {% endraw %}
+
+        var client = $('#client');
+
+        {% for client in budget.project.clients %}
+            client.append(invoice_type_option_template({'name':'{{ client.name }}', 'id':'{{ client.id }}'}));
+        {% endfor %}
+
+        client.chosen({
+            search_contains: true,
+            enable_split_word_search: true,
+            allow_single_deselect: true
+        });
+
+        client.trigger('liszt:updated');
+
+
+        {# ***************************************************************** #}
+        {# Submit Button #}
+        var submit_button = $('#dialog_template_submit_button');
+        submit_button.on('click', function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+
+            submit_button.button('loading');
+            var invoice_form = $('#invoice_form');
+
+            var url = '/invoices/create';
+            {% if mode=='Update' %}
+                url='/invoices/{{ invoice.id }}/update';
+            {% endif %}
+
+            $.post(
+                url,
+                invoice_form.serialize() + '&' +
+                $.param({
+                    'budget_id': {{ budget.id }}
+                })
+            ).done(function (jqXHR) {
+                //$('#new_outputs_storage').text(JSON.stringify(jqXHR));
+                window.location.reload();
+            }).fail(function (jqXHR) {
+                bootbox.alert(jqXHR.responseText);
+                submit_button.button('reset');
+            });
+        });
+
+        console.debug('finished initializing the budget dialog!')
+    }
+</script>
+
+<script type="text/javascript">
+    function destruct_dialog() {
+{#        $('#budget_name').unbind();#}
+{#        $('#budget_description').unbind();#}
+{#        $('#dialog_template_submit_button').unbind();#}
+{##}
+{#        $('#dialog_template').data('modal', null);#}
+    }
+</script>
+
+
+

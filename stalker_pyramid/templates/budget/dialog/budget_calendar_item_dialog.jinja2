@@ -1,0 +1,122 @@
+<script class="dialog_loaded"></script>
+
+<div class="row-fluid">
+    {% if item.type == "task"%}
+        {% include 'budget/dialog/task_form.jinja2' %}
+    {% else %}
+        {% include 'budget/dialog/item_form.jinja2' %}
+    {% endif %}
+</div>
+
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>
+
+<script type="text/javascript">
+    function init_dialog() {
+        console.debug('starting to initialize calendar_task dialog!!!');
+        var event_dialog = $('#dialog_template');
+
+        var dialog_label = $('#dialog_template_label');
+        dialog_label.find('span').remove();
+        dialog_label.append('<span>{{mode}} {{ item.type }}</span>');
+
+        {# Start Date ******************************************************* #}
+        $('.date-picker').datepicker().next().on(ace.click_event, function(){
+            $(this).prev().focus();
+        });
+
+        init_item_form_objects();
+
+        {# ***************************************************************** #}
+        console.log(event_dialog.attr('name'));
+        if(event_dialog.attr('name')){
+           $('#name').val(event_dialog.attr('name'));
+        }
+
+        if(event_dialog.attr('description')){
+           $('#description').val(event_dialog.attr('description'));
+        }
+
+        $('#calendar_start_date').val((new Date({{ item.start_date }})).format("dd/mm/yyyy"));
+
+        {# ***************************************************************** #}
+        {# Submit Button #}
+        var submit_button = $('#dialog_template_submit_button');
+        submit_button.on('click', function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+
+            submit_button.button('loading');
+
+            var start_date = get_date_picker('calendar_start_date');
+
+            var item_form = $('#item_form');
+            var params = {
+                'id': '{{ item.id }}',
+                'start_date': start_date.getTime(),
+                'mode': '{{ mode }}',
+                'folder_id':'{{ item.folder_id }}',
+                'index':'{{ item.index }}',
+                'dialog_action': 'dialog_action'
+            };
+
+            var url = '/budgets/{{ budget.id }}/calendar/{{ item.type }}/action';
+            $.post(
+                url,
+                item_form.serialize()+"&"+
+                $.param(params)
+            ).done(function (jqXHR) {
+
+                $('#dialog_template').modal('hide');
+                submit_button.button('reset');
+                window.location.reload();
+            }).fail(function (jqXHR) {
+                bootbox.alert(jqXHR.responseText);
+                submit_button.button('reset');
+            });
+        });
+
+        {# ***************************************************************** #}
+        {# Delete Button #}
+        {% if mode=='Update' %}
+            var delete_btn = $('#dialog_template_delete_button');
+            delete_btn.show();
+            delete_btn.on('click', function (e) {
+                e.stopPropagation();
+                e.preventDefault();
+
+                // disable the submit_button
+                var delete_button = $(this);
+                delete_button.button('loading');
+
+                deleteItem('{{item.id }}');
+{#                var confirm_message =#}
+{#                    '<h3 class="header red"><i class="icon-warning-sign">' +#}
+{#                    '</i> Warning</h3>' +#}
+{#                    '<div id="message" class="alert alert-info bigger-110">' +#}
+{#                    'Are you sure you want to  delete this item?' +#}
+{#                    '</div>';#}
+{##}
+{#                bootbox.confirm(confirm_message, function (result) {#}
+{#                    if (result) {#}
+{#                        $.post(#}
+{#                                '/budgets/{{ budget.id }}/calendar/{{ item.type }}/delete?id={{item.id }}'#}
+{#                        ).done(function (jqXHR) {#}
+{#                            deleteTaskFromGantt('{{ item.id }}');#}
+{#                            $('#dialog_template').modal('hide');#}
+{#                        }).fail(function (jqXHR) {#}
+{#                            bootbox.alert(jqXHR.responseText);#}
+{#                        });#}
+{#                    } else {#}
+{#                        delete_button.button('reset');#}
+{#                    }#}
+{#                });#}
+            });
+        {% endif %}
+        console.debug('finished initializing the calendar_task dialog!')
+    }
+</script>
+
+
+
+
+

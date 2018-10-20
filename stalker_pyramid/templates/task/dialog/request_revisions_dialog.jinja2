@@ -1,0 +1,120 @@
+<script class="dialog_loaded"></script>
+
+<div class="row-fluid" >
+    <div class="row-fluid" >
+        <form id='request_revisions_form'
+          class='form-horizontal'
+          role='form'
+          method='post' >
+            <div class='control-group'>
+                <label class='span3 control-label'
+                       for='force_status_note'>Note:</label>
+
+                <div class='span9'>
+                    <textarea id="force_status_note"
+                              name='description'
+                              class="autosize-transition span12"
+                              style="overflow: hidden;
+                                         word-wrap: break-word;
+                                         resize: horizontal;
+                                         height: 150px;"
+                            ></textarea>
+                </div>
+            </div>
+            {# Schedule Timing #}
+            <div class='control-group'>
+                <label class='span3 control-label'
+                       for='task_schedule_timing'>Schedule Timing</label>
+                <div class='span9'>
+                    <div class='span2'>
+                        <input id='task_schedule_timing'
+                               class='input-block-level'
+                               name='schedule_timing'
+                               type='text'
+                               value=1
+                               min=1
+                               required>
+                    </div>
+                    <div class='span3'>
+                        <select id='task_schedule_unit'
+                                class='input-block-level'
+                                name='schedule_unit'
+                                value="h">
+                            <option value='h'>Hours</option>
+                            <option value='min'>Minutes</option>
+
+                            <option value='d'>Days</option>
+                            <option value='w'>Weeks</option>
+                            <option value='m'>Months</option>
+                            <option value='y'>Years</option>
+                        </select>
+                    </div>
+                    <div class='span3'>
+                        <select id='task_schedule_model'
+                                class='input-block-level'
+                                name='schedule_model'>
+                            <option value='effort'>Effort</option>
+                            <option value='duration'>Duration</option>
+                            <option value='length'>Length</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/i18n/grid.locale-en.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/jquery.jqGrid.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/accounting.min.js") }}'></script>
+
+<script type="text/javascript">
+
+    function init_dialog() {
+        console.debug('starting to initialize add_task_user_dialog dialog  sadasdad!!!');
+
+        $(function () {
+            var label = $('#dialog_template_label');
+            label.find('span').remove();
+            label.append('<span>Request Revisions</span>');
+            $('#dialog_template_body').attr('style', "height: auto");
+
+            var url= '{{ action | safe}}';
+            if(url==''){
+                $('#dialog_template').modal('hide');
+            }
+
+            var submit_button = $('#dialog_template_submit_button');
+            submit_button.on('click', function (e) {
+
+                e.stopPropagation();
+                e.preventDefault();
+                submit_button.button('loading');
+
+                var request_revisions_form = $("#request_revisions_form");
+
+                $.post(
+                    url,
+                    request_revisions_form.serialize()
+                ).done(function (response_text) {
+                    submit_button.button('reset');
+                    $('#dialog_template').modal('hide');
+
+                    setTimeout(function () { // wait for hide event to finish
+                        window.location.reload();
+                    }, 0);
+                }).fail(function (jqXHR) {
+                    bootbox.alert(jqXHR.responseText);
+                    submit_button.button('reset');
+                });
+            });
+        });
+        console.debug('finished initializing the add_task_user_dialog dialog!')
+    }
+</script>
+
+<script type="text/javascript">
+    function destruct_dialog() {
+        $('#dialog_template_submit_button').unbind();
+        $('#dialog_template').data('modal', null);
+    }
+</script>

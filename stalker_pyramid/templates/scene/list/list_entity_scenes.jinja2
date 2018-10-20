@@ -1,0 +1,326 @@
+{# Stalker Pyramid a Web Base Production Asset Management System
+ Copyright (C) 2009-2018 Erkan Ozgur Yilmaz
+
+ This file is part of Stalker Pyramid.
+
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation;
+ version 2.1 of the License.
+
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+#}
+{% extends "base.jinja2" %}
+
+{# BREADCRUMBS #}
+{% block breadcrumbs %}
+    {% set page_title='Scenes' %}
+    {% include 'breadcrumb/breadcrumbs.jinja2' %}
+{% endblock breadcrumbs %}
+
+{# SIDEBAR #}
+{% block sidebar %}
+    {% include 'sidebar.jinja2' %}
+{% endblock sidebar %}
+
+{# PAGE-CONTENT #}
+{% block page_content %}
+
+{#    {% set page_title='Scenes' %}#}
+{#    {% include 'page_header.jinja2' %}#}
+
+
+    <div class="widget-box">
+        <div class="widget-header widget-header-small header-color-shot">
+            <h5 id="items_header" class="smaller"></h5>
+
+            <div class="widget-toolbar">
+                {% if has_permission('Create_Task') %}
+
+                    &nbsp
+                    <a data-target="#dialog_template"
+                       data-toggle="modal"
+                       data-keyboard=false
+                       href="{{ request.route_url("create_scene_dialog", id=-1, _query={'entity_id': entity.id, 'mode': 'create' }) }}"
+                       class="white">
+                        <i class="icon-plus"></i>
+                        New
+                    </a>
+                    &nbsp&nbsp
+
+                {% endif %}
+                <a href="#" data-action="collapse">
+                    <i class="icon-chevron-down"></i>
+                </a>
+            </div>
+
+        </div>
+        <div class="widget-body">
+            <div class="widget-main no-padding">
+                <div id="loading_spinner" class="well well-sm">
+                    <div class="inline middle blue bigger-110"><i
+                            class="icon-spinner icon-spin orange bigger-125"></i> Loading
+                        content...
+                    </div>
+                </div>
+
+                <table id="scenes_table"
+                       class="table table-striped table-bordered table-hover hide">
+
+                    <thead>
+                    <tr id="scenes_table_column">
+                        <th>Scene</th>
+                        <th># Shots</th>
+                        <th>Total Seconds</th>
+                        <th>Description</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+        </div>
+    </div>
+
+
+
+{% endblock page_content %}
+
+
+{% block extrascripts %}
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.bootstrap.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/dataTable_num-html_sort.js") }}'></script>
+
+    {% raw %}
+    <script id="tmpl_sceneColumn" type="text/x-dot-template">
+        <th>{{=it.name}}</th>
+    </script>
+    {% endraw %}
+
+    {% raw %}
+    <script id="tmpl_sceneRow" type="text/x-dot-template">
+        <tr id="scene_row_{{=it.id}}" style="position: relative; height: 100%">
+            <td style="width:20px;">
+                <a href='/tasks/{{=it.id}}/view'>{{=it.name}}</a><br/><br/>
+                {{ if (it.update_scene_action) { }}
+                <a class="blue pull-right"
+                   data-target="#dialog_template"
+                   data-toggle="modal"
+                   data-keyboard=false
+                   href="{{=it.update_scene_action}}">
+                    <i class="icon-edit bigger-130"></i>
+                </a>{{ } }}
+
+            </td>
+            <td style="width:20px;">{{=it.num_of_shots}}<br/><br/>
+            </td>
+            <td style="width:20px;">{{=it.total_seconds}}<br/><br/>
+            </td>
+            <td id="scene_summary_cell_{{=it.id}}">
+
+                {{=it.description}}<br/>
+            </td>
+        </tr>
+    </script>
+    {% endraw %}
+
+    {% raw %}
+    <script id="tmpl_sceneSummaryCell" type="text/x-dot-template">
+        <a class="red"
+           data-target="#dialog_template"
+           data-toggle="modal"
+           data-keyboard=false
+           href="{{=it.link}}">{{=it.name}}, </a>
+    </script>
+    {% endraw %}
+
+    {% raw %}
+    <script id="tmpl_taskCell_empty" type="text/x-dot-template">
+        <td class="no-padding" style="width:120px; position: relative; height: 100%;">
+            <div class="black2"
+                 style="min-height:100px; position: relative; height: 100%; width: 100%;"">
+
+            </div>
+        </td>
+    </script>
+    {% endraw %}
+    {% raw %}
+    <script id="tmpl_taskCell" type="text/x-dot-template">
+        <td class="no-padding" style="width:120px; position: relative; height: 100%;">
+            <div class="{{=it.status_color}}"
+                 style="min-height:100px; position: relative; height: 100%; width: 100%;"">
+                <span>
+                    <strong><a class="white" href="/tasks/{{=it.id }}/view">{{=it.name}}</a></strong>
+                        <a class="pull-right"
+                           data-target="#dialog_template"
+                           data-toggle="modal"
+                           data-keyboard=false
+                           href="{{=it.update_task_resource_action}}">
+                            <i class="icon-edit bigger-130"></i>
+                        </a>
+                    <!--<a class="pull-right"-->
+                           <!--data-target="#dialog_template"-->
+                           <!--data-toggle="modal"-->
+                           <!--data-keyboard=false-->
+                           <!--href="{{=it.update_task_action}}">-->
+                            <!--<i class="icon-edit bigger-130"></i>-->
+                        <!--</a>-->
+
+
+                    <div class="no-padding">
+                        <span><a href='/users/{{=it.resource_id}}/view'>{{=it.resource_name}}</a></span>
+                    </div>
+                    <div class="no-padding">
+                        {{=it.status}}
+                    </div>
+                    {{ if (it.percent>0) { }}
+                        <div class="progress progress-success no-padding">
+                            <div style="width:{{=it.percent}}%" class="bar">
+                                <span>{{= it.percent}}%</span>
+                            </div>
+                        </div>
+                    {{ } }}
+                </span>
+            </div>
+        </td>
+    </script>
+    {% endraw %}
+
+    {% raw %}
+    <script id="tmpl_taskCell_shot_task" type="text/x-dot-template">
+        <td class="no-padding" style="width:120px; position: relative; height: 100%;">
+            <div class="{{=it.status_color}}"
+                 style="min-height:100px;position: absolute; height: 100%; width: 100%;"">
+                <span>
+                    <strong>{{=it.name}}</strong>
+
+                    <!--<a class="pull-right"-->
+                       <!--data-target="#dialog_template"-->
+                       <!--data-toggle="modal"-->
+                       <!--data-keyboard=false-->
+                       <!--href="{{=it.update_task_resource_action}}">-->
+                        <!--<i class="icon-edit bigger-130"></i>-->
+                    <!--</a>-->
+                    <a class="pull-right"
+                           data-target="#dialog_template"
+                           data-toggle="modal"
+                           data-keyboard=false
+                           href="{{=it.update_task_action}}">
+                            <i class="icon-edit bigger-130"></i>
+                        </a>
+
+                    <div class="no-padding">
+                        {{ for(var j=0;j<it.resource_ids.length;j++){ }}<a href='/users/{{=it.resource_ids[j]}}/view'>{{=it.resource_names[j] }}</a><br/>{{ } }}
+                        <!--<span>{{= it.num_of_task}}</span>-->
+                    </div>
+
+                    <div class="no-padding">
+                        {{=it.status}}
+                    </div>
+                    <!--{{ if (it.bid_seconds!=null){ }}-->
+                    <!--<div class="no-padding">-->
+                        <!--<span>{{=it.bid_seconds}}</span><br/>-->
+                        <!--<span>{{=it.schedule_seconds}}</span><br/>-->
+                        <!--<span>{{=it.total_logged_seconds}}</span>-->
+                    <!--</div>-->
+                    <!--{{ } }}-->
+                </span>
+            </div>
+        </td>
+    </script>
+    {% endraw %}
+
+    <script>
+
+        var all_tasks_list = [];
+
+        $(document).ready(function () {
+
+            var icon_name = get_icon('shot');
+            $('#items_header').append('<i class=' + icon_name + '></i>');
+
+            var types = [];
+            var column_template = doT.template($('#tmpl_sceneColumn').html());
+
+            $(function () {
+                $.getJSON('/shots/children/task_type/?entity_id={{ entity.id }}').then(function (data){
+                    types = data;
+                    var k;
+                    var table_column = $('#scenes_table_column');
+                    for (k = 0; k < types.length; k++) {
+                        table_column.append(column_template(types[k]));
+                    }
+                }).then(function (){
+
+                    $.getJSON('/entities/{{ entity.id }}/scenes/').then(function (data) {
+
+                    var scenes = data;
+                    var scene_template = doT.template($('#tmpl_sceneRow').html());
+
+                    $(function () {
+                        var i;
+                        var table_body = $('#scenes_table>tbody');
+                        var total_seconds = 0;
+                        var total_shots = 0;
+                        for (i = 0; i < data.length; i++) {
+
+                            total_seconds += data[i].total_seconds;
+                            data[i].total_seconds = data[i].total_seconds.toFixed(2);
+                            data[i].link = '/tasks/' + data[i].id + '/view';
+                            // append it to the table
+                            table_body.append(scene_template(data[i]));
+
+                            var cell_template = doT.template($('#tmpl_taskCell').html());
+                            var empty_cell_template = doT.template($('#tmpl_taskCell_empty').html());
+                            var shot_task_cell_template = doT.template($('#tmpl_taskCell_shot_task').html());
+
+                            var scene_row = $('#scene_row_' + data[i].id);
+
+                            total_shots += data[i].num_of_shots;
+                            for (var j = 0; j < types.length; j++) {
+                                var task = data[i][types[j].name];
+
+                                if (task) {
+                                    task.status_color = 'status_'+task.status;
+                                    if (task.id){
+                                        scene_row.append(cell_template(task));
+                                    }
+                                    else {
+                                        scene_row.append(shot_task_cell_template(task));
+                                    }
+                                }
+                                else{
+                                    scene_row.append(empty_cell_template(null));
+                                }
+                            }
+
+                        }
+
+                        var oTable1 = $('#scenes_table').dataTable();
+
+                        $('#items_header').append('<span>Total: '+total_seconds.toFixed(2)+' s = '+(total_seconds/60).toFixed(2)+' m  ---- '+total_shots+' Shots</span>');
+
+                        $('#loading_spinner').hide();
+                        $('#scenes_table').show();
+                    });
+                });
+
+                });
+            });
+        });
+    </script>
+
+
+{% endblock extrascripts %}
+

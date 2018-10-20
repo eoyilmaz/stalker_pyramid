@@ -1,0 +1,159 @@
+.today {
+    position: absolute;
+    top: 0;
+    width: 1px;
+    height: 100%;
+    border-left: 2px dotted red;
+    z-index: 100;
+}
+
+.log_bar.layout {
+    position: absolute;
+    height: 26px;
+    bottom: 0;
+    background-color: #87b87f !important;
+}
+
+.log_bar.log {
+    position: absolute;
+    width: 100%;
+    bottom: 0;
+    background-color: #d15b47 !important;
+}
+
+.data_bar {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    text-align: center;
+}
+
+.data_value {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    bottom: 0;
+    text-align: center;
+    cursor: pointer;
+}
+
+.ddgrid .dgrid-column-chart {
+    position: relative;
+    overflow: visible;
+}
+
+.down-arrow {
+    background-position: -64px -32px;
+}
+
+.dep-horizontal-line, .dep-vertical-line, .down-arrow {
+    position: absolute;
+    z-index: 10;
+}
+
+.ddgrid .dgrid .dependency-row {
+    position: absolute;
+    width: 390px;
+}
+
+.dependencies {
+    height: 300px;
+}
+
+th.dgrid-column-chart {
+    padding: 0;
+}
+
+th.dgrid-column-chart td {
+    border: 1px solid #afafaf;
+    text-align: center;
+}
+
+th.dgrid-column-chart table {
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.dgrid-tree-container {
+    -webkit-transition-duration: 0.2s;
+    -moz-transition-duration: 0.2s;
+    -ms-transition-duration: 0.2s;
+    -o-transition-duration: 0.2s;
+    transition-duration: 0.2s;
+    overflow: hidden;
+}
+
+.ddgrid .dgrid {
+    width: 100%;
+    height: 100%;
+}
+
+.ddgrid .dgrid-column-id {
+    width: 40px;
+    text-align: center;
+}
+
+.ddgrid .dgrid-column-name {
+    width: 200px;
+}
+
+.ddgrid .dgrid-column-set-0 {
+    width: 20%;
+}
+
+.ddgrid .dgrid-column-set-1 {
+    width: 80%;
+}
+
+
+.ddgrid .dgrid-cell {
+    text-overflow: clip;
+    white-space: nowrap;
+    height: 26px;
+}
+
+.ddgrid .headerCell {
+    position: absolute;
+    border: 1px none #AAA;
+    border-left-style: solid;
+    margin-left: -1px;
+}
+
+.ddgrid .logContainer {
+    position: absolute;
+}
+
+.center {
+    text-align: center;
+}
+
+.project {
+    font-weight: bold;
+}
+
+.parent {
+    font-weight: bold;
+}
+
+.dragDetector {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    background: none;
+    left: 0;
+    top: 0;
+    z-index: 100000;
+}
+
+.zoomBox {
+    width: 0;
+    left: 0;
+    height: 100%;
+    background-color: lightblue;
+    position: absolute;
+    top: 0;
+    opacity: 0.75;
+}

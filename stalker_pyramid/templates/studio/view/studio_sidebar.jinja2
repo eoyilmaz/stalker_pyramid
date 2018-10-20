@@ -14,7 +14,7 @@
             '{{ studio.name }}',
             '',
             "{%- if studio.thumbnail -%}/{{ studio.thumbnail.full_path }}{%- else -%}{{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_0.png")}}{%- endif -%}",
-            '/studios/{{ studio.id }}/update/dialog'
+            '{%- if has_permission('Update_Studio') -%}/studios/{{ studio.id }}/update/dialog{%- endif -%}'
         );
 
         menu_of(
@@ -22,7 +22,7 @@
             "{%- if request.current_route_path() == request.route_path('view_studio', id=studio.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('view_studio', id=studio.id) }}',
             get_icon('dashboard'),
-            ''
+            0
         );
 
         menu_of(
@@ -30,7 +30,7 @@
             "{%- if request.current_route_path() == request.route_path('list_entity_resources', id=studio.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('list_entity_resources', id=studio.id) }}',
             get_icon('resource'),
-            ''
+            0
         );
 
         menu_of(
@@ -38,48 +38,90 @@
             "{%- if request.current_route_path() == request.route_path('list_entity_tasks', id=studio.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('list_entity_tasks', id=studio.id) }}',
             get_icon('task'),
-            '{{ studio.tasks | count }}'
+            {{ studio.tasks | count }}
         );
 
-        menu_of(
-            'Projects',
-            "{%- if request.current_route_path() == request.route_path('list_studio_projects', id=studio.id) -%}'active',{%- else -%},{%- endif -%}",
-            '{{ request.route_url('list_studio_projects', id=studio.id) }}',
-            get_icon('project'),
-            '{{ studio.projects | count }}'
-        );
+        {% if has_permission('List_Project') %}
+            menu_of(
+                'Projects',
+                "{%- if request.current_route_path() == request.route_path('list_studio_projects', id=studio.id) -%}'active',{%- else -%},{%- endif -%}",
+                '{{ request.route_url('list_studio_projects', id=studio.id) }}',
+                get_icon('project'),
+                {{ studio.projects | count }}
+            );
+        {% endif %}
+        {% if has_permission('List_User') %}
+            menu_of(
+                'Users',
+                "{%- if request.current_route_path() == request.route_path('list_studio_users', id=studio.id) -%}'active',{%- else -%},{%- endif -%}",
+                '{{ request.route_url('list_studio_users', id=studio.id) }}',
+                get_icon('user'),
+                {{ studio.users | count }}
+            );
+        {% endif %}
+        {% if has_permission('List_Department') %}
+            menu_of(
+                'Departments',
+                "{%- if request.current_route_path() == request.route_path('list_studio_departments', id=studio.id) -%}'active',{%- else -%},{%- endif -%}",
+                '{{ request.route_url('list_studio_departments', id=studio.id) }}',
+                get_icon('department'),
+                0
+            );
+        {% endif %}
+        {% if has_permission('List_Group') %}
+            menu_of(
+                'Groups',
+                "{%- if request.current_route_path() == request.route_path('list_groups') -%}'active',{%- else -%},{%- endif -%}",
+                '{{ request.route_url('list_groups') }}',
+                get_icon('group'),
+                0
+            );
+        {% endif %}
+        {% if has_permission('List_Vacation') %}
+            menu_of(
+                'Vacations',
+                "{%- if request.current_route_path() == request.route_path('list_studio_vacations', id=studio.id) -%}'active',{%- else -%},{%- endif -%}",
+                '{{ request.route_url('list_studio_vacations', id=studio.id) }}',
+                get_icon('vacation'),
+                {{ studio.vacations | count }}
+            );
+        {% endif %}
+        {% if  has_permission('List_Client') %}
+            menu_of(
+                'Clients',
+                "{%- if request.current_route_path() == request.route_path('list_studio_clients', id=studio.id) -%}'active',{%- else -%},{%- endif -%}",
+                '{{ request.route_url('list_studio_clients', id=studio.id) }}',
+                get_icon('client'),
+                0
+            );
+{#            menu_of(#}
+{#                'Resource Rates',#}
+{#                "{%- if request.current_route_path() == request.route_path('list_resource_rates', id=studio.id) -%}'active',{%- else -%},{%- endif -%}",#}
+{#                '{{ request.route_url('list_resource_rates', id=studio.id) }}',#}
+{#                get_icon('user'),#}
+{#                0#}
+{#            );#}
 
-        menu_of(
-            'Users',
-            "{%- if request.current_route_path() == request.route_path('list_studio_users', id=studio.id) -%}'active',{%- else -%},{%- endif -%}",
-            '{{ request.route_url('list_studio_users', id=studio.id) }}',
-            get_icon('user'),
-            '{{ studio.users | count }}'
-        );
-
-        menu_of(
-            'Departments',
-            "{%- if request.current_route_path() == request.route_path('list_studio_departments', id=studio.id) -%}'active',{%- else -%},{%- endif -%}",
-            '{{ request.route_url('list_studio_departments', id=studio.id) }}',
-            get_icon('department'),
-            ''
-        );
-
-        menu_of(
-            'Groups',
-            "{%- if request.current_route_path() == request.route_path('list_groups') -%}'active',{%- else -%},{%- endif -%}",
-            '{{ request.route_url('list_groups') }}',
-            get_icon('group'),
-            ''
-        );
-
-        menu_of(
-            'Vacations',
-            "{%- if request.current_route_path() == request.route_path('list_studio_vacations', id=studio.id) -%}'active',{%- else -%},{%- endif -%}",
-            '{{ request.route_url('list_studio_vacations', id=studio.id) }}',
-            get_icon('vacation'),
-            '{{ studio.vacations | count }}'
-        );
+{#            menu_of(#}
+{#                'Price Lists',#}
+{#                "{%- if request.current_route_path() == request.route_path('list_studio_goods', id=studio.id) -%}'active',{%- else -%},{%- endif -%}",#}
+{#                '{{ request.route_url('list_studio_goods', id=studio.id) }}',#}
+{#                get_icon('budget'),#}
+{#                0#}
+{#            );#}
+            {% if has_permission('Create_Budget') and has_permission('Create_Good') %}
+                menus_under_title('Production',
+                                  'budget',
+                                  [
+                                   {'name': 'Price List',
+                                    'link':'{{ request.route_url('list_studio_goods', id=studio.id) }}',
+                                    'state':"{%- if request.current_route_path() == request.route_path('list_studio_goods', id=studio.id) -%}'active',{%- else -%},{%- endif -%}"},
+                                  {'name': 'Resource Rates',
+                                    'link':'{{ request.route_url('list_resource_rates', id=studio.id) }}',
+                                    'state':"{%- if request.current_route_path() == request.route_path('list_resource_rates', id=studio.id) -%}'active',{%- else -%},{%- endif -%}"}
+                ]);
+            {% endif %}
+        {% endif %}
 
     })
 </script>

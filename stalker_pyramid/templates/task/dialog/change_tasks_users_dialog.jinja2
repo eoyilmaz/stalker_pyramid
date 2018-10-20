@@ -1,0 +1,107 @@
+<script class="dialog_loaded"></script>
+
+<div class="row-fluid" >
+    <form id='change_form'
+              class='form-horizontal'
+              role='form'
+              method='post'>
+        <div class='control-group'>
+            <label class='span3 control-label' for='task_users'>{{ user_type }}</label>
+            <div class='span9'>
+                <select id='task_users'
+                        multiple=''
+                        class='input-block-level tag-input-style'
+                        name='user_ids'
+                        data-placeholder={{ user_type }}></select>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script type="text/javascript">
+    function init_dialog() {
+        console.debug('starting to initialize add_task_user_dialog dialog!!!');
+
+        $(function () {
+            var label = $('#dialog_template_label');
+            label.find('span').remove();
+            label.append('<span>Append {{ user_type }}</span>');
+    
+            var task_users = $('#task_users');
+
+            task_users.chosen({
+                search_contains: true,
+                enable_split_word_search: true
+            });
+
+            {% raw %}
+                var user_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
+            {% endraw %}
+
+            $.getJSON('/projects/{{ project_id }}/users/?simple=1').then(function(data){
+                // remove current elements
+                task_users.find('option').remove();
+
+                // append new ones
+                var data_count = data.length;
+                // append a single empty option to the responsible field
+                for (var i=0; i < data_count; i++){
+                    task_users.append(user_template(data[i]));
+                }
+                {% if tasks | count == 1 %}
+                    var selected_users = [
+                        {% for user in tasks[0][ user_type.lower()] %}
+                            {{ user.id }},
+                        {% endfor %}
+                    ];
+
+                    if (selected_users.length > 0){
+                        task_users.val(selected_users);
+                    }
+                {% endif %}
+                // update the chosen fields
+                task_users.trigger('liszt:updated');
+            });
+
+            var submit_button = $('#dialog_template_submit_button');
+            submit_button.on('click', function (e) {
+                e.stopPropagation();
+                e.preventDefault();
+                submit_button.button('loading');
+
+                var change_form = $("#change_form");
+                var _query = "?project_id={{ tasks[0].project.id }}";
+                var task_ids = [];
+                {% for task in tasks %}
+                    _query += "&task_ids={{ task.id }}";
+                    task_ids.push({{ task.id }});
+                {% endfor %}
+
+
+
+                $.post(
+                    '/tasks/change/{{ user_type.lower() }}'+_query,
+                    change_form.serialize() + '&' + $.param({'task_ids':task_ids})
+                ).done(function (response_text) {
+                    submit_button.button('reset');
+                    $('#dialog_template').modal('hide');
+{#                    setTimeout(function () { // wait for hide event to finish#}
+{#                        window.location.reload();#}
+{#                    }, 0);#}
+                }).fail(function (jqXHR) {
+                    bootbox.alert(jqXHR.responseText);
+                    submit_button.button('reset');
+                });
+            });
+        });
+
+        console.debug('finished initializing the add_task_user_dialog dialog!')
+    }
+</script>
+
+<script type="text/javascript">
+    function destruct_dialog() {
+        $('#dialog_template_submit_button').unbind();
+        $('#dialog_template').data('modal', null);
+    }
+</script>

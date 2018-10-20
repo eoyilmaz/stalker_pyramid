@@ -1,0 +1,125 @@
+<script class="dialog_loaded"></script>
+
+<div class="row-fluid" >
+    <div class="row-fluid" >
+        <form id='set_start_end_date_form'
+          class='form-horizontal'
+          role='form'
+          method='post' >
+            <div class='control-group'>
+                <label for="start_end_date_range_picker"
+                       class="span3 control-label">Date</label>
+
+                <div class="span9 input-prepend">
+                    <input id='start_end_date_range_picker'
+                           name='start_and_end_dates'
+                           type="text"
+                           data-date-format="yyyy-mm-dd"
+                           placeholder="Start & End Dates">
+                    <span class="add-on">
+                        <i class="icon-calendar"></i>
+                    </span>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/i18n/grid.locale-en.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/jquery.jqGrid.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/daterangepicker.min.js") }}'></script>
+
+<script type="text/javascript">
+
+    function init_dialog() {
+        console.debug('starting to initialize add_task_user_dialog dialog  sadasdad!!!');
+
+        $(function () {
+            var label = $('#dialog_template_label');
+            label.find('span').remove();
+            label.append('<span>Set Start End Date</span>');
+            $('#dialog_template_body').attr('style', "height: auto");
+
+            var url= '{{ action | safe}}';
+            if(url==''){
+                $('#dialog_template').modal('hide');
+            }
+
+            var start_end_date_range_picker = $('#start_end_date_range_picker').daterangepicker();
+
+            // also update the icon
+            start_end_date_range_picker.next().on('click', function () {
+                $(this).prev().focus();
+            });
+
+            start_end_date_range_picker.data().daterangepicker.updateFromControl();
+
+            start_end_date_range_picker.on('shown', function (e) {
+                e.stopPropagation();
+            });
+            start_end_date_range_picker.on('hidden', function (e) {
+                e.stopPropagation();
+            });
+
+            var get_start_end = function () {
+
+                var date_range = $('#start_end_date_range_picker').daterangepicker().val().split(' - ');
+                var start_date_string = date_range[0].split('/');
+                var end_date_string = date_range[1].split('/');
+
+                var start = new Date(
+                    parseInt(start_date_string[2]),
+                    parseInt(start_date_string[0]) - 1,
+                    parseInt(start_date_string[1]),
+                    10,0,0, 0
+                );
+
+                var end = new Date(
+                    parseInt(end_date_string[2]),
+                    parseInt(end_date_string[0]) - 1,
+                    parseInt(end_date_string[1]),
+                    19,0,0, 0
+                );
+
+                return [start, end];
+            };
+
+            var submit_button = $('#dialog_template_submit_button');
+            submit_button.on('click', function (e) {
+
+                e.stopPropagation();
+                e.preventDefault();
+                submit_button.button('loading');
+                var start_end = get_start_end();
+                var start = start_end[0];
+                var end = start_end[1];
+
+                $.post(
+                    url,
+                    $.param({
+                        'start': start.toUTCString(),
+                        'end': end.toUTCString()
+                    })
+                ).done(function (response_text) {
+                    submit_button.button('reset');
+                    $('#dialog_template').modal('hide');
+                    // reload page
+                    setTimeout(function () { // wait for hide event to finish
+                        window.location.reload();
+                    }, 0);
+                }).fail(function (jqXHR) {
+                    bootbox.alert(jqXHR.responseText);
+                    submit_button.button('reset');
+                });
+            });
+        });
+        console.debug('finished initializing the add_task_user_dialog dialog!')
+    }
+</script>
+
+<script type="text/javascript">
+    function destruct_dialog() {
+        $('#dialog_template_submit_button').unbind();
+        $('#grid-table').unbind();
+        $('#dialog_template').data('modal', null);
+    }
+</script>

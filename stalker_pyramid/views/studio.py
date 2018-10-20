@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Stalker Pyramid a Web Base Production Asset Management System
-# Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
+# Copyright (C) 2009-2018 Erkan Ozgur Yilmaz
 #
 # This file is part of Stalker Pyramid.
 #
@@ -19,16 +19,25 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 
 import logging
+import datetime
 
 from pyramid.httpexceptions import HTTPOk
+from pyramid.response import Response
 from pyramid.view import view_config
 
-from stalker.db import DBSession
-from stalker import Studio, WorkingHours
-from stalker_pyramid.views import (get_time, PermissionChecker)
+from stalker.db.session import DBSession
+from stalker import Studio, WorkingHours, TaskJugglerScheduler, Project
+import transaction
+from stalker_pyramid.views import (get_time, get_logged_in_user,
+                                   StdErrToHTMLConverter,
+                                   invalidate_all_caches)
+from stalker_pyramid.views.task import check_task_status_by_schedule_model, \
+    check_all_tasks_status_by_schedule_model
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.WARNING)
+#logger = logging.getLogger(__name__)
+from stalker_pyramid import logger_name
+logger = logging.getLogger(logger_name)
+#logger.setLevel(logging.DEBUG)
 
 #
 # @view_config(
@@ -59,7 +68,8 @@ logger.setLevel(logging.WARNING)
 
 
 @view_config(
-    route_name='create_studio'
+    route_name='create_studio',
+    permission='Create_Studio'
 )
 def create_studio(request):
     """creates the studio
@@ -112,7 +122,8 @@ def create_studio(request):
 
 
 @view_config(
-    route_name='update_studio'
+    route_name='update_studio',
+    permission='Update_Studio'
 )
 def update_studio(request):
     """updates the studio
@@ -168,5 +179,123 @@ def update_studio(request):
     return HTTPOk()
 
 
+@view_config(route_name='auto_schedule_tasks')
+def auto_schedule_tasks(request):
+    """schedules all the tasks of active projects
+    """
+    logged_in_user = get_logged_in_user(request)
+
+    # get the studio
+    studio = Studio.query.first()
+
+    if not studio:
+        transaction.abort()
+        return Response("There is no Studio instance\n"
+                        "Please create a studio first", 500)
+
+    project_id = request.params.get('project_id', -1)
+    project = Project.query.filter(Project.id == project_id).first()
+    logger.debug('project_id: %s' % project_id)
+
+    tj_scheduler = TaskJugglerScheduler()
+    studio.scheduler = tj_scheduler
+    if project:
+        studio.scheduler.projects = [project]
+
+    try:
+        stderr = studio.schedule(scheduled_by=logged_in_user)
+
+        # update schedule timings to UTC
+        studio.scheduling_started_at = \
+            studio.scheduling_started_at
+        studio.last_scheduled_at = studio.last_scheduled_at
+
+        # invalidate cache regions
+        from stalker_pyramid.views.task import cached_query_tasks,\
+            get_cached_user_tasks, get_cached_tasks_count
+        invalidate_all_caches()
+
+        check_all_tasks_status_by_schedule_model(studio.scheduler.projects)
+
+        c = StdErrToHTMLConverter(stderr)
+        return Response(c.html(replace_links=True))
+    except RuntimeError as e:
+        c = StdErrToHTMLConverter(e)
+        transaction.abort()
+        return Response(c.html(replace_links=True), 500)
 
 
+@view_config(
+    route_name='schedule_info',
+    renderer='json'
+)
+def schedule_info(request):
+    """returns the last schedule info
+    """
+    # there should be only one studio
+    sql_query = """
+    select
+        is_scheduling,
+        "CurrentScheduler_SimpleEntities".id as is_scheduling_by_id,
+        "CurrentScheduler_SimpleEntities".name as is_scheduling_by,
+        (extract(epoch from scheduling_started_at) * 1000)::bigint as scheduling_started_at,
+        (extract(epoch from last_scheduled_at) * 1000)::bigint as last_scheduled_at,
+        extract(epoch from last_scheduled_at - scheduling_started_at) as last_scheduling_duration,
+        "LastScheduler_SimpleEntities".name as last_scheduled_by,
+        (extract(epoch from "Studios".start) * 1000)::bigint as start,
+        (extract(epoch from "Studios".end) * 1000)::bigint as end
+    from "Studios"
+    left outer join "SimpleEntities" as "LastScheduler_SimpleEntities" on "Studios".last_scheduled_by_id = "LastScheduler_SimpleEntities".id
+    left outer join "SimpleEntities" as "CurrentScheduler_SimpleEntities" on "Studios".is_scheduling_by_id = "CurrentScheduler_SimpleEntities".id
+    """
+
+    from stalker import db
+    result = DBSession.connection().execute(sql_query)
+    r = result.fetchone()
+
+    return {
+        'is_scheduling': r[0],
+        'is_scheduling_by_id': r[1],
+        'is_scheduling_by': r[2],
+        'scheduling_started_at': r[3],
+        'last_scheduled_at': r[4],
+        'last_scheduling_took': r[5],
+        'last_scheduled_by': r[6],
+        'start': r[7],
+        'end': r[8]
+    }
+
+
+@view_config(
+    route_name='studio_scheduling_mode'
+)
+def studio_scheduling_mode(request):
+    """Sets the system to "in schedule" mode or "normal" mode. When the system
+    is "in schedule" mode (Studio.is_scheduling == True) it is not allowed to
+    schedule the system again until the previous one is finishes.
+    """
+    logged_in_user = get_logged_in_user(request)
+
+    # get the studio
+    studio = Studio.query.first()
+
+    mode = request.params.get('mode')
+    logger.debug('schedule mode: %s' % mode)
+
+    if not studio:
+        transaction.abort()
+        return Response("There is no Studio instance\n"
+                        "Please create a studio first", 500)
+
+    if mode:  # set the mode
+        mode = bool(int(mode))
+
+        studio.is_scheduling = mode
+        studio.is_scheduling_by = logged_in_user
+        import pytz
+        utc_now = datetime.datetime.now(pytz.utc)
+        studio.scheduling_started_at = utc_now
+
+        return Response(
+            "Successfully, set the scheduling mode to: %s" % mode
+        )

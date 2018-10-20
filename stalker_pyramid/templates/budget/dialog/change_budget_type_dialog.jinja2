@@ -1,0 +1,104 @@
+<script class="dialog_loaded"></script>
+
+<div class="row-fluid">
+
+    <form id='budget_form'
+          class='form-horizontal'
+          role='form'
+          method="post"
+            >
+        <div class="row-fluid">
+            {# Name #}
+            {% if type_name=='APPROVE' %}
+                <div class="control-group">
+                    <label class="span3 control-label"
+                           for="approved_total_price">Approved Total</label>
+                    <div class="span9">
+
+                        <input id="approved_total_price"
+                               name='approved_total_price'
+                               type="text"
+                               class="form-control"
+                               placeholder="Approved Total"
+                               value='{{ budget_total_price }}'
+                               required>
+                    </div>
+                </div>
+            {% endif %}
+
+            {#Description #}
+            <div class="control-group'">
+                <label for="budget_description"
+                       class="span3 control-label">Description</label>
+                <div class="span9">
+                    <textarea id="budget_description"
+                              name='description'
+                              class="autosize-transition"
+                              style="overflow: hidden;
+                                         word-wrap: break-word;
+                                         resize: horizontal;
+                                         height: 50px;"
+
+                            >{{ budget.description }}</textarea>
+                </div>
+            </div>
+
+        </div>
+
+    </form>
+</div>
+
+
+<script type="text/javascript">
+
+    function init_dialog() {
+
+        console.debug('starting to initialize budget dialog!!!');
+
+        var dialog_label = $('#dialog_template_label');
+        dialog_label.find('span').remove();
+        dialog_label.append('<span>{{ type_name}} BUDGET</span>');
+
+        {# ***************************************************************** #}
+        {# Submit Button #}
+        var submit_button = $('#dialog_template_submit_button');
+        submit_button.on('click', function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+
+            submit_button.button('loading');
+            var budget_form = $('#budget_form');
+
+            var url = '/budgets/{{ budget.id }}/type/{{ type_name }}';
+
+            $.post(
+                url,
+                budget_form.serialize()+ '&' +
+                $.param({
+                    'total_price': {{ budget_total_price }}
+                })
+            ).done(function (jqXHR) {
+                //$('#new_outputs_storage').text(JSON.stringify(jqXHR));
+                window.location.reload();
+            }).fail(function (jqXHR) {
+                bootbox.alert(jqXHR.responseText);
+                submit_button.button('reset');
+            });
+        });
+
+        console.debug('finished initializing the budget dialog!')
+    }
+</script>
+
+<script type="text/javascript">
+    function destruct_dialog() {
+        $('#budget_name').unbind();
+        $('#budget_description').unbind();
+        $('#dialog_template_submit_button').unbind();
+
+        $('#dialog_template').data('modal', null);
+    }
+</script>
+
+
+

@@ -26,7 +26,7 @@ import transaction
 from pyramid import testing
 from stalker import (db, User, Status, StatusList, Repository, Project, Task,\
                     Group)
-from stalker.db import DBSession
+from stalker.db.session import DBSession
 from stalker_pyramid.views import time_log
 
 

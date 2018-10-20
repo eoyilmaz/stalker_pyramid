@@ -160,7 +160,7 @@ Studio.prototype.is_working_hour = function (date) {
     var week_day, clock, working_hours_of_week_day, temp_date;
     // ensure that it is a Date object
 
-    var temp_date = moment.utc(date);
+    temp_date = moment.utc(date);
 
     week_day = temp_date.isoWeekday();
     clock = temp_date - moment.utc(temp_date).startOf('day');

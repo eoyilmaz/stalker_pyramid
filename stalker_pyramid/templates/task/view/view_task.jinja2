@@ -9,12 +9,8 @@
           href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap-timepicker.css") }}'/>
     <link rel="stylesheet"
           href='{{ request.static_url("stalker_pyramid:static/ace/css/datepicker.css") }}'/>
-    {#    <link rel="stylesheet"#}
-    {#          href='{{ request.static_url("stalker_pyramid:static/ace/css/jquery.gritter.css") }}'/>#}
     <link rel="stylesheet"
           href='{{ request.static_url("stalker_pyramid:static/ace/css/jquery-ui-1.10.3.custom.min.css") }}'/>
-{#    <link rel="stylesheet"#}
-{#          href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap-editable.css") }}'/>#}
     <link rel="stylesheet"
           href='{{ request.static_url("stalker_pyramid:static/ace/css/select2.css") }}'/>
     {% include 'charts/chart_preheader.jinja2' %}
@@ -23,7 +19,9 @@
 
 {#SIDEBAR#}
 {% block sidebar %}
-    {% include 'sidebar.jinja2' %}
+
+     {% include 'sidebar.jinja2' %}
+
 {% endblock sidebar %}
 
 {# BREADCRUMBS #}
@@ -35,17 +33,109 @@
 {#PAGE-CONTENT#}
 {% block page_content %}
 
-<div class="row-fluid">
     <div class="widget-box transparent invoice-box">
-
         <div class="widget-header widget-header-large ">
             <h4 id='task_header' class="position-relative "></h4>
     
             <div class="widget-toolbar no-border invoice-info">
-                <span class="invoice-info-label">Status:</span>
-                <span class="label label-{{ entity.status.html_class }}">{{ entity.status.name }}</span>
+{#                <span class="invoice-info-label">Status:</span>#}
+                <span class="label label-large label-status_{{ entity.status.code.lower() }}"> {{ entity.status.name }}
+                </span>
+                    {% if has_permission('Create_Review') and (entity.project in logged_in_user.projects) and entity.is_leaf%}
+                        {% if (entity.schedule_model !='duration') %}
+                            {% if (entity.status.code not in ['DREV', 'WFD', 'RTS']) %}
+                                <div class="inline position-relative">
+                                    <button class="btn btn-minier bigger dropdown-toggle btn-status_{{ entity.status.code.lower() }}"
+                                    data-toggle="dropdown">
+                                        <i class="icon-angle-down icon-only bigger-120"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-icon-only dropdown-yellow pull-right dropdown-caret dropdown-close">
+                                        {% if (entity.status.code in ['WIP', 'HREV', 'PREV']) %}
+                                            <li>
+                                                <a href="/tasks/{{entity.id}}/force_status/CMPL/dialog?came_from={{ request.current_route_path() }}"
+                                                   class="tooltip-success"
+                                                   data-rel="tooltip"
+                                                   title="Force Complete"
+                                                   data-target="#dialog_template"
+                                                   data-toggle="modal"
+                                                   data-keyboard=false
+                                                   data-placement="top">
+                                                       <span class="status_cmpl-text">
+                                                           <i class="icon-ok bigger-110"></i>Force Complete
+                                                       </span>
+                                                </a>
+                                            </li>
+                                            {% if entity.status.code == 'WIP'%}
+                                                <li>
+                                                    <a href="/tasks/{{entity.id}}/force_status/STOP/dialog?came_from={{ request.current_route_path() }}"
+                                                       class="tooltip-success"
+                                                       data-rel="tooltip"
+                                                       title="Stop Task"
+                                                       data-target="#dialog_template"
+                                                       data-toggle="modal"
+                                                       data-keyboard=false
+                                                       data-placement="top">
+                                                           <span class="status_stop-text">
+                                                               <i class="icon-stop bigger-110"></i>Stop Task
+                                                           </span>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a href="/tasks/{{entity.id}}/force_status/OH/dialog?came_from={{ request.current_route_path() }}"
+                                                       class="tooltip-success"
+                                                       data-rel="tooltip"
+                                                       title="Hold Task"
+                                                       data-target="#dialog_template"
+                                                       data-toggle="modal"
+                                                       data-keyboard=false
+                                                       data-placement="top">
+                                                           <span class="status_oh-text">
+                                                               <i class="icon-pause bigger-110"></i>Hold Task
+                                                           </span>
+                                                    </a>
+                                                </li>
+                                            {% endif %}
+                                        {% endif %}
+                                        {% if (entity.status.code in ['STOP', 'OH']) %}
+                                            <li>
+                                                <a href="/tasks/{{entity.id}}/resume/dialog?came_from={{ request.current_route_path() }}"
+                                                   class="tooltip-success"
+                                                   data-rel="tooltip"
+                                                   title="Resume"
+                                                   data-target="#dialog_template"
+                                                   data-toggle="modal"
+                                                   data-keyboard=false
+                                                   data-placement="top">
+                                                       <span class="wip-text">
+                                                           <i class="icon-play bigger-110"></i>Resume
+                                                       </span>
+                                                </a>
+                                            </li>
+                                        {% endif %}
+                                        {% if (entity.status.code in ['CMPL']) %}
+                                            {% if  (logged_in_user in entity.responsible or has_permission('Create_Review')) and entity.status.code == 'CMPL' and (entity.project in logged_in_user.projects)%}
+                                                <li>
+                                                    <a href='/tasks/{{ entity.id }}/review/dialog?came_from={{ request.current_route_path() }}&review_mode=request_revision&forced=1'
+                                                       class="tooltip-success"
+                                                       data-rel="tooltip"
+                                                       title="Request Revision"
+                                                       data-target="#dialog_template"
+                                                       data-toggle="modal"
+                                                       data-keyboard=false
+                                                       data-placement="top">
+                                                           <span class="purple">
+                                                               <i class="icon-comment-alt bigger-110"></i>Request Revision"
+                                                           </span>
+                                                    </a>
+                                                </li>
+                                            {% endif %}
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                            {% endif %}
+                        {% endif %}
+                    {% endif %}              
                 <br>
-    
                 <div class="progress progress-mini progress-success progress-striped {% if entity.status.code == 'WIP' %}active{% endif %}"
                      style="width: 120px;"
                      data-percent="{{ "%2.1f" | format(entity.percent_complete) }}%">
@@ -53,35 +143,89 @@
                          style="width: {{ entity.percent_complete }}%;"></div>
                 </div>
             </div>
-            <div class="widget-toolbar hidden-480">
-                <a href="#">
-                    <i class="icon-info"></i>
+            <div class="widget-toolbar">
+                {% if (logged_in_user in entity.resources or logged_in_user in entity.responsible) and entity.status.code == 'WIP' and entity.is_leaf %}
+                    <button id='task_request_review_button'
+                            class="btn btn-small btn-warning tooltip-success"
+                            data-rel="tooltip"
+                            data-placement="bottom"
+                            title="Request Review"
+                            data-target="#dialog_template"
+                            data-toggle="modal"
+                            data-keyboard="false"
+                            href='/tasks/{{ entity.id }}/request_review/dialog?came_from={{ request.current_route_path() }}&request_review_mode=Final'
+                            >
+                        <i class="icon-comment-alt"></i>
+                    </button>
+                {% endif %}
+                {% if entity.status.code in ['RTS', 'WFD']%}
+                    <a id='make_folder_button'
+                       class="btn btn-inverse btn-small"
+                       title='Make Folder'
+                       href="/tasks/{{ entity.id }}/makedir">
+                        <i class="icon-folder-open"></i>
+                    </a>
+                {% endif %}
+
+                <a id='watch_or_unwatch_task_button'
+                   class="btn btn-inverse btn-small"
+                    {% if logged_in_user in entity.watchers %}
+                       title='Unwatch this task'
+                       href="/tasks/{{ entity.id }}/unwatch"
+                       watching='true'>
+                        <i class="icon-eye-close"></i>
+                    {% else %}
+                       title='Watch this task'
+                       href="/tasks/{{ entity.id }}/watch"
+                       watching='false'>
+                        <i class="icon-eye-open"></i>
+                    {% endif %}
+                </a>
+
+                <a id='refresh_task_button'  title='Fix Task Status' href="/tasks/{{ entity.id }}/fix/statuses/"
+                   class="btn btn-inverse btn-small">
+                    <i class="icon-cogs"></i>
                 </a>
             </div>
         </div>
-
         <div class="widget-body">
             <div class="widget-main">
                 <div class="row-fluid">
-    
                     <div class="span8">
                         <div class="row-fluid">
                             <div class="row-fluid">
-    
                                 <div class="span2">
-                                    {% include 'components/avatar.jinja2' %}
+                                    {% if has_permission('Update_' + entity.entity_type) and (entity.project in logged_in_user.projects)  %}
+                                        {% include 'components/avatar.jinja2' %}
+                                    {% else %}
+                                        <div class="profile-picture"
+                                             style="text-align: center; overflow: hidden; width: 150px">
+                                            <img id="entity_avatar"
+                                                 alt="Avatar"
+                                                 style="height: 100%; width: 100%; display: inline;
+                                                        position: relative; left: 100%; margin-left: -200%"/>
+                                        </div>
+                                        <script>
+                                            set_entity_thumbnail({
+                                                url: '{{ request.route_url('get_entity_thumbnail', id=entity.id) }}',
+                                                default_thumbnail: '{{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}',
+                                                dom_element_query: '#entity_avatar'
+                                            });
+                                        </script>
+                                    {% endif %}
                                 </div>
     
                                 <div class="span7">
                                     <div class="profile-user-info profile-user-info-striped">
                                         <div class="profile-info-row">
-                                            <div class="profile-info-name"> Name</div>
+                                            <div class="profile-info-name">Name</div>
     
                                             <div class="profile-info-value">
                                                 <span class="editable"
                                                   id="editable_entity_name">{{ entity.name }}</span>
                                             </div>
                                         </div>
+
                                         <div class="profile-info-row">
                                             <div class="profile-info-name">Type</div>
     
@@ -92,20 +236,23 @@
                                         </div>
     
                                         <div class="profile-info-row">
-                                            <div class="profile-info-name"> Updated By</div>
+                                            <div class="profile-info-name">Created By</div>
+                                            <div class="profile-info-value">
+                                                <span>{{ entity.created_by.name }}</span>
+                                                <span id="task_date_created"></span>
+                                            </div>
+                                        </div>
+
+                                        <div class="profile-info-row">
+                                            <div class="profile-info-name">Updated By</div>
                                             <div class="profile-info-value">
                                                 <span>{{ entity.updated_by.name }}</span>
+                                                <span id="task_date_updated"></span>
                                             </div>
                                         </div>
                 
                                         <div class="profile-info-row">
-                                            <div class="profile-info-name"> Created By</div>
-                                            <div class="profile-info-value">
-                                                <span>{{ entity.created_by.name }}</span>
-                                            </div>
-                                        </div>
-                                        <div class="profile-info-row">
-                                            <div class="profile-info-name"> Timing</div>
+                                            <div class="profile-info-name">Timing</div>
                                             <div class="profile-info-value">
                                                 <strong>
                                                     <span class="date">{{ entity.start }}</span>
@@ -114,35 +261,56 @@
                                                 </strong>
                                             </div>
                                         </div>
+                                        <div class="profile-info-row">
+                                            <div class="profile-info-name">Priority</div>
+                                            <div class="profile-info-value">
+
+                                                <span class="editable"
+                                                  id="editable_entity_priority">{{ entity.priority }}</span>
+                                            </div>
+                                        </div>
                                     </div>
+
                                 </div>
     
                                 <div class="span3">
                                     {% if entity.is_leaf %}
                                         {% include 'task/view/task_timing.jinja2' %}
+                                    {% elif entity.entity_type == 'Shot'%}
+                                        {% include 'shot/view/shot_cut_timing.jinja2' %}
                                     {% endif %}
                                 </div>
                             </div>
                             <div class="space-8"></div>
                             <div class="row-fluid">
-                                <div class="widget-box collapsed">
-                                        <div class="widget-header widget-header-small header-color-grey">
-                                            <h5 class="smaller">
-                                                <i class="icon-file"></i>Description
-                                            </h5>
-                                            <div class="widget-toolbar"> <a href="#" data-action="collapse"> <i class="icon-chevron-up"></i> </a> </div>
-                                        </div>
-                                        <div class="widget-body">
-                                            <div class="widget-main">
-                                                 <div class='editableform-loading center hide'
-                                                      id="description_loading">
-                                                     <i class='light-blue icon-2x icon-spinner icon-spin'></i>
-                                                </div>
-                                                <div class="space-8"></div>
-                                                <span class="editable" id="editable_entity_description">{{ entity.description | safe }}</span>
-                                            </div>
-                                        </div>
-                                    </div>
+                                {% set inline_update_url='/tasks/%s/update/inline' % entity.id%}
+                                {% include 'components/description.jinja2' %}
+{#                                <div class="widget-box">#}
+{#                                    <div class="widget-header widget-header-small header-color-dark">#}
+{#                                        <h5 class="smaller">#}
+{#                                            <i class="icon-file"></i>Description#}
+{#                                        </h5>#}
+{#                                        <div class="widget-toolbar">#}
+{#                                            <a href="#" data-action="collapse"><i class="icon-chevron-up"></i></a>#}
+{#                                        </div>#}
+{#                                        <div class="widget-toolbar no-border">#}
+{#                                            <button class="btn btn-danger btn-mini" id="entity_description_edit_trigger">#}
+{#                                                <i class="icon-pencil bigger-125"></i>#}
+{#                                                Edit#}
+{#                                            </button>#}
+{#                                        </div>#}
+{#                                    </div>#}
+{#                                    <div class="widget-body">#}
+{#                                        <div class="widget-main">#}
+{#                                            <div class='editableform-loading center hide'#}
+{#                                                 id="description_loading">#}
+{#                                                <i class='light-blue icon-2x icon-spinner icon-spin'></i>#}
+{#                                            </div>#}
+{#                                            <div class="space-8"></div>#}
+{#                                            <span id="editable_entity_description">{{ entity.description | replace('\n', '<br/>') | safe }}</span>    #}
+{#                                        </div>#}
+{#                                    </div>#}
+{#                                </div>#}
                             </div>
                         </div>
 
@@ -152,7 +320,6 @@
                             <div class="tabbable"
                                  style="background-color: rgba(255,255,255,.7)">
                                 <ul class="nav nav-tabs">
-
                                     <li class="active">
                                         <a data-toggle="tab" href="#messages-tab">
                                             <i class="green icon-list-alt bigger-120"></i>
@@ -160,17 +327,11 @@
                                         </a>
                                     </li>
                                     <li class="">
-                                        <a data-toggle="tab" href="#calendar-tab">
+                                        <a id="calendar_tab" data-toggle="tab" href="#calendar-tab">
                                             <i class="orange icon-calendar bigger-120"></i>
                                             Calendar
                                         </a>
                                     </li>
-                                    {#                    <li class="">#}
-                                    {#                        <a data-toggle="tab" href="#description-tab">#}
-                                    {#                            <i class="blue icon-file bigger-120"></i>#}
-                                    {#                            Description#}
-                                    {#                        </a>#}
-                                    {#                    </li>#}
                                 </ul>
 
                                 <div class="tab-content no-border no-padding">
@@ -180,17 +341,18 @@
 
                                         <form id="add_note_form">
 
-                                            <div class="form-actions input-append">
-                                                <div class="itemdiv span1">
-                                                    <div class="user">
-                                                        <img alt=""
-                                                             src="{%- if logged_in_user.thumbnail -%}/{{ logged_in_user.thumbnail.full_path }}{%- else -%}{{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_0.png") }}{%- endif -%}"/>
-                                                    </div>
-                                                </div>
-                                                <div class="span11">
-                                                    <input placeholder="Type your message here ..."
-                                                           type="text" class="width-90"
-                                                           name="message"/>
+                                            <div class="form-actions">
+{#                                                <div class="itemdiv">#}
+{#                                                    <div class="user">#}
+{#                                                        <img alt=""#}
+{#                                                             src="{%- if logged_in_user.thumbnail -%}/{{ logged_in_user.thumbnail.full_path }}{%- else -%}{{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_0.png") }}{%- endif -%}"/>#}
+{#                                                    </div>#}
+{#                                                </div>#}
+                                                <div class="control-group">
+{#                                                    <input placeholder="Type your message here ..."#}
+{#                                                           type="text" class="width-90"#}
+{#                                                           name="message"/>#}
+                                                    <div class="wysiwyg-editor" id="note_editor"></div>
                                                     <button id="add_note_button"
                                                             class="btn btn-small btn-info no-radius">
                                                         <i class="icon-share-alt"></i>
@@ -203,16 +365,6 @@
                                         {% include 'note/list/list_notes.jinja2' %}
 
                                     </div>
-                                    <!--#messages-tab-->
-                                    {#                    <div id="description-tab"#}
-                                    {#                         class="tab-pane">#}
-                                    {##}
-                                    {#                        #}
-                                    {##}
-                                    {#                    </div>#}
-
-                                    <!--#messages-tab-->
-
                                     <!--/#calendar-tab-->
                                     <div id="calendar-tab" class="tab-pane">
                                         <div id="calendar"></div>
@@ -225,35 +377,61 @@
 
                     <div class="span4">
                         <div class="entityview-item clearfix">
+                            {% if not entity.is_leaf %}
+                                <div class="space-4"></div>
+                                {% if entity.entity_type in ['Asset', 'Shot', 'Task'] %}
 
-                            {% if entity.is_leaf %}
-                                <div class="row-fluid">
-                                    {% include 'review/view/review_card.jinja2' %}
-                                </div>
-                            {% endif %}
+                                    {% if entity.type.name == 'Props' or entity.type.name == 'Active Props' or entity.type.name == 'Scene' or entity.entity_type == 'Shot'%}
+                                        <div class="row-fluid">
+                                            {% include 'entity/entity_leafs_in_hierarchy_progress_by_type.jinja2' %}
+                                        </div>
+                                        <div class="space-4"></div>
 
-                            {% if entity.entity_type == 'Asset' or entity.entity_type == 'Shot' %}
-                                <div class="row-fluid">
-                                    {% include 'entity/entity_children_progress.jinja2' %}
-                                </div>
+                                        {% include 'asset/list/list_task_related_assets_thumbs.jinja2' %}
+                                    {% else %}
+                                        {% if entity.entity_type == 'Asset'%}
+                                            {% include 'entity/list/list_task_related_entities.jinja2' %}
+                                        {% endif %}
+                                        <div class="row-fluid">
+                                            {% include 'entity/entity_children_progress.jinja2' %}
+                                        </div>
+                                    {% endif %}
+                                {% endif %}
                             {% endif %}
+                            <div class="space-4"></div>
+
+                            <div class="row-fluid">
+                                {% include 'review/view/review_card.jinja2' %}
+                            </div>
 
                             <div class="space-4"></div>
 
                             <div class="row-fluid">
-                                <div id="resources_box"
-                                     class="widget-box  transparent">
-                                    <div class="widget-header widget-header-small">
-                                        <h4 class="smaller grey">
-                                            <i class="icon-user orange"></i>Resources</h4>
-                                    </div>
-                                    <div class="widget-body">
-                                        <div class="widget-main">
-                                            <div id="resource_tree"
-                                                 class="tree"></div>
+
+                                {% if entity.is_leaf %}
+
+                                    {% set add_button_address = request.route_path('change_task_users_dialog', id=entity.id, user_type='Resources', _query={'came_from': request.current_route_path()}) %}
+                                    {% set address=request.route_path('get_task_resources', id=entity.id) %}
+                                    {% set list_item_type='Resource' %}
+                                    {% include 'components/editable_list.jinja2' %}
+
+                                {% else %}
+
+                                    <div id="resources_box"
+                                         class="widget-box">
+                                        <div class="widget-header widget-header-small header-color-resource">
+                                            <h4 class="smaller">
+                                                <i class="icon-user"></i>Resources</h4>
+                                        </div>
+                                        <div class="widget-body">
+                                            <div class="widget-main">
+                                                <div id="resource_tree"
+                                                     class="tree"></div>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
+
+                                {% endif %}
                             </div>
 
                             <div class="space-4"></div>
@@ -261,8 +439,8 @@
                             {% if entity.is_leaf %}
                                 <div class="row-fluid">
                                     <div id="version_used_by_tasks"
-                                         class="widget-box transparent">
-                                        <div class="widget-header  widget-header-small">
+                                         class="widget-box">
+                                        <div class="widget-header widget-header-small header-color-resource">
                                             <h4 class="smaller">
                                                 <i class="icon-long-arrow-down"></i>Versions are used in
                                             </h4>
@@ -274,48 +452,50 @@
                                         </div>
                                     </div>
                                 </div>
+
+
+                                <div class="space-4"></div>
+
+                                <div class="row-fluid">
+                                    <div id="depends_box"
+                                         style="width: 50%"
+                                         class="span6 widget-box">
+                                        <div class="widget-header widget-header-small header-color-resource">
+                                            <h4 class="smaller">
+                                                <i class="icon-long-arrow-left"></i>Depends To
+                                            </h4>
+                                        </div>
+                                        <div class="widget-body">
+                                            <div class="widget-main">
+                                                <div id="depends_tree" class="tree"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div id="dependent_of_box"
+                                         style="width: 50%"
+                                         class="span6 widget-box">
+                                        <div class="widget-header widget-header-small header-color-resource">
+                                            <h4 class="smaller">Dependent Of
+                                                <i class="icon-long-arrow-right"></i>
+                                            </h4>
+                                        </div>
+                                        <div class="widget-body">
+                                            <div class="widget-main">
+                                                <div id="dependent_of_tree" class="tree"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
                             {% endif %}
-
-                            <div class="space-4"></div>
-
-                            <div class="row-fluid">
-                                <div id="depends_box"
-                                     style="width: 50%"
-                                     class="span6 widget-box transparent">
-                                    <div class="widget-header widget-header-small header-color-grey">
-                                        <h4 class="smaller">
-                                            <i class="icon-long-arrow-left"></i>Depends To
-                                        </h4>
-                                    </div>
-                                    <div class="widget-body">
-                                        <div class="widget-main">
-                                            <div id="depends_tree" class="tree"></div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div id="dependent_of_box"
-                                     style="width: 50%"
-                                     class="span6 widget-box transparent">
-                                    <div class="widget-header widget-header-small header-color-grey">
-                                        <h4 class="smaller">Dependent Of
-                                            <i class="icon-long-arrow-right"></i>
-                                        </h4>
-                                    </div>
-                                    <div class="widget-body">
-                                        <div class="widget-main">
-                                            <div id="dependent_of_tree" class="tree"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
+
 {% endblock page_content %}
 
 {#EXTRA-SCRIPTS#}
@@ -323,36 +503,36 @@
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery-ui-1.10.3.custom.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.ui.touch-punch.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.gritter.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootbox.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.slimscroll.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.hotkeys.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap-wysiwyg.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/select2.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.spinner.min.js") }}'></script>
-{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/x-editable/bootstrap-editable.min.js") }}'></script>#}
-{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/x-editable/ace-editable.min.js") }}'></script>#}
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.maskedinput.min.js") }}'></script>
 
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/markdown/markdown.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/markdown/bootstrap-markdown.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.hotkeys.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/bootstrap-wysiwyg.js") }}'></script>
+    
     {% if entity.children | count == 0 %}
-        {% if has_permission('Update_User') and has_permission('Update_Task') %}
-            {% set event_type='TimeLog' %}
+        {% if entity.status.code in ['RTS','WIP','HREV','DREV']%}
+            {% if logged_in_user in entity.resources  or logged_in_user in entity.responsible or has_permission('Update_User')%}
+                {% set event_type='TimeLog' %}
+            {% endif %}
         {% endif %}
     {% endif %}
 
     {% include 'components/tree.jinja2' %}
     {% include 'calendar/calendar.jinja2' %}
 
-    <script type="text/javascript">
-        // convert all dates to moment
-        $('.date').each(function () {
-            var date = moment.utc($(this).text());
-            $(this).text(date.fromNow());
-        });
-    </script>
+{#    <script type="text/javascript">#}
+{#        // convert all dates to moment#}
+{#        $('.date').each(function () {#}
+{#            var date = moment.utc($(this).text());#}
+{#            $(this).text(date.fromNow());#}
+{#        });#}
+{#    </script>#}
 
-
-    <script type="text/javascript">
+<script type="text/javascript">
 
     function showErrorAlert(reason, detail) {
         var msg = '';
@@ -367,22 +547,60 @@
                 '<strong>File upload error</strong> ' + msg + ' </div>').prependTo('#alerts');
     }
 
+    $(function () {
+        $('#refresh_task_button').on('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
 
-    $(document).ready(function () {
+            $.post('/tasks/{{ entity.id }}/fix/statuses/').done(function (response_text) {
+                window.location.reload();
+            }).fail(function (jqXHR) {
+                bootbox.alert(jqXHR.responseText);
+            });
+        });
 
+        $('#watch_or_unwatch_task_button').on('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            var self = $(this);
+            var url = self.attr('href');
+            $.post(url).done(function(){
+                // change icon
+                if (self.attr('watching') === 'true') {
+                    self.attr('watching', 'false');
+                    self.find('i').removeClass('icon-eye-close').addClass('icon-eye-open');
+                    flash_message({
+                        title: 'Unwatch Task',
+                        message: 'You are not watching this task anymore!',
+                        type: 'error'
+                    })
+                } else {
+                    self.attr('watching', 'true');
+                    self.find('i').removeClass('icon-eye-open').addClass('icon-eye-close');
+                    flash_message({
+                        title: 'Watching Task',
+                        message: 'You are now watching this task!',
+                        type: 'success'
+                    })
+                }
+            });
+        });
+
+    });
+
+
+    $(function () {
         var icon_name = get_icon('{{ entity.entity_type.lower()}}');
         $('#task_header').append('<i class="' + icon_name + ' bigger-125"></i>{{ entity.name }}');
 
-
-        {% if has_permission('Update_Task') %}
+        {% if has_permission('Update_Task') and entity.project in logged_in_user.projects %}
             var inline_update_url = '/tasks/{{ entity.id }}/update/inline';
 
             //editables
             $('#editable_entity_name').editable({
                 type: 'text',
-                name: 'username',
+                name: 'name',
                 success: function (response, newValue) {
-                    console.log('newValue ' + newValue);
 
                     var params = $.param({
                         attr_name: 'name',
@@ -398,12 +616,38 @@
                     });
                 }
             });
+            $('#editable_entity_priority').editable({
+                type: 'spinner',
+                name: 'priority',
+                spinner : {
+                    min : 0, max:1000, step:1,
+                    icon_up:'icon-caret-up',
+                    icon_down:'icon-caret-down'
+                },
+                success: function (response, newValue) {
+                    var params = $.param({
+                        attr_name: 'priority',
+                        attr_value: parseInt(newValue)
+                    });
+
+                    $.post(
+                        inline_update_url, params
+                    ).done(function () {
+                        console.log('done');
+                    }).fail(function (jqXHR) {
+                        bootbox.alert('<div id="message" class="alert alert-danger bigger-110">' + jqXHR.responseText + '</div>');
+                    });
+                }
+            });
 
             $.getJSON('/types/?target_entity_type={{ entity.entity_type }}').then(function (available_types) {
                 var entity_types = [];
 
                 for (var i = 0; i < available_types.length; i++) {
-                    entity_types.push({id: available_types[i].id, text: available_types[i].name})
+                    entity_types.push({
+                        id: available_types[i].id,
+                        text: available_types[i].name
+                    })
                 }
 
                 if (entity_types.length > 0) {
@@ -421,10 +665,9 @@
                             $.post(
                                 inline_update_url, params
                             ).done(function () {
-                                console.log('done');
+{#                                console.log('done');#}
                             }).fail(function (jqXHR) {
                                 bootbox.alert('<div id="message" class="alert alert-danger bigger-110">' + jqXHR.responseText + '</div>');
-
                             });
                         }
                     });
@@ -438,40 +681,47 @@
                 }
             });
 
-            $('#editable_entity_description').editable({
-                mode: 'inline',
-                type: 'wysiwyg',
-                name: 'editable_entity_description',
-
-                wysiwyg: {
-                    maxFileSize: 2000000,
-                    fileUploadError: showErrorAlert
-
-                },
-                success: function (response, newValue) {
-                    $('#description_loading').show();
-
-                    var params = $.param({
-                        attr_name: 'description',
-                        attr_value: newValue
-                    });
-
-                    $.post(inline_update_url, params).done(function () {
-
-                        $.getJSON('{{request.route_url('get_task', id=entity.id) }}').then(
-                            function (data) {
-                                $('#editable_entity_description').val(data.description);
-                                $('#description_loading').hide();
-                            }
-                        );
-
-                    }).fail(function (jqXHR) {
-                        bootbox.alert('<div id="message" class="alert alert-danger bigger-110">' + jqXHR.responseText + '</div>');
-                        $('#description_loading').hide()
-
-                    });
-                }
-            });
+{#            $('#editable_entity_description').editable({#}
+{#                mode: 'inline',#}
+{#                type: 'wysiwyg',#}
+{#                name: 'editable_entity_description',#}
+{#                toggle:'manual',#}
+{##}
+{#                wysiwyg: {#}
+{#                    maxFileSize: 2000000,#}
+{#                    fileUploadError: showErrorAlert#}
+{#                },#}
+{##}
+{#                success: function (response, newValue) {#}
+{#                    $('#description_loading').show();#}
+{##}
+{#                    var params = $.param({#}
+{#                        attr_name: 'description',#}
+{#                        attr_value: newValue#}
+{#                    });#}
+{##}
+{#                    $.post(inline_update_url, params).done(function () {#}
+{##}
+{#                        $.getJSON('{{request.route_url('get_task', id=entity.id) }}').then(#}
+{#                            function (data) {#}
+{#                                $('#editable_entity_description').val(data.description);#}
+{#                                $('#description_loading').hide();#}
+{#                            }#}
+{#                        );#}
+{##}
+{#                    }).fail(function (jqXHR) {#}
+{#                        bootbox.alert('<div id="message" class="alert alert-danger bigger-110">' + jqXHR.responseText + '</div>');#}
+{#                        $('#description_loading').hide();#}
+{##}
+{#                    });#}
+{#                }#}
+{#            });#}
+{##}
+{#            $('#entity_description_edit_trigger').on('click', function(e){#}
+{#                e.stopPropagation();#}
+{#                $('#editable_entity_description').editable('toggle');#}
+{#            });#}
+            
         {% endif %}
 
 
@@ -483,13 +733,22 @@
             var submit_button = $(this);
             submit_button.button('loading');
 
-            var add_note_form = $('#add_note_form');
+            var editor = $('.wysiwyg-editor');
+            var content = editor.cleanHtml();
+            var content_as_text = editor.text();
 
             $.post(
-                "/entities/{{ entity.id }}/note/create",
-                add_note_form.serialize()
+                "/note/create",
+                $.param({
+                    content: content,
+                    content_as_text: content_as_text,
+                    type: "Simple Text",  {# TODO: it is not simple text anymore, update it. #}
+                    entity_ids:{{ entity.id }}
+                })
             ).done(function () {
                 window.location.assign('{{ came_from }}');
+{#                // just append the note to the top#}
+{#                var note_simple_template = doT.template($('#tmpl_note_simple_text').html());#}
             }).fail(function (jqXHR) {
                 bootbox.alert('<div id="message" class="alert alert-danger bigger-110">' + jqXHR.responseText + '</div>');
                 submit_button.button('reset');
@@ -498,8 +757,8 @@
 
     });
 
-    $(document).ready(function () {
-        $.getJSON('/tasks/{{ entity.id }}/events/').then(function (data) {
+    $.getJSON('/tasks/{{ entity.id }}/events/').then(function (data) {
+        $(function () {
             var events = [];
             var resources = {};
 
@@ -522,20 +781,15 @@
                         }
 
                         if (!resources[prop_id]['additionalParameters']) {
-                            resources[prop_id]['additionalParameters'] = new Object();
-                            resources[prop_id]['additionalParameters']['children'] = new Object();
+                            resources[prop_id]['additionalParameters'] = {};
+                            resources[prop_id]['additionalParameters']['children'] = {};
                         }
 
-                        var hours_to_complete = (data[i].schedule_seconds - data[i].total_logged_seconds) / 3600;
-                        var hour_to_complete_str = '';
+                        var time_to_complete_str = '<span> ( ' +  meaningful_time_between(data[i].schedule_seconds, data[i].total_logged_seconds) + ') </span>';
 
-                        if (hours_to_complete > 0) {
-                            hour_to_complete_str = '<span> ( ' + hours_to_complete + ' h )</span>'
-                        }
+                        var percent_complete_str = '<span class="label label-status_' + data[i].status_color + '">' + data[i].status + '</span>';
 
-                        var percent_complete_str = '<span class="label label-' + data[i].status_color + '">' + data[i].status + '</span>';
-
-                        resources[prop_id]['additionalParameters']['children'][(data[i].id).toString()] = {name: '<span  class="pull-left"><a href="/tasks/' + data[i].id + '/view">' + data[i].title + '  </a></span>' + hour_to_complete_str + percent_complete_str, type: 'item'}
+                        resources[prop_id]['additionalParameters']['children'][(data[i].id).toString()] = {name: '<span  class="pull-left"><a href="/tasks/' + data[i].id + '/view">' + data[i].title + '  </a></span>' + time_to_complete_str + percent_complete_str, type: 'item'}
 
                         $('#resources_box').show();
                     }
@@ -563,83 +817,78 @@
     });
 
 
-    $(document).ready(function () {
+    var get_dependency = function (type) {
+        $.getJSON('/tasks/{{ entity.id }}/dependency/' + type + '/').then(function (data) {
 
-        var get_dependency = function (type) {
-
-            $.getJSON('/tasks/{{ entity.id }}/dependency/' + type + '/').then(function (data) {
-
-                var depends = {};
-                for (var i = 0; i < data.length; i++) {
-
-                    var task_id = (data[i].id).toString();
-
-                    var hours_to_complete = (data[i].schedule_seconds - data[i].total_logged_seconds) / 3600;
-                    var hour_to_complete_str = '';
-
-                    if (hours_to_complete > 0) {
-                        hour_to_complete_str = '<span> ( ' + hours_to_complete + ' h )</span>';
-                    }
-
-                    var percent_complete_str = '<span class="label label-' + data[i].status_color + '">' + data[i].status + '</span>';
-
-                    if (!depends[task_id]) {
-                        depends[task_id] = {
-                            'name': '<span><a href="/tasks/' + data[i].id + '/view">' + data[i].name + '  </a></span>' + hour_to_complete_str,
-                            'type': 'folder',
-                            'icon-class': data[i].status_color
-                        }
-                    }
-
-                    if (!depends[task_id]['additionalParameters']) {
-                        depends[task_id]['additionalParameters'] = new Object();
-                        depends[task_id]['additionalParameters']['children'] = new Object();
-                    }
-
-                    for (var k = 0; k < data[i].resources.length; k++) {
-                        depends[task_id]['additionalParameters']['children'][(data[i].resources[k].id).toString()] = {name: '<span  class="pull-left"><a href="/users/' + data[i].resources[k].id + '/view">' + data[i].resources[k].name + '  </a></span>', type: 'item'}
-                    }
-
-                }
-
-                drawTree(type + '_tree', depends);
-
-                if (data.length == 0) {
-                    $('#' + type + '_tree').append('<div class="alert alert-warning">No tasks</div>');
-                }
-            });
-        };
-
-        get_dependency('depends');
-        get_dependency('dependent_of');
-    });
-
-    $(document).ready(function () {
-        $.getJSON('/entities/{{ entity.id }}/version/used_by/tasks/').then(function (data) {
-
-            console.log(data.length)
-
-            var tasks = new Object();
+            var depends = {};
             for (var i = 0; i < data.length; i++) {
 
                 var task_id = (data[i].id).toString();
+                var time_to_complete_str = '<span> (' +  meaningful_time_between(data[i].schedule_seconds, data[i].total_logged_seconds) + ')(' + data[i].priority + ')</span>';
 
-                if (!tasks[task_id]) {
-                    tasks[task_id] = {
-                        'name': '<span><a href="/tasks/' + data[i].id + '/view">' + data[i].name + '  </a></span>',
+                if (!depends[task_id]) {
+                    depends[task_id] = {
+                        'name': '<span><a href="/tasks/' + data[i].id + '/view" title="' + data[i].path + '">' + data[i].name + '  </a></span>' + time_to_complete_str,
                         'type': 'folder',
                         'icon-class': data[i].status_color
                     }
                 }
 
-                if (!tasks[task_id]['additionalParameters']) {
-                    tasks[task_id]['additionalParameters'] = new Object();
-                    tasks[task_id]['additionalParameters']['children'] = new Object();
+                if (!depends[task_id]['additionalParameters']) {
+                    depends[task_id]['additionalParameters'] = {};
+                    depends[task_id]['additionalParameters']['children'] = {};
                 }
 
-                tasks[task_id]['additionalParameters']['children'][(data[i].resource_id).toString()] = {name: '<span  class="pull-left"><a href="/users/' + data[i].resource_id + '/view">' + data[i].resource_name + '  </a></span>', type: 'item'}
+                for (var k = 0; k < data[i].resources.length; k++) {
+                    depends[task_id]['additionalParameters']['children'][(data[i].resources[k].id).toString()] = {
+                        name: '<span  class="pull-left"><a href="/users/' + data[i].resources[k].id + '/view">' + data[i].resources[k].name + '  </a></span>',
+                        type: 'item'
+                    };
+                }
             }
 
+            drawTree(type + '_tree', depends);
+
+            if (data.length == 0) {
+                $('#' + type + '_tree').append('<div class="alert alert-warning">No tasks</div>');
+            }
+        });
+    };
+
+    $(function () {
+        {% if entity.is_leaf %}
+            get_dependency('depends');
+            get_dependency('dependent_of');
+
+        {% endif %}
+    });
+
+    $.getJSON('/entities/{{ entity.id }}/version/used_by/tasks/').then(function (data) {
+        var tasks = {};
+        for (var i = 0; i < data.length; i++) {
+
+            var task_id = (data[i].id).toString();
+
+            if (!tasks[task_id]) {
+                tasks[task_id] = {
+                    'name': '<span><a href="/tasks/' + data[i].id + '/view">' + data[i].name + '</a></span>',
+                    'type': 'folder',
+                    'icon-class': data[i].status_color
+                }
+            }
+
+            if (!tasks[task_id]['additionalParameters']) {
+                tasks[task_id]['additionalParameters'] = {};
+                tasks[task_id]['additionalParameters']['children'] = {};
+            }
+
+            tasks[task_id]['additionalParameters']['children'][(data[i].resource_id).toString()] = {
+                name: '<span  class="pull-left"><a href="/users/' + data[i].resource_id + '/view">' + data[i].resource_name + '  </a></span>',
+                type: 'item'
+            };
+        }
+
+        $(function () {
             drawTree('version_used_by_tasks_tree', tasks);
 
             if (data.length == 0) {
@@ -647,7 +896,159 @@
             }
         });
     });
+</script>
 
-    </script>
+<script>
+        $.getJSON('/tasks/{{ entity.id }}', function(data){
+            $(function(){
+                // update created and update time of the task
+                $('#task_date_created').html(moment(data[0].date_created).format('YYYY-MM-DD HH:mm'));
+                $('#task_date_updated').html(moment(data[0].date_updated).format('YYYY-MM-DD HH:mm'));
+            })
+        })
+</script>
+
+<script>
+    // fix calendar not showing up
+    $(function(){
+        $('#calendar_tab').on('click', function(){
+            // check if the title is visible
+            // meaning that calendar tab is working (somebody clicked it before)
+            var today_button = $('.fc-button-today');
+            if (today_button.attr('fixed_visibility_bug') !== '1') {
+                console.debug('calendar is not visible');
+                // it is not shown yet
+                // so trigger a click for the today button
+                setTimeout(function(){
+                    today_button.trigger('click');
+                }, 0);
+                today_button.attr('fixed_visibility_bug', '1');
+            } else {
+                console.debug('calendar is visible');
+            }
+        });
+    });
+</script>
+
+<script type="text/javascript">
+
+    function showErrorAlert(reason, detail) {
+        var msg = '';
+        if (reason === 'unsupported-file-type') {
+            msg = "Unsupported format " + detail;
+        } else if (reason === 'big-file-size') {
+            msg = "File is too big " + detail + ' bytes';
+        } else {
+            console.log("error uploading file", reason, detail);
+        }
+        $('<div class="alert"> <button type="button" class="close" data-dismiss="alert">&times;</button>' +
+                '<strong>File upload error</strong> ' + msg + ' </div>').prependTo('#alerts');
+    }
+
+    $(function(){
+        $('#note_editor').ace_wysiwyg({
+            toolbar: [
+                'font',
+                null,
+                'fontSize',
+                null,
+                {name: 'bold', className: 'btn-info'},
+                {name: 'italic', className: 'btn-info'},
+                {name: 'strikethrough', className: 'btn-info'},
+                {name: 'underline', className: 'btn-info'},
+                null,
+                {name: 'insertunorderedlist', className: 'btn-success'},
+                {name: 'insertorderedlist', className: 'btn-success'},
+                {name: 'outdent', className: 'btn-purple'},
+                {name: 'indent', className: 'btn-purple'},
+                null,
+                {name: 'justifyleft', className: 'btn-primary'},
+                {name: 'justifycenter', className: 'btn-primary'},
+                {name: 'justifyright', className: 'btn-primary'},
+                {name: 'justifyfull', className: 'btn-inverse'},
+                null,
+                {name: 'createLink', className: 'btn-pink'},
+                {name: 'unlink', className: 'btn-pink'},
+                null,
+                {name: 'insertImage', className: 'btn-success'},
+                null,
+                'foreColor',
+                null,
+                {name: 'undo', className: 'btn-grey'},
+                {name: 'redo', className: 'btn-grey'}
+            ],
+            'wysiwyg': {
+                maxFileSize : 2000000,
+                fileUploadError: showErrorAlert
+            }
+        }).prev().addClass('wysiwyg-style1');
+
+        //Add Image Resize Functionality to Chrome and Safari
+        //webkit browsers don't have image resize functionality when content is editable
+        //so let's add something using jQuery UI resizable
+        //another option would be opening a dialog for user to enter dimensions.
+        if (typeof jQuery.ui !== 'undefined' && /applewebkit/.test(navigator.userAgent.toLowerCase())) {
+
+            var lastResizableImg = null;
+
+            function destroyResizable() {
+                if (lastResizableImg == null) return;
+                lastResizableImg.resizable("destroy");
+                lastResizableImg.removeData('resizable');
+                lastResizableImg = null;
+            }
+
+            var enableImageResize = function () {
+                $('.wysiwyg-editor').on('mousedown', function (e) {
+                    var target = $(e.target);
+                    if (e.target instanceof HTMLImageElement) {
+                        if (!target.data('resizable')) {
+                            target.resizable({
+                                aspectRatio: e.target.width / e.target.height
+                            });
+                            target.data('resizable', true);
+
+                            if (lastResizableImg != null) {//disable previous resizable image
+                                lastResizableImg.resizable("destroy");
+                                lastResizableImg.removeData('resizable');
+                            }
+                            lastResizableImg = target;
+                        }
+                    }
+                }).on('click', function (e) {
+                    if (lastResizableImg != null && !(e.target instanceof HTMLImageElement)) {
+                        destroyResizable();
+                    }
+                }).on('keydown', function () {
+                    destroyResizable();
+                });
+            };
+
+            enableImageResize();
+
+{#            //or we can load the jQuery UI dynamically only if needed#}
+{#            if (typeof jQuery.ui !== 'undefined') enableImageResize();#}
+{#            else {//load jQuery UI if not loaded#}
+{#                $.getScript($path_assets + "/js/jquery-ui-1.10.3.custom.min.js", function (data,#}
+{#                                                                                           textStatus,#}
+{#                                                                                           jqxhr) {#}
+{#                    if ('ontouchend' in document) {//also load touch-punch for touch devices#}
+{#                        $.getScript($path_assets + "/js/jquery.ui.touch-punch.min.js", function (data,#}
+{#                                                                                                 textStatus,#}
+{#                                                                                                 jqxhr) {#}
+{#                            enableImageResize();#}
+{#                        });#}
+{#                    } else    enableImageResize();#}
+{#                });#}
+{#            }#}
+        }
+
+        // remove speech input
+        $('.wysiwyg-speech-input').remove();
+
+    });
+</script>
+
+
 
 {% endblock extrascripts %}

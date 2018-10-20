@@ -25,14 +25,10 @@
 {% block page_content %}
 
 
-    {% set page_title='Groups' %}
-    {% include 'page_header.jinja2' %}
+{#    {% set page_title='Groups' %}#}
+{#    {% include 'page_header.jinja2' %}#}
 
-    {% if entity %}
-        {% set address=request.route_path('get_entity_groups', id=entity.id) %}
-    {% else %}
-        {% set address=request.route_path('get_groups') %}
-    {% endif %}
+
     {% set add_button_address='/groups/create/dialog?came_from='+ request.current_route_path() %}
     {% set list_item_type='Group' %}
     {% include 'components/data_table.jinja2' %}
@@ -67,7 +63,7 @@
             </td>
             <td><a href='/users/{{=it.created_by_id}}/view'>{{=it.created_by_name}}</a>
             </td>
-            <td>{{=it.users_count}}</td>
+            <td>{{=it.description}}</td>
             <td>
                 {{ if (it.update_group_action) { }}
                 <a class="blue"
@@ -91,22 +87,14 @@
 
     <script>
 
-        var tableParameters = {}
-        var sortingParameters = [
-            [0, 'asc']
-        ]
+        var tableParameters = {};
+        var sortingParameters = [[0, 'asc']];
         var tableDataAddress;
-
-
         {% if entity %}
-            tableDataAddress = '{{request.route_path('get_entity_groups', id=entity.id) }}'
-
+            tableDataAddress = '{{request.route_path('get_entity_groups', id=entity.id) }}';
         {% else %}
-            tableDataAddress = '{{ request.route_path('get_groups') }}'
+            tableDataAddress = '{{ request.route_path('get_groups') }}';
         {% endif %}
-
-        console.log('tableDataAddress' + tableDataAddress)
-
     </script>
 
 {% endblock extrascripts %}

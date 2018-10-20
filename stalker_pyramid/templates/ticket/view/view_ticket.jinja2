@@ -1,5 +1,5 @@
 {# Stalker Pyramid a Web Base Production Asset Management System
- Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
+ Copyright (C) 2009-2018 Erkan Ozgur Yilmaz
 
  This file is part of Stalker Pyramid.
 
@@ -249,7 +249,6 @@
     }
 
     $(function(){
-        
         $('#comment_editor').ace_wysiwyg({
             toolbar: [
                 'font',
@@ -285,7 +284,7 @@
                 maxFileSize : 2000000,
                 fileUploadError: showErrorAlert
             }
-        }).prev().addClass('wysiwyg-style1')
+        }).prev().addClass('wysiwyg-style1');
 
         //Add Image Resize Functionality to Chrome and Safari
         //webkit browsers don't have image resize functionality when content is editable
@@ -300,7 +299,7 @@
                 lastResizableImg.resizable("destroy");
                 lastResizableImg.removeData('resizable');
                 lastResizableImg = null;
-            };
+            }
 
             var enableImageResize = function () {
                 $('.wysiwyg-editor').on('mousedown', function (e) {
@@ -417,7 +416,7 @@ $(function(){
     $.getJSON('/tickets/workflow/', function(data) {
         var ticket_action;
         var action;
-        var current_ticket_status = "{{ ticket.status.code.lower() }}";
+        var current_ticket_status = "{{ ticket.status.name.title() }}";
 
         for (var i in data) {
             ticket_action = data[i];

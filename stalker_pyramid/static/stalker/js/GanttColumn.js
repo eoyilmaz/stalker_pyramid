@@ -1,5 +1,5 @@
 // Stalker a Production Asset Management System
-// Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
+// Copyright (C) 2009-2018 Erkan Ozgur Yilmaz
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -69,20 +69,20 @@ define([
         // The start position of the task bar for this task, in pixels
         var task_bar;
 
-        var parent_div = $($.parseHTML('<div class="taskContainer"></div>'));
+        var parent_div = jQuery(jQuery.parseHTML('<div class="taskContainer"></div>'));
         parent_div.css({
             width: Math.floor((end_date - start_date) / scale)
         });
-        $(parent).append(parent_div);
+        jQuery(parent).append(parent_div);
 
-        if (task.type === 'Project') {
-            task_bar = $($.parseHTML(templates.projectBar(task)));
-        } else if (task.type === 'Task' || task.type === 'Asset' ||
-                   task.type === 'Shot' || task.type === 'Sequence') {
+        if (task.entity_type === 'Project') {
+            task_bar = jQuery(jQuery.parseHTML(templates.projectBar(task)));
+        } else if (task.entity_type === 'Task' || task.entity_type === 'Asset' ||
+                   task.entity_type === 'Shot' || task.entity_type === 'Sequence') {
             if (task.hasChildren) {
-                task_bar = $($.parseHTML(templates.parentTaskBar(task)));
+                task_bar = jQuery(jQuery.parseHTML(templates.parentTaskBar(task)));
             } else {
-                task_bar = $($.parseHTML(templates.taskBar(task)));
+                task_bar = jQuery(jQuery.parseHTML(templates.taskBar(task)));
             }
         }
 
@@ -462,11 +462,11 @@ define([
         var render_today = function (parent, start, scale) {
             var today = moment();
             var start_date = moment(start).startOf('day');
-            var today_element = $($.parseHTML('<div></div>'));
+            var today_element = jQuery(jQuery.parseHTML('<div></div>'));
             today_element.addClass('today').css({
                 left: Math.floor((today - start_date) / scale)
             });
-            $(parent).append(today_element);
+            jQuery(parent).append(today_element);
         };
 
         /**
@@ -569,7 +569,7 @@ define([
             var column_set = 'set-1'; // this is a hardcoded dirty fix
             if (column.grid.is_hidden_column(column_set)){
                 // add as hidden
-                console.log('hiding :', column_set);
+                //console.log('hiding :', column_set);
                 column.grid.hide_column('set-1');
             }
         };
@@ -615,13 +615,13 @@ define([
             // scrolls to the given date
             var date_as_millis, date_x, scroller, scroller_width;
 
-            header = $(column.headerNode);
+            header = jQuery(column.headerNode);
 
             date_as_millis = +date;
             var start_date = moment(column.start).startOf('day');
             date_x = (date_as_millis - start_date) / zoom_levels[column.scale].scale;
 
-            scroller = $('.dgrid-column-set-scroller-1');
+            scroller = jQuery('.dgrid-column-set-scroller-1');
             scroller_width = scroller.width();
             scroller.scrollLeft(date_x - scroller_width * 0.5);
         };
@@ -637,7 +637,7 @@ define([
             var table_width = zoom_levels[column.scale].table_width(column.start, column.end);
             column.grid.addCssRule(".dgrid-column-chart", "width: " + table_width + "px");
 
-            $(th).css({
+            jQuery(th).css({
                 width: table_width
             });
 
@@ -653,7 +653,7 @@ define([
                 });
             }
             // extend the height of the table header
-            $(th).css({
+            jQuery(th).css({
                 height: header_count * 27 // 27 px each
             });
 

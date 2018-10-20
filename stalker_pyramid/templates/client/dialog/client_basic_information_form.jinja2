@@ -1,0 +1,231 @@
+<form id='client_form'
+      class='form-horizontal'
+      role='form'
+      method="post"
+         {% if mode == 'Create' %}
+      action="{{ request.route_url(mode.lower()+'_client') }}"
+        {% elif mode == 'Update' %}
+      action="{{ request.route_url(mode.lower()+'_client', id=client.id) }}"
+        {% endif %}
+        >
+
+    <div class="row-fluid">
+    {% if mode == 'Update' %}
+            <div class="span3">
+                {% include 'components/avatar.jinja2' %}
+            </div>
+            <div class="span9">
+        {% else %}
+            <div class="span12">
+        {% endif %}
+        {# Name #}
+        <div class="control-group">
+            <label class="span3 control-label"
+                   for="client_name">Name</label>
+
+            <div class="span9">
+                <input id="client_name"
+                       name='name'
+                       type="text"
+                       class="form-control"
+                       placeholder="Name"
+                        {% if mode == 'Update' %}
+                       value='{{ client.name }}'
+                        {% endif %}
+
+                       required>
+            </div>
+        </div>
+        {#Report Template #}
+
+        <div class="control-group">
+            <label class="span3 control-label"
+                   for="client_report_template">Report Template</label>
+            <div class="span9">
+{#                <select id="client_report_template"#}
+{#                       name='report_template_name'#}
+{#                       class='input-block-level'#}
+{#                       type='text'#}
+{#                       placeholder="Report Template"#}
+{#                       required></select>#}
+                <input id="client_report_template"
+                         name='report_template_name'
+                         placeholder="Report Template"
+                         class='input-block-level'
+                         type='text'
+                         {% if client_report_template_name %}
+                         value='{{ client_report_template_name }}'
+                      {% endif %}
+
+                         required>
+            </div>
+        </div>
+        {# Type #}
+        <div class="control-group">
+            <label for="client_type"
+                   class="span3 control-label">Type</label>
+
+            <div class="span9">
+                  <input id="client_type"
+                         name='type_name'
+                         placeholder="Type"
+                         class='input-block-level'
+                         type='text'
+                      {% if mode == 'Update' %}
+                         value='{{ client.type.name }}'
+                          {% endif %}
+                         required>
+
+            </div>
+        </div>
+        {#Description #}
+        <div class="control-group">
+            <label for="client_description"
+                   class="span3 control-label">Description</label>
+
+            <div class="span9">
+                <textarea id="client_description"
+                          name='description'
+                          class="autosize-transition"
+                          style="overflow: hidden;
+                                     word-wrap: break-word;
+                                     resize: horizontal;
+                                     height: 50px;"
+                        >{% if mode == 'Update' %}{{ client.description }}{% endif %}</textarea>
+            </div>
+        </div>
+    </div>
+    </div>
+
+</form>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.validate.min.js") }}'></script>
+<script type="text/javascript">
+
+    {# Form #}
+    $(document).ready(function () {
+        {% raw %}
+            var report_templates_option_template = doT.template(
+                '<option value={{=it.id}}>{{=it.name}}</option>'
+            );
+        {% endraw %}
+
+        var report_templates = [
+            {% for r_temp in report_templates %}
+                {'name':'{{ r_temp }}', 'id':'{{ r_temp }}'.replace(" ","%20")},
+            {% endfor %}
+        ];
+
+        var available_report_templates = [
+            {% for r_temp in report_templates %}
+                '{{ r_temp }}',
+            {% endfor %}
+        ];
+
+        var client_report_template = $('#client_report_template');
+{#        chosen_searchable_field_creator_by_data(client_report_template, report_templates_option_template, report_templates);#}
+        client_report_template.autocomplete({
+                delay: 0,
+                source: available_report_templates,
+                minLength: 0
+            });
+        console.log('client_report_template_name: {{client_report_template_name}}');
+{#        {% if client_report_template_name %}#}
+{#            client_report_template.val('{{ client_report_template_name}}').trigger('liszt:updated');#}
+{#            client_report_template.trigger('liszt:updated');#}
+{#        {% endif %}#}
+
+        {# ***************************************************************** #}
+        {# TYPE #}
+        var client_type = $('#client_type');
+
+        $.getJSON('/types/?target_entity_type=Client').then(function(available_type){
+            // map available types to an array
+            var available_type_as_list = [];
+            for (var i=0; i < available_type.length; i++){
+                available_type_as_list.push(available_type[i].name);
+            }
+
+            client_type.autocomplete({
+                delay: 0,
+                source: available_type_as_list,
+                minLength: 0
+            });
+        });
+
+        $('#client_form').validate({
+            errorElement: 'span',
+            errorClass: 'help-inline',
+            focusInvalid: true,
+            rules: {
+                email: {
+                    required: true,
+                    email: true
+                },
+                password: {
+                    required: true,
+                    minlength: 5
+                },
+                password2: {
+                    required: true,
+                    minlength: 5,
+                    equalTo: "#user_password"
+                },
+                name: {
+                    required: true
+                },
+                login: {
+                    required: true
+                }
+            },
+
+            messages: {
+                email: {
+                    required: "Please provide a valid email.",
+                    email: "Please provide a valid email."
+                },
+                password: {
+                    required: "Please specify a password.",
+                    minlength: "Please specify a secure password."
+                }
+            },
+
+            invalidHandler: function (event, validator) { //display error alert on form submit
+                $('.alert-error', $('.login-form')).show();
+            },
+
+            highlight: function (e) {
+                $(e).closest('.control-group').removeClass('info').addClass('error');
+            },
+
+            success: function (e) {
+                $(e).closest('.control-group').removeClass('error').addClass('info');
+                $(e).remove();
+            },
+
+            errorPlacement: function (error, element) {
+                if (element.is(':checkbox') || element.is(':radio')) {
+                    var controls = element.closest('.controls');
+                    if (controls.find(':checkbox,:radio').length > 1) controls.append(error);
+                    else error.insertAfter(element.nextAll('.lbl:eq(0)').eq(0));
+                }
+                else if (element.is('.select2')) {
+                    error.insertAfter(element.siblings('[class*="select2-container"]:eq(0)'));
+                }
+                else if (element.is('.chosen-select')) {
+                    error.insertAfter(element.siblings('[class*="chosen-container"]:eq(0)'));
+                }
+                else error.insertAfter(element);
+            },
+
+            submitHandler: function (form) {
+                form.submit();
+            }
+
+        });
+    });
+
+
+</script>
+
+
+

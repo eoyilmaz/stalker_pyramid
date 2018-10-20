@@ -1,0 +1,208 @@
+{# Stalker Pyramid a Web Base Production Asset Management System
+ Copyright (C) 2009-2018 Erkan Ozgur Yilmaz
+
+ This file is part of Stalker Pyramid.
+
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation;
+ version 2.1 of the License.
+
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+#}
+{% extends "base.jinja2" %}
+
+
+
+{# BREADCRUMBS #}
+{% block breadcrumbs %}
+    {% include 'breadcrumb/breadcrumbs.jinja2' %}
+{% endblock breadcrumbs %}
+
+{#SIDEBAR#}
+{% block sidebar %}
+    {% include 'sidebar.jinja2' %}
+{% endblock sidebar %}
+
+{#PAGE-CONTENT#}
+{% block page_content %}
+
+    <div class="widget-box transparent invoice-box">
+
+        <div class="widget-body">
+            <div class="widget-main padding-24">
+                <div class="row-fluid">
+                    <div class="span12">
+
+
+
+                    </div>
+                </div>
+                <div class="widget-box">
+                    <div class="widget-header widget-header-small header-color-payment">
+                        <h5 id="items_header" class="smaller">COST SHEET</h5>
+                        <div class="widget-toolbar">
+
+                        </div>
+                    </div>
+                    <div class="widget-body">
+                        <div class="widget-main" style="padding: 0px">
+                            <div class="row-fluid">
+                                <table id="grid-table"></table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock page_content %}
+
+{% block extrascripts %}
+    <script type="text/javascript">
+        if("ontouchend" in document) document.write("<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.mobile.custom.min.js") }}'>"+"<"+"/script>");
+    </script>
+    <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/i18n/grid.locale-en.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/jquery.jqGrid.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/accounting.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/codebase/dhtmlxgantt.js") }}'></script>
+    <link src='{{ request.static_url("stalker_pyramid:static/jqGrid/css/ui.jqgrid-bootstrap.css") }}'/>
+    <script>
+        $.jgrid.defaults.autowidth = true;
+        $.jgrid.defaults.responsive = true;
+        $.jgrid.defaults.styleUI = 'Bootstrap';
+    </script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            var total_bid = 0;
+            var total_scheduled = 0;
+            var total_relized = 0;
+            var total_prize = 0;
+
+            $('#add_project_entries_to_invoice_button').hide();
+
+            var grid_data;
+
+            var grid_selector = "#grid-table";
+            var grid = jQuery(grid_selector);
+
+
+
+            function unitFmatter (cellvalue, options, rowObject){
+                var index = findArrayElement(grid_data,'id', options.rowId);
+                if (index!=-1){
+                    return grid_data[index].amount+" "+ grid_data[index].unit;
+                }
+                else{
+                    return cellvalue
+                }
+            }
+
+            function  unformatUnit (cellvalue, options, rowObject){
+                var index = findArrayElement(grid_data,'id', options.rowId);
+                return grid_data[index].amount;
+            }
+
+
+            function getCellValue(rowId, cellId) {
+                var cell = jQuery('#' + rowId + '_' + cellId);
+                var val = cell.val();
+                return val;
+            }
+
+            function calculateTotals(){
+
+                total_bid = 0;
+                total_scheduled = 0;
+                total_relized = 0;
+                total_prize = 0;
+
+                for(var t=0; t<grid_data.length; t++ ){
+
+                    if(grid_data[t].realized_total>grid_data[t].budgetentries_price){
+                        console.log(grid_data[t].realized_total + " : "+ grid_data[t].budgetentries_price);
+                        grid.jqGrid('setCell', grid_data[t].id, 'realized_total', grid_data[t].realized_total, {color:'red'});
+                    }
+                    if(grid_data[t].bid>grid_data[t].budgetentries_price){
+                        grid.jqGrid('setCell', grid_data[t].id, 'bid', grid_data[t].bid, {color:'red'});
+                    }
+                    if(grid_data[t].scheduled>grid_data[t].budgetentries_price){
+                        console.log(grid_data[t].scheduled + " : "+ grid_data[t].budgetentries_price);
+                        grid.jqGrid('setCell', grid_data[t].id, 'scheduled', grid_data[t].scheduled, {color:'red'});
+                    }
+{#                    else if(grid_data[t].total_cost<grid_data[t].price){#}
+{#                        grid.jqGrid('setCell', grid_data[t].id, 'price', grid_data[t].price, {color:'green'});#}
+{#                    }#}
+
+                    total_bid += parseInt(grid_data[t].bid);
+                    total_scheduled += parseInt(grid_data[t].scheduled);
+                    total_relized += parseInt(grid_data[t].realized_total);
+                    total_prize += parseInt(grid_data[t].budgetentries_price);
+                }
+
+                grid.jqGrid("footerData", "set", {
+                                                   bid: total_bid,
+                                                   scheduled: total_scheduled,
+                                                   realized_total: total_relized,
+                                                   budgetentries_price: total_prize,
+                                                   good_name:'TOTAL'
+                });
+
+            }
+
+            function gridLoadComplete() {
+                calculateTotals();
+                setTimeout(function(){
+                    $('#lui_grid-table').hide();
+                }, 0);
+            }
+            var budget_id = {{ entity.get_active_budget().id }}
+            $.getJSON('/projects/{{ entity.id }}/tasks/cost/?budget_ids='+budget_id).then(function (entry_data) {
+                console.log('entry_data: '+ entry_data.length);
+                grid_data = entry_data;
+
+                jQuery(function($) {
+
+                    grid.jqGrid({
+                        //direction: "rtl",
+                        data: grid_data,
+                        datatype: "local",
+                        colNames:['Price List', 'Good','Bid', 'Scheduled', 'Realized Total', 'BE_price'],
+                        colModel:[
+                            {name:'price_list_name', index:'price_list_name',width:220, editable: false},
+                            {name:'good_name', index:'good_name', width:220,editable: false},
+                            {name:'bid', index:'bid',  width:220,editable: false},
+                            {name:'scheduled', index:'scheduled', width:220,editable: false},
+                            {name:'realized_total', index:'realized_total', width:220,editable: false},
+                            {name:'budgetentries_price', index:'budgetentries_price', width:220, editable: false}
+                         ],
+                        viewrecords : true,
+                        rowNum:grid_data.length,
+                        rowList:[grid_data.length, 10, 10],
+                        pager : false,
+                        altRows: true,
+                        multiselect: false,
+                        loadonce: false,
+                        sortname: 'good_name',
+                        height: 'auto',
+                        width: 'auto',
+                        footerrow: true,
+                        userDataOnFooter: true,
+                        grouping: false,
+                        caption: "",
+                        loadComplete : gridLoadComplete
+                    });
+                });
+            });
+        });
+    </script>
+{% endblock extrascripts %}
+

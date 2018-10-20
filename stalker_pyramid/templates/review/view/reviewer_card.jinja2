@@ -12,49 +12,53 @@
                 <div class="popover">
                 <div class="arrow"></div>
                 <div class="popover-content">
-
-                    <div class="bolder">{{=it.reviewer_name}}
-                    </div>
-
+                    <div class="bolder">{{=it.reviewer_name}}</div>
                     <div class="time">
                         <i class="icon-user middle bigger-110 orange"></i>
                         <span class="green">{{=it.reviewer_department}}</span>
                     </div>
-
                     <div class="hr dotted hr-8"></div>
-
                     <div class="tools action-buttons">
                         {{ if (it.request_review) { }}
-                        <a data-rel="tooltip"
-                           data-placement="bottom"
-                           title="Request Review"
-                           data-target="#dialog_template"
-                           data-toggle="modal"
-                           data-keyboard="false"
-                           href='/tasks/{{=it.task_id}}/request_review/dialog?came_from={{=it.came_from}}&selected_responsible_id={{=it.reviewer_id}}'>
-                            <i class="icon-comment-alt orange bigger-150"></i>
-                        </a>
+                            <a data-rel="tooltip"
+                               data-placement="bottom"
+                               title="Request Review"
+                               data-target="#dialog_template"
+                               data-toggle="modal"
+                               data-keyboard="false"
+                               href='/tasks/{{=it.task_id}}/request_review/dialog?came_from={{=it.came_from}}&selected_responsible_id={{=it.reviewer_id}}'>
+                                <i class="icon-comment-alt orange bigger-150"></i>
+                            </a>
                         {{ } }}
-
                         <a data-rel="tooltip"
                            data-placement="bottom"
                            title="Create Ticket"
                            data-target="#dialog_template"
                            data-toggle="modal"
                            data-keyboard="false"
-                           href='tickets/-1/create/dialog?owner_id={{=it.reviewer_id}}'>
+                           href='/tickets/-1/create/dialog?owner_id={{=it.reviewer_id}}&task_id={{=it.task_id}}&project_id={{=it.project_id  }}'>
                             <i class="icon-ticket light-blue bigger-150"></i>
                         </a>
+                        {{ if (it.delete_action) { }}
+                            <a data-rel="tooltip"
+                               data-placement="bottom"
+                               title="Remove Responsible"
+                               data-target="#dialog_template"
+                               data-toggle="modal"
+                               data-keyboard="false"
+                               href='{{=it.delete_action}}'>
+                                <i class="icon-trash light-red bigger-150"></i>
+                            </a>
+                        {{ } }}
 
                     </div>
                 </div>
             </div>
             </div>
             <div class="body">
-
                 <div>
                     {{ if (it.review_status_name != 'Waiting'){ }}
-                        <span class="label label-{{=it.review_status_color }}">{{=it.review_status_name }}</span>
+                        <span class="label label-status_{{=it.review_status_code }}">{{=it.review_status_name }}</span>
                     {{ } }}
                     {{ if (it.review_status_link) { }}
                     <div class="inline position-relative">
@@ -62,44 +66,74 @@
                                 data-toggle="dropdown">
                             <i class="icon-angle-down icon-only bigger-120"></i>
                         </button>
-
                         <ul class="dropdown-menu dropdown-icon-only dropdown-yellow pull-right dropdown-caret dropdown-close">
                             <li>
-                                <a href="{{=it.review_status_link}}&review_mode=approve"
-                                   class="tooltip-success"
-                                   data-rel="tooltip"
-                                   title="Approve"
-                                   data-target="#dialog_template"
-                                   data-toggle="modal"
-                                   data-keyboard=false
-                                   data-placement="top">
-                                   <span class="green">
-                                       <i class="icon-ok bigger-110"></i>
-                                   </span>
-                                </a>
+                                {{ if(it.review_type === 'Final' || it.review_type == '') { }}
+                                    <a href="{{=it.review_status_link}}&review_mode=approve"
+                                       class="tooltip-success"
+                                       data-rel="tooltip"
+                                       title="Approve"
+                                       data-target="#dialog_template"
+                                       data-toggle="modal"
+                                       data-keyboard=false
+                                       data-placement="top">
+                                       <span class="green">
+                                           <i class="icon-ok bigger-110"></i>
+                                       </span>
+                                    </a>
+                                {{ } else { }}
+
+                                    <a href="{{=it.review_status_link}}&review_mode=request_revision"
+                                       class="tooltip-success"
+                                       data-rel="tooltip"
+                                       title="Accept Extra Time Request"
+                                       data-target="#dialog_template"
+                                       data-toggle="modal"
+                                       data-keyboard=false
+                                       data-placement="top">
+                                       <span class="green">
+                                           <i class="icon-ok bigger-110"></i>
+                                       </span>
+                                    </a>
+
+                                {{ } }}
                             </li>
 
                             <li>
-                                <a href="{{=it.review_status_link}}&review_mode=request_revision"
-                                   class="tooltip-success"
-                                   data-rel="tooltip"
-                                   title="Request Revision"
-                                   data-target="#dialog_template"
-                                   data-toggle="modal"
-                                   data-keyboard=false
-                                   data-placement="top">
-                                    <span class="orange">
-                                        <i class="icon-remove bigger-110"></i>
-                                    </span>
-                                </a>
+                                {{ if(it.review_type === 'Final' || it.review_type == '') { }}
+                                    <a href="{{=it.review_status_link}}&review_mode=request_revision"
+                                       class="tooltip-success"
+                                       data-rel="tooltip"
+                                       title="Request Revision"
+                                       data-target="#dialog_template"
+                                       data-toggle="modal"
+                                       data-keyboard=false
+                                       data-placement="top">
+                                        <span class="orange">
+                                            <i class="icon-remove bigger-110"></i>
+                                        </span>
+                                    </a>
+                                {{ } else { }}
+                                    <a href="{{=it.review_status_link}}&review_mode=approve"
+                                       class="tooltip-success"
+                                       data-rel="tooltip"
+                                       title="Reject Extra Time Request"
+                                       data-target="#dialog_template"
+                                       data-toggle="modal"
+                                       data-keyboard=false
+                                       data-placement="top">
+                                        <span class="orange">
+                                            <i class="icon-remove bigger-110"></i>
+                                        </span>
+                                    </a>
+                                {{ } }}
+
                             </li>
 
 
                         </ul>
                     </div>
                     {{ } }}
-
-
                 </div>
 
             </div>
@@ -110,119 +144,3 @@
 </script>
 {% endraw %}
 
-{#{% raw %}#}
-{#<script id="tmpl_reviewer_card" type="text/x-dot-template">#}
-{#    <div class="itemdiv memberdiv">#}
-{#        <div class="user">#}
-{#            <img src="{{=it.reviewer_thumbnail_full_path}}"/>#}
-{##}
-{#                <div class="popover">#}
-{#                <div class="arrow"></div>#}
-{#                <div class="popover-content">#}
-{##}
-{#                    <div class="bolder">{{=it.reviewer_name}}#}
-{#                    </div>#}
-{##}
-{#                    <div class="time">#}
-{#                        <i class="icon-user middle bigger-110 orange"></i>#}
-{#                        <span class="green">{{=it.reviewer_department}}</span>#}
-{#                    </div>#}
-{##}
-{#                    <div class="hr dotted hr-8"></div>#}
-{##}
-{#                    <div class="tools action-buttons">#}
-{#                        {{ if (it.request_review) { }}#}
-{#                        <a data-rel="tooltip"#}
-{#                           data-placement="bottom"#}
-{#                           title="Request Review"#}
-{#                           data-target="#dialog_template"#}
-{#                           data-toggle="modal"#}
-{#                           data-keyboard="false"#}
-{#                           href='/tasks/{{=it.task_id}}/request_review/dialog?came_from={{=it.came_from}}&selected_responsible_id={{=it.reviewer_id}}'>#}
-{#                            <i class="icon-comment-alt orange bigger-150"></i>#}
-{#                        </a>#}
-{#                        {{ } }}#}
-{##}
-{#                        <a data-rel="tooltip"#}
-{#                           data-placement="bottom"#}
-{#                           title="Create Ticket"#}
-{#                           data-target="#dialog_template"#}
-{#                           data-toggle="modal"#}
-{#                           data-keyboard="false"#}
-{#                           href='tickets/-1/create/dialog?owner_id={{=it.reviewer_id}}'>#}
-{#                            <i class="icon-ticket light-blue bigger-150"></i>#}
-{#                        </a>#}
-{##}
-{#                    </div>#}
-{#                </div>#}
-{#            </div>#}
-{##}
-{#        </div>#}
-{#        <div class="body">#}
-{##}
-{#            <div class="name">#}
-{#                <a href="#">{{=it.reviewer_name  }}</a>#}
-{#            </div>#}
-{##}
-{#            <div class="time">#}
-{#                <i class="icon-time"></i>#}
-{#                <span class="green">20 min</span>#}
-{#            </div>#}
-{##}
-{#            <div>#}
-{#                {{ if (it.review_status_name) { }}#}
-{#                    <span class="label label-{{=it.review_status_color }}">{{=it.review_status_name }}</span>#}
-{#                {{ } }}#}
-{#                {{ if (it.review_status_link) { }}#}
-{#                <div class="inline position-relative">#}
-{#                    <button class="btn btn-minier bigger btn-yellow dropdown-toggle"#}
-{#                            data-toggle="dropdown">#}
-{#                        <i class="icon-angle-down icon-only bigger-120"></i>#}
-{#                    </button>#}
-{##}
-{#                    <ul class="dropdown-menu dropdown-icon-only dropdown-yellow pull-right dropdown-caret dropdown-close">#}
-{#                        <li>#}
-{#                            <a href="{{=it.review_status_link}}"#}
-{#                               class="tooltip-success"#}
-{#                               data-rel="tooltip"#}
-{#                               title="Approve"#}
-{#                               data-target="#dialog_template"#}
-{#                               data-toggle="modal"#}
-{#                               data-keyboard=false#}
-{#                               data-placement="top">#}
-{#                                   <span class="green">#}
-{#                                       <i class="icon-ok bigger-110"></i>#}
-{#                                   </span>#}
-{#                            </a>#}
-{#                        </li>#}
-{##}
-{#                        <li>#}
-{#                            <a href="{{=it.review_status_link}}"#}
-{#                               class="tooltip-success"#}
-{#                               data-rel="tooltip"#}
-{#                               title="Request Revision"#}
-{#                               data-target="#dialog_template"#}
-{#                               data-toggle="modal"#}
-{#                               data-keyboard=false#}
-{#                               data-placement="top">#}
-{#                                    <span class="orange">#}
-{#                                        <i class="icon-remove bigger-110"></i>#}
-{#                                    </span>#}
-{#                            </a>#}
-{#                        </li>#}
-{##}
-{##}
-{#                    </ul>#}
-{#                </div>#}
-{#                {{ } }}#}
-{##}
-{##}
-{#            </div>#}
-{##}
-{#        </div>#}
-{##}
-{#    </div>#}
-{#    </div>#}
-{##}
-{#</script>#}
-{#{% endraw %}#}

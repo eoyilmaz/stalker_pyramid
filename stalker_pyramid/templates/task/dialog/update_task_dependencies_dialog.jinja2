@@ -1,0 +1,244 @@
+<script class="dialog_loaded"></script>
+
+<div class='row-fluid'>
+    <div class='span12'>
+
+        <form id='task_form'
+              class='form-horizontal'
+              role='form'
+              method='post'
+              action=''>
+
+                {# Depends_to #}
+                <div class='control-group'>
+                    <label class='span3 control-label' for='task_depends_to'>Depends To</label>
+                    <div class='span9'>
+                        <select id='task_depends_to'
+                                multiple=''
+                                class='input-block-level tag-input-style'
+                                name='dependent_ids'
+                                data-placeholder='Depends To'
+                                is_updating=false></select>
+                    </div>
+                    <div class='hidden'
+                         id="dependent_tasks_storage"
+                         dependent_ids="[{% for dep in depends_to %}{% if loop.index0 %},{% endif %}{{ dep.id }}{% endfor %}]">
+                        {# this is a storage for dependent_ids, which is set externally by the #}
+                        {# template engine #}
+                     </div>
+                </div>
+        </form>
+
+    </div>
+</div>
+
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/chosen.jquery.min.js") }}'></script>
+
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.autosize-min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.inputlimiter.1.3.1.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.maskedinput.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/bootstrap-tag.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.validate.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/additional-methods.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.spinner.min.js") }}'></script>
+
+
+<script>
+    function init_dialog(){
+        console.log('initialize task dialog start');
+
+        // update dialog header
+        $('#dialog_template_label').text('Update Task Dependencies Dialog');
+
+        $('#dialog_template_body').attr('style', "height: 500px");
+
+
+        var depends_to = [];
+
+        var submit_form_url = '/tasks/{{ entity.id }}/update/dependencies';
+
+
+        depends_to = [
+           {% for dep in entity.depends %}
+                 {% if loop.index0 %},{% endif %}{{ dep.id }}
+           {% endfor %}
+        ];
+
+
+        var submit_button = $('#dialog_template_submit_button');
+        setTimeout(function(){submit_button.button('reset')}, 0);
+        {# ***************************************************************** #}
+        {# Depends To#}
+
+        var task_depends_to = $('#task_depends_to').chosen({
+            search_contains: true,
+            enable_split_word_search: true
+        });
+
+        // ********************************************************************
+        // get tasks of that project as json from server
+        // set the submit button to loading state while data is get from the server
+        // set the fields to updating mode
+
+            // trigger another update
+        task_depends_to.trigger('liszt:updated');
+
+{#         {% if entity %}#}
+{#                var index = -1;#}
+{#                for(var i = 0; i < data.length; i++){#}
+{#                    if (data[i].id === {{ entity.id }}){#}
+{#                        index = i;#}
+{#                        break;#}
+{#                    }#}
+{#                }#}
+{#                if (index !== -1){#}
+{#                    data.splice(index, 1);#}
+{#                }#}
+{#                console.log('data.length:', data.length);#}
+{#            {% endif %}#}
+
+            // now append the data to the task_parent
+            {% raw %}
+            var task_parent_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
+            {% endraw %}
+
+            var rendered_template = null;
+            // add and empty option to both
+
+            for (var i=0; i < all_tasks_list.length; i++){
+                rendered_template = task_parent_template(all_tasks_list[i]);
+                task_depends_to.append(rendered_template)
+            }
+
+            task_depends_to.val(depends_to);
+            // trigger another update
+            task_depends_to.trigger('liszt:updated');
+
+
+
+
+
+
+
+        {# ***************************************************************** #}
+        {# Submit Button #}
+
+        submit_button.on('click', function(e){
+            e.stopPropagation();
+            e.preventDefault();
+
+            // disable submit button
+            setTimeout(function(){submit_button.button('loading')}, 0);
+
+            // enable fields
+
+            var task_form = $('#task_form');
+            var form_data = task_form.serialize();
+{#            console.log('form_data :', form_data);#}
+
+            if ( task_form.validate() ){
+                // prevent multiple sends
+                if (task_form.attr('is_sending') == 'true'){
+                    return;
+                } else {
+                    task_form.attr('is_sending', true);
+                }
+                $.post(
+                    submit_form_url,
+                    form_data
+                ).done(function(){
+                    $('#dialog_template').modal('hide');
+                }).fail(function(jqXHR){
+                    task_form.attr('is_sending', false);
+                    bootbox.alert(jqXHR.responseText);
+
+                    // enable submit button again
+                    setTimeout(function(){submit_button.button('reset')}, 0);
+                });
+            }
+        });
+
+        $('#task_form').validate({
+            errorElement: 'span',
+            errorClass: 'help-inline',
+            focusInvalid: true,
+            rules: {
+                name: {
+                    required: true
+                },
+                code: {
+                    required: true
+                },
+                depends_to: {
+                    required: false
+                },
+                comment: {
+                    required: true
+                },
+                state: {
+                    required: true
+                },
+                platform: {
+                    required: true
+                },
+                subscription: {
+                    required: true
+                },
+                gender: 'required',
+                agree: 'required'
+            },
+
+            messages: {
+            },
+
+            invalidHandler: function (event, validator) { //display error alert on form submit
+                $('.alert-error', $('.login-form')).show();
+            },
+
+            highlight: function (e) {
+                $(e).closest('.control-group').removeClass('info').addClass('error');
+            },
+
+            success: function (e) {
+                $(e).closest('.control-group').removeClass('error').addClass('info');
+                $(e).remove();
+            },
+
+            errorPlacement: function (error, element) {
+                if (element.is(':checkbox') || element.is(':radio')) {
+                    var controls = element.closest('.controls');
+                    if (controls.find(':checkbox,:radio').length > 1) controls.append(error);
+                    else error.insertAfter(element.nextAll('.lbl:eq(0)').eq(0));
+                }
+                else if (element.is('.select2')) {
+                    error.insertAfter(element.siblings('[class*="select2-container"]:eq(0)'));
+                }
+                else if (element.is('.chosen-select')) {
+                    error.insertAfter(element.siblings('[class*="chosen-container"]:eq(0)'));
+                }
+                else error.insertAfter(element);
+            }
+
+        });
+
+        {% if entity%}
+            {% if entity.status.code != 'WFD' and entity.status.code != 'RTS'%}
+                 $('#task_depends_to').attr('disabled','disabled')
+            {% endif %}
+        {% endif %}
+        console.log('initialize task dialog end')
+    }
+</script>
+
+<script type="text/javascript">
+    function destruct_dialog(){
+        console.log('destruct task dialog start');
+        // unbind events
+
+        $('#dialog_template_submit_button').unbind();
+
+        // remove dialog
+        $('#dialog_template').data('modal', null);
+        console.log('destruct task dialog end');
+    }
+</script>

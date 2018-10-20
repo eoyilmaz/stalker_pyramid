@@ -1,0 +1,59 @@
+{# Stalker Pyramid a Web Base Production Asset Management System
+ Copyright (C) 2009-2018 Erkan Ozgur Yilmaz
+
+ This file is part of Stalker Pyramid.
+
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation;
+ version 2.1 of the License.
+
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+#}
+
+
+{% extends "base.jinja2" %}
+
+{% block pre_header %}
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/dhtmlx/dhtmlxgantt.css") }}'/>
+    <link rel="stylesheet" href='{{ request.static_url("stalker_pyramid:static/dhtmlx/skins/dhtmlxgantt_terrace.css") }}' type="text/css" media="screen" title="no title" charset="utf-8">
+{% endblock pre_header %}
+
+{# BREADCRUMBS #}
+{% block breadcrumbs %}
+    {% include 'breadcrumb/breadcrumbs.jinja2' %}
+{% endblock breadcrumbs %}
+
+{#SIDEBAR#}
+{% block sidebar %}
+    {% set budget=entity %}
+    {% include 'sidebar.jinja2' %}
+{% endblock sidebar %}
+
+{#PAGE-CONTENT#}
+{% block page_content %}
+
+    <div class="widget-box transparent invoice-box">
+        <div class="widget-header widget-header-large">
+           {% set budget=entity %}
+           {% include 'budget/view/budget_header.jinja2' %}
+        </div>
+        <div class="widget-body">
+            <div class="widget-main">
+               {% include 'budget/view/budget_calendar.jinja2' %}
+            </div>
+        </div>
+    </div>
+
+
+{% endblock page_content %}
+
+

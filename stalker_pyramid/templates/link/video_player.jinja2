@@ -1,0 +1,327 @@
+<!-- stalker_pyramid
+ Copyright (C) 2013 Erkan Ozgur Yilmaz
+
+ This file is a part of stalker_pyramid
+
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation;
+ version 2.1 of the License.
+
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+-->
+<html>
+<head>
+    <meta name="viewport" content="width=device-width">
+    <style>
+        #video-controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 5px;
+            opacity: 100;
+            -webkit-transition: opacity .3s;
+            -moz-transition: opacity .3s;
+            -o-transition: opacity .3s;
+            transition: opacity .3s;
+            background-color: #333333;
+        }
+
+        #video-container:hover #video-controls {
+            opacity: .9;
+        }
+
+        button {
+            background: rgba(0,0,0,.5);
+            border: 0;
+            color: #EEE;
+            -webkit-border-radius: 3px;
+            -moz-border-radius: 3px;
+            -o-border-radius: 3px;
+            border-radius: 3px;
+        }
+
+        button:hover {
+            cursor: pointer;
+        }
+
+        #seek-bar {
+            width: 50%;
+        }
+
+        #volume-bar {
+            width: 60px;
+        }
+
+        .dark_slider {
+            background-color: rgba(0,0,0,.5) !important;
+            -webkit-appearance: none;
+            border-radius: 10px;
+            height: 10px;
+        }
+
+    </style>
+</head>
+    <body style="background-color: black; text-align: center">
+        <div style="width: auto; height: 100%; position: relative; max-width: 100%;">
+            <video id="video" autobuffer preload
+                   autoplay="true"
+                   name="media"
+                   style="width: auto; height: 95%; position: relative; max-width: 100%">
+                <source src="{{ video_full_path }}" type="video/webm">
+                <button>-</button>
+                <button>+</button>
+            </video>
+            <!-- Video Controls -->
+            <div id="video-controls">
+                <button id="step_backward_10" class="grey"><i class="icon-fast-backward"></i></button>
+                <button id="step_backward" class="grey"><i class="icon-step-backward"></i></button>
+                <button id="play-pause" type="button" style="width: 60px;" class="grey"><i class="icon-play"></i></button>
+                <button id="step_forward" class="grey"><i class="icon-step-forward"></i></button>
+                <button id="step_forward_10" class="grey"><i class="icon-fast-forward"></i></button>
+                <span id="video_current_time_info" style="color: lightgray">00:00:00</span>
+{#                <div style="position: relative">#}
+                    <input id="seek-bar" type="range" value="0" max="2000" class="grey dark_slider">
+{#                    <div id="buffer" style="height: 5px; top: 2px;"></div>#}
+{#                </div>#}
+                <span id="video_duration_info" style="color: lightgray">00:00:00</span>
+                <button id="mute" type="button" style="width: 24px;" class="grey"><i class="icon-volume-off"></i></button>
+                <input id="volume-bar" min="0" max="1" step="0.1" value="1" type="range" class="grey dark_slider">
+                <button id="full-screen" type="button" class="grey"><i class="icon-resize-full"></i></button>
+                <button id="center_video" type="button" title="center video" class="grey"><i class="icon-arrow-right"></i><i class="icon-arrow-left"></i></button>
+            </div>
+            <iframe style="display: none !important;
+                           padding: 0px !important;
+                           background-color: transparent !important;
+                           z-index: 2147483647 !important;
+                           border: none !important;">
+            </iframe>
+        </div>
+        <script>
+            $(function(){
+                var video = $('#video');
+
+                // Buttons
+                var playButton = $("#play-pause");
+                var muteButton = $("#mute");
+                var fullScreenButton = $("#full-screen");
+
+                // Sliders
+                var seekBar = $("#seek-bar");
+                var volumeBar = $("#volume-bar");
+
+                var pause_video = function(){
+                    // Pause the video
+                    video[0].pause();
+
+                    // Update the button text to 'Play'
+                    playButton.find('i').removeClass('icon-pause');
+                    playButton.find('i').addClass('icon-play');
+                };
+
+                var play_video = function(){
+                    // Play the video
+                    video[0].play();
+
+                    // Update the button text to 'Pause'
+                    playButton.find('i').removeClass('icon-play');
+                    playButton.find('i').addClass('icon-pause');
+                };
+
+                var toggle_video_playback = function(){
+                    if (video[0].paused == true) {
+                        play_video();
+                    } else {
+                        pause_video();
+                    }
+                };
+
+
+                function pad(num, size) {
+                    var s = "0000000000" + num;
+                    return s.substr(s.length - size);
+                }
+
+                /**
+                 * returns timecode text from given seconds
+                 * 
+                 * @param float_seconds
+                 */
+                var get_timecode = function(float_seconds){
+                    var int_seconds = float_seconds.toFixed(0);
+                    var seconds = int_seconds % 60;
+                    var minutes = Math.floor(float_seconds / 60) % 60;
+                    var hours = (int_seconds / 3600).toFixed(0);
+
+                    seconds = pad(seconds, 2);
+                    minutes = pad(minutes, 2);
+                    hours = pad(hours, 2);
+
+                    return hours + ':' + minutes + ':' + seconds;
+                };
+
+                var set_current_time_info_display = function(){
+                    var seconds = video[0].currentTime;
+                    var timecode = get_timecode(seconds);
+                    $('#video_current_time_info').text(timecode);
+
+                    var duration_as_timecode = get_timecode(video[0].duration);
+                    $('#video_duration_info').text(duration_as_timecode);
+                };
+
+                // Event listener for the play/pause button
+                playButton.on("click", function () {
+                    toggle_video_playback();
+                });
+
+                // Event listener for the mute button
+                muteButton.on("click", function () {
+                    if (video[0].muted == false) {
+                        // Mute the video
+                        video[0].muted = true;
+
+                        // Update the button text
+                        muteButton.find('i').removeClass('icon-volume-off');
+                        muteButton.find('i').addClass('icon-volume-up');
+                    } else {
+                        // Unmute the video
+                        video[0].muted = false;
+
+                        // Update the button text
+                        muteButton.find('i').addClass('icon-volume-off');
+                        muteButton.find('i').removeClass('icon-volume-up');
+                    }
+                });
+
+                // Event listener for the full-screen button
+                fullScreenButton.on("click", function () {
+                    if (video[0].requestFullscreen) {
+                        video[0].requestFullscreen();
+                    } else if (video[0].mozRequestFullScreen) {
+                        video[0].mozRequestFullScreen(); // Firefox
+                    } else if (video[0].webkitRequestFullscreen) {
+                        video[0].webkitRequestFullscreen(); // Chrome and Safari
+                    }
+                });
+
+                // Pause the video when the seek handle is being dragged
+                seekBar.on("mousedown", function () {
+                    pause_video();
+                });
+
+                // Play the video when the seek handle is dropped
+{#                seekBar.on("mouseup", function () {#}
+{#                    video[0].play();#}
+{#                });#}
+
+                // Event listener for the seek bar
+                seekBar.on("input", function () {
+                    // Calculate the new time
+                    // Update the video time
+                    video[0].currentTime = video[0].duration * (seekBar[0].value / seekBar.attr('max'));
+                });
+
+                // Update the seek bar as the video plays
+                video.on("timeupdate", function () {
+                    // Calculate the slider value
+                    // Update the slider value
+                    var duration = video[0].duration;
+                    var current_time = video[0].currentTime;
+{#                    var buffered = video[0].buffered.end(0);#}
+{#                    console.debug('buffered: ', buffered);#}
+
+{#                    $('buffer').css({#}
+{#                        width: buffered / duration + '%'#}
+{#                    });#}
+
+                    seekBar[0].value = (seekBar.attr('max') / duration) * current_time;
+                    set_current_time_info_display(video[0].currentTime);
+
+                    if (duration == current_time){
+                        // toggle play button
+                        // Update the button text to 'Play'
+                        playButton.find('i').removeClass('icon-pause');
+                        playButton.find('i').addClass('icon-play');
+                    }
+                });
+
+                // Event listener for the volume bar
+                volumeBar.on("input", function () {
+                    // Update the video volume
+                    video[0].volume = volumeBar[0].value;
+                });
+
+                $('#step_backward').on('click', function(){
+                    video[0].currentTime -= 1/24;
+                });
+
+                $('#step_forward').on('click', function(){
+                    video[0].currentTime += 1/24;
+                });
+
+                $('#step_backward_10').on('click', function(){
+                    video[0].currentTime -= 10/24;
+                });
+
+                $('#step_forward_10').on('click', function(){
+                    video[0].currentTime += 10/24;
+                });
+
+                var center_video = function(){
+                    video.css({
+                        'margin-left': ($(window).width() - video.width()) * 0.5 + 'px'
+                    });
+                };
+
+                var resize_seek_bar = function(){
+                    seekBar.css({
+                        'width': $(window).width() - 470 + 'px'
+                    });
+                };
+
+                $('#center_video').on('click', function(){
+                    center_video();
+                });
+
+                // center video
+                // resize seekBar
+                setTimeout(function(){
+                    resize_seek_bar();
+                });
+
+                $(window).on('keypress', function(e){
+                    if (e.keyCode == 49){
+                        console.debug('1 is clicked!');
+                        video[0].currentTime -= 1/24;
+                    } else if (e.keyCode == 50){
+                        console.debug('2 is clicked!');
+                        video[0].currentTime += 1/24;
+                    }
+                });
+
+                // this player should not know that it has been called from a
+                // colorbox object, but this is good enough for now
+                $(document).bind('cbox_closed', function(){
+                    $(window).unbind('keypress');
+                });
+
+                var init_video = function(){
+                    if (video.width() !== 0){
+                        center_video();
+                    } else {
+                        setTimeout(init_video, 100);
+                    }
+                };
+                init_video();
+            });
+        </script>
+    </body>
+</html>

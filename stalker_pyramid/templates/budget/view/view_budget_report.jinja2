@@ -1,0 +1,189 @@
+{# Stalker Pyramid a Web Base Production Asset Management System
+ Copyright (C) 2009-2018 Erkan Ozgur Yilmaz
+
+ This file is part of Stalker Pyramid.
+
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation;
+ version 2.1 of the License.
+
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+#}
+
+{% extends "base.jinja2" %}
+
+
+
+{# BREADCRUMBS #}
+{% block breadcrumbs %}
+    {% include 'breadcrumb/breadcrumbs.jinja2' %}
+{% endblock breadcrumbs %}
+
+{#SIDEBAR#}
+{% block sidebar %}
+    {% include 'sidebar.jinja2' %}
+{% endblock sidebar %}
+
+{#PAGE-CONTENT#}
+{% block page_content %}
+
+    <div class="widget-box transparent invoice-box">
+       {% set budget=entity %}
+       {% include 'budget/view/budget_header.jinja2' %}
+
+
+        <div class="widget-body">
+            <div class="widget-main padding-24">
+                <div class="row-fluid">
+                    <div class="span6">
+{#                        {% set client=budget.project.client %}#}
+{#                        {% include 'client/view/client_info.jinja2' %}#}
+                    </div>
+                    <div class="span6">
+                        <h4 class="pull-right">
+                            Approved Total Price :
+                            <span class="red" id="approved_total_price">{{ approved_total_price }}</span>
+                        </h4>
+                    </div>
+                </div>
+                <div class="row-fluid">
+                    <div class="span12">
+                        <h4 class="pull-right">
+                            Total price :
+                            <span class="red" id="total_price_top">{{ total_price }}</span>
+                        </h4>
+                    </div>
+                </div>
+                <div class="row-fluid">
+                    <table id="grid-table"></table>
+                </div>
+                <div class="space-6"></div>
+                <div class="hr hr8 hr-double hr-dotted"></div>
+                <div class="row-fluid">
+                    <div class="span12">
+                        <h4 class="pull-right">
+                            Total price :
+                            <span class="red" id="total_price_bottom">{{ total_price }}</span>
+                        </h4>
+                    </div>
+                </div><!--/span-->
+            </div>
+        </div>
+    </div>
+{% endblock page_content %}
+
+{% block extrascripts %}
+    <script type="text/javascript">
+        if("ontouchend" in document) document.write("<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.mobile.custom.min.js") }}'>"+"<"+"/script>");
+    </script>
+    <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/i18n/grid.locale-en.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/jquery.jqGrid.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/accounting.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/codebase/dhtmlxgantt.js") }}'></script>
+    <link src='{{ request.static_url("stalker_pyramid:static/jqGrid/css/ui.jqgrid-bootstrap.css") }}'/>
+    <script>
+        $.jgrid.defaults.width = 780;
+        $.jgrid.defaults.responsive = true;
+        $.jgrid.defaults.styleUI = 'Bootstrap';
+    </script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            $('#add_project_entries_to_budget_button').hide();
+            var total_cost = 0;
+            var total_msrp = 0;
+            var total_price = 0;
+            var grid_data;
+            var lastSelection;
+
+            var grid_selector = "#grid-table";
+            var grid = jQuery(grid_selector);
+
+            function currencyFmatter (cellvalue, options, rowObject){
+               return accounting.formatMoney(cellvalue, { symbol: "TL",  format: "%v %s" });
+            }
+
+            function  unformatCurrency (cellvalue, options){
+               return accounting.unformat(cellvalue);
+            }
+            function calculateTotals(){
+
+                grid.jqGrid("footerData", "set", {
+                                                   price: total_price,
+                                                   unit:'TOTAL'
+                });
+
+                $('#total_price_top').text(accounting.formatMoney(total_price, { symbol: "TL",  format: "%v %s" }));
+                $('#total_price_bottom').text(accounting.formatMoney(total_price, { symbol: "TL",  format: "%v %s" }));
+
+            }
+
+            function gridLoadComplete() {
+                calculateTotals();
+                setTimeout(function(){
+                    $('#lui_grid-table').hide();
+                }, 0);
+            }
+
+            $.getJSON('/budgets/{{ entity.id }}/entries/').then(function (entry_data) {
+
+                grid_data = entry_data;
+
+                var price_list = [];
+
+                for(var j=0; j<grid_data.length; j++ ){
+                    var index = findArrayElement(price_list, 'type', grid_data[j].type);
+                    console.log('index: '+ index);
+                    total_price += parseInt(grid_data[j].price);
+
+                    if(index == -1){
+                        price_list.push(grid_data[j]);
+                    }
+                    else{
+                        price_list[index].price += grid_data[j].price;
+                    }
+                }
+
+                jQuery(function($) {
+
+                    grid.jqGrid({
+                        //direction: "rtl",
+                        data: price_list,
+                        datatype: "local",
+                        colNames:['Type', 'Cost', 'Price'],
+                        colModel:[
+                            {name:'type', index:'type', width:220, editable: false},
+                            {name:'cost', index:'cost', width:150, sortable:true, editable: false, formatter:currencyFmatter, unformat:unformatCurrency, summaryTpl: "{0}", summaryType: "sum" },
+                            {name:'price', index:'price', width:150, sortable:true, editable: false, formatter:currencyFmatter, unformat:unformatCurrency, summaryTpl: "{0}", summaryType: "sum" }
+                        ],
+                        viewrecords : true,
+                        rowNum:grid_data.length,
+                        rowList:[grid_data.length, 10, 10],
+                        pager : false,
+                        altRows: true,
+                        multiselect: false,
+                        loadonce: false,
+                        sortname: 'type',
+                        height: 700,
+                        width: 'auto',
+                        footerrow: true,
+                        userDataOnFooter: true,
+                        grouping: false,
+                        caption: "",
+                        loadComplete : gridLoadComplete
+                    });
+                });
+
+            });
+        });
+    </script>
+{% endblock extrascripts %}
+

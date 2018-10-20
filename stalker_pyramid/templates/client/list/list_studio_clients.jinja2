@@ -1,0 +1,302 @@
+{# Stalker Pyramid a Web Base Production Asset Management System
+ Copyright (C) 2009-2018 Erkan Ozgur Yilmaz
+
+ This file is part of Stalker Pyramid.
+
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation;
+ version 2.1 of the License.
+
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+#}
+
+{% extends "base.jinja2" %}
+
+{# BREADCRUMBS #}
+{% block breadcrumbs %}
+
+    {% set page_title='Clients' %}
+    {% include 'breadcrumb/breadcrumbs.jinja2' %}
+
+{% endblock breadcrumbs %}
+
+{# SIDEBAR #}
+{% block sidebar %}
+
+    {% include 'sidebar.jinja2' %}
+
+{% endblock sidebar %}
+
+{# PAGE-CONTENT #}
+{% block page_content %}
+
+{#    {% set page_title='Clients' %}#}
+{#    {% include 'page_header.jinja2' %}#}
+
+
+    <div id="content" class="widget-box">
+        <div class="widget-header widget-header-small header-color-client">
+            <h5 id="items_header" class="smaller"></h5>
+            <div class="widget-toolbar">
+                {% if has_permission('Create_Client') %}
+                    &nbsp
+                    <a data-target="#dialog_template"
+                       data-toggle="modal"
+                       data-keyboard=false
+                       href="{{ request.route_url("create_client_dialog") }}"
+                       class="white">
+                        <i class="icon-plus"></i>
+                        New
+                    </a>
+                    &nbsp&nbsp
+                {% endif %}
+                <a href="#" data-action="collapse">
+                    <i class="icon-chevron-down"></i>
+                </a>
+            </div>
+        </div>
+        <div class="widget-body">
+            <div class="widget-main no-padding">
+                <div class="space-5"></div>
+                <div id="items_table_wrapper" class="dataTables_wrapper" role="grid">
+                    <div class="row-fluid">
+                        <div class="span6">
+                        </div>
+                        <div class="span6">
+                            <div class="dataTables_filter" id="items_table_filter">
+                                <label>Search: <input type="text" id="search_cells" aria-controls="items_table">
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row-fluid">
+                    <table id="grid-table"></table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{#    {% set add_button_address=request.route_path('create_client_dialog') %}#}
+{#    {% set list_item_type='Client' %}#}
+{#    {% include 'components/data_table.jinja2' %}#}
+
+{% endblock page_content %}
+
+{# EXTRA-SCRIPTS #}
+{% block extrascripts %}
+{#    {% raw %}#}
+{#    <script id="tmpl_itemThead" type="text/x-dot-template">#}
+{#        <tr>#}
+{#            <th>Thumbnail</th>#}
+{#            <th>Name</th>#}
+{#            <th>Type</th>#}
+{#            <th>Project Count</th>#}
+{#            <th>Description</th>#}
+{#            <th></th>#}
+{#        </tr>#}
+{#    </script>#}
+{#    {% endraw %}#}
+{##}
+{#    {% raw %}#}
+{#    <script id="tmpl_itemRow" type="text/x-dot-template">#}
+{#        <tr>#}
+{#            <td><img style='width:auto; height: 100px;'#}
+{#                     class="img-thumbnail"#}
+{#                     src="{{=it.thumbnail_full_path }}">#}
+{#            </td>#}
+{#            <td><a href='/clients/{{=it.id}}/view'>{{=it.name}}</a>#}
+{#            </td>#}
+{#            <td>{{=it.type_name}}#}
+{#            </td>#}
+{#            <td>{{=it.projectsCount}}#}
+{#            </td>#}
+{#            <td>{{=it.description}}#}
+{#            </td>#}
+{#            <td>#}
+{#                {{ if (it.update_client_action) { }}#}
+{#                <a class="blue" href="{{=it.update_client_action}}">#}
+{#                    <i class="icon-edit bigger-130"></i>#}
+{#                </a>#}
+{#                {{ } }}#}
+{##}
+{#                {{ if (it.item_remove_link) { }}#}
+{#                <a class="red"#}
+{#                   data-target="#dialog_template"#}
+{#                   data-toggle="modal"#}
+{#                   data-keyboard=false#}
+{#                   href="{{=it.item_remove_link}}?came_from={{=it.came_from }}">#}
+{#                    <i class="icon-trash bigger-130"></i>#}
+{#                </a>#}
+{#                {{ } }}#}
+{#            </td>#}
+{#        </tr>#}
+{#    </script>#}
+{#    {% endraw %}#}
+
+    <script type="text/javascript">
+        if("ontouchend" in document) document.write("<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.mobile.custom.min.js") }}'>"+"<"+"/script>");
+    </script>
+    <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/i18n/grid.locale-en.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/jquery.jqGrid.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/jquery.jqGrid.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/plugins/ui.multiselect.js") }}'></script>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            var lastSelection;
+            var grid_selector = "#grid-table";
+            var grid = jQuery(grid_selector);
+
+            function makelistLink(array, list_type){
+
+                var list_str = "";
+                for(var k=0; k<array.length;k++){
+                    list_str += "<a href='/"+list_type+"/"+array[k].id+"/view'>"+array[k].name+"</a><br/>";
+                }
+                return list_str
+
+            }
+
+            function editRow(id) {
+                if (id && id !== lastSelection) {
+
+                    grid.restoreRow(lastSelection);
+                    var editParameters = {
+                        keys: true,
+                        successfunc: editSuccessful,
+                        errorfunc: editFailed,
+                        restoreAfterError : false
+                    };
+
+                    grid.jqGrid('editRow', id, editParameters);
+                    lastSelection = id;
+                }
+            }
+
+            function editSuccessful(data, stat) {
+                grid.restoreRow(lastSelection);
+                return [true,"",""];
+            }
+
+            function editFailed(rowID, response) {
+                $.jgrid.info_dialog($.jgrid.errors.errcap,'<div class="ui-state-error">RowID:'+rowID+ ' :  '+ response.responseJSON.error +'</div>', $.jgrid.edit.bClose,{buttonalign:'right'})
+                alert(response.responseJSON.error);
+            }
+
+            $.getJSON('/studios/{{ studio.id }}/clients/').then(function (entry_data) {
+
+                var grid_data = entry_data;
+                for(var j=0; j<grid_data.length; j++ ){
+                    grid_data[j].remove_action = "<a data-target='#dialog_template' data-toggle='modal' data-keyboard=false href='"+grid_data[j].item_remove_link+"'> <i class='icon-trash'></i></a>"
+                    grid_data[j].namelink = "<a href='/clients/"+grid_data[j].id+"/view'>"+grid_data[j].name+"</a>";
+
+                }
+                $.getJSON('/types/?target_entity_type=Client').then(function(available_type){
+                    var available_type_as_list = [];
+                    for (var i=0; i < available_type.length; i++){
+                        available_type_as_list.push(available_type[i].name);
+                    }
+
+                    jQuery(function($) {
+                        var grid_selector = "#grid-table";
+                        jQuery(grid_selector).jqGrid({
+                            //direction: "rtl",
+                            data: grid_data,
+                            datatype: "local",
+                            colNames:[
+                                'Id',
+                                'Name',
+                                'Name',
+                                'Type Name',
+                                'Project Count',
+                                'Description',
+                                ''],
+                            colModel:[
+                                {name:'id', index:'id', width:80, editable: false},
+                                {name:'name', index:'name', width:200, editable: false, hidden: true},
+                                {name:'namelink', index:'namelink', width:200, editable: false},
+                                {
+                                    name:'type_name',
+                                    index:'type_name',
+                                    width:100,
+                                    editable: {% if has_permission('Update_Client') %} true {% else %} false {% endif %},
+                                    edittype:"text",
+                                    editoptions: {
+                                        dataInit: function (element) {
+                                            window.setTimeout(function () {
+                                                $(element).autocomplete({
+                                                    id: 'AutoComplete',
+                                                source: available_type_as_list,
+                                                autoFocus: true
+                                                });
+                                            }, 100);
+                                        }
+                                    }
+                                },
+                                {name:'projectsCount', index:'projectsCount', width:200, editable: false},
+                                {name:'description', index:'description', width:200, editable: {% if has_permission('Update_Client') %} true {% else %} false {% endif %}, edittype:"textarea", editoptions:{size:"20", maxlength:"80"}},
+                                {name:'remove_action', index:'remove_action', width:60, editable: false}
+                            ],
+                            viewrecords : true,
+                            pager: false,
+                            rowNum:grid_data.length,
+                            rowList:[grid_data.length],
+                            altRows: true,
+                            multiselect: false,
+                            loadonce: true,
+                            height: 'auto',
+                            autowidth: true,
+                            sortname: 'name',
+                            footerrow: false,
+                            userDataOnFooter: true,
+                            grouping: false,
+                            editurl: '/studios/{{ entity.id }}/clients/update',
+                            caption: "",
+                            onSelectRow: editRow,
+                            loadComplete : function() {
+                                var $self = $(this);
+
+                                var table = this;
+                                setTimeout(function(){
+    {#                                    styleCheckbox(table);#}
+    {#                                    updateActionIcons(table);#}
+
+                                    $('#lui_grid-table').hide();
+                                }, 0);
+                            }
+                        });
+                    });
+
+                    var timer;
+                    $("#search_cells").on("keyup", function() {
+                        var self = this;
+                        if(timer) { clearTimeout(timer); }
+                        timer = setTimeout(function(){
+                            //timer = null;
+                            jQuery(grid_selector).jqGrid('filterInput', self.value);
+                        },0);
+                    });
+                });
+            });
+
+        });
+
+{#        var tableParameters = {"aoColumns": [null, null, null, {'sType': 'num-html'},null, null]};#}
+{#        var sortingParameters = [[0, 'asc']];#}
+{#        var tableDataAddress;#}
+{#        tableDataAddress = '{{ request.route_path('get_studio_clients', id=studio.id) }}';#}
+
+    </script>
+
+{% endblock extrascripts %}
+

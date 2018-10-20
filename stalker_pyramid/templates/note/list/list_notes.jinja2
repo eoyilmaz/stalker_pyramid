@@ -1,15 +1,12 @@
+<script class="dialog_loaded"></script>
 <div class="row-fluid">
-    <div class="offset1 span10">
+    <div class="span12">
+
+    <div class="space-24"></div>
         <div class="timeline-container">
-
-
             <div class="timeline-items" id="notes">
-
             </div>
-            <!--/.timeline-items-->
         </div>
-        <!--/.timeline-container-->
-
     </div>
 </div>
 
@@ -18,18 +15,17 @@
 <script id="tmpl_note_activity" type="text/x-dot-template">
     <div class="timeline-item clearfix">
         <div class="timeline-info">
-            <img alt="" src="{{=it.created_by_thumbnail}}"/>
+           <a href="/users/{{=it.created_by_id}}/view"><img alt="" src="{{=it.created_by_thumbnail}}"/></a>
         </div>
 
         <div class="widget-box">
             <div class="widget-header widget-header-small header-color-{{=it.note_type_color}}">
-                <h5 class="smaller">
-                    <span>{{=it.note_type_name}}</span>
+                <h5 class="smaller">{{=it.note_type_name}}
                 </h5>
 
                 <span class="widget-toolbar no-border date">
                 <i class="icon-time bigger-110"></i>
-                {{=it.created_date}}
+                    {{=it.created_date}}
                 </span>
 
                 <span class="widget-toolbar">
@@ -42,10 +38,7 @@
 
             <div class="widget-body">
                 <div class="widget-main">
-
-                    <a href="/users/{{=it.created_by_id}}/view">{{=it.created_by_name}}</a>
-                    {{=it.content}}
-
+                    {{=it.content.replace(/[\n]/g, '<br\>')}}
                 </div>
             </div>
         </div>
@@ -77,58 +70,121 @@
 
                         <div class="pull-right action-buttons">
 
-
+                            {{ if (it.delete_note_action) {  }}
                             <a class="red"
                                data-target="#dialog_template"
                                data-toggle="modal"
                                data-keyboard=false
-                               href="/notes/{{=it.note_id}}/delete/dialog?came_from={{=it.came_from }}">
+                               href={{=it.delete_note_action }}>
                                 <i class="icon-remove red bigger-125"></i>
                             </a>
+                            {{ } }}
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</script>
+{% endraw %}
 
+
+{% raw %}
+<script id="tmpl_note_daily" type="text/x-dot-template">
+    <div class="timeline-item clearfix">
+        <div class="timeline-info">
+            <img alt="" src="{{=it.created_by_thumbnail}}"/>
+        </div>
+
+        <div class="widget-box">
+            <div class="widget-header widget-header-small header-color-daily">
+                <h5 class="smaller">Daily : <a class='white' href="/dailies/{{=it.daily_id}}/view"> {{=it.daily_name}}</a>
+                </h5>
+
+                <span class="widget-toolbar no-border date">
+                <i class="icon-time bigger-110"></i>
+                    {{=it.created_date}}
+                </span>
+
+                <span class="widget-toolbar">
+
+                <a href="#" data-action="collapse">
+                    <i class="icon-chevron-up"></i>
+                </a>
+                </span>
+            </div>
+            <div class="widget-body">
+                <div class="widget-main">
+                    <!--<a href="/users/{{=it.created_by_id}}/view">{{=it.created_by_name}}</a>-->
+
+                    {{=it.content}}
+
+                    <div class="space-3"></div>
+
+                    <div class="widget-toolbox clearfix">
+
+                        <div class="pull-right action-buttons">
+
+                            {{ if (it.delete_note_action) {  }}
+                            <a class="red"
+                               data-target="#dialog_template"
+                               data-toggle="modal"
+                               data-keyboard=false
+                               href={{=it.delete_note_action }}>
+                                <i class="icon-remove red bigger-125"></i>
+                            </a>
+                            {{ } }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </script>
 {% endraw %}
 <script type="text/javascript">
 
-    $(document).ready(function () {
+    $.getJSON('/entities/{{ entity.id }}/notes/').then(function (n_data) {
+        $(function () {
+            var logged_in_user_id = '{{ logged_in_user.id }}';
+            var notes = $('#notes');
+            var note_simple_template = doT.template($('#tmpl_note_simple_text').html());
+            var note_activity_template = doT.template($('#tmpl_note_activity').html());
+            var note_daily_template = doT.template($('#tmpl_note_daily').html());
 
+            var event_dialog = $('#html_template');
+            var html_template_label = $('#html_template_label');
+            html_template_label.text(event_dialog.attr('title'));
 
-        var logged_in_user_id = '{{ logged_in_user.id }}'
-        var notes = $('#notes');
-        var note_simple_template = doT.template($('#tmpl_note_simple_text').html());
-        var note_activity_template = doT.template($('#tmpl_note_activity').html());
+            for (var i = 0; i < n_data.length; i++) {
 
-        $.getJSON('/entities/{{ entity.id }}/notes/').then(function (data) {
-            console.log('done')
+                n_data[i].created_date = new Date(parseInt(n_data[i].created_date));
 
-            for (var i = 0; i < data.length; i++) {
-
-                data[i].created_date = new Date(parseInt(data[i].created_date));
-
-                if (data[i].created_by_thumbnail == null) {
-                    data[i].created_by_thumbnail = '{{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}';
+                if (n_data[i].created_by_thumbnail == null) {
+                    n_data[i].created_by_thumbnail = '{{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_0.png") }}';
                 }
                 else {
-                    data[i].created_by_thumbnail = '/' + data[i].created_by_thumbnail;
+                    n_data[i].created_by_thumbnail = '/' + n_data[i].created_by_thumbnail;
                 }
 
-                console.log(data[i].note_type_name)
-                if (data[i].note_type_name == 'Simple Text' || !data[i].note_type_name) {
+                {% if has_permission('Delete_Note') %}
 
-                    notes.append(note_simple_template(data[i]));
+                   n_data[i].delete_note_action = "/notes/"+n_data[i].note_id+"/delete/dialog?came_from="+n_data[i].came_from;
+
+                {% endif %}
+
+                if (n_data[i].note_type_name == 'Simple Text' || !n_data[i].note_type_name) {
+
+                    notes.append(note_simple_template(n_data[i]));
+                }
+                else if (n_data[i].note_type_name == 'Daily_Note') {
+
+                        notes.append(note_daily_template(n_data[i]));
                 }
                 else {
 
-                    notes.append(note_activity_template(data[i]));
+                    notes.append(note_activity_template(n_data[i]));
                 }
-
-
             }
 
             $('.date').each(function () {

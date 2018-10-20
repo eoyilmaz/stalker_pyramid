@@ -1,10 +1,57 @@
 <ul id="breadcrumb_version" class="breadcrumb">
 
     <li>
-        <a href="{{ request.route_url('view_task', id=entity.task.id) }}">{{ entity.task.name }}</a>
+        <a href="{{ request.route_url('view_project', id=task.project.id) }}">{{ task.project.name }}</a>
         <span class="divider">
-          <i class="icon-angle-right arrow-icon"></i>
+            <i class="icon-angle-right arrow-icon"></i>
         </span>
+    </li>
+
+    {% for parent in task.parents %}
+        <li>
+            <div class="btn-group">
+                <button tabindex="-1"
+                        data-toggle="dropdown"
+                        class="btn btn-mini btn-danger dropdown-toggle">{{ parent.name }}&nbsp
+                    <i class="icon-angle-down icon-on-right"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-danger scroll-menu">
+                    {% if parent.parent %}
+                        {% set sibling_tasks = parent.parent.children %}
+                    {% else %}
+                        {% set sibling_tasks = parent.project.root_tasks %}
+                    {% endif %}
+    
+                    {% for sibling_task in sibling_tasks|sort(attribute='name') %}
+                        <li><a href="{{ request.route_url('view_task', id=sibling_task.id) }}">{{ sibling_task.name }}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </li>
+    {% endfor %}
+
+
+    <li>
+        <div class="btn-group">
+            <button tabindex="-1"
+                    data-toggle="dropdown"
+                    class="btn btn-mini btn-danger dropdown-toggle">{{ task.name }}&nbsp;
+                <i class="icon-angle-down icon-on-right"></i>
+            </button>
+
+            <ul class="dropdown-menu dropdown-danger scroll-menu">
+
+                {% if task.parent %}
+                    {% set sibling_tasks = task.parent.children %}
+                {% else %}
+                    {% set sibling_tasks = task.project.root_tasks %}
+                {% endif %}
+
+                {% for sibling_task in sibling_tasks|sort(attribute='name') %}
+                    <li><a {% if sibling_task == task %}class="disabled"{% endif %} href="{{ request.route_url('view_task', id=sibling_task.id) }}">{{ sibling_task.name }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
     </li>
 
     <li>
@@ -14,9 +61,8 @@
         </span>
     </li>
 
-    <li class="active">{{ entity.version_number }}
+    <li class="active">{{ version.filename }}</li>
 
-    </li>
 </ul>
 <!--.breadcrumb-->
 

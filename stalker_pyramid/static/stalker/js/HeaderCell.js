@@ -56,14 +56,14 @@ define([], function () {
         }
 
         // create the first div elements using start_date and week_end
-        var parent_div = $($.parseHTML('<div class="headerCell"></div>'));
+        var parent_div = jQuery(jQuery.parseHTML('<div class="headerCell"></div>'));
         parent_div.css({
             width: Math.floor((end_date - start_date) / scale),
             left: Math.floor((start_date - original_start) / scale),
             height: height,
             position: 'absolute'
         });
-        $(parent).append(parent_div);
+        jQuery(parent).append(parent_div);
 
         var header_div_element;
         // now wee need to iterate until the end_date is bigger than end
@@ -78,7 +78,7 @@ define([], function () {
 
         while (period_start < end_date) {
             // create the first div elements using start_date and week_end
-            header_div_element = $($.parseHTML('<div class="headerCell center">' + formatter(period_start, period_end) + '</div>'));
+            header_div_element = jQuery(jQuery.parseHTML('<div class="headerCell center">' + formatter(period_start, period_end) + '</div>'));
             header_div_element.css({
                 width: Math.floor((period_end - period_start) / scale),
                 left: Math.floor((period_start - start_date) / scale)

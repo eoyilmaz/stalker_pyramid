@@ -1,0 +1,131 @@
+<div class="row-fluid">
+        <div class='span5'>
+            <select id='task_types'
+                    multiple=''
+                    class='input-block-level tag-input-style'
+                    name='task_types'
+                    data-placeholder='Types'
+                    is_updating=false></select>
+        </div>
+    <div class='span1'>
+        <button class="btn btn-info btn-small" type="button" id="type_submit_btn">
+            <i class="icon-ok bigger-110"></i>
+            Submit
+        </button>
+    </div>
+        <div class='span5'>
+            <select id='task_ids'
+                    multiple=''
+                    class='input-block-level tag-input-style'
+                    name='task_ids'
+                    data-placeholder='Tasks'
+                    is_updating=false></select>
+        </div>
+    <div class='span1'>
+        <button class="btn btn-info btn-small" type="button" id="task_submit_btn">
+            <i class="icon-ok bigger-110"></i>
+            Submit
+        </button>
+    </div>
+
+
+</div>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/chosen.jquery.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/daterangepicker.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap-colorpicker.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.autosize-min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.inputlimiter.1.3.1.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.maskedinput.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/bootstrap-tag.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.validate.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/additional-methods.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.spinner.min.js") }}'></script>
+
+<script>
+    $(function () {
+        var task_types = $('#task_types');
+        var task_ids = $('#task_ids');
+
+        task_types.chosen({
+            search_contains: true,
+            enable_split_word_search: true
+        });
+
+        task_ids.chosen({
+            search_contains: true,
+            enable_split_word_search: true
+{#            allow_single_deselect: true#}
+        });
+
+        {% raw %}
+            var option_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
+        {% endraw %}
+
+        task_ids.append('<option value=""></option>');
+
+        $.getJSON('/tasks/{{ entity.id }}/children_task_types/').then(function(data){
+            console.log('loaded '+data.length);
+            // remove current elements
+            task_types.find('option').remove();
+
+            // append new ones
+            var data_count = data.length;
+            // append a single empty option to the responsible field
+            task_types.append('<option value=""></option>');
+            for (var i=0; i < data_count; i++){
+                console.log('loaded '+data[i].id+' : '+data[i].name);
+                task_types.append(option_template(data[i]));
+            }
+
+            // update the chosen fields
+            task_types.trigger('liszt:updated');
+
+            // set the field to normal mode
+            task_types.attr('is_updating', false);
+        });
+
+        var type_submit_btn = $('#type_submit_btn');
+        type_submit_btn.on('click', function(e){
+            e.stopPropagation();
+            e.preventDefault();
+
+            console.log(task_types.val());
+            var type_ids = task_types.val();
+            var type_ids_query = "type_ids="+type_ids[0];
+            for (var i=1; i<type_ids.length;i++){
+                type_ids_query +="&type_ids="+type_ids[i]
+            }
+            console.log('loaded '+type_ids_query);
+
+            $.getJSON('/tasks/{{ entity.id }}/children_tasks/?'+type_ids_query).then(function(data){
+
+                task_ids.find('option').remove();
+
+                // append new ones
+                var data_count = data.length;
+                // append a single empty option to the responsible field
+                task_ids.append('<option value=""></option>');
+                for (var i=0; i < data_count; i++){
+                    console.log('loaded '+data[i].id+' : '+data[i].name);
+                    task_ids.append(option_template(data[i]));
+                }
+
+                // update the chosen fields
+                task_ids.trigger('liszt:updated');
+
+                // set the field to normal mode
+                task_ids.attr('is_updating', false);
+            });
+        })
+
+        var task_submit_btn = $('#task_submit_btn');
+        task_submit_btn.on('click', function(e){
+            e.stopPropagation();
+            e.preventDefault();
+
+            console.log(task_ids.val());
+        })
+
+    })
+</script>

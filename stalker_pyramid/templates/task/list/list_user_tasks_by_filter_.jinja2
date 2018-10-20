@@ -1,0 +1,482 @@
+{% raw %}
+<script id="tmpl_btn" type="text/x-dot-template">
+    <button
+            id="{{=it.id}}"
+            class="btn btn-mini btn-white tooltip-success"
+            title="{{=it.title}}"
+            >
+        <i class="{{=it.icon}}"></i>
+    </button>
+</script>
+{% endraw %}
+
+{% raw %}
+    <script id="tmpl_taskStatusLink" type="text/x-dot-template">
+        <li class="link" id="tab_{{=it.status_code}}">
+            <a data-toggle="tab" href="" id="link_{{=it.status_code}}">
+                <i class="status_{{=it.status_code }} icon-list bigger-120"></i>
+                {{=it.status_code}}
+            </a>
+        </li>
+    </script>
+{% endraw %}
+
+
+<div class="row-fluid">
+    <ul class="span6 nav nav-tabs" id="tasks_status_tabs"></ul>
+        <select id='project_cb' class='span6 input-block-level'>
+        </select>
+    </div>
+
+<div class="row-fluid">
+    <div id="tasks_list" class="widget-box hide">
+        <div id="html_template_header" class="widget-header widget-header-small header-color-status_{{ filter.code.lower() }} ">
+            <h5 id="items_header"></h5>
+            <div class="widget-toolbar">
+                <div class="space-5"></div>
+                <div id="button_list">
+                </div>
+            </div>
+        </div>
+        <div class="widget-body">
+            <div class="widget-main no-padding">
+                <div id="loading_spinner" class="well well-sm">
+                    <div class="inline middle blue bigger-110">
+                        <i class="icon-spinner icon-spin orange bigger-125"></i>
+                        Loading
+                        content...
+                    </div>
+                </div>
+                {% include 'components/jgrid_table.jinja2' %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/i18n/grid.locale-en.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/jquery.jqGrid.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/jquery.jqGrid.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/jqGrid/plugins/ui.multiselect.js") }}'></script>
+
+<script>
+
+    $(document).ready(function () {
+        var project_id = localStorage.getItem("project_id");
+        var status_code = '';
+
+        {% raw %}
+            var option_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
+        {% endraw %}
+
+        var project_cb = $('#project_cb');
+        project_cb.chosen({
+            search_contains: true,
+            enable_split_word_search: true
+        });
+
+        $.getJSON('/entities/{{ entity.id }}/projects/').then(function(data){
+
+            project_cb.find('option').remove();
+
+            var data_count = data.length;
+
+            for (var i=0; i < data_count; i++){
+                project_cb.append(option_template(data[i]));
+            }
+
+            if (project_id){
+                project_cb.val(project_id)
+            }
+            else{
+                project_id = project_cb.val();
+            }
+
+            // update the chosen fields
+            project_cb.trigger('liszt:updated');
+            project_id = project_cb.val();
+
+            clear_html_modal();
+            initInfoLink('/entities/{{ entity.id }}/tasks_stats/?project_id='+project_id);
+
+
+            project_cb.on('change', function () {
+                project_id = $(this).val();
+                localStorage.setItem("project_id", project_id);
+                localStorage.setItem("status_code", '');
+
+                clear_html_modal();
+                initInfoLink('/entities/{{ entity.id }}/tasks_stats/?project_id='+project_id);
+            });
+        });
+    });
+
+    function get_task_absoulute_path(task_id){
+
+        $.getJSON('/tasks/' + task_id + '/absolute_full_path/').then(function (absolute_full_path) {
+            window.prompt("Copy to clipboard: Ctrl+C, Enter", absolute_full_path);
+        });
+    }
+
+    function initInfoLink(address){
+        var tasks_status_tabs = $('#tasks_status_tabs');
+        console.log("address: " + address);
+        tasks_status_tabs.find("li").remove();
+        var link_template = doT.template($('#tmpl_taskStatusLink').html());
+
+
+        $.getJSON(address).then(function (data) {
+            var sorting_path = ['WFD','RTS','WIP', 'PREV','HREV', 'DREV', 'CMPL', 'OH','STOP'];
+            var sorted_data = [];
+            var first_status = '';
+            var index = -1;
+
+            for (var i = 0; i < data.length; i++) {
+
+                data[i].entity_id = '{{ entity.id }}';
+                data[i].entity_type = '{{ entity.entity_type }}';
+                if(data[i].status_icon == ''){
+                   data[i].status_icon = get_icon(data[i].status_code);
+                }
+
+                index = sorting_path.indexOf(data[i].status_code.toString());
+                if (index !== -1){
+                    sorted_data[index] = data[i];
+                }
+                data[i].status_code = (data[i].status_code).toLowerCase();
+            }
+
+            for (var k = 0; k < sorted_data.length; k++) {
+                if(sorted_data[k]){
+                    var status_code = localStorage.getItem("status_code");
+
+                    if (first_status == ''){
+                        first_status = sorted_data[k].status_code;
+                    }
+
+                    if (status_code != ''){
+                        first_status = status_code;
+                    }
+
+                    if (sorted_data[k].status_code == status_code){
+                        sorted_data[k].class = 'active';
+                    }
+
+                    tasks_status_tabs.append(link_template(sorted_data[k]));
+                    var link = $('#link_'+sorted_data[k].status_code);
+                    link.on('click', function(){
+                        var status_code = $(this).attr('id').split('_')[1];
+                        localStorage.setItem("status_code", status_code);
+                        init_html_modal(status_code, $('#project_cb').val());
+                    });
+                }
+            }
+            if (first_status != ''){
+                var tab = $('#tab_'+first_status);
+                tab.attr('class','active');
+                init_html_modal(first_status, $('#project_cb').val());
+            }
+        });
+    }
+
+    function clear_html_modal(){
+        $('#tasks_list').hide();
+        $('#button_list').find('button').remove();
+        unloadTableData();
+    }
+
+
+    function init_html_modal(status_code, project_id) {
+        clear_html_modal();
+
+        console.debug('starting to initialize init_html_modal dialog!!!');
+
+        var items_header = $('#items_header');
+        items_header.text(status_code);
+
+        $('#html_template_header').attr('class', 'widget-header widget-header-small header-color-status_'+status_code);
+        $('#tasks_list').show();
+
+        var button_list = $('#button_list');
+        button_list.find('button').remove();
+
+        var btn_template = doT.template($('#tmpl_btn').html());
+        var remove_task_btn_info = {
+                                        'id':'remove_resource_btn',
+                                        'title':'Remove Task',
+                                        'icon':'icon-trash'
+        };
+
+        var enter_timelog_btn_info = {
+                                        'id':'timelog_btn',
+                                        'title':'Enter Timelog',
+                                        'icon':'icon-calendar'
+        };
+
+        var force_complete_btn_info = {
+                                        'id':'force_complete_btn',
+                                        'title':'Force Complete',
+                                        'icon':'icon-ok'
+        };
+
+        var request_revisions_btn_info = {
+                                        'id':'request_revisions_btn',
+                                        'title':'Request Revisions',
+                                        'icon':'icon-comment-alt'
+        };
+
+        var request_review_btn_info = {
+                                        'id':'request_review_btn',
+                                        'title':'Request Review',
+                                        'icon':'icon-comment'
+        };
+
+        var set_start_end_date_btn_info = {
+                                        'id':'set_start_end_date_btn',
+                                        'title':'Set Start End Date',
+                                        'icon':'icon-edit'
+        };
+
+
+
+         {% if logged_in_user.id == entity.id  or has_permission('Update_Task') %}
+
+            if ( status_code == 'rts'){
+                button_list.append(btn_template(enter_timelog_btn_info));
+            }
+
+            if (status_code == 'wip' || status_code == 'hrev'){
+                button_list.append(btn_template(force_complete_btn_info));
+                button_list.append(btn_template(enter_timelog_btn_info));
+                if ( status_code == 'wip'){
+                    {% if entity == logged_in_user %}
+                        button_list.append(btn_template(request_review_btn_info));
+                    {% endif %}
+                }
+            }
+
+            if (status_code == 'cmpl'){
+                button_list.append(btn_template(request_revisions_btn_info));
+            }
+        {% endif %}
+
+        {% if has_permission('Create_Review') %}
+            if (status_code == 'prev'){
+                button_list.append(btn_template(force_complete_btn_info));
+                button_list.append(btn_template(request_revisions_btn_info));
+            }
+        {% endif %}
+
+        {% if has_permission('Update_Task') %}
+            if (status_code == 'wfd' || status_code == 'rts' || status_code == 'wip' || status_code == 'hrev'){
+                button_list.append(btn_template(set_start_end_date_btn_info));
+            }
+        {% endif %}
+
+        var query_str = 'status_code='+status_code+'&project_id='+project_id;
+
+        var colNames = ['Start', 'End', 'Name', 'Bid', 'ST', ''];
+        var colModel = [
+                        {
+                            name:'start',
+                            index:'start',
+                            width:50,
+                            editable: false
+                        },
+                        {
+                            name:'end',
+                            index:'end',
+                            width:50,
+                            editable: false,
+                            formatter:endDateFormatter
+                        },
+                        {
+                            name:'full_path',
+                            index:'full_path',
+                            width:220,
+                            editable: false,
+                            formatter:taskLabelFormatter,
+                            cellattr: function (rowId, tv, rawObject, cm, rdata) { return 'style="white-space: normal;"' }
+                        },
+                        {
+                            name:'hour_based_on_bid',
+                            index:'hour_based_on_bid',
+                            width:25, editable: false,
+                            formatter:bidFormatter
+                        },
+                        {
+                            name:'hour_to_complete',
+                            index:'hour_to_complete',
+                            width:25,
+                            editable: false
+                        },
+                        {
+                            name:'actions',
+                            index:'actions',
+                            width:25,
+                            editable: false
+                        }
+                ];
+
+        var tableDataAddress = '/users/{{ entity.id }}/tasks/simple/?' + query_str;
+        $('#loading_spinner').show();
+
+        $.getJSON(tableDataAddress).then(function (data) {
+            $('#loading_spinner').hide();
+            console.log("tableDataAddress is loaded");
+            var total_remain_st_seconds = 0;
+            var total_remain_bid_seconds = 0;
+
+            for (var i = 0; i < data.length; i++) {
+
+                data[i].start = new Date(data[i].start).format('yyyy-mm-dd');
+
+                if(data[i].end){
+                    data[i].end = new Date(data[i].end);
+                }
+
+                data[i].project_name = get_project_name(data[i].project_id);
+
+                var bid_seconds = to_seconds(
+                                        data[i].bid_timing,
+                                        data[i].bid_unit
+                                );
+
+                total_remain_bid_seconds += (bid_seconds-data[i].total_logged_seconds);
+
+                data[i].hour_based_on_bid = meaningful_time_between(
+                                                    bid_seconds,
+                                                    data[i].total_logged_seconds
+                                            );
+
+                var st_seconds = to_seconds(
+                                        data[i].schedule_timing,
+                                        data[i].schedule_unit
+                                );
+
+                total_remain_st_seconds += (st_seconds-data[i].total_logged_seconds);
+
+                data[i].hour_to_complete = meaningful_time_between(
+                                               st_seconds,
+                                               data[i].total_logged_seconds
+                                           );
+{#                data[i].actions = '<span class="btn btn-danger btn-small tooltip-error" data-rel="popover" data-placement="top" data-original-title=" Top Danger" data-content="Oh snap! Change a few things up and try submitting again.">Top</span>'#}
+               if (status_code == 'hrev' || status_code == 'drev' || status_code == 'wip' || status_code == 'cmpl'){
+                     data[i].actions = '<button class="green" onclick="get_task_absoulute_path('+data[i].id+')"><i class="icon-copy bigger-130"></i></button>';
+                }
+                else{
+                   data[i].actions = "";
+               }
+
+                if(bid_seconds < data[i].total_logged_seconds){
+                     data[i].bid_stat = '#ff0000'
+                }
+            }
+
+            var footerData = {
+                full_path:'TOTAL',
+                hour_based_on_bid: meaningful_time(total_remain_bid_seconds),
+                hour_to_complete: meaningful_time(total_remain_st_seconds)
+            };
+
+            loadTableData(
+                    data,
+                    "grid-table",
+                    colNames,
+                    colModel,
+                    footerData
+                );
+
+            $('[data-rel=popover]').popover({html:true});
+        });
+
+        function endDateFormatter(cellvalue, options, rowObject){
+            var val = cellvalue.format('yyyy-mm-dd');
+            if (cellvalue< new Date()){
+                val = '<span class="red">'+cellvalue.format('yyyy-mm-dd')+'</span>'
+            }
+            return val;
+        }
+
+        function taskLabelFormatter(cellvalue, options, rowObject){
+            return '<a href="/tasks/'+rowObject.id+'/view">'+cellvalue+'</a>';
+        }
+
+
+        function bidFormatter(cellvalue, options, rowObject){
+            return '<span style="background-color: '+rowObject.bid_stat+'; opacity:0.8;">'+cellvalue+'</span>';
+        }
+
+        var submit_form_url = '/tasks/force_status/CMPL/dialog';
+        var force_complete_btn = $('#force_complete_btn');
+        if(force_complete_btn){
+            force_complete_btn.on('click', function(){
+                submit_form_url = '/tasks/force_status/CMPL/dialog';
+                submit_action()
+            });
+        }
+
+        var request_revisions_btn = $('#request_revisions_btn');
+        if(request_revisions_btn){
+            request_revisions_btn.on('click', function(){
+                submit_form_url = '/tasks/request_revisions/dialog';
+                submit_action()
+            });
+        }
+
+        var remove_resource_btn = $('#remove_resource_btn');
+        if(remove_resource_btn){
+            remove_resource_btn.on('click', function(){
+                submit_form_url = '/tasks/remove/resources/{{ entity.id }}/dialog';
+                submit_action()
+            });
+        }
+
+        var timelog_btn = $('#timelog_btn');
+        if(timelog_btn){
+            timelog_btn.on('click', function(){
+                submit_form_url = '/users/{{ entity.id }}/multi_timelogs/create/dialog?';
+                submit_action();
+            });
+        }
+
+        var set_start_end_date_btn = $('#set_start_end_date_btn');
+        if(set_start_end_date_btn){
+            set_start_end_date_btn.on('click', function(){
+                submit_form_url = '/tasks/set_start_end_date/dialog';
+                submit_action()
+            });
+        }
+
+        var request_review_btn = $('#request_review_btn');
+        if(request_review_btn){
+            request_review_btn.on('click', function(){
+                submit_form_url = '/tasks/request_review/dialog';
+                submit_action()
+            });
+        }
+
+        function submit_action(){
+
+            var event_dialog = $('#dialog_template');
+            var selected_task_ids = jQuery('#grid-table').jqGrid('getGridParam','selarrrow');
+
+            var _query = '?entity_id={{ entity.id }}';
+
+            for (var i=0; i<selected_task_ids.length; i++){
+               _query +='&task_ids='+selected_task_ids[i];
+            }
+
+            event_dialog.modal({
+                'remote': submit_form_url+_query
+            });
+        }
+        console.debug('finished initializing the init_html_modal dialog!')
+    }
+</script>
+
+<script type="text/javascript">
+    function destruct_html_modal() {
+        $('#items_table').unbind();
+        $('#html_template').data('modal', null);
+    }
+</script>

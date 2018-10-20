@@ -1,0 +1,136 @@
+    {% set client=budget.project.clients[0] %}
+    {% include 'client/view/client_card.jinja2' %}
+    <h3 class="grey lighter pull-left position-relative">
+        {{  budget.project.clients[0].name }} / {{  budget.project.name }}<small>  >>  {{ budget.name }}</small>
+    </h3>
+    <div class="widget-toolbar no-border invoice-info">
+        <span class="invoice-info-label">Date:</span>
+        <span class="blue">{{ budget.date_updated }}</span>
+        <br />
+        <span class="label label-large label-status_{{ entity.status.code.lower() }}"> {{ entity.status.name }}
+                </span>
+        <div class="inline position-relative">
+            <button class="btn btn-minier bigger dropdown-toggle"
+                    data-toggle="dropdown">
+                <i class="icon-angle-down icon-only bigger-120"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-icon-only dropdown-yellow pull-right dropdown-caret dropdown-close">
+                {% if entity.status.code == 'PLN'%}
+                    <li>
+                        <a href="/budgets/{{entity.id}}/status/PREV/dialog?came_from={{ request.current_route_path() }}"
+                           class="tooltip-success"
+                           data-target="#dialog_template"
+                           data-toggle="modal"
+                           data-keyboard=false
+                           data-placement="top">
+                               <span class="blue">
+                                   <i class="icon-comment bigger-110"></i>PREV
+                               </span>
+                        </a>
+                    </li>
+                {% elif entity.status.code == 'PREV'%}
+                    <li>
+                        <a href="/budgets/{{entity.id}}/status/APP/dialog?came_from={{ request.current_route_path() }}"
+                           class="tooltip-success"
+                           data-target="#dialog_template"
+                           data-toggle="modal"
+                           data-keyboard=false
+                           data-placement="top">
+                               <span class="status_cmpl-text">
+                                   <i class="icon-ok bigger-110"></i>Approve
+                               </span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/budgets/{{entity.id}}/status/RJD/dialog?came_from={{ request.current_route_path() }}"
+                           class="tooltip-success"
+                           data-target="#dialog_template"
+                           data-toggle="modal"
+                           data-keyboard=false
+                           data-placement="top">
+                               <span class="status_stop-text">
+                                   <i class="icon-stop bigger-110"></i>Rejected
+                               </span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/budgets/{{entity.id}}/status/HREV/dialog?came_from={{ request.current_route_path() }}"
+                           class="tooltip-success"
+                           data-target="#dialog_template"
+                           data-toggle="modal"
+                           data-keyboard=false
+                           data-placement="top">
+                               <span class="purple">
+                                   <i class="icon-comment-alt bigger-110"></i>Has Revision
+                               </span>
+                        </a>
+                    </li>
+                {% elif entity.status.code == 'APP'%}
+                    <li>
+                        <a href="/budgets/{{entity.id}}/status/ATV/dialog?came_from={{ request.current_route_path() }}"
+                           class="tooltip-success"
+                           data-target="#dialog_template"
+                           data-toggle="modal"
+                           data-keyboard=false
+                           data-placement="top">
+                               <span class="orange">
+                                   <i class="icon-bolt bigger-110"></i>Make Active
+                               </span>
+                        </a>
+                    </li>
+                {% elif entity.status.code == 'HREV'%}
+                    <li>
+                        <a href="/budgets/{{entity.id}}/status/PREV/dialog?came_from={{ request.current_route_path() }}"
+                           class="tooltip-success"
+                           data-target="#dialog_template"
+                           data-toggle="modal"
+                           data-keyboard=false
+                           data-placement="top">
+                               <span class="blue">
+                                   <i class="icon-comment bigger-110"></i>PREV
+                               </span>
+                        </a>
+                    </li>
+
+                {% endif %}
+                <li>
+                    <a href="/budgets/{{entity.id}}/status/CNCLD/dialog?came_from={{ request.current_route_path() }}"
+                       class="tooltip-success"
+                       data-target="#dialog_template"
+                       data-toggle="modal"
+                       data-keyboard=false
+                       data-placement="top">
+                           <span class="red">
+                               <i class="icon-remove bigger-110"></i>Canceled
+                           </span>
+                    </a>
+                </li>
+
+
+{#                <li>#}
+{#                    <a href="/budgets/{{entity.id}}/status/CLS/dialog?came_from={{ request.current_route_path() }}"#}
+{#                       class="tooltip-success"#}
+{#                       data-target="#dialog_template"#}
+{#                       data-toggle="modal"#}
+{#                       data-keyboard=false#}
+{#                       data-placement="top">#}
+{#                           <span class="status_closed-text">#}
+{#                               <i class="icon-stop bigger-110"></i>Closed#}
+{#                           </span>#}
+{#                    </a>#}
+{#                </li>#}
+            </ul>
+        </div>
+    </div>
+    <div class="widget-toolbar hidden-480">
+        <a data-placement="bottom"
+            data-target="#dialog_template"
+            data-toggle="modal"
+            data-keyboard="false"
+            title="Duplicate Budget"
+            href="{{ request.route_url("duplicate_budget_dialog", id=entity.id)}}">
+            <i class="icon-copy green"></i>
+        </a>
+    </div>
+
+

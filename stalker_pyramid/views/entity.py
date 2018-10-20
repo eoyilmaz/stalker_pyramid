@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Stalker a Production Asset Management System
-# Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
+# Copyright (C) 2009-2018 Erkan Ozgur Yilmaz
 #
 # This file is part of Stalker.
 #
@@ -17,31 +17,55 @@
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
+import re
 import logging
-import datetime
 
 from pyramid.httpexceptions import HTTPServerError, HTTPOk, HTTPForbidden
 from pyramid.view import view_config
 from pyramid.response import Response
 
-from stalker.db import DBSession
-from stalker import (defaults, Entity, Studio, Project, User, Vacation,
-                     SimpleEntity)
+from stalker.db.session import DBSession
+from stalker import (db, defaults, Entity, Studio, Project, User, Group, Department,Sequence,Asset,Shot,Ticket,Task,
+                     Status)
 import transaction
 
 import stalker_pyramid
 from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
                                    milliseconds_since_epoch, get_multi_integer,
-                                   multi_permission_checker, get_multi_string, StdErrToHTMLConverter)
+                                   multi_permission_checker, get_multi_string,
+                                   StdErrToHTMLConverter)
 
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+#logger = logging.getLogger(__name__)
+#logger.setLevel(logging.DEBUG)
+from stalker_pyramid import logger_name
+logger = logging.getLogger(logger_name)
+
 
 
 @view_config(
+    route_name='list_studio_clients',
+    renderer='templates/client/list/list_studio_clients.jinja2'
+)
+@view_config(
+    route_name='view_client',
+    renderer='templates/client/view/view_client.jinja2'
+)
+@view_config(
+    route_name='view_invoice',
+    renderer='templates/invoice/view/view_invoice.jinja2'
+)
+@view_config(
+    route_name='list_client_users',
+    renderer='templates/auth/list/list_client_users.jinja2'
+)
+@view_config(
     route_name='update_user_dialog',
     renderer='templates/auth/dialog/update_user_dialog.jinja2',
+)
+@view_config(
+    route_name='view_user_profile',
+    renderer='templates/auth/view/view_user_profile.jinja2',
 )
 @view_config(
     route_name='create_user_dialog',
@@ -52,12 +76,16 @@ logger.setLevel(logging.DEBUG)
     renderer='templates/auth/list/list_entity_users.jinja2'
 )
 @view_config(
+    route_name='list_entity_users_role',
+    renderer='templates/auth/list/list_entity_users_role.jinja2'
+)
+@view_config(
     route_name='list_studio_users',
     renderer='templates/auth/list/list_entity_users.jinja2'
 )
 @view_config(
     route_name='list_project_users',
-    renderer='templates/auth/list/list_entity_users.jinja2'
+    renderer='templates/auth/list/list_project_users.jinja2'
 )
 @view_config(
     route_name='list_department_users',
@@ -72,8 +100,12 @@ logger.setLevel(logging.DEBUG)
     renderer='templates/auth/list/list_entity_users.jinja2'
 )
 @view_config(
-    route_name='view_user',
-    renderer='templates/auth/view/view_user.jinja2'
+    route_name='list_resource_rates',
+    renderer='templates/resource/list/list_resource_rates.jinja2'
+)
+@view_config(
+    route_name='view_user_reports',
+    renderer='templates/auth/report/view_user_reports.jinja2'
 )
 @view_config(
     route_name='update_group_dialog',
@@ -116,8 +148,28 @@ logger.setLevel(logging.DEBUG)
     renderer='templates/department/view/view_department.jinja2'
 )
 @view_config(
-    route_name='project_dialog',
+    route_name='view_department_reports',
+    renderer='templates/department/report/view_department_reports.jinja2',
+)
+@view_config(
+    route_name='create_project_dialog',
     renderer='templates/project/dialog/project_dialog.jinja2',
+)
+@view_config(
+    route_name='update_project_dialog',
+    renderer='templates/project/dialog/project_dialog.jinja2',
+)
+@view_config(
+    route_name='update_project_details_view',
+    renderer='templates/project/dialog/update_project_details_view.jinja2',
+)
+@view_config(
+    route_name='view_project_reports',
+    renderer='templates/project/report/view_project_reports.jinja2'
+)
+@view_config(
+    route_name='view_project_cost_sheet',
+    renderer='templates/project/report/view_project_cost_sheet.jinja2'
 )
 @view_config(
     route_name='list_projects',
@@ -134,10 +186,6 @@ logger.setLevel(logging.DEBUG)
 @view_config(
     route_name='list_studio_projects',
     renderer='templates/project/list/list_entity_projects.jinja2'
-)
-@view_config(
-    route_name='view_project',
-    renderer='templates/project/view/view_project.jinja2'
 )
 @view_config(
     route_name='update_studio_dialog',
@@ -161,11 +209,23 @@ logger.setLevel(logging.DEBUG)
 )
 @view_config(
     route_name='list_user_tasks',
-    renderer='templates/task/list/list_entity_tasks.jinja2'
+    renderer='templates/task/list/list_user_tasks.jinja2'
 )
 @view_config(
     route_name='list_user_tasks_responsible_of',
     renderer='templates/task/list/list_user_tasks_responsible_of.jinja2'
+)
+@view_config(
+    route_name='list_user_tasks_watching',
+    renderer='templates/task/list/list_user_tasks_watching.jinja2'
+)
+@view_config(
+    route_name='list_user_timelogs',
+    renderer='templates/time_log/list/list_entity_timelogs.jinja2'
+)
+@view_config(
+    route_name='list_user_versions',
+    renderer='templates/version/list/list_entity_versions.jinja2'
 )
 @view_config(
     route_name='list_task_tasks',
@@ -205,8 +265,16 @@ logger.setLevel(logging.DEBUG)
     renderer='templates/sequence/list/list_entity_sequences.jinja2'
 )
 @view_config(
+    route_name='list_entity_scenes',
+    renderer='templates/scene/list/list_entity_scenes.jinja2'
+)
+@view_config(
     route_name='upload_entity_reference_dialog',
     renderer='templates/link/dialogs/upload_reference_dialog.jinja2'
+)
+@view_config(
+    route_name='upload_entity_output_dialog',
+    renderer='templates/link/dialogs/upload_output_dialog.jinja2'
 )
 @view_config(
     route_name='upload_entity_thumbnail_dialog',
@@ -264,7 +332,10 @@ logger.setLevel(logging.DEBUG)
     route_name='list_task_versions',
     renderer='templates/version/list/list_entity_versions.jinja2'
 )
-
+@view_config(
+    route_name='list_task_outputs',
+    renderer='templates/version/list/list_entity_outputs.jinja2'
+)
 @view_config(
     route_name='list_user_reviews',
     renderer='templates/review/list/list_reviews.jinja2'
@@ -286,6 +357,64 @@ logger.setLevel(logging.DEBUG)
     route_name='list_entity_notes',
     renderer='templates/note/list/list_entity_notes.jinja2'
 )
+@view_config(
+    route_name='list_entity_notes_inmodal',
+    renderer='templates/note/list/list_notes.jinja2'
+)
+@view_config(
+    route_name='list_project_notes',
+    renderer='templates/note/list/list_project_notes.jinja2'
+)
+@view_config(
+    route_name='view_daily',
+    renderer='templates/daily/view/view_daily.jinja2'
+)
+@view_config(
+    route_name='list_project_dailies',
+    renderer='templates/daily/list/list_project_dailies.jinja2'
+)
+@view_config(
+    route_name='view_budget',
+    renderer='templates/budget/view/view_budget.jinja2',
+    permission='Read_Budget'
+)
+@view_config(
+    route_name='list_project_budgets',
+    renderer='templates/budget/list/list_project_budgets.jinja2',
+    permission='List_Budget'
+
+)
+@view_config(
+    route_name='list_budget_invoices',
+    renderer='templates/invoice/list/list_budget_invoices.jinja2',
+    permission='List_Invoice'
+)
+@view_config(
+    route_name='list_entity_invoices',
+    renderer='templates/invoice/list/list_entity_invoices.jinja2',
+    permission='List_Invoice'
+)
+@view_config(
+    route_name='list_studio_goods',
+    renderer='templates/good/list/list_studio_goods.jinja2',
+    permission='List_Good'
+)
+@view_config(
+    route_name='test_page',
+    renderer='templates/test_page.jinja2'
+)
+@view_config(
+    route_name='view_entity_result',
+    renderer='templates/entity/view_entity_result.jinja2'
+)
+@view_config(
+    route_name='list_entity_related_assets',
+    renderer='templates/asset/list/list_entity_related_assets.jinja2'
+)
+@view_config(
+    route_name='list_entity_authlogs',
+    renderer='templates/authlog/list_entity_authlogs.jinja2'
+)
 def get_entity_related_data(request):
     """view for generic data
     """
@@ -301,7 +430,11 @@ def get_entity_related_data(request):
         entity = Entity.query.filter_by(id=entity_id).first()
 
     projects = Project.query.all()
+
     mode = request.matchdict.get('mode', None)
+    if not mode:
+        mode = request.params.get('mode', None)
+
     came_from = request.params.get('came_from', request.url)
 
     return {
@@ -315,6 +448,7 @@ def get_entity_related_data(request):
         'studio': studio,
         'came_from': came_from
     }
+
 
 @view_config(
     route_name='get_entity',
@@ -334,37 +468,6 @@ def get_entity(request):
         }
     ]
 
-@view_config(
-    route_name='list_entity_tasks_by_filter',
-    renderer='templates/task/list/list_entity_tasks_by_filter.jinja2',
-)
-def list_entity_tasks_by_filter(request):
-    """creates a list_entity_tasks_by_filter by using the given entity and filter
-    """
-    logger.debug('inside list_entity_tasks_by_filter')
-
-    # get logged in user
-    logged_in_user = get_logged_in_user(request)
-
-    entity_id = request.matchdict.get('id', -1)
-    entity = Entity.query.filter_by(id=entity_id).first()
-
-    filter_id = request.matchdict.get('f_id', -1)
-    filter = Entity.query.filter_by(id=filter_id).first()
-
-    studio = Studio.query.first()
-    if not studio:
-        studio = defaults
-
-    return {
-        'mode': 'create',
-        'has_permission': PermissionChecker(request),
-        'studio': studio,
-        'logged_in_user': logged_in_user,
-        'entity': entity,
-        'filter': filter,
-        'milliseconds_since_epoch': milliseconds_since_epoch,
-    }
 
 @view_config(
     route_name='list_entity_tasks_by_filter',
@@ -382,7 +485,11 @@ def list_entity_tasks_by_filter(request):
     entity = Entity.query.filter_by(id=entity_id).first()
 
     filter_id = request.matchdict.get('f_id', -1)
-    filter = Entity.query.filter_by(id=filter_id).first()
+    filter_entity = Entity.query.filter_by(id=filter_id).first()
+    is_warning_list = False
+    if not filter_entity:
+        is_warning_list = True
+        filter_entity = Status.query.filter_by(code='WIP').first()
 
     studio = Studio.query.first()
     if not studio:
@@ -394,7 +501,8 @@ def list_entity_tasks_by_filter(request):
         'studio': studio,
         'logged_in_user': logged_in_user,
         'entity': entity,
-        'filter': filter,
+        'filter': filter_entity,
+        'is_warning_list':is_warning_list,
         'milliseconds_since_epoch': milliseconds_since_epoch,
     }
 
@@ -405,7 +513,7 @@ def list_entity_tasks_by_filter(request):
 )
 def append_entities_to_entity_dialog(request):
 
-    logger.debug('append_class_to_entity_dialog is running')
+    logger.debug('append_entities_to_entity_dialog is running')
 
     came_from = request.params.get('came_from', '/')
 
@@ -427,6 +535,7 @@ def append_entities_to_entity_dialog(request):
         'entities_name': entities_name
     }
 
+
 @view_config(
     route_name='get_entity_entities_out_stack',
     renderer='json'
@@ -444,14 +553,14 @@ def get_entity_entities_out_stack(request):
     logger.debug('entities_name %s'% entities_name)
     logger.debug('attr_name %s'% attr_name)
 
-    queryString = '%(class_name)s.query.filter(~%(class_name)s.%(attr_name)s.contains(entity))'
-    q = eval(queryString % {'class_name': entities_name, 'attr_name': attr_name})
+    query_string = '%(class_name)s.query.filter(~%(class_name)s.%(attr_name)s.contains(entity)).order_by(%(class_name)s.name.asc())'
+    q = eval(query_string % {'class_name': entities_name, 'attr_name': attr_name})
     list_of_container_objects = q.all()
 
     out_stack = []
 
     for entity_s in list_of_container_objects:
-        logger.debug('entity_s %s' % entity_s.name)
+        # logger.debug('entity_s %s' % entity_s.name)
         out_stack.append({
              'id': entity_s.id,
             'name':entity_s.name,
@@ -474,8 +583,8 @@ def append_entities_to_entity(request):
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
 
-    selected_list = get_multi_integer(request, 'selected_items[]')
-
+    # selected_list = get_multi_integer(request, 'selected_items[]')
+    selected_list = get_multi_integer(request, 'selected_ids')
     logger.debug('selected_list: %s' % selected_list)
 
     if entity and selected_list:
@@ -509,9 +618,9 @@ def append_entities_to_entity(request):
     renderer='templates/modals/confirm_dialog.jinja2'
 )
 def remove_entity_from_entity_dialog(request):
-    """deletes the user with the given id
+    """removes the user with the given id
     """
-    logger.debug('delete_user_dialog is starts')
+    logger.debug('remove_entity_from_entity_dialog is starts')
 
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
@@ -521,18 +630,17 @@ def remove_entity_from_entity_dialog(request):
 
     came_from = request.params.get('came_from', request.current_route_path())
 
-    action = '/entities/%s/%s/remove?came_from=%s'% (selected_entity_id,entity_id,came_from)
-
-
-    message = 'Are you sure you want to <strong>remove %s </strong>?'% (entity.name)
+    action = '/entities/%s/%s/remove?came_from=%s' % (entity_id, selected_entity_id, came_from)
+    message = 'Are you sure you want to <strong>remove %s from %s</strong>?' % (selected_entity.name, entity.name)
 
     logger.debug('action: %s' % action)
 
     return {
-            'came_from': came_from,
-            'message':message,
-            'action': action
-        }
+        'came_from': came_from,
+        'message': message,
+        'action': action
+    }
+
 
 @view_config(
     route_name='remove_entity_from_entity',
@@ -577,9 +685,13 @@ def remove_entity_from_entity(request):
         HTTPServerError()
 
     return Response(
-        'success:%s <strong>%s</strong> is successfully removed from %s \'s %s'
-        % (selected_entity.entity_type, selected_entity.name, entity.name,
-           attr_name)
+        'success:%s <strong>%s</strong> is '
+        'successfully removed from %s \'s %s' % (
+            selected_entity.entity_type,
+            selected_entity.name,
+            entity.name,
+            attr_name
+        )
     )
 
 
@@ -593,79 +705,156 @@ def remove_entity_from_entity(request):
     renderer='json'
 )
 def get_entity_events(request):
+    """Returns entity "events" like TimeLogs, Vacations and Tasks which are
+    events to be drawn in Calendars
+    """
+    logger.debug('get_entity_events is running')
+
     if not multi_permission_checker(
             request, ['Read_User', 'Read_TimeLog', 'Read_Vacation']):
-        return HTTPForbidden(headers=request)
+        raise HTTPForbidden(headers=request)
 
-    logger.debug('get_user_events is running')
-
-    keys = get_multi_string(request,'keys')
-
-    logger.debug('keys: %s'% keys)
-
+    keys = get_multi_string(request, 'keys')
     entity_id = request.matchdict.get('id', -1)
-    entity = Entity.query.filter_by(id=entity_id).first()
 
+    logger.debug('keys: %s' % keys)
     logger.debug('entity_id : %s' % entity_id)
 
-    events = []
-
-    # if entity.time_logs:
+    sql_query = ""
     if 'time_log' in keys:
-        for time_log in entity.time_logs:
-            # logger.debug('time_log.task.id : %s' % time_log.task.id)
-            # assert isinstance(time_log, TimeLog)
-            events.append({
-                'id': time_log.id,
-                'entity_type': time_log.plural_class_name.lower(),
-                'title': '%s (%s)' % (
-                    time_log.task.name,
-                    ' | '.join(
-                        [parent.name for parent in time_log.task.parents])),
-                'start': milliseconds_since_epoch(time_log.start),
-                'end': milliseconds_since_epoch(time_log.end),
-                'className': 'label-success',
-                'allDay': False,
-                'status': time_log.task.status.name
-            })
+        sql_query = """
+        select
+            "TimeLogs".id,
+            'timelogs' as entity_type, -- entity_type
+            "Task_SimpleEntities".name || ' (' || parent_names.path_names || ')' as title,
+            (extract(epoch from "TimeLogs".start) * 1000)::bigint as start,
+            (extract(epoch from "TimeLogs".end) * 1000)::bigint as end,
+            'label-success' as "className",
+            false as "allDay",
+            "Status_SimpleEntities".name as status
+        from "TimeLogs"
+        join "Tasks" on "TimeLogs".task_id = "Tasks".id
+        join "SimpleEntities" as "Task_SimpleEntities" on "Tasks".id = "Task_SimpleEntities".id
+        join "SimpleEntities" as "Status_SimpleEntities" on "Tasks".status_id = "Status_SimpleEntities".id
+
+        join (
+            with recursive recursive_task(id, parent_id, path, path_names) as (
+                select
+                    task.id,
+                    task.project_id,
+                    array[task.project_id] as path,
+                    ("Projects".code || '') as path_names
+                from "Tasks" as task
+                join "Projects" on task.project_id = "Projects".id
+                where task.parent_id is NULL
+            union all
+                select
+                    task.id,
+                    task.parent_id,
+                    (parent.path || task.parent_id) as path,
+                    (parent.path_names || '|' || "Parent_SimpleEntities".name) as path_names
+                from "Tasks" as task
+                join recursive_task as parent on task.parent_id = parent.id
+                join "SimpleEntities" as "Parent_SimpleEntities" on parent.id = "Parent_SimpleEntities".id
+                --where parent.id = t_path.parent_id
+            ) select
+                recursive_task.id,
+                recursive_task.path,
+                recursive_task.path_names
+            from recursive_task
+            order by path
+        ) as parent_names on "TimeLogs".task_id = parent_names.id
+
+        where "TimeLogs".resource_id = %(id)s
+        """ % {'id': entity_id}
 
     if 'vacation' in keys:
-        vacations = Vacation.query.filter(Vacation.user == None).all()
-        if isinstance(entity, User):
-            vacations.extend(entity.vacations)
+        vacation_sql_query = """
+        select
+            "Vacations".id,
+            'vacations' as entity_type,
+            "Type_SimpleEntities".name as title,
+            (extract(epoch from "Vacations".start) * 1000)::bigint as start,
+            (extract(epoch from "Vacations".end) * 1000)::bigint as end,
+            'label-yellow' as "className",
+            true as "allDay",
+            NULL as status
+        from "Vacations"
+        join "SimpleEntities" on "Vacations".id = "SimpleEntities".id
+        join "Types" on "SimpleEntities".type_id = "Types".id
+        join "SimpleEntities" as "Type_SimpleEntities" on "Types".id = "Type_SimpleEntities".id
+        where "Vacations".user_id is NULL or "Vacations".user_id = %(id)s
+        """ % {'id': entity_id}
 
-        for vacation in vacations:
-
-            events.append({
-                'id': vacation.id,
-                'entity_type': vacation.plural_class_name.lower(),
-                'title': vacation.type.name,
-                'start': milliseconds_since_epoch(vacation.start),
-                'end': milliseconds_since_epoch(vacation.end),
-                'className': 'label-yellow',
-                'allDay': True,
-                'status': ''
-            })
+        if sql_query != '':
+            sql_query = '(%s) union (%s)' % (sql_query, vacation_sql_query)
+        else:
+            sql_query = vacation_sql_query
 
     if 'task' in keys:
-        today = datetime.datetime.today()
-        for task in entity.tasks:
+        task_sql_query = """
+        select
+            "Tasks".id,
+            'tasks' as entity_type,
+            "Task_SimpleEntities".name || ' (' || parent_names.path_names || ')' as title,
+            (extract(epoch from "Tasks".computed_start) * 1000)::bigint as start,
+            (extract(epoch from "Tasks".computed_end) * 1000)::bigint as end,
+            'label' as "className",
+            false as "allDay",
+            "Status_SimpleEntities".name as status
+        from "Tasks"
+        join "SimpleEntities" as "Task_SimpleEntities" on "Tasks".id = "Task_SimpleEntities".id
+        join "SimpleEntities" as "Status_SimpleEntities" on "Tasks".status_id = "Status_SimpleEntities".id
 
-            if today < task.end:
-                events.append({
-                    'id': task.id,
-                    'entity_type': 'tasks',
-                    'title': '%s (%s)' % (
-                        task.name,
-                        ' | '.join([parent.name for parent in task.parents])),
-                    'start': milliseconds_since_epoch(task.start),
-                    'end': milliseconds_since_epoch(task.end),
-                    'className': 'label',
-                    'allDay': False,
-                    'status': task.status.name
-                })
+        join (
+            with recursive recursive_task(id, parent_id, path, path_names) as (
+                select
+                    task.id,
+                    task.project_id,
+                    array[task.project_id] as path,
+                    ("Projects".code || '') as path_names
+                from "Tasks" as task
+                join "Projects" on task.project_id = "Projects".id
+                where task.parent_id is NULL
+            union all
+                select
+                    task.id,
+                    task.parent_id,
+                    (parent.path || task.parent_id) as path,
+                    (parent.path_names || '|' || "Parent_SimpleEntities".name) as path_names
+                from "Tasks" as task
+                join recursive_task as parent on task.parent_id = parent.id
+                join "SimpleEntities" as "Parent_SimpleEntities" on parent.id = "Parent_SimpleEntities".id
+                --where parent.id = t_path.parent_id
+            ) select
+                recursive_task.id,
+                recursive_task.path,
+                recursive_task.path_names
+            from recursive_task
+            order by path
+        ) as parent_names on "Tasks".id = parent_names.id
 
-    return events
+        join "Task_Resources" on "Tasks".id = "Task_Resources".task_id
+
+        where "Task_Resources".resource_id = %(id)s and "Tasks".computed_end > current_date::date at time zone 'UTC'
+        """ % {'id': entity_id}
+
+        if sql_query != '':
+            sql_query = '(%s) union (%s)' % (sql_query, task_sql_query)
+        else:
+            sql_query = task_sql_query
+
+    result = DBSession.connection().execute(sql_query)
+    return [{
+        'id': r[0],
+        'entity_type': r[1],
+        'title': r[2],
+        'start': r[3],
+        'end': r[4],
+        'className': r[5],
+        'allDay': r[6],
+        'status': r[7]
+    } for r in result.fetchall()]
 
 
 @view_config(
@@ -673,23 +862,38 @@ def get_entity_events(request):
     renderer='json'
 )
 def get_search_result(request):
+    """returns search result
+    """
     logger.debug('get_search_result is running')
 
-    qString = request.params.get('str', -1)
-    logger.debug('qString: %s'% qString)
+    q_string = request.params.get('str', -1)
 
-    entities = Entity.query.filter(Entity.name.ilike(qString)).all()
-    search_result = []
+    sql_query_buffer = [
+        'select id, name, entity_type from "SimpleEntities"',
+        'where'
+    ]
 
-    for entity in entities:
+    for i, part in enumerate(re.findall(r'[\w\d]+', q_string)):
+        if i > 0:
+            sql_query_buffer.append('and')
+        sql_query_buffer.append(
+            """"SimpleEntities".name ilike '%{s}%' """.format(s=part)
+        )
 
-        search_result.append({
-             'id': entity.id,
-            'name':entity.name,
-            'entity_type':entity.plural_class_name.lower()
-        })
+    sql_query_buffer.append('order by "SimpleEntities".name')
 
-    return search_result
+    sql_query = '\n'.join(sql_query_buffer)
+
+    from sqlalchemy import text  # to be able to use "%" sign use this function
+    result = DBSession.connection().execute(text(sql_query))
+    return [
+        {
+            'id': r[0],
+            'name': r[1],
+            'entity_type': r[2]
+        }
+        for r in result.fetchall()
+    ]
 
 
 @view_config(
@@ -697,32 +901,71 @@ def get_search_result(request):
     renderer='json'
 )
 def submit_search(request):
-    """called when adding a User
+    """submits a search link suitable to be used with list_search_results()
+    function.
     """
     logger.debug('***submit_search user method starts ***')
 
     # get params
-    qString = request.params.get('str', None)
+    q_string = request.params.get('str', None)
     entity_id = request.params.get('id', None)
 
-    logger.debug('qString : %s' % qString)
+    logger.debug('qString : %s' % q_string)
 
-    result_location ='/'
+    logger.debug('q_string: %s' % q_string)
+    entity_type = None
+    q_entity_type = ''
+    if ':' in q_string:
+        q_string, entity_type = q_string.split(':')
 
-    # create and add a new user
-    if qString:
-        entities = SimpleEntity.query.filter(
-            Entity.name.ilike('%' + qString + '%')
-        ).all()
-        result_location = '/'
+    result_location = '/'
 
-        if len(entities) > 1:
-            result_location = \
-                '/list/search_results?str=%s&eid=%s' % (qString, entity_id)
-        elif len(entities) == 1:
-            entity = entities[0]
-            result_location = \
-                '/%s/%s/view' % (entity.plural_class_name.lower(), entity.id)
+    if q_string:
+        sql_query_buffer = [
+            'select count(1)',
+            'from "Entities"',
+            'join "SimpleEntities" on "Entities".id = "SimpleEntities".id',
+            'where'
+        ]
+
+        for i, part in enumerate(re.findall(r'[\w\d]+', q_string)):
+            if i > 0:
+                sql_query_buffer.append('and')
+            sql_query_buffer.append(
+                """"SimpleEntities".name ilike '%{s}%' """.format(s=part)
+            )
+        if entity_type:
+
+            q_entity_type = '&entity_type=%s'%entity_type
+
+            sql_query_buffer.append(
+                """and "SimpleEntities".entity_type='%s' """ % entity_type
+            )
+        sql_query = '\n'.join(sql_query_buffer)
+
+        # logger.debug('sql_query:  %s' % sql_query)
+
+        from sqlalchemy import text
+        result = DBSession.connection().execute(text(sql_query))
+
+        entity_count = result.fetchone()[0]
+        logger.debug('entity_count : %s' % entity_count)
+
+        # if entity_count > 1:
+        result_location = \
+            '/list/search_results?str=%s&eid=%s%s' % \
+            (q_string, entity_id, q_entity_type)
+
+        # elif entity_count == 1:
+        #     sql_query_buffer[0] = 'select "SimpleEntities".id'
+        #     sql_query = '\n'.join(sql_query_buffer)
+        #
+        #     logger.debug('sql_query: %s' % sql_query)
+        #     result = DBSession.connection().execute(text(sql_query))
+        #
+        #     entity = Entity.query.get(result.fetchone()[0])
+        #     result_location = \
+        #         '/%s/%s/view' % (entity.plural_class_name.lower(), entity.id)
 
     logger.debug('result_location : %s' % result_location)
 
@@ -736,13 +979,45 @@ def submit_search(request):
     renderer='list_search_result.jinja2'
 )
 def list_search_result(request):
+    """lists the search result, it should use raw SQL instead of Python
+    """
     qString = request.params.get('str', None)
-    entity_id = request.params.get('eid', None)
-    entity = Entity.query.filter_by(id=entity_id).first()
+    q_entity_type = request.params.get('entity_type', None)
 
-    results = Entity.query.filter(
-        Entity.name.ilike('%' + qString + '%')
-    ).all()
+    entity_id = request.params.get('eid', None)
+
+    entity = Entity.query.filter_by(id=entity_id).first()
+    logger.debug("entity_name : %s" % entity.name)
+
+    results = []
+    project = None
+    if entity.entity_type == "Task" or entity.entity_type == "Asset" or entity.entity_type == "Shot" or entity.entity_type == "Sequence":
+        project = entity.project
+    elif entity.entity_type == "Project":
+        project = entity
+
+    logger.debug("project_name : %s" % project)
+
+    if q_entity_type:
+
+        query_string = '%(class_name)s.query.filter(%(class_name)s.name.ilike(\'%%%(qString)s%%\')).order_by(%(class_name)s.name.asc())'
+        logger.debug(query_string)
+        query_string = query_string % {'class_name': q_entity_type, 'qString': qString}
+
+        logger.debug(query_string)
+        q = eval(query_string)
+
+        results = q.all()
+    else:
+        if project:
+            results = Task.query.filter(
+                            Task.name.ilike('%' + qString + '%')
+                        ).filter(Task.project == project).order_by(Task.name.asc()).all()
+        else:
+            results = Entity.query.filter(
+                            Entity.name.ilike('%' + qString + '%')
+                        ).order_by(Entity.name.asc()).all()
+
 
     projects = Project.query.all()
     logged_in_user = get_logged_in_user(request)
@@ -757,8 +1032,9 @@ def list_search_result(request):
         'stalker_pyramid': stalker_pyramid,
         'projects': projects,
         'studio': studio,
-        'results':results
+        'results': results
     }
+
 
 @view_config(
     route_name='delete_entity_dialog',
@@ -770,9 +1046,9 @@ def delete_entity_dialog(request):
     logger.debug('delete_entity_dialog is starts')
 
     entity_id = request.matchdict.get('id')
-    entity = Entity.query.get(entity_id)
+    #entity = Entity.query.get(entity_id)
 
-    action = '/entity/%s/delete' % entity_id
+    action = '/entities/%s/delete' % entity_id
 
     came_from = request.params.get('came_from', '/')
 
@@ -789,12 +1065,11 @@ def delete_entity_dialog(request):
 
 @view_config(
     route_name='delete_entity',
-     permission='Delete_Task'
+    permission='Delete_Task'
 )
 def delete_entity(request):
     """deletes the task with the given id
     """
-
     logger.debug('delete_entity is starts')
 
     entity_id = request.matchdict.get('id')
@@ -805,7 +1080,6 @@ def delete_entity(request):
         return Response('Can not find an Entity with id: %s' % entity_id, 500)
 
     try:
-
         DBSession.delete(entity)
         transaction.commit()
     except Exception as e:
@@ -815,3 +1089,272 @@ def delete_entity(request):
         return Response(c.html(), 500)
 
     return Response('Successfully deleted %s: %s' % (entity.entity_type,entity.name))
+
+
+@view_config(
+    route_name='get_entity_total_schedule_seconds',
+    renderer='json'
+)
+def get_entity_total_schedule_seconds(request):
+    """gives entity's task total schedule_seconds
+    """
+    logger.debug('get_project_total_schedule_seconds starts')
+    entity_id = request.matchdict.get('id')
+    entity = Entity.query.filter_by(id=entity_id).first()
+
+    sql_query = """select
+    SUM(("Tasks".schedule_timing
+             * (
+                case "Tasks".schedule_unit
+                    when 'min' then 60
+                    when 'h' then 3600
+                    when 'd' then 32400 -- 9 hours/day
+                    when 'w' then 183600 -- 51 hours/week
+                    when 'm' then 734400  -- 4 week/month * 51 hours/week
+                    when 'y' then 9573418 -- 52.1428 week * 51 hours/week
+                    else 0
+                end
+               )
+            - coalesce(timelogs.total_timelogs, 0)
+            )
+            / %(division)s
+         )
+         as schedule_seconds
+
+    from "Tasks"
+    join "Task_Resources" on "Task_Resources".task_id = "Tasks".id
+    join "Statuses" on "Statuses".id = "Tasks".status_id
+    left outer join (
+        select
+            "Tasks".id as task_id,
+            sum(extract(epoch from "TimeLogs".end - "TimeLogs".start)) as total_timelogs
+        from "TimeLogs"
+        join "Tasks" on "Tasks".id = "TimeLogs".task_id
+
+        group by "Tasks".id
+    ) as timelogs on timelogs.task_id = "Tasks".id
+
+   where "Statuses".code !='CMPL'
+    %(where_conditions)s
+    """
+    where_conditions = ''
+    division = '1'
+
+    if entity.entity_type == 'Project':
+        where_conditions = """and "Tasks".project_id = %(project_id)s """ % {'project_id': entity_id}
+    elif entity.entity_type == 'User':
+        where_conditions = """and "Task_Resources".resource_id = %(resource_id)s """ % {'resource_id': entity_id}
+        division = """(
+                select
+                    count(1)
+                from "Task_Resources" as inner_task_resources
+                where inner_task_resources.task_id = "Tasks".id
+            )"""
+    elif entity.entity_type == 'Department':
+
+        temp_buffer = [""" and ("""]
+        for i, resource in enumerate(entity.users):
+            if i > 0:
+                temp_buffer.append(' or')
+            temp_buffer.append(""" "Task_Resources".resource_id='%s'""" % resource.id)
+        temp_buffer.append(' )')
+        where_conditions = ''.join(temp_buffer)
+
+        division = """(
+                select
+                    count(1)
+                from "Task_Resources" as inner_task_resources
+                where inner_task_resources.task_id = "Tasks".id
+            )"""
+
+    logger.debug('where_conditions: %s' % where_conditions)
+
+    sql_query = sql_query % {'where_conditions': where_conditions, 'division':division}
+
+    result = DBSession.connection().execute(sql_query).fetchone()
+
+    logger.debug('get_project_total_schedule_seconds: %s' % result[0])
+    return result[0]
+
+
+@view_config(
+    route_name='get_entity_task_min_start',
+    renderer='json'
+)
+def get_entity_task_min_start(request):
+    """gives entity's tasks min start date
+    """
+    logger.debug('get_entity_task_min_start starts')
+    entity_id = request.matchdict.get('id')
+    entity = Entity.query.filter_by(id=entity_id).first()
+
+    sql_query = """select
+            min(extract(epoch from "Tasks".start)) as start
+        from "Users"
+        join "Task_Resources" on "Task_Resources".resource_id = "Users".id
+        join "Tasks" on "Tasks".id = "Task_Resources".task_id
+
+    where not exists(select 1 from "Tasks" as t where t.parent_id = "Tasks".id)
+    %(where_conditions)s
+    """
+    where_conditions = ''
+
+    if entity.entity_type == 'Project':
+        where_conditions = """and "Tasks".project_id = %(project_id)s """ % {'project_id': entity_id}
+    elif entity.entity_type == 'User':
+        where_conditions = """and "Task_Resources".resource_id = %(resource_id)s """ % {'resource_id': entity_id}
+    elif entity.entity_type == 'Department':
+        temp_buffer = [""" and ("""]
+        for i, resource in enumerate(entity.users):
+            if i > 0:
+                temp_buffer.append(' or')
+            temp_buffer.append(""" "Task_Resources".resource_id='%s'""" % resource.id)
+        temp_buffer.append(' )')
+        where_conditions = ''.join(temp_buffer)
+
+    logger.debug('where_conditions: %s' % where_conditions)
+
+    sql_query = sql_query % {'where_conditions': where_conditions}
+
+    result = DBSession.connection().execute(sql_query).fetchone()
+
+    return result[0]
+
+
+@view_config(
+    route_name='get_entity_task_max_end',
+    renderer='json'
+)
+def get_entity_task_max_end(request):
+    """gives entity's tasks max end date
+    """
+    logger.debug('get_entity_task_max_end starts')
+    entity_id = request.matchdict.get('id')
+    entity = Entity.query.filter_by(id=entity_id).first()
+
+    sql_query = """select
+            max(extract(epoch from "Tasks".end)) as end
+        from "Users"
+        join "Task_Resources" on "Task_Resources".resource_id = "Users".id
+        join "Tasks" on "Tasks".id = "Task_Resources".task_id
+
+    --where not exists(select 1 from "Tasks" as t where t.parent_id = "Tasks".id)
+    %(where_conditions)s
+    """
+    where_conditions = ''
+
+    if entity.entity_type == 'Project':
+        where_conditions = """where "Tasks".project_id = %(project_id)s """ % {'project_id': entity_id}
+    elif entity.entity_type == 'User':
+        where_conditions = """where "Task_Resources".resource_id = %(resource_id)s """ % {'resource_id': entity_id}
+    elif entity.entity_type == 'Department':
+        temp_buffer = ["""where ("""]
+        for i, resource in enumerate(entity.users):
+            if i > 0:
+                temp_buffer.append(' or')
+            temp_buffer.append(""" "Task_Resources".resource_id='%s'""" % resource.id)
+        temp_buffer.append(' )')
+        where_conditions = ''.join(temp_buffer)
+
+    logger.debug('where_conditions: %s' % where_conditions)
+
+    sql_query = sql_query % {'where_conditions': where_conditions}
+
+    result = DBSession.connection().execute(sql_query).fetchone()
+
+    return result[0]
+
+
+@view_config(
+    route_name='get_entity_thumbnail',
+    renderer='json'
+)
+def get_entity_thumbnail(request):
+    """returns entity thumbnail, this is good for one single entity
+    """
+    entity_id = request.matchdict['id']
+    entity = Entity.query.filter(Entity.id == entity_id).first()
+
+    thumbnail_path = None
+
+    if entity:
+        if entity.thumbnail:
+            thumbnail_path = entity.thumbnail.full_path
+        else:
+            if isinstance(entity, Task):
+                for parent in reversed(entity.parents):
+                    if parent.thumbnail:
+                        thumbnail_path = parent.thumbnail.full_path
+                        break
+
+    logger.debug('thumbnail_path: %s' % thumbnail_path)
+    return {
+        'thumbnail_path': thumbnail_path
+    }
+
+
+@view_config(
+    route_name='get_entity_authlogs',
+    renderer='json'
+)
+def get_entity_authlogs(request):
+
+    entity_id = request.matchdict.get('id', -1)
+    entity = Entity.query.filter_by(id=entity_id).first()
+    if not entity:
+        transaction.abort()
+        return Response('Can not find a entity with id: %s' % entity_id, 500)
+
+    sql_query = """
+    select
+        "AuthenticationLogs".uid as uid,
+        "AuthenticationLogs".action as action,
+        "AuthenticationLogs".date as date
+        %(attributes)s
+    
+    from "AuthenticationLogs"
+    %(join_tables)s
+    
+    %(where_conditions)s
+    """
+    where_conditions = ''
+    join_tables = ''
+    attributes = ''
+
+    if entity.entity_type == 'User':
+        where_conditions = """where "AuthenticationLogs".uid = %(user_id)s """ % {'user_id': entity_id}
+
+    elif entity.entity_type == 'Project':
+        attributes = """,  "Role_SimpleEntities".name"""
+        join_tables = """join "Project_Users" on "Project_Users".user_id = "AuthenticationLogs".uid
+                        join "SimpleEntities" as "Role_SimpleEntities" on "Role_SimpleEntities".id = "Project_Users".rid """
+
+        temp_buffer = ["""where  ("""]
+        for i, user in enumerate(entity.users):
+            if i > 0:
+                temp_buffer.append(' or')
+            temp_buffer.append(""" "AuthenticationLogs".uid='%s'""" % user.id)
+        temp_buffer.append(' )')
+        where_conditions = ''.join(temp_buffer)
+
+    logger.debug('where_conditions: %s' % where_conditions)
+
+    sql_query = sql_query % {
+        'where_conditions': where_conditions,
+        'join_tables': join_tables,
+        'attributes': attributes
+    }
+
+    # logger.debug('sql_query: %s' % sql_query)
+
+    from sqlalchemy import text  # to be able to use "%" sign use this function
+    result = DBSession.connection().execute(text(sql_query))
+    return [
+        {
+            'user_id': r['uid'],
+            'action': r['action'],
+            'date_created': milliseconds_since_epoch(r['date']),
+            'role_name':  r[3] if len(r) > 3 else ''
+        }
+        for r in result.fetchall()
+    ]

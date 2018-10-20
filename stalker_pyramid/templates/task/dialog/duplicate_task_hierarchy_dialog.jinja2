@@ -1,0 +1,352 @@
+<script class="dialog_loaded"></script>
+
+<div class='row-fluid'>
+
+    <form id='dup_task_form'
+          class='form-horizontal'
+          role='form'
+          method='post'
+          action='/tasks/{{ entity.id }}/duplicate'  >
+
+        <div class='row-fluid'>
+
+            <div class='control-group'>
+                <label class='span3 control-label' for='dup_task_parent'>Parent</label>
+                <div class='span9'>
+                    <input id='dup_task_parent'
+                            name='parent_id'
+                            class='input-block-level span11'
+                            is_updating=false
+                            data-placeholder='Parent'>
+                </div>
+            </div>
+
+{#            <div class='control-group'>#}
+{#                <label class='span3 control-label' for='dup_task_parent'>Parent</label>#}
+{#                <div class='span9'>#}
+{#                    <select id='dup_task_parent'#}
+{#                            name='parent_id'#}
+{#                            class='input-block-level'#}
+{#                            name='task_parent_id'#}
+{#                            is_updating=false#}
+{#                            data-placeholder='Parent'></select>#}
+{#                </div>#}
+{#            </div>#}
+
+            <div class='control-group'>
+                <label class='span3 control-label' for='dup_task_name'>Duplicated Task Name</label>
+                <div class='span9'>
+                        <input type='text'
+                               id='dup_task_name'
+                               class='input-block-level'
+                               name='dup_task_name'
+                               value='{{ entity.name }}' required>
+                </div>
+            </div>
+            <div class='control-group'>
+                <label class='span3 control-label' for='dup_task_description'>Duplicated Task Description</label>
+                <div class='span9'>
+                        <textarea id='dup_task_description'
+                                  name='dup_task_description'
+                                  class='autosize-transition span12'
+                                  style='overflow: hidden; word-wrap: break-word;resize: horizontal;height: 150px;'></textarea>
+                </div>
+            </div>
+
+        </div>
+
+    </form>
+
+
+</div>
+
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/chosen.jquery.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.autosize-min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.inputlimiter.1.3.1.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.validate.min.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.easy-pie-chart.min.js") }}'></script>#}
+
+
+<script>
+function init_dialog() {
+    console.debug('starting to initialize time_log dialog!!!');
+
+    var dialog_template_label = $('#dialog_template_label');
+    dialog_template_label.find('span').remove();
+    dialog_template_label.append('<span>Duplicate Task</span>');
+
+    $('#dialog_template_body').attr('style', "height: 350px");
+    var timeout_buffer;
+    var submit_button = $('#dialog_template_submit_button')
+
+
+    {# ***************************************************************** #}
+    {# Task #}
+    var dup_task_parent = $('#dup_task_parent');
+
+    var get_task_data = function(search_string, callback){
+            var search_buffer;
+            var search_params = {
+                project_id: {{ project.id }} // always use project id
+            };
+
+            // iterate over each key value pair
+            var key_value_pair, key, value;
+
+            if (search_string.indexOf(':') === -1){
+                if (search_string.length < 3){
+                    // not finished typing yet
+                    return;
+                }
+
+                search_buffer = search_string.split(' ');
+                // use a direct search with given words as the task full_path
+                $.extend(
+                    search_params,
+                    {
+                        path: search_buffer
+                    }
+                );
+            } else {
+                // so we have some key value pairs
+                search_buffer = search_string.split(',');
+
+                var current_pair;
+                for (var i = 0; i < search_buffer.length; i += 1){
+                    current_pair = search_buffer[i];
+
+                    if (current_pair.length === 0 || current_pair.indexOf(':') === -1){
+                        // not finished typing yet
+                        continue;
+                    }
+
+                    key_value_pair = search_buffer[i].split(':');
+
+                    key = key_value_pair[0];
+                    value = key_value_pair[1].replace(/[\s]+/, ' ').trim(); //.split(' ');
+
+                    if (value === '') {
+                        // not finished typing yet
+                        continue;
+                    }
+
+                    // if there is a key expand it
+                    if (search_params[key] !== undefined){
+                        search_params[key].push(value);
+                    } else {
+                        search_params[key] = [value];
+                    }
+                }
+            }
+
+            $.getJSON('/tasks/', search_params, function (data) {
+                var input_source = [];
+                var result_count = data.length;
+                var max_count = 250;
+                for (var i = 0; i < Math.min(result_count, max_count); i++) {
+                    input_source.push(data[i].full_path);
+                }
+                if (result_count > max_count) {
+                    input_source.push('' + (result_count - max_count) + ' more items...');
+                }
+                callback(input_source);
+            });
+        };
+
+    $.getJSON('/tasks/?id={{ entity.parent.id }}', function(data){
+           dup_task_parent.val(data[0].full_path);
+    });
+
+    dup_task_parent.bind("keydown", function(event) {
+        if(event.keyCode === $.ui.keyCode.TAB &&
+           $(this).data( "ui-autocomplete").menu.active) {
+            event.preventDefault();
+        }
+    }).autocomplete({
+        placeholder: 'Parent',
+        source: function (request, response) {
+            // condition search terms here
+            var search_string = request.term;
+
+            // delay ajax call for 300 milliseconds
+            if (timeout_buffer) {
+                clearTimeout(timeout_buffer);
+            }
+
+            timeout_buffer = setTimeout(function() {
+                get_task_data(search_string, response);
+            }, 300);
+        },
+        search: function () {
+            // custom minLength
+            return true;
+        },
+        focus: function () {
+            // prevent value inserted on focus
+            return false;
+        },
+        select: function(event, ui) {
+            var current_value = ui.item.value;
+            this.value = current_value;
+            // get item id, I don't like doing it by parsing the string
+            // but it seems the easiest one
+            var id = current_value.match(/\(([0-9]+)\)/);
+
+            // store it HTML node
+            //$('#parent_storage').attr('parent_id', id[1]);
+
+            return false;
+        }
+    });
+
+{#    {% raw %}#}
+{#        var task_option_template = doT.template(#}
+{#           '<option value={{=it.id}}>{{=it.name}}</option>'#}
+{#        );#}
+{#    {% endraw %}#}
+
+{#    dup_task_parent.find('option').remove();#}
+
+{#    submit_button.button('loading');#}
+
+{#    $.getJSON('/projects/{{ entity.project.id }}/tasks/').then(function (data) {#}
+{##}
+{#       dup_task_parent.append('<option value="-1">&nbsp;</option>');#}
+{##}
+{#       for (var i = 0; i < data.length; i++) {#}
+{##}
+{#           dup_task_parent.append(task_option_template(data[i]));#}
+{##}
+{#       }#}
+{##}
+{#        dup_task_parent.chosen({#}
+{#            search_contains: true,#}
+{#            enable_split_word_search: true,#}
+{#            allow_single_deselect: true#}
+{#        });#}
+{##}
+{##}
+{#        dup_task_parent.val('{{ entity.parent.id }}');#}
+{##}
+{#        dup_task_parent.trigger('liszt:updated');#}
+{##}
+{#        submit_button.button('reset')#}
+{##}
+{#    });#}
+
+    {# ***************************************************************** #}
+    {# Submit Button #}
+    $('#dialog_template_submit_button').on('click', function (e) {
+        e.stopPropagation();
+        e.preventDefault();
+
+        // disable the submit_button
+        var submit_button = $(this);
+        submit_button.button('loading');
+
+        var dup_task_form = $('#dup_task_form');
+
+        var form_data_as_array = dup_task_form.serializeArray();
+        var form_data = {
+            'responsible_ids': [],
+            'resource_ids': []
+        };
+        console.log('dup_task_parent '+dup_task_parent.val())
+        // add parent info
+        var parent_id = '';
+        var parent_match = dup_task_parent.val().match(/\(([\d]+)\)/);
+        if (parent_match) {
+            parent_id = parent_match[1];
+        }
+        form_data['parent_id'] = parent_id;
+        form_data['dup_task_description'] = $('#dup_task_description').val();
+        form_data['dup_task_name'] = $('#dup_task_name').val();
+
+        if (dup_task_form.validate()) {
+            // merge end_date and end_time
+
+            $.post(
+                dup_task_form.attr('action'),
+                form_data
+            ).done(function () {
+{#                window.location.reload();#}
+                // close the dialog
+                submit_button.button('reset');
+                $('#dialog_template').modal('hide');
+            }).fail(function (jqXHR) {
+                bootbox.alert('<div id="message" class="alert alert-danger bigger-110">'+jqXHR.responseText+'</div>');
+                submit_button.button('reset');
+            });
+        }
+    });
+
+    $('#dup_task_form').validate({
+        errorElement: 'span',
+        errorClass: 'help-inline',
+        focusInvalid: true,
+        rules: {
+            resource_id: {
+                required: true
+            },
+            task_id: {
+                required: true
+            },
+            comment: {
+                required: true
+            }
+        },
+
+        messages: {
+        },
+
+        invalidHandler: function (event, validator) { //display error alert on form submit
+            $('.alert-error', $('.login-form')).show();
+        },
+
+        highlight: function (e) {
+            $(e).closest('.control-group').removeClass('info').addClass('error');
+        },
+
+        success: function (e) {
+            $(e).closest('.control-group').removeClass('error').addClass('info');
+            $(e).remove();
+        },
+
+        errorPlacement: function (error, element) {
+            if (element.is(':checkbox') || element.is(':radio')) {
+                var controls = element.closest('.controls');
+                if (controls.find(':checkbox,:radio').length > 1) controls.append(error);
+                else error.insertAfter(element.nextAll('.lbl:eq(0)').eq(0));
+            }
+            else if (element.is('.select2')) {
+                error.insertAfter(element.siblings('[class*="select2-container"]:eq(0)'));
+            }
+            else if (element.is('.chosen-select')) {
+                error.insertAfter(element.siblings('[class*="chosen-container"]:eq(0)'));
+            }
+            else error.insertAfter(element);
+        },
+
+        submitHandler: function (form) {
+            form.submit();
+        }
+
+    });
+
+    console.debug('finished initializing the dup_task dialog!')
+}
+</script>
+
+<script type="text/javascript">
+    function destruct_dialog() {
+        $('#time_log_task').unbind();
+        $('#time_log_resource').unbind();
+        $('#start_end_date_range_picker').unbind();
+        $('#start_time').unbind();
+        $('#end_time').unbind();
+        $('#dialog_template_submit_button').unbind();
+
+        $('#dialog_template').data('modal', null);
+
+    }
+</script>

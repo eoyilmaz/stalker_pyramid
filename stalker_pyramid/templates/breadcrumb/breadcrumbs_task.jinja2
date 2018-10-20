@@ -1,24 +1,89 @@
 <ul id="breadcrumb_task" class="breadcrumb">
 
     <li>
-        <a href="{{ request.route_url('view_project', id=entity.project.id) }}">{{ entity.project.name }}</a>
+        <a href="{{ request.route_url('view_project', id=task.project.id) }}">{{ task.project.name }}</a>
         <span class="divider">
           <i class="icon-angle-right arrow-icon"></i>
         </span>
     </li>
 
-    {% for parent in entity.parents %}
+    {% for parent in task.parents %}
         <li>
-            <a href="{{ request.route_url('view_task', id=parent.id) }}">{{ parent.name }}</a>
-            <span class="divider">
-                <i class="icon-angle-right arrow-icon"></i>
-            </span>
+            <div class="btn-group">
+                <button tabindex="-1"
+                        data-toggle="dropdown"
+                        class="btn btn-mini btn-danger dropdown-toggle">{{ parent.name }}&nbsp
+                    <i class="icon-angle-down icon-on-right"></i>
+                </button>
+{#                <ul class="dropdown-menu">#}
+{#                    <li class="disabled"><a href="#"><b>My Theme:</b></a></li>#}
+{#                    <li><!-- Here we have our dropdown-menu wrapper so we don't mess                    with the layout of the outer dropdown-menu -->#}
+{##}
+{#                    <ul class="dropdown-menu scroll-menu">#}
+{#                </ul>#}
+{#                <ul class="dropdown-menu dropdown-danger scroll-menu">#}
+                <ul class="dropdown-menu dropdown-danger scroll-menu">
+                    {% if parent.parent %}
+                        {% set sibling_tasks = parent.parent.children %}
+                    {% else %}
+                        {% set sibling_tasks = parent.project.root_tasks %}
+                    {% endif %}
+    
+                    {% for sibling_task in sibling_tasks|sort(attribute='name') %}
+                        <li><a href="{{ request.route_url('view_task', id=sibling_task.id) }}">{{ sibling_task.name }}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
         </li>
     {% endfor %}
-    <li class="active">{{ entity.name }}
 
+    <li>
+        <div class="btn-group">
+            <button tabindex="-1"
+                    data-toggle="dropdown"
+                    class="btn btn-mini btn-danger dropdown-toggle">{{ task.name }}&nbsp;
+                <i class="icon-angle-down icon-on-right"></i>
+            </button>
+
+            <ul class="dropdown-menu dropdown-danger scroll-menu">
+
+                {% if task.parent %}
+                    {% set sibling_tasks = task.parent.children %}
+                {% else %}
+                    {% set sibling_tasks = task.project.root_tasks %}
+                {% endif %}
+
+                {% for sibling_task in sibling_tasks|sort(attribute='name') %}
+                    <li {% if sibling_task == task %}class="disabled"{% endif %}><a href="{{ request.route_url('view_task', id=sibling_task.id) }}">{{ sibling_task.name }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
     </li>
+
+    {% if task.children %}
+        <div class="btn-group">
+            <button tabindex="-1"
+                    data-toggle="dropdown"
+                    class="btn btn-mini btn-success dropdown-toggle">Child Tasks&nbsp;
+                <i class="icon-angle-down icon-on-right"></i>
+            </button>
+
+            <ul class="dropdown-menu dropdown-danger scroll-menu">
+
+                {% set sibling_tasks = task.children %}
+
+                {% for sibling_task in sibling_tasks|sort(attribute='name') %}
+                    <li {% if sibling_task == task %}class="disabled"{% endif %}><a href="{{ request.route_url('view_task', id=sibling_task.id) }}">{{ sibling_task.name }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% else %}
+        <div class="btn-group">
+            <button tabindex="-1"
+                    class="btn btn-mini disabled">No Child Tasks
+            </button>
+        </div>
+    {% endif %}
+
 </ul>
 <!--.breadcrumb-->
-
-

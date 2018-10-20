@@ -1,5 +1,5 @@
 {# Stalker Pyramid a Web Base Production Asset Management System
- Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
+ Copyright (C) 2009-2018 Erkan Ozgur Yilmaz
 
  This file is part of Stalker Pyramid.
 
@@ -46,7 +46,7 @@
 {# BREADCRUMBS #}
 {% block breadcrumbs %}
 
-    {% set page_title='Versions' %}
+    {% set page_title='Reviews' %}
 
    {% include 'breadcrumb/breadcrumbs.jinja2' %}
 
@@ -55,8 +55,8 @@
 {#PAGE-CONTENT#}
 {% block page_content %}
 
-    {% set page_title='Reviews' %}
-    {% include 'page_header.jinja2' %}
+{#    {% set page_title='Reviews' %}#}
+{#    {% include 'page_header.jinja2' %}#}
 
      <div id="loading_spinner" class="well well-sm">
         <div class="inline middle blue bigger-110"><i
@@ -130,16 +130,20 @@
     </script>
     {% endraw %}
 
+    {# TODO: update review statuses to use status names instead of status colors #}
     {% raw %}
     <script id="tmpl_reviewCell" type="text/x-dot-template">
         <td class="no-padding" style="width:120px;">
-            <div class="{{=it.review_status_color}}"
-                 style="width:120px; height:105px; padding:5px;">
+            <div style="min-height:50px;">
                 <span>
-                    <a href="/users/{{=it.reviewer_id }}/view">{{=it.reviewer_name}}</a>
                     <span class="label label-{{=it.review_status_color }}">{{=it.review_status_name }}</span>
                 </span>
+                {{ if (it.review_description) { }}
+                <br/>
+                    {{=it.review_description }}
+                {{ } }}
             </div>
+
         </td>
     </script>
     {% endraw %}

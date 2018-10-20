@@ -8,22 +8,31 @@
     </script>
 
     {% if entity.entity_type == 'Task' or entity.entity_type == 'Asset'or entity.entity_type == 'Shot'or entity.entity_type == 'Sequence' %}
+        {% set task=entity %}
         {% include 'breadcrumb/breadcrumbs_task.jinja2' %}
     {% elif entity.entity_type == 'Ticket' %}
         {% include 'breadcrumb/breadcrumbs_ticket.jinja2' %}
     {% elif entity.entity_type == 'Version' %}
+        {% set task=entity.task %}
+        {% set version=entity %}
         {% include 'breadcrumb/breadcrumbs_version.jinja2' %}
+    {% elif entity.entity_type == 'Budget' %}
+        {% set budget=entity %}
+        {% include 'breadcrumb/breadcrumbs_budget.jinja2' %}
+    {% elif entity.entity_type == 'Invoice' %}
+        {% set invoice=entity %}
+        {% include 'breadcrumb/breadcrumbs_invoice.jinja2' %}
     {% else %}
         {% include 'breadcrumb/breadcrumbs_base.jinja2' %}
     {% endif %}
 
-    <div class="nav-search" id="nav-search">
+    <div class="nav-search" id="nav-search" style="height: 31px;">
         <form class="form" onsubmit="javascript:submitForm();return false;">
         <span class="input-icon">
         <input type="text" placeholder="Search ..."
                class="input-block-level"
                id="nav-search-input">
-        <i class="icon-search nav-search-icon"></i>
+        <i class="icon-search nav-search-icon hidden-phone"></i>
         </span>
         </form>
     </div>
@@ -41,23 +50,24 @@
         $.getJSON('/submit_search', {str: search_str, id:'{{entity.id}}'}).then(function (data) {
             window.location.assign(data.url);
         });
-
     }
-    $(document).ready(function () {
+
+    $(function () {
         var search_input = $("#nav-search-input");
         search_input.typeahead({source: [], updater: function (b) {
             search_input.focus();
-            return b
+            return b;
         }});
 
         search_input.on('keyup', function () {
             var search_str = search_input.val();
 
             if (search_str.length > 3) {
-                $.getJSON('/search', {str: '%'+search_str+'%'}).then(function (data) {
+                $.getJSON('/search', {str: search_str}).then(function (data) {
 
                     var input_source = [];
-                    for (var i = 0; i < data.length; i++) {
+                    var result_count = data.length;
+                    for (var i = 0; i < Math.min(result_count, 10); i++) {
                         input_source.push(data[i].name);
                     }
 

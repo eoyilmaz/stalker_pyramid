@@ -1,0 +1,145 @@
+<script class="dialog_loaded"></script>
+
+<div class="row-fluid">
+
+    <form id='daily_form'
+          class='form-horizontal'
+          role='form'
+          method="post"
+            >
+
+        <div class="row-fluid">
+            {# Name #}
+            <div class="control-group">
+                <label class="span3 control-label"
+                       for="daily_name">Name</label>
+                <div class="span9">
+                    <input id="daily_name"
+                           name='name'
+                           type="text"
+                           class="form-control"
+                           placeholder="Name"
+                           {% if mode=='Update' %}
+                            value='{{ daily.name }}'
+                           {% endif %}
+                           required>
+                </div>
+            </div>
+
+            {#Status #}
+            <div class='control-group'>
+                <label class='span3 control-label'
+                       for='daily_status'>Status</label>
+                <div class="span9">
+                    <select id='daily_status'
+                            class='input'
+                            name='status_id'
+                            required>
+                    </select>
+                </div>
+            </div>
+
+            {#Description #}
+            <div class="control-group'">
+                <label for="daily_description"
+                       class="span3 control-label">Description</label>
+                <div class="span9">
+                    <textarea id="daily_description"
+                              name='description'
+                              class="autosize-transition"
+                              style="overflow: hidden;
+                                         word-wrap: break-word;
+                                         resize: horizontal;
+                                         height: 50px;"
+
+                            >{% if mode=='Update' %}{{ daily.description }}{% endif %}</textarea>
+                </div>
+            </div>
+
+        </div>
+
+    </form>
+</div>
+
+
+<script type="text/javascript">
+
+    function init_dialog() {
+
+        console.debug('starting to initialize daily dialog!!!');
+
+        var dialog_label = $('#dialog_template_label');
+        dialog_label.find('span').remove();
+        dialog_label.append('<span>{{ mode}} Daily</span>');
+
+        {% raw %}
+            var daily_status_option_template = doT.template(
+                '<option value={{=it.id}}>{{=it.name}}</option>'
+            );
+        {% endraw %}
+
+        $.getJSON('{{ request.route_path('get_statuses_for', target_entity_type='Daily') }}').then(function (data) {
+            var daily_status = $('#daily_status');
+            for (var i = 0; i < data.length; i++) {
+                daily_status.append(daily_status_option_template(data[i]));
+            }
+
+            daily_status.chosen({
+                search_contains: true,
+                enable_split_word_search: true,
+                allow_single_deselect: true
+            });
+
+            {% if mode=='Update' %}
+                daily_status.val({{ daily.status.id }});
+                daily_status.trigger('liszt:updated');
+            {% endif %}
+
+        });
+        {# ***************************************************************** #}
+        {# Submit Button #}
+        var submit_button = $('#dialog_template_submit_button');
+        submit_button.on('click', function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+
+            submit_button.button('loading');
+            var daily_form = $('#daily_form');
+
+            var url = '/dailies/create';
+            {% if mode=='Update' %}
+                url='/dailies/{{ daily.id }}/update';
+                {% set project = daily.project %}
+            {% endif %}
+
+            $.post(
+                url,
+                daily_form.serialize() + '&' +
+                $.param({
+                    'project_id': {{ project.id }}
+                })
+            ).done(function (jqXHR) {
+                //$('#new_outputs_storage').text(JSON.stringify(jqXHR));
+                window.location.reload();
+            }).fail(function (jqXHR) {
+                bootbox.alert(jqXHR.responseText);
+                submit_button.button('reset');
+            });
+        });
+
+        console.debug('finished initializing the daily dialog!')
+    }
+</script>
+
+<script type="text/javascript">
+    function destruct_dialog() {
+        $('#daily_name').unbind();
+        $('#daily_description').unbind();
+        $('#dialog_template_submit_button').unbind();
+
+        $('#dialog_template').data('modal', null);
+    }
+</script>
+
+
+
