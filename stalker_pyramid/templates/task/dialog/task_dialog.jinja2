@@ -540,7 +540,7 @@ resource_name, status
 
         {% if parent %}
             // do a query for parent_info
-            $.getJSON('/tasks/?id={{ parent.id }}', function(data){
+            $.getJSON('/tasks?id={{ parent.id }}', function(data){
                 task_parent.val(data[0].full_path);
             });
         {% endif %}
@@ -757,7 +757,7 @@ resource_name, status
             // set the field to updating mode
             shot_sequence.attr('is_updating', true);
             field_update_mode_checker();
-            $.getJSON('/tasks/?entity_type=Sequence&project_id=' + project.id).then(function(data){
+            $.getJSON('/tasks?entity_type=Sequence&project_id=' + project.id).then(function(data){
                 // remove current options
                 shot_sequence.find('option').remove();
 
