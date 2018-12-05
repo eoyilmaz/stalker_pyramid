@@ -36,6 +36,12 @@
     {# PRE-HEADER #}
     {% block pre_header %}
     {% endblock pre_header %}
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap.min.css") }}'>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap-responsive.min.css") }}'>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/font-awesome.min.css") }}'>
 
 
     <link rel="stylesheet"
@@ -70,12 +76,6 @@
 
     <!--basic styles-->
 
-    <link rel="stylesheet"
-          href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap.min.css") }}'>
-    <link rel="stylesheet"
-          href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap-responsive.min.css") }}'>
-    <link rel="stylesheet"
-          href='{{ request.static_url("stalker_pyramid:static/ace/css/font-awesome.min.css") }}'>
 
 
 
@@ -141,6 +141,7 @@
 
         .daterangepicker.dropdown-menu {
             z-index: 1100;
+
         }
 
     </style>
