@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Stalker Pyramid a Web Base Production Asset Management System
-# Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
+# Copyright (C) 2009-2018 Erkan Ozgur Yilmaz
 #
 # This file is part of Stalker Pyramid.
 #
@@ -837,6 +837,7 @@ def get_project_tasks_today(request):
     logger.debug('%s rows took : %s seconds' % (len(data), (end - start)))
 
     return data
+
 
 @view_config(
     route_name='view_project_tasks',

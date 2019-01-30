@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Stalker a Production Asset Management System
-# Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
+# Copyright (C) 2009-2018 Erkan Ozgur Yilmaz
 #
 # This file is part of Stalker.
 #
@@ -1264,6 +1264,7 @@ def get_entity_task_max_end(request):
 
     return result[0]
 
+
 @view_config(
     route_name='get_entity_thumbnail',
     renderer='json'
@@ -1286,6 +1287,7 @@ def get_entity_thumbnail(request):
                         thumbnail_path = parent.thumbnail.full_path
                         break
 
+    logger.debug('thumbnail_path: %s' % thumbnail_path)
     return {
         'thumbnail_path': thumbnail_path
     }
@@ -1304,16 +1306,16 @@ def get_entity_authlogs(request):
         return Response('Can not find a entity with id: %s' % entity_id, 500)
 
     sql_query = """
-              select
-                    "AuthenticationLogs".uid,
-                    "AuthenticationLogs".action,
-                    "AuthenticationLogs".date
-                    %(attributes)s
-
-            from "AuthenticationLogs"
-            %(join_tables)s
-
-            %(where_conditions)s
+    select
+        "AuthenticationLogs".uid as uid,
+        "AuthenticationLogs".action as action,
+        "AuthenticationLogs".date as date
+        %(attributes)s
+    
+    from "AuthenticationLogs"
+    %(join_tables)s
+    
+    %(where_conditions)s
     """
     where_conditions = ''
     join_tables = ''
@@ -1338,9 +1340,9 @@ def get_entity_authlogs(request):
     logger.debug('where_conditions: %s' % where_conditions)
 
     sql_query = sql_query % {
-                                'where_conditions': where_conditions,
-                                'join_tables': join_tables,
-                                'attributes': attributes
+        'where_conditions': where_conditions,
+        'join_tables': join_tables,
+        'attributes': attributes
     }
 
     # logger.debug('sql_query: %s' % sql_query)
@@ -1349,9 +1351,9 @@ def get_entity_authlogs(request):
     result = DBSession.connection().execute(text(sql_query))
     return [
         {
-            'user_id': r[0],
-            'action': r[1],
-            'date_created': milliseconds_since_epoch(r[2]),
+            'user_id': r['uid'],
+            'action': r['action'],
+            'date_created': milliseconds_since_epoch(r['date']),
             'role_name':  r[3] if len(r) > 3 else ''
         }
         for r in result.fetchall()

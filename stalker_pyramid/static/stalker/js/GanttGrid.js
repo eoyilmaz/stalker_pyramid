@@ -1,17 +1,19 @@
 define([
     "dojo/_base/declare",
     'dojo/_base/lang',
+
     "dgrid/OnDemandGrid",
     "dgrid/ColumnSet",
     "dgrid/Selection",
     "dgrid/Keyboard",
-    "dgrid/tree",
+    "dgrid/Tree",
     "dgrid/extensions/DijitRegistry",
+
     "put-selector/put",
     "stalker/js/GanttColumn",
     "stalker/js/Task",
     "dgrid/extensions/ColumnResizer"
-], function (declare, lang, OnDemandGrid, ColumnSet, Selection, Keyboard, tree,
+], function (declare, lang, OnDemandGrid, ColumnSet, Selection, Keyboard, Tree,
              DijitRegistry, put, GanttColumn, Task, ColumnResizer) {
     // module:
     //     GanttGrid
@@ -22,7 +24,7 @@ define([
     // Creates a new grid with one column set definition to display tasks & resources and a second
     // column set for the actual gantt chart
     "use strict";
-    return declare([OnDemandGrid, ColumnSet, Selection, Keyboard, DijitRegistry], {
+    return declare([OnDemandGrid, Tree, ColumnSet, Selection, Keyboard, DijitRegistry], {
         keyMap: lang.mixin({}, Keyboard.defaultKeyMap, {
             38: function (event) { // up arrow
                 event.preventDefault();
@@ -291,7 +293,8 @@ define([
                         },
                         resizable: true
                     },
-                    name: tree(
+                    name:
+                        // tree(
                         {
                             label: "Name",
                             sortable: false,
@@ -349,7 +352,8 @@ define([
                                 return node;
                             }
                         }
-                    ),
+                    // ),
+                    ,
                     priority: {
                         label: 'Prior.',
                         sortable: false,

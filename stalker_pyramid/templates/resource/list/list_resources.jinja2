@@ -108,30 +108,31 @@ require({
              main: 'jquery-2.1.1.min'
          }
      ]},
-    ['dojo/store/Cache',
-    'dojo/store/Memory',
-    'dojo/store/JsonRest',
+    [
+        'dstore/Cache',
+        'dstore/Memory',
+        'dstore/Rest',
 
-    'stalker/js/Resource',
-    'stalker/js/DiscreetDataGrid',
+        'stalker/js/Resource',
+        'stalker/js/DiscreetDataGrid',
 
-    'dojo/domReady!'
-], function (Cache, Memory, JsonRest, Resource, DiscreetDataGrid){
+        'dojo/domReady!'
+], function (Cache, Memory, Rest, Resource, DiscreetDataGrid){
 
     // The Memory
     var target = '{{ request.route_url('get_resource', id=entity.id) }}';
-    {% if entity.entity_type == "User" %}
-        var target = '{{ request.route_url('get_resource', id=entity.id) }}';
-    {% elif entity.entity_type == "Department" %}
-        var target = '{{ request.route_url('get_resource', id=entity.id) }}';
-    {% endif %}
 
     var resources_memory_store = new Memory();
 
-    var resources_jsonRest_store = new JsonRest({
+    var resources_jsonRest_store = new Rest({
         target: target,
-        getChildren: function (parent, options) {
-            return this.query({parent_id: parent.id}, options);
+        rangeStartParam: 'offset',
+        rangeCountParam: 'limit',
+        getChildren: function (parent) {
+            {#return this.query({parent_id: parent.id}, options);#}
+            return resources_jsonRest_store.filter({
+                parent_id: parent.id
+            });
         },
         mayHaveChildren: function (parent) {
             return parent.hasChildren;
@@ -153,11 +154,11 @@ require({
         id: ddgrid_dgrid_id,
         width: '100%',
         autoHeight: true,
-        store: tasks_cache_store,
-        query: {
-            // initialize with the entity itself
-            id: {{ entity.id }}
-        },
+        collection: tasks_cache_store,
+        {#query: {#}
+        {#    // initialize with the entity itself#}
+        {#    id: {{ entity.id }}#}
+        {# },#}
         loadingMessage: "<div style='float: left' class='dijitIconLoading'>&nbsp</div><div>Loading</div>",
         noDataMessage: "No data",
         pageSkip: 0,
@@ -175,6 +176,9 @@ require({
     }, ddgrid_dom_id);
     ddgrid.startup();
 
+    // initialize with the entity itself
+    ddgrid.set('collection', resources_jsonRest_store.filter({ id: {{ entity.id }} }));
+
     // ceter on today
     setTimeout(
         function () {
@@ -191,8 +195,8 @@ require({
         // update date values
         var start_and_end_dates_as_string = jQuery('#start_end_date_range_picker').val();
         var dates = start_and_end_dates_as_string.split(' - ');
-        var start_date = moment(dates[0], 'MM-DD-YYYY').startOf('day');
-        var end_date = moment(dates[1], 'MM-DD-YYYY').endOf('day');
+        var start_date = moment(dates[0], 'DD/MM/YYYY').startOf('day')._d;
+        var end_date = moment(dates[1], 'DD/MM/YYYY').endOf('day')._d;
 
         // get zoom level
         var zoom_level = jQuery('#zoom_level').val();
@@ -332,8 +336,8 @@ require({
             var zoom_level = resource_column.guess_zoom_level(zoomed_dates.start, zoomed_dates.end);
             
             // update interface elements
-            var formatted_start_date = moment(zoomed_dates.start).format('MM/DD/YYYY');
-            var formatted_end_date = moment(zoomed_dates.end).format('MM/DD/YYYY');
+            var formatted_start_date = moment(zoomed_dates.start).format('DD/MM/YYYY');
+            var formatted_end_date = moment(zoomed_dates.end).format('DD/MM/YYYY');
             var start_end_date_range_picker = jQuery('#start_end_date_range_picker');
             start_end_date_range_picker.val(formatted_start_date + ' - ' + formatted_end_date);
             start_end_date_range_picker.data().daterangepicker.updateFromControl();
@@ -364,7 +368,11 @@ require({
 
     jQuery(function () {
         // initialize date picker
-        var start_end_date_range_picker = jQuery('#start_end_date_range_picker').daterangepicker();
+        var start_end_date_range_picker = jQuery('#start_end_date_range_picker').daterangepicker({
+            locale: {
+                format: 'DD/MM/YYYY'
+            }
+        });
 
         // also update the icon
         start_end_date_range_picker.next().on('click', function () {
@@ -377,7 +385,7 @@ require({
         var start_date = moment().subtract(1, 'month').startOf('day');
         var end_date = moment().add(11, 'month').endOf('day');
         start_end_date_range_picker.val(
-                start_date.format('dd/mm/yyyy') + ' - ' + end_date.format('dd/mm/yyyy')
+            start_date.format('DD/MM/YYYY') + ' - ' + end_date.format('DD/MM/YYYY')
         );
 
         start_end_date_range_picker.data().daterangepicker.updateFromControl();

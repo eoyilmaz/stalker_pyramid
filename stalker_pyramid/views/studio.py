@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Stalker Pyramid a Web Base Production Asset Management System
-# Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
+# Copyright (C) 2009-2018 Erkan Ozgur Yilmaz
 #
 # This file is part of Stalker Pyramid.
 #
@@ -292,6 +292,7 @@ def studio_scheduling_mode(request):
 
         studio.is_scheduling = mode
         studio.is_scheduling_by = logged_in_user
+        import pytz
         utc_now = datetime.datetime.now(pytz.utc)
         studio.scheduling_started_at = utc_now
 

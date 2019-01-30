@@ -75,7 +75,7 @@
         var related_assets_list = $('#related_assets_list');
         $.getJSON('/tasks/{{ entity.id }}/related/Asset/depends/').then(function (data) {
 
-            console.log("data.length: "+data.length);
+            {#console.log("data.length: ", data.length);#}
             for (var i = 0; i < data.length; i++) {
 
                 if (data[i].thumbnail_full_path == null) {

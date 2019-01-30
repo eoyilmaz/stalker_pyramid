@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Stalker Pyramid a Web Base Production Asset Management System
-# Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
+# Copyright (C) 2009-2018 Erkan Ozgur Yilmaz
 #
 # This file is part of Stalker Pyramid.
 #
@@ -834,6 +834,7 @@ def convert_to_dgrid_gantt_project_format(projects):
             ),
             'total_logged_seconds': project.total_logged_seconds,
             'type': project.entity_type,
+            'entity_type': project.entity_type,
             'status': project.status.code.lower()
         } for project in projects
     ]
@@ -895,6 +896,7 @@ def convert_to_dgrid_gantt_task_format(tasks):
             'status_name': task.status.name,
             'total_logged_seconds': task.total_logged_seconds,
             'type': task.entity_type,
+            'entity_type': task.entity_type,
             'date_created': milliseconds_since_epoch(task.date_created),
             'date_updated': milliseconds_since_epoch(task.date_updated)
         } for task in tasks
@@ -1390,34 +1392,6 @@ def depth_first_flatten(task, task_array=None):
     return task_array
 
 
-def raw_data_to_array(raw_data):
-    """converts the given string raw data in:
-
-        '{"(string, string)"},{"(string, string)"}...{"(string, string)"}'
-
-    format to a Python array of:
-
-        [[int, string], [int, string] ... [int, string]]
-    """
-    data = []
-    if raw_data is not None and len(raw_data) > 7:  # in which case it is not '{"(,)"}'
-        json_data = json.loads(
-            raw_data.replace('{', '[')
-            .replace('}', ']')
-            .replace('(', '[')
-            .replace(')', ']')
-        )  # it is an array of string
-        for j in json_data:
-            d = j[1:-1].split(',')
-            data.append(
-                {
-                    'id': int(d[0]),
-                    'name': d[1].replace('"', '')
-                }
-            )
-    return data
-
-
 def generate_where_clause(params):
     """Generates where clause strings from the given dictionary
 
@@ -1712,12 +1686,12 @@ def generate_where_clause(params):
 
     if 'has_resource' in params:
         where_string_buffer.append(
-            "resource_info.info is not NULL"
+            "resource_info.resource_id is not NULL"
         )
 
     if 'has_no_resource' in params:
         where_string_buffer.append(
-            "resource_info.info is NULL"
+            "resource_info.resource_id is NULL"
         )
 
     if len(where_string_buffer):
@@ -1754,28 +1728,28 @@ def generate_order_by_clause(params):
     order_by_string_buffer = []
 
     column_dict = {
-        'id': 'tasks.id',
-        'parent_id': "tasks.parent_id",
-        'name': "tasks.name",
-        'path': "tasks.full_path",
-        'full_path': "tasks.full_path",
-        'entity_type': "tasks.entity_type",
+        'id': 'id',
+        'parent_id': "parent_id",
+        'name': "name",
+        'path': "full_path",
+        'full_path': "full_path",
+        'entity_type': "entity_type",
         'task_type': "task_types.name",
-        'project_id': '"Tasks".project_id',
+        'project_id': 'project_id',
         'date_created': 'date_created',
         'date_updated': 'date_updated',
         'has_children': 'has_children',
         'link': 'link',
         'priority': 'priority',
         'depends_to': 'dep_info',
-        'resource': "resource_info.info",
+        'resource': "resource_info.resource_id",
         'responsible': 'responsible_id',
         'watcher': 'watcher_id',
-        'bid_timing': '"Tasks".bid_timing',
-        'bid_unit': '"Tasks".bid_unit',
-        'schedule_timing': '"Tasks".schedule_timing',
-        'schedule_unit': '"Tasks".schedule_unit',
-        'schedule_model': '"Tasks".schedule_model',
+        'bid_timing': 'bid_timing',
+        'bid_unit': 'bid_unit',
+        'schedule_timing': 'schedule_timing',
+        'schedule_unit': 'schedule_unit',
+        'schedule_model': 'schedule_model',
         'schedule_seconds': 'schedule_seconds',
         'total_logged_seconds': 'total_logged_seconds',
         'percent_complete': 'percent_complete',
@@ -1810,14 +1784,17 @@ def query_tasks(
 
 
 @cache_region('long_term', 'load_tasks')
-def cached_query_tasks(
-        limit,
-        offset,
-        order_by_params,
-        where_clause,
-        task_id):
+def cached_query_tasks(limit, offset, order_by_params, where_clause, task_id):
+    """Query for tasks. Does some pretty amazing things.
 
-    start = time.time()
+    :param limit:
+    :param offset:
+    :param order_by_params:
+    :param where_clause:
+    :param task_id:
+    :return:
+    """
+    start_time = time.time()
 
     entity_type = "Task"
     if task_id:
@@ -1846,15 +1823,15 @@ def cached_query_tasks(
 
         sql_query = """
         select
-            tasks.id,
-            tasks.entity_type,
+            tasks.id as id,
+            tasks.entity_type as entity_type,
             task_types.name as task_type,
-            tasks.name,
-            tasks.path,
-            tasks.full_path,
-            "Tasks".project_id,
-            "Tasks".parent_id,
-            "Task_SimpleEntities".description,
+            tasks.name as name,
+            tasks.path as path,
+            tasks.full_path as full_path,
+            "Tasks".project_id as project_id,
+            "Tasks".parent_id as parent_id,
+            "Task_SimpleEntities".description as description,
 
             -- audit info
             (extract(epoch from "Task_SimpleEntities".date_created) * 1000)::bigint as date_created,
@@ -1864,23 +1841,29 @@ def cached_query_tasks(
                 select 1
                 from "Tasks" as "Child_Tasks"
                 where "Child_Tasks".parent_id = "Tasks".id
-            ) as has_children,
+            ) as "hasChildren",
 
             '/' || lower("Task_SimpleEntities".entity_type) || 's/' || "Tasks".id || '/view' as link,
 
             "Tasks".priority as priority,
 
-            dep_info.info as dep_info,
-            resource_info.info as resource_info,
-            tasks.responsible_id,
-            tasks.watcher_id,
+            -- dep_info.info as dependencies,
+            coalesce(dep_info.depends_to_id, '{}') as depends_to_ids,
+            coalesce(dep_info.depends_to_name, '{}') as depends_to_names,
 
-            "Tasks".bid_timing,
-            "Tasks".bid_unit,
+            -- resource_info.info as resources,
+            coalesce(resource_info.resource_id, '{}') as resource_ids,
+            coalesce(resource_info.resource_name, '{}') as resource_names,
 
-            "Tasks".schedule_timing,
-            "Tasks".schedule_unit,
-            "Tasks".schedule_model,
+            tasks.responsible_id as responsible,
+            tasks.watcher_id as watcher,
+
+            "Tasks".bid_timing as bid_timing,
+            "Tasks".bid_unit as bid_unit,
+
+            "Tasks".schedule_timing as schedule_timing,
+            "Tasks".schedule_unit as schedule_unit,
+            "Tasks".schedule_model as schedule_model,
             coalesce("Tasks".schedule_seconds,
                 "Tasks".schedule_timing * (case "Tasks".schedule_unit
                     when 'min' then 60
@@ -1925,27 +1908,29 @@ def cached_query_tasks(
 
             lower("Statuses".code) as status,
             "Status_SimpleEntities".name as status_name,
-            tasks.type_names
+            tasks.type_names as type_names
 
         from (
             %(tasks_hierarchical_name)s
         ) as tasks
         join "Tasks" on tasks.id = "Tasks".id
         join "SimpleEntities" as "Task_SimpleEntities" on tasks.id = "Task_SimpleEntities".id
+
         -- Dependencies
         left outer join (
             select
                 task_id,
-                array_agg((depends_to_id, "SimpleEntities".name)) as info
+                array_agg(depends_to_id) as depends_to_id,
+                array_agg("SimpleEntities".name) as depends_to_name
             from "Task_Dependencies"
             join "SimpleEntities" on "Task_Dependencies".depends_to_id = "SimpleEntities".id
             group by task_id
         ) as dep_info on tasks.id = dep_info.task_id
+
         -- Resources
         left outer join (
             select
                 "Tasks".id as task_id,
-                array_agg(("Resource_SimpleEntities".id, "Resource_SimpleEntities".name)) as info,
                 array_agg("Resource_SimpleEntities".id) as resource_id,
                 array_agg("Resource_SimpleEntities".name) as resource_name
             from "Tasks"
@@ -2001,9 +1986,9 @@ def cached_query_tasks(
             "Project_SimpleEntities".name as name,
             "Projects".id as path,
             "Project_SimpleEntities".name as full_path,
-            NULL,
+            NULL as project_id,
             NULL as parent_id,
-            "Project_SimpleEntities".description,
+            "Project_SimpleEntities".description as description,
 
             -- audit info
             (extract(epoch from "Project_SimpleEntities".date_created) * 1000)::bigint as date_created,
@@ -2013,16 +1998,20 @@ def cached_query_tasks(
                 select 1
                 from "Tasks" as "Child_Tasks"
                 where "Child_Tasks".project_id = "Projects".id
-            ) as has_children,
+            ) as "hasChildren",
 
             '/projects/' || "Projects".id || '/view' as link,
 
-            500,
+            500 as priority,
 
-            NULL,--array_agg((NULL, NULL)),
-            NULL,--array_agg((NULL, NULL)),
-            NULL,--array_agg((NULL, NULL)),
-            NULL,--array_agg((NULL, NULL)),
+            '{}' as depends_to_ids,--array_agg((NULL, NULL)),
+            '{}' as depends_to_names,--array_agg((NULL, NULL)),
+
+            '{}' as resource_ids,--array_agg((NULL, NULL)),
+            '{}' as resource_names,--array_agg((NULL, NULL)),
+
+            '{}' as responsible,--array_agg((NULL, NULL)),
+            '{}' as watcher,--array_agg((NULL, NULL)),
 
             0 as bid_timing,
             'min' as bid_unit,
@@ -2034,7 +2023,7 @@ def cached_query_tasks(
 
             project_schedule_info.total_logged_seconds as total_logged_seconds,
 
-            project_schedule_info.total_logged_seconds / total_schedule_seconds  * 100 as percent_complete,
+            project_schedule_info.total_logged_seconds / total_schedule_seconds * 100 as percent_complete,
 
             (extract(epoch from coalesce("Projects".computed_start, "Projects".end)) * 1000)::bigint as "start",
             (extract(epoch from coalesce("Projects".computed_end, "Projects".end)) * 1000)::bigint as "end",
@@ -2087,58 +2076,58 @@ def cached_query_tasks(
                 sql_query,
                 'where "Projects".id = %s' % task_id
             )
+
     if offset:
         sql_query = '%s offset %s' % (sql_query, offset)
-    if limit:
+
+    if limit and limit > 0:
         sql_query = '%s limit %s' % (sql_query, limit)
+
     from sqlalchemy import text  # to be able to use "%" sign use this function
-    logger.debug("Big Fucking Query Starts")
-    #logger.debug("%s" % sql_query)
-    logger.debug("Big Fucking Query Ends")
+
     result = DBSession.connection().execute(text(sql_query))
-    # use local functions to speed things up
-    local_raw_data_to_array = raw_data_to_array
+
     return_data = [
         {
-            'id': r[0],
-            'entity_type': r[1],
-            'task_type': r[2],
-            'name': r[3],
-            'path': r[4],
-            'full_path': r[5],
-            'project_id': r[6],
-            'parent_id': r[7],
-            'description': r[8],
-            'date_created': r[9],
-            'date_updated': r[10],
-            'hasChildren': r[11],
-            'link': r[12],
-            'priority': r[13],
-            'dependencies': local_raw_data_to_array(r[14]),
-            'resources': local_raw_data_to_array(r[15]),
-            'responsible': r[16],
-            'watcher': r[17],
-            'bid_timing': r[18],
-            'bid_unit': r[19],
-            'schedule_timing': r[20],
-            'schedule_unit': r[21],
-            'schedule_model': r[22],
-            'schedule_seconds': r[23],
-            'total_logged_seconds': r[24],
-            'completed': r[25],
-            'start': r[26],
-            'end': r[27],
-            'status': r[28],
-            'status_name': r[29],
-            'type_names': r[30]
+            'id': r['id'],
+            'entity_type': r['entity_type'],
+            'task_type': r['task_type'],
+            'name': r['name'],
+            'path': r['path'],
+            'full_path': r['full_path'],
+            'project_id': r['project_id'],
+            'parent_id': r['parent_id'],
+            'description': r['description'],
+            'date_created': r['date_created'],
+            'date_updated': r['date_updated'],
+            'hasChildren': r['hasChildren'],
+            'link': r['link'],
+            'priority': r['priority'],
+            'dependencies': map(lambda x, y: {'id': x, 'name': y}, r['depends_to_ids'], r['depends_to_names']),
+            'resources': map(lambda x, y: {'id': x, 'name': y}, r['resource_ids'], r['resource_names']),
+            'responsible': r['responsible'],
+            'watcher': r['watcher'],
+            'bid_timing': r['bid_timing'],
+            'bid_unit': r['bid_unit'],
+            'schedule_timing': r['schedule_timing'],
+            'schedule_unit': r['schedule_unit'],
+            'schedule_model': r['schedule_model'],
+            'schedule_seconds': r['schedule_seconds'],
+            'total_logged_seconds': r['total_logged_seconds'],
+            'completed': r['percent_complete'],
+            'start': r['start'],
+            'end': r['end'],
+            'status': r['status'],
+            'status_name': r['status_name'],
+            'type_names': r['type_names']
         }
         for r in result.fetchall()
     ]
 
     # logger.debug('return_data: %s' % return_data)
-    end = time.time()
+    end_time = time.time()
     logger.debug('%s rows retrieved in %s seconds' % (len(return_data),
-                                                      (end - start)))
+                                                      (end_time - start_time)))
     return return_data
 
 
@@ -2150,19 +2139,23 @@ def get_tasks(request):
     """RESTful version of getting all tasks
     """
     logger.debug('get_tasks is running')
-    global_start = start = time.time()
+    global_start_time = start_time = time.time()
     # set the content range to prevent JSONRest Store to query the data twice
-    offset = request.params.get('offset', 0)
+
+    offset = int(request.params.get('offset', 0))
     limit = request.params.get('limit')
+
+    logger.debug('offset: %s' % offset)
+    logger.debug('limit: %s' % limit)
 
     order_by_params = request.GET.getall('order_by')
     logger.debug('order_by_params: %s' % order_by_params)
 
     where_clause = generate_where_clause(request.params.dict_of_lists())
-    end = time.time()
-    logger.debug('generate_where_clause: %s seconds' % (end - start))
+    end_time = time.time()
+    logger.debug('generate_where_clause: %s seconds' % (end_time - start_time))
 
-    start = time.time()
+    start_time = time.time()
     task_id = None
     if 'id' in request.params:
         # check if this is a Task or Project
@@ -2175,9 +2168,9 @@ def get_tasks(request):
         where_clause=where_clause,
         task_id=task_id,
     )
-    end = time.time()
+    end_time = time.time()
     logger.debug(
-        'query_tasks: %s seconds' % (end - start)
+        'query_tasks: %s seconds' % (end_time - start_time)
     )
 
     task_count = len(return_data)
@@ -2190,7 +2183,7 @@ def get_tasks(request):
     global_end = time.time()
     logger.debug(
         'GET_TASKS: %s rows retrieved in %s seconds' % (
-            len(return_data), (global_end - global_start)
+            len(return_data), (global_end - global_start_time)
         )
     )
 
@@ -2242,8 +2235,11 @@ def get_cached_tasks_count(entity_type, where_clause, task_id):
 
             "Tasks".priority as priority,
 
-            dep_info.info as dep_info,
-            resource_info.info as resource_info,
+            coalesce(dep_info.depends_to_id, '{}') as depends_to_ids,
+            coalesce(dep_info.depends_to_name, '{}') as depends_to_names,
+            coalesce(resource_info.resource_id, '{}') as resource_ids,
+            coalesce(resource_info.resource_name, '{}') as resource_names,
+
             tasks.responsible_id,
             tasks.watcher_id,
 
@@ -2306,7 +2302,8 @@ def get_cached_tasks_count(entity_type, where_clause, task_id):
         left outer join (
             select
                 task_id,
-                array_agg((depends_to_id, "SimpleEntities".name)) as info
+                array_agg(depends_to_id) as depends_to_id,
+                array_agg("SimpleEntities".name) as depends_to_name
             from "Task_Dependencies"
             join "SimpleEntities" on "Task_Dependencies".depends_to_id = "SimpleEntities".id
             group by task_id
@@ -2315,7 +2312,6 @@ def get_cached_tasks_count(entity_type, where_clause, task_id):
         left outer join (
             select
                 "Tasks".id as task_id,
-                array_agg(("Resource_SimpleEntities".id, "Resource_SimpleEntities".name)) as info,
                 array_agg("Resource_SimpleEntities".id) as resource_id,
                 array_agg("Resource_SimpleEntities".name) as resource_name
             from "Tasks"
@@ -2490,8 +2486,6 @@ def get_tasks_count(request):
         where_clause = generate_where_clause(request.params.dict_of_lists())
 
     return get_cached_tasks_count(entity_type, where_clause, task_id)
-
-
 
 
 @view_config(
@@ -3176,7 +3170,7 @@ def get_cached_tasks_stats(entity, entity_id, project):
     if isinstance(entity, User):
         where_clause_for_entity = \
             'join "Task_Resources" on "Task_Resources".task_id = "Tasks".id ' \
-            'where "Task_Resources".resource_id =%s' % entity_id
+            'where "Task_Resources".resource_id = %s' % entity_id
         if project:
             where_clause_for_entity += ' and "Tasks".project_id = %s' % project.id
     elif isinstance(entity, Project):
@@ -3190,11 +3184,11 @@ def get_cached_tasks_stats(entity, entity_id, project):
     result = DBSession.connection().execute(sql_query)
     return_data = [
         {
-            'tasks_count': r[0],
-            'status_id': r[1],
-            'status_code': r[2],
-            'status_name': r[3],
-            'status_color': r[4],
+            'tasks_count': r['count'],
+            'status_id': r['status_id'],
+            'status_code': r['status_code'],
+            'status_name': r['status_name'],
+            'status_color': r['status_color'],
             'status_icon': ''
         }
         for r in result.fetchall()
@@ -5874,7 +5868,6 @@ def get_task_events(request):
     )
 
     task_ids = [task['id'] for task in all_tasks]
-
     # logger.debug("task_ids %s" % task_ids)
 
     sql_query = """select
@@ -5898,7 +5891,8 @@ where "TimeLogs".task_id in %s
     # logger.debug("sql_query %s" % sql_query)
 
     # now query all the time logs
-    from sqlalchemy import text  # to be able to use "%" sign use this function
+    # to be able to use "%" sign use this function
+    from sqlalchemy import text
     result = DBSession.connection().execute(text(sql_query))
 
     events = [

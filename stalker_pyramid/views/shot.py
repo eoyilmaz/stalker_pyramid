@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Stalker a Production Shot Management System
-# Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
+# Copyright (C) 2009-2018 Erkan Ozgur Yilmaz
 #
 # This file is part of Stalker Pyramid.
 #
@@ -318,14 +318,14 @@ def get_shots(request):
     "Shots".id as shot_id,
     "Shot_SimpleEntities".name as shot_name,
     "Shot_SimpleEntities".description as shot_description,
-    "Links".full_path as shot_full_path,
+    "Links".full_path as shot_thumbnail_full_path,
     "Distinct_Shot_Statuses".shot_status_code as shot_status_code,
     "Distinct_Shot_Statuses".shot_status_html_class as shot_status_html_class,
-    array_agg("Distinct_Shot_Task_Types".type_name) as type_name,
-    array_agg("Tasks".id) as task_id,
-    array_agg("Task_SimpleEntities".name) as task_name,
-    array_agg("Task_Statuses".code) as status_code,
-    array_agg("Task_Statuses_SimpleEntities".html_class) as status_html_class,
+    array_agg("Distinct_Shot_Task_Types".type_name) as task_type_names,
+    array_agg("Tasks".id) as task_ids,
+    array_agg("Task_SimpleEntities".name) as task_names,
+    array_agg("Task_Statuses".code) as task_status_codes,
+    array_agg("Task_Statuses_SimpleEntities".html_class) as task_status_html_classes,
     array_agg(coalesce(
             -- for parent tasks
             (case "Tasks".schedule_seconds
@@ -356,7 +356,7 @@ def get_shots(request):
     "Shots".cut_in as cut_in,
     "Shots".cut_out as cut_out,
     "Shots".fps as fps,
-    array_agg(coalesce(reviews.rev_count, 0)) as review_num
+    array_agg(coalesce(reviews.rev_count, 0)) as review_count
 
 from "Tasks"
 join "Shots" on "Shots".id = "Tasks".parent_id
@@ -459,42 +459,43 @@ order by "Shot_SimpleEntities".name
 
     for r in result.fetchall():
         r_data = {
-            'id': r[0],
-            'name': r[1],
-            'description': r[2],
-            'thumbnail_full_path': r[3] if r[3] else None,
-            'status': r[4],
-            'status_color': r[5],
-            'sequence_id': r[12],
-            'sequence_name': r[13],
-            'cut_in': r[20],
-            'cut_out': r[21],
-            'fps': r[22],
-            'update_shot_action': '/tasks/%s/update/dialog' % r[0]
+            'id': r['shot_id'],
+            'name': r['shot_name'],
+            'description': r['shot_description'],
+            'thumbnail_full_path': r['shot_thumbnail_full_path']
+            if r['shot_thumbnail_full_path'] else None,
+            'status': r['shot_status_code'],
+            'status_color': r['shot_status_html_class'],
+            'sequence_id': r['sequence_id'],
+            'sequence_name': r['sequence_name'],
+            'cut_in': r['cut_in'],
+            'cut_out': r['cut_out'],
+            'fps': r['fps'],
+            'update_shot_action': '/tasks/%s/update/dialog' % r['shot_id']
                 if update_shot_permission else None,
-            'delete_shot_action': '/tasks/%s/delete/dialog' % r[0]
+            'delete_shot_action': '/tasks/%s/delete/dialog' % r['shot_id']
                 if delete_shot_permission else None
         }
-        task_types_names = r[6]
-        task_ids = r[7]
-        task_names = r[8]
-        task_statuses = r[9]
-        task_statuses_color = r[10]
-        task_percent_complete = r[11]
-        task_bid_timing = r[14]
-        task_bid_unit = r[15]
-        task_schedule_timing = r[16]
-        task_schedule_unit = r[17]
-        task_resource_name = r[18]
-        task_resource_id = r[19]
-        task_review_count = r[23]
+        task_types_names = r['task_type_names']
+        task_ids = r['task_ids']
+        task_names = r['task_names']
+        task_statuses = r['task_status_codes']
+        task_statuses_color = r['task_status_html_classes']
+        task_percent_complete = r['percent_complete']
+        task_bid_timing = r['bid_timing']
+        task_bid_unit = r['bid_unit']
+        task_schedule_timing = r['schedule_timing']
+        task_schedule_unit = r['schedule_unit']
+        task_resource_name = r['resource_name']
+        task_resource_id = r['resource_id']
+        task_review_count = r['review_count']
 
         r_data['nulls'] = []
 
         for index1 in range(len(task_types_names)):
 
             if task_types_names[index1]:
-                r_data[task_types_names[index1]]= []
+                r_data[task_types_names[index1]] = []
 
         for index in range(len(task_types_names)):
             task = {

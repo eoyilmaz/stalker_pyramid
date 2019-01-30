@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Stalker Pyramid a Web Base Production Asset Management System
-# Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
+# Copyright (C) 2009-2018 Erkan Ozgur Yilmaz
 #
 # This file is part of Stalker Pyramid.
 #
@@ -47,11 +47,11 @@ def remove_unused_files():
     """
     path = os.path.expandvars(
         os.path.expanduser(defaults.server_side_storage_path)
-    )
+    ).replace('\\', '/')
 
-    for dirpath, dirnames, filenames in os.walk(path):
-        for f in filenames:
-            full_path = os.path.join(dirpath, f)
+    for dir_path, dir_names, file_names in os.walk(path):
+        for f in file_names:
+            full_path = os.path.join(dir_path, f)
             spl_relative_path = full_path.replace(path, 'SPL')
             l = Link.query.filter(Link.full_path == spl_relative_path).first()
             if l is None:

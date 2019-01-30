@@ -331,17 +331,15 @@
     </div>
     
     <div class="input-prepend"
-         style="height: 30px;
-                                margin-left: 5px;
-                                margin-bottom: 0px;">
+         style="height: 30px; margin-left: 5px; margin-bottom: 0px;">
         <input id='task_start_end_date_range_picker'
                name='start_and_end_dates'
                type="text"
-               data-date-format="dd/mm/yyyy"
+               data-date-format="DD/mm/YYYY"
                placeholder="Start & End Dates">
-                            <span class="add-on">
-                                <i class="icon-calendar"></i>
-                            </span>
+        <span class="add-on">
+            <i class="icon-calendar"></i>
+        </span>
     </div>
     
     <div class="input-prepend"
@@ -349,8 +347,7 @@
                 margin-bottom: 0px;
                 margin-left: 6px;
                 margin-right: 5px;">
-        <select id='zoom_level'
-                name='start_and_end_dates'>
+        <select id='zoom_level' name='start_and_end_dates'>
             <option value="h">Hours</option>
             <option value="d">Days</option>
             <option value="w" selected>Weeks</option>
@@ -531,7 +528,6 @@
         data-dojo-config="async: true, parseOnLoad: true"
         src='{{ request.static_url("stalker_pyramid:static/dojo/dojo.js") }}'>
 </script>
-{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/moment.min.js") }}'></script>#}
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/daterangepicker.min.js") }}'></script>
 
 <script type="text/javascript">
@@ -550,9 +546,11 @@ require([
     'dojo/cookie',
     'dojo/json',
     'dojo/query',
-    'dojo/store/Cache',
-    'dojo/store/Memory',
-    'dojo/store/JsonRest',
+
+    'dstore/Cache',
+    'dstore/Memory',
+    'dstore/Rest',
+
     'dojo/request/xhr',
     'dojo/_base/lang',
     'dojo/Deferred',
@@ -561,6 +559,7 @@ require([
 
     "dgrid/List",
     "dgrid/Grid",
+
     'dojox/data/JsonRestStore',
 
     'stalker/js/dialogs',
@@ -571,27 +570,31 @@ require([
     'dojo/domReady!'
 ], function (registry, Button, FilteringSelect, Menu, MenuItem, MenuSeparator,
              DateTextBox, Tooltip, cookie, json, query, Cache, Memory,
-             JsonRest, xhr, lang, Deferred, when, date, List, Grid,
+             Rest, xhr, lang, Deferred, when, date, List, Grid,
              JsonRestStore, dialogs, dialogCaller, dialogCreator, GanttGrid) {
 
     // The Memory
-    var target = '/tasks/';
-    var tasks_memory_store = new Memory();
+    var target = '/tasks';
+    {#var tasks_memory_store = new Memory();#}
 
     {% if entity.entity_type == 'User' %}
         target = '{{ request.route_url('get_entity_tasks', id=entity.id) }}';
     {% endif %}
 
-    var tasks_jsonRest_store = new JsonRest({
+    var tasks_jsonRest_store = new Rest({
         target: target,
-        getChildren: function (parent, options) {
-            return this.query({parent_id: parent.id}, options);
+        rangeStartParam: 'offset',
+        rangeCountParam: 'limit',
+        getChildren: function (parent) {
+            return tasks_jsonRest_store.filter({
+                parent_id: parent.id
+            });
         },
         mayHaveChildren: function (parent) {
             return parent.hasChildren;
         }
     });
-    var tasks_cache_store = new Cache(tasks_jsonRest_store, tasks_memory_store);
+    {#var tasks_cache_store = new Cache(tasks_jsonRest_store, tasks_memory_store);#}
 
     var gantt_chart_dom_id = '{{ entity.entity_type }}_{{ entity.id }}_gantt';
     var gantt_chart_dgrid_id = '{{ entity.entity_type }}_{{ entity.id }}_gantt_dgrid';
@@ -610,19 +613,19 @@ require([
         id: gantt_chart_dgrid_id,
         width: '100%',
         autoHeight: true,
-        store: tasks_cache_store,
-        query: {
-            // initialize with the entity itself
-            id: {{ entity.id }}
-        },
         loadingMessage: "<div style='float: left' class='dijitIconLoading'>&nbsp</div><div>Loading</div>",
         noDataMessage: "",
         pageSkip: 0,
-        cellNavigation: false
+        cellNavigation: false,
+        farOffRemoval: 1000000, // larger than total height of data; never remove rows
+        minRowsPerPage: 1000000 // request more data at a time
     }, gantt_chart_dom_id);
     gantt_chart.startup();
 
-    // ceter on today
+    // initialize with the entity itself
+    gantt_chart.set('collection', tasks_jsonRest_store.filter({ id: {{ entity.id }} }) );
+
+    // center on today
     setTimeout(
         function () {
             gantt_column.centerOnToday();
@@ -1033,8 +1036,8 @@ require([
         // update date values
         var start_and_end_dates_as_string = $('#task_start_end_date_range_picker').val();
         var dates = start_and_end_dates_as_string.split(' - ');
-        var start_date = moment(dates[0], 'DD-MM-YYYY').startOf('day');
-        var end_date = moment(dates[1], 'DD-MM-YYYY').endOf('day');
+        var start_date = moment(dates[0], 'DD/MM/YYYY').startOf('day');
+        var end_date = moment(dates[1], 'DD/MM/YYYY').endOf('day');
 
         // get zoom level
         var zoom_level = $('#zoom_level').val();
@@ -1259,7 +1262,11 @@ require([
 
     $(function () {
         // initialize date picker
-        var start_end_date_range_picker = $('#task_start_end_date_range_picker').daterangepicker();
+        var start_end_date_range_picker = $('#task_start_end_date_range_picker').daterangepicker({
+            locale: {
+                format: 'DD/MM/YYYY'
+            }
+        });
 
         // also update the icon
         start_end_date_range_picker.next().on('click', function () {
@@ -1272,7 +1279,7 @@ require([
         var start_date = moment().subtract(6, 'month').startOf('day');
         var end_date = moment().add(6, 'month').endOf('day');
         start_end_date_range_picker.val(
-                start_date.format('dd/mm/yyyy') + ' - ' + end_date.format('dd/mm/yyyy')
+            start_date.format('DD/MM/YYYY') + ' - ' + end_date.format('DD/MM/YYYY')
         );
 
         start_end_date_range_picker.data().daterangepicker.updateFromControl();

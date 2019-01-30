@@ -57,7 +57,7 @@
             "{%- if request.current_route_path() == request.route_path('list_user_timelogs', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('list_user_timelogs', id=user.id) }}',
             get_icon('timelog'),
-            ''
+            'no_badge'
         );
 
         menu_of(
@@ -72,21 +72,21 @@
             "{%- if request.current_route_path() == request.route_path('view_user_reports', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('view_user_reports', id=user.id) }}',
             get_icon('report'),
-            ''
+            'no_badge'
         );
         menu_of(
             'Results',
             "{%- if request.current_route_path() == request.route_path('view_entity_result', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('view_entity_result', id=user.id) }}',
             get_icon('report'),
-            ''
+            'no_badge'
         );
         menu_of(
             'Authlogs',
             "{%- if request.current_route_path() == request.route_path('list_entity_authlogs', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('list_entity_authlogs', id=user.id) }}',
             get_icon('report'),
-            ''
+            0
         );
 
 {#        menu_of(#}
@@ -102,20 +102,20 @@
             "{%- if request.current_route_path() == request.route_path('list_entity_vacations', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('list_entity_vacations', id=user.id) }}',
             get_icon('vacation'),
-            '/users/{{ entity.id }}/vacations/count/'
+            '{{ request.route_url('get_user_vacations_count', id=user.id) }}'
         );
 
         menu_of('Efficiency',
             "{%- if request.current_route_path() == request.route_path('list_entity_resources', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('list_entity_resources', id=user.id) }}',
             get_icon('user'),
-            '0'
+            'no_badge'
         );
         menu_of('Versions',
             "{%- if request.current_route_path() == request.route_path('list_user_versions', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('list_user_versions', id=user.id) }}',
             get_icon('version'),
-            '0'
+            '{{ request.route_url('get_user_versions_count', id=user.id) }}'
         );
 
         submenu_of('{{ user.id }}', 'Project');

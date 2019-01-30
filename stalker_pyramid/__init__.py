@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Stalker Pyramid a Web Base Production Asset Management System
-# Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
+# Copyright (C) 2009-2018 Erkan Ozgur Yilmaz
 #
 # This file is part of Stalker Pyramid.
 #
@@ -25,16 +25,30 @@ import pyramid_beaker
 
 from zope.sqlalchemy import ZopeTransactionExtension
 
-__version__ = '0.1.11'
-logger_name = 'stalker_pyramid'
-
-
 # before anything about stalker create the defaults
 from stalker import defaults
 from stalker import SimpleEntity, Project, Budget
 
 
 import logging
+
+
+__version__ = '0.1.11'
+
+__title__ = "stalker_pyramid"
+__description__ = 'Stalker (ProdAM) Based Web App'
+__uri__ = 'http://code.google.com/p/stalker_pyramid/'
+__doc__ = __description__ + " <" + __uri__ + ">"
+
+__author__ = "Erkan Ozgur Yilmaz"
+__email__ = 'eoyilmaz@gmail.com'
+
+__license__ = 'LGPLv3'
+__copyright__ = "Copyright (C) 2009-2018 Erkan Ozgur Yilmaz"
+
+logger_name = 'stalker_pyramid'
+
+
 logging.basicConfig()
 logger = logging.getLogger(logger_name)
 #logger.setLevel(logging.DEBUG)
@@ -170,7 +184,10 @@ def main(global_config, **settings):
         'FDSPL/{partial_file_path:[a-zA-Z0-9/\.]+}'
     )
 
-    logger.debug(defaults.server_side_storage_path + '/{partial_file_path}')
+    logger.debug(
+        '%s/{partial_file_path}' %
+        defaults.server_side_storage_path.replace('\\', '/')
+    )
 
     # *************************************************************************
     # DATA VIEWS
@@ -238,7 +255,6 @@ def main(global_config, **settings):
     config.add_route('get_entity_task_max_end',        'entities/{id}/task_max_end/') #json
     config.add_route('get_entity_users_roles',         'entities/{id}/users/roles/')#json
     config.add_route('get_entity_role_user',           'entities/{id}/role_user/')#json
-
 
     config.add_route('get_entity_thumbnail',           'entities/{id}/thumbnail')
 
@@ -621,10 +637,10 @@ def main(global_config, **settings):
     config.add_route('get_user_reviews_count',      'users/{id}/reviews/count/') #json
     config.add_route('get_user_events',       'users/{id}/events/')  # json
     # config.add_route('get_user_worked_hours', 'users/{id}/{frequency}/worked_hours/')  # json
-    config.add_route('get_resources',         'resources/')
+    config.add_route('get_resources',         'resources')
 
     config.add_route('get_entity_resources',  'entities/{id}/resources/')
-    config.add_route('get_resource',          'resources/{id}/')
+    config.add_route('get_resource',          'resources/{id}')
 
     config.add_route('list_users',            'users/list')  # html
     config.add_route('list_user_tasks',       'users/{id}/tasks/list')  # html
@@ -794,11 +810,11 @@ def main(global_config, **settings):
     config.add_route('get_gantt_tasks',          'tasks/{id}/gantt')
     config.add_route('get_gantt_task_children',  'tasks/{id}/children/gantt')
 
-    config.add_route('get_tasks',                   'tasks/')
+    config.add_route('get_tasks',                   'tasks')
     config.add_route('get_tasks_count',             'tasks/count/')
     config.add_route('get_tasks_stats',             'tasks/stats/')
 
-    config.add_route('get_task',                        'tasks/{id}/')
+    config.add_route('get_task',                        'tasks/{id}')
     config.add_route('get_task_events',                 'tasks/{id}/events/')  #json
     config.add_route('get_task_children_task_types',    'tasks/{id}/children_task_types/')  # json
     config.add_route('get_task_children_tasks',         'tasks/{id}/children_tasks/')  # json
@@ -929,6 +945,7 @@ def main(global_config, **settings):
 
     config.add_route('get_task_versions',                   'tasks/{id}/versions/')  # jsons
     config.add_route('get_user_versions',                   'users/{id}/versions/')  # jsons
+    config.add_route('get_user_versions_count',             'users/{id}/versions/count')  # jsons
     config.add_route('get_entity_versions',                 'entities/{id}/versions/')  # json
     config.add_route('get_entity_versions_used_by_tasks',   'entities/{id}/version/used_by/tasks/') # json
 

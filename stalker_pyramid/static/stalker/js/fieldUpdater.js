@@ -1,5 +1,5 @@
 // Stalker Pyramid a Web Base Production Asset Management System
-// Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
+// Copyright (C) 2009-2018 Erkan Ozgur Yilmaz
 //
 // This file is part of Stalker Pyramid.
 //
@@ -127,10 +127,7 @@ define([
                         // don't do anything
                     }
                     // set the data normally
-                    widget.set('store', new Memory({data: data}));
-
-
-
+                    widget.set('collection', new Memory({data: data}));
 
                     if (data.length > 0) {
                         if (widget.label) {

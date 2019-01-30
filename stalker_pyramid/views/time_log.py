@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Stalker Pyramid a Web Base Production Asset Management System
-# Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
+# Copyright (C) 2009-2018 Erkan Ozgur Yilmaz
 #
 # This file is part of Stalker Pyramid.
 #
@@ -262,10 +262,10 @@ def update_time_log(request):
             time_log.updated_by = logged_in_user
             time_log.date_updated = utc_now
 
-            if time_log.duration > previous_duration\
-               and time_log.task.status == 'HREV':
-                # update the task status to WIP
-                with DBSession.no_autoflush:
+            with DBSession.no_autoflush:
+                if time_log.duration > previous_duration\
+                   and time_log.task.status == 'HREV':
+                    # update the task status to WIP
                     wip = Status.query.filter(Status.code == 'WIP').first()
                     time_log.task.status = wip
 
