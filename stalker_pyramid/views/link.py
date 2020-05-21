@@ -1436,10 +1436,10 @@ def serve_repository_files(request):
     logger.debug("logged_in_user: %s" % get_logged_in_user(request))
 
     # TODO: check file access
-    repo_id = request.matchdict['id']
+    repo_code = request.matchdict['id']
     partial_file_path = request.matchdict['partial_file_path']
 
-    repo = Repository.query.filter_by(id=repo_id).first()
+    repo = Repository.query.filter_by(code=repo_code).first()
     # assert isinstance(repo, Repository)
 
     file_full_path = os.path.join(

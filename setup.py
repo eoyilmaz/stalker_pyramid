@@ -37,7 +37,7 @@ INSTALL_REQUIRES = [
     'jinja2',
     'pyramid_jinja2',
     'pillow',
-    'stalker>=0.2.2',
+    'stalker>=0.2.24.3',
     'exifread',
     'webtest',
     'mocker',
