@@ -29,7 +29,14 @@ import uuid
 import base64
 
 import transaction
-from HTMLParser import HTMLParser
+
+try:
+    # Python 2.7
+    from HTMLParser import HTMLParser
+except ImportError:
+    # Python 3.x
+    from html.parser import HTMLParser
+
 from PIL import Image
 
 from pyramid.response import Response, FileResponse
@@ -299,7 +306,8 @@ def assign_reference(request):
     if entity and full_paths:
         mm = MediaManager()
         for full_path, original_filename in zip(full_paths, original_filenames):
-            l = mm.upload_reference(entity, open(full_path), original_filename)
+            with open(full_path, 'rb') as f:
+                l = mm.upload_reference(entity, f, original_filename)
             l.created_by = logged_in_user
             date_created = datetime.datetime.now(pytz.utc)
             l.date_created = date_created
@@ -421,7 +429,8 @@ def assign_output(request):
     if entity and full_paths:
         mm = MediaManager()
         for full_path, original_filename in zip(full_paths, original_filenames):
-            l = mm.upload_version_output(entity, open(full_path), original_filename)
+            with open(full_path, 'rb') as f:
+                l = mm.upload_version_output(entity, f, original_filename)
             l.created_by = logged_in_user
             date_created = datetime.datetime.now(pytz.utc)
             l.date_created = date_created
@@ -595,7 +604,7 @@ limit {limit}
     # if offset and limit:
     #     sql_query += "offset %s limit %s" % (offset, limit)
 
-    logger.debug('sql_query: %s' % sql_query)
+    # logger.debug('sql_query: %s' % sql_query)
 
     from sqlalchemy import text  # to be able to use "%" sign use this function
     result = DBSession.connection().execute(text(sql_query))
@@ -1436,10 +1445,10 @@ def serve_repository_files(request):
     logger.debug("logged_in_user: %s" % get_logged_in_user(request))
 
     # TODO: check file access
-    repo_id = request.matchdict['id']
+    repo_code = request.matchdict['code']
     partial_file_path = request.matchdict['partial_file_path']
 
-    repo = Repository.query.filter_by(id=repo_id).first()
+    repo = Repository.query.filter_by(code=repo_code).first()
     # assert isinstance(repo, Repository)
 
     file_full_path = os.path.join(
@@ -1624,7 +1633,7 @@ class MediaManager(object):
 
         file_full_path = img.filename
 
-        with open(file_full_path) as f:
+        with open(file_full_path, 'rb') as f:
             tags = exifread.process_file(f)
 
         orientation_string = tags.get('Image Orientation')
@@ -1663,6 +1672,10 @@ class MediaManager(object):
         # generate thumbnail for the image and save it to a tmp folder
         suffix = self.thumbnail_format
 
+        import sys
+        # if sys.version_info[0] < 3:
+        #     img = Image.open(file_full_path)
+        # else:
         img = Image.open(file_full_path)
         # do a double scale
         img.thumbnail((2 * self.thumbnail_width, 2 * self.thumbnail_height))
@@ -1911,7 +1924,8 @@ class MediaManager(object):
         :returns: str
         """
         logger.debug('link_path: %s' % link_path)
-        if not isinstance(link_path, (str, unicode)):
+        # if not isinstance(link_path, (str, unicode)):
+        if not isinstance(link_path, str):
             raise TypeError(
                 '"link_path" argument in '
                 '%(class)s.convert_file_link_to_full_path() method should be '
@@ -1951,7 +1965,8 @@ class MediaManager(object):
           (ex: /home/stalker/Stalker_Storage/b0/e6/b0e64b16c6bd4857a91be47fb2517b53.jpg)
         :returns: str
         """
-        if not isinstance(full_path, (str, unicode)):
+        # if not isinstance(full_path, (str, unicode)):
+        if not isinstance(full_path, str):
             raise TypeError(
                 '"full_path" argument in '
                 '%(class)s.convert_full_path_to_file_link() method should be '
@@ -2361,8 +2376,10 @@ class MediaManager(object):
         """formats the filename to comply with file naming rules of Stalker
         Pyramid
         """
+        import sys
         if isinstance(filename, str):
-            filename = filename.decode('utf-8')
+            if sys.version_info[0] < 3:
+                filename = filename.decode('utf-8')
 
         # replace Turkish characters
         bad_character_map = {
@@ -2407,6 +2424,7 @@ class MediaManager(object):
             re.sub(r'[\s\.\\/:\*\?"<>|=,+]+', '_', basename),
             extension
         )
+        logger.debug('filename: %s' % filename)
 
         return filename
 
@@ -2444,13 +2462,13 @@ class MediaManager(object):
         except OSError:  # Path exist
             pass
 
+        logger.debug("temp_file_full_path: %s" % temp_file_full_path)
         with open(temp_file_full_path, 'wb') as output_file:
             file_object.seek(0)
-            while True:
-                data = file_object.read(2 << 16)
-                if not data:
-                    break
+            data = file_object.read(2 << 16)
+            while data:
                 output_file.write(data)
+                data = file_object.read(2 << 16)
 
         # data is written completely, rename temp file to original file
         os.rename(temp_file_full_path, file_full_path)

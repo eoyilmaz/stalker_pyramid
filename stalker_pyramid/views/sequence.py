@@ -192,16 +192,14 @@ def get_project_sequences(request):
 
     return [
         {
-            'thumbnail_full_path': sequence.thumbnail.full_path
-            if sequence.thumbnail else None,
+            'thumbnail_full_path': sequence.thumbnail.full_path if sequence.thumbnail else None,
             'code': sequence.code,
             'id': sequence.id,
             'name': sequence.name,
             'status': sequence.status.name,
-            'status_color': sequence.status.html_class
-            if sequence.status.html_class else 'grey',
-            'created_by_id': sequence.created_by.id,
-            'created_by_name': sequence.created_by.name,
+            'status_color': sequence.status.html_class if sequence.status.html_class else 'grey',
+            'created_by_id': sequence.created_by.id if sequence.created_by else None,
+            'created_by_name': sequence.created_by.name if sequence.created_by else None,
             'description': sequence.description,
             'date_created': milliseconds_since_epoch(sequence.date_created),
             'percent_complete': sequence.percent_complete

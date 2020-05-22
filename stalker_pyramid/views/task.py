@@ -2080,7 +2080,7 @@ def cached_query_tasks(limit, offset, order_by_params, where_clause, task_id):
     if offset:
         sql_query = '%s offset %s' % (sql_query, offset)
 
-    if limit and limit > 0:
+    if limit and int(limit) > 0:
         sql_query = '%s limit %s' % (sql_query, limit)
 
     from sqlalchemy import text  # to be able to use "%" sign use this function
@@ -2103,8 +2103,8 @@ def cached_query_tasks(limit, offset, order_by_params, where_clause, task_id):
             'hasChildren': r['hasChildren'],
             'link': r['link'],
             'priority': r['priority'],
-            'dependencies': map(lambda x, y: {'id': x, 'name': y}, r['depends_to_ids'], r['depends_to_names']),
-            'resources': map(lambda x, y: {'id': x, 'name': y}, r['resource_ids'], r['resource_names']),
+            'dependencies': list(map(lambda x, y: {'id': x, 'name': y}, r['depends_to_ids'], r['depends_to_names'])),
+            'resources': list(map(lambda x, y: {'id': x, 'name': y}, r['resource_ids'], r['resource_names'])),
             'responsible': r['responsible'],
             'watcher': r['watcher'],
             'bid_timing': r['bid_timing'],

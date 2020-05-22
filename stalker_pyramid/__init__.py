@@ -23,7 +23,7 @@ Animation and VFX Studios. See docs for more information.
 """
 import pyramid_beaker
 
-from zope.sqlalchemy import ZopeTransactionExtension
+from zope.sqlalchemy import register
 
 # before anything about stalker create the defaults
 from stalker import defaults
@@ -119,8 +119,9 @@ def main(global_config, **settings):
 
     # use the ZopeTransactionExtension for session
     db.setup(settings)
-    DBSession.remove()
-    DBSession.configure(extension=ZopeTransactionExtension())
+    # DBSession.remove()
+    # DBSession.configure(extension=ZopeTransactionExtension())
+    register(DBSession)
 
     import os
     for key in os.environ:
@@ -574,7 +575,7 @@ def main(global_config, **settings):
 
     # serve files in repository
     config.add_route('serve_repository_files',
-                     '$REPO{id}/{partial_file_path:[a-zA-Z0-9/\._\-\+\(\)]*}')
+                     '$REPO{code}/{partial_file_path:[a-zA-Z0-9/\._\-\+\(\)]*}')
 
     config.add_route(
         'forced_download_repository_files',

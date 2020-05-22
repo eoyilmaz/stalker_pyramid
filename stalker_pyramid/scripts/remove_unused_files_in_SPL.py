@@ -55,7 +55,7 @@ def remove_unused_files():
             spl_relative_path = full_path.replace(path, 'SPL')
             l = Link.query.filter(Link.full_path == spl_relative_path).first()
             if l is None:
-                print spl_relative_path
+                print(spl_relative_path)
                 os.remove(full_path)
 
 

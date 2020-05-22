@@ -59,10 +59,8 @@ def cached_group_finder(login_name):
     # return the group of the given User object
     user_obj = User.query.filter_by(login=login_name).first()
     if user_obj:
-        # just return the groups names if there is any group
-        groups = user_obj.groups
-        if len(groups):
-            return map(lambda x: 'Group:' + x.name, groups)
+        # just return the groups names
+        return ['Group:%s' % x.name for x in user_obj.groups]
     return []
 
 
@@ -98,9 +96,9 @@ class RootFactory(object):
         # start with default ACLs
 
         ACLs = [
-            ('Allow', 'Group:' + defaults.admin_department_name,
+            ('Allow', 'Group:%s' % defaults.admin_department_name,
              all_permissions),
-            ('Allow', 'User:' + defaults.admin_name, all_permissions)
+            ('Allow', 'User:%s' % defaults.admin_name, all_permissions)
         ]
 
         # get all users and their ACLs

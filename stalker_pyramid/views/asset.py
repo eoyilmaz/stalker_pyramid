@@ -106,6 +106,7 @@ def update_asset(request):
 def get_assets_count(request):
     """returns the count of assets in a project
     """
+    logger.debug("get_assets_count is started")
     project_id = request.matchdict.get('id', -1)
 
     sql_query = """select count(1)
@@ -114,7 +115,9 @@ def get_assets_count(request):
     where "Tasks".project_id = %s
     """ % project_id
 
-    return DBSession.connection().execute(sql_query).fetchone()[0]
+    asset_count = DBSession.connection().execute(sql_query).fetchone()[0]
+    logger.debug("get_assets_count: %s" % asset_count)
+    return asset_count
 
 
 @view_config(
