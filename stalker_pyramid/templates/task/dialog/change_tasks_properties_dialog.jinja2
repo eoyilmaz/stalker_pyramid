@@ -209,7 +209,7 @@
                 });
             });
 
-            var submit_url_list = ['/tasks/change/resources','/tasks/set_start_end_date'];
+            var submit_url_list = ['/tasks/change/resources']; //, '/tasks/set_start_end_date'];
             var task_action = $('#task_action');
 
             var change_users_control =  $('#change_users_control');
@@ -223,7 +223,7 @@
                 var action = $(this).val();
                 switch (action){
                     case 'change_resources':
-                        submit_url_list = ['/tasks/change/resources','/tasks/set_start_end_date'];
+                        submit_url_list = ['/tasks/change/resources']; //,'/tasks/set_start_end_date'];
 {#                        submit_form_url =  '/tasks/change/resources';#}
                         change_users_control.show();
                         force_status_control.hide();
@@ -232,7 +232,7 @@
                         break;
                     case 'change_responsible':
 {#                        submit_form_url =  '/tasks/change/responsible';#}
-                        submit_url_list = ['/tasks/change/responsible','/tasks/set_start_end_date'];
+                        submit_url_list = ['/tasks/change/responsible']; //, '/tasks/set_start_end_date'];
                         change_users_control.show();
                         force_status_control.hide();
                         request_revision_control.hide();
@@ -240,7 +240,7 @@
                         break;
                     case 'change_resources_responsible':
 {#                        submit_form_url =  '/tasks/change/resources_responsible';#}
-                        submit_url_list = ['/tasks/change/resources_responsible','/tasks/set_start_end_date'];
+                        submit_url_list = ['/tasks/change/resources_responsible'];//, '/tasks/set_start_end_date'];
 
                         change_users_control.show();
                         force_status_control.hide();
@@ -257,7 +257,7 @@
                         break;
                     case 'request_revisions':
 {#                        submit_form_url =  '/tasks/request_revisions';#}
-                        submit_url_list = ['/tasks/request_revisions','/tasks/set_start_end_date'];
+                        submit_url_list = ['/tasks/request_revisions']; //, '/tasks/set_start_end_date'];
                         change_users_control.hide();
                         force_status_control.show();
                         request_revision_control.show();
@@ -338,28 +338,28 @@
                 e.preventDefault();
                 submit_button.button('loading');
 
-                var task_ids = jQuery('#grid-table').jqGrid('getGridParam','selarrrow');
+                var task_ids = jQuery('#grid-table').jqGrid('getGridParam', 'selarrrow');
                 var _query = "?project_id={{ tasks[0].project.id }}";
-                for (var i=0; i<task_ids.length; i++){
-                    _query += "&task_ids="+task_ids[i];
+                for (var i=0; i < task_ids.length; i++){
+                    _query += "&task_ids=" + task_ids[i];
                 }
 
-                console.log("_query: "+ _query);
-                console.log("submit_url_list[0]: "+ submit_url_list);
+                console.log("_query: " + _query);
+                console.log("submit_url_list[0]: " + submit_url_list);
 
-                if (submit_url_list.indexOf('/tasks/set_start_end_date') > -1) {
-                    var start_end = get_date_range('start_end_date_range_picker');
-                    var start = start_end[0];
-                    var end = start_end[1];
-                    if (start && end){
-                        _query += "&start="+start.toUTCString()+"&end="+end.toUTCString();
-                    }
-                    else{
-                        bootbox.alert("Hooop ! Start End Date girmedin!");
-                        submit_button.button('reset');
-                        return;
-                    }
-                }
+                {#if (submit_url_list.indexOf('/tasks/set_start_end_date') > -1) {#}
+                {#    var start_end = get_date_range('start_end_date_range_picker');#}
+                {#    var start = start_end[0];#}
+                {#    var end = start_end[1];#}
+                {#    if (start && end){#}
+                {#        _query += "&start="+start.toUTCString()+"&end="+end.toUTCString();#}
+                {#    }#}
+                {#    else{#}
+                {#        bootbox.alert("Hooop ! Start End Date girmedin!");#}
+                {#        submit_button.button('reset');#}
+                {#        return;#}
+                {#    }#}
+                {#}#}
 
                 post_actions(_query);
             });
