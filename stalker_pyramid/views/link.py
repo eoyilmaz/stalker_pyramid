@@ -1925,12 +1925,14 @@ class MediaManager(object):
         """
         logger.debug('link_path: %s' % link_path)
         # if not isinstance(link_path, (str, unicode)):
-        if not isinstance(link_path, str):
+        import stalker_pyramid
+        if not isinstance(link_path, stalker_pyramid.__string_types__):
             raise TypeError(
                 '"link_path" argument in '
                 '%(class)s.convert_file_link_to_full_path() method should be '
-                'a str, not %(link_path_class)s' % {
+                'a %(string_types), not %(link_path_class)s' % {
                     'class': cls.__name__,
+                    'string_types': stalker_pyramid.__string_types__,
                     'link_path_class': link_path.__class__.__name__
                 }
             )
@@ -1966,12 +1968,14 @@ class MediaManager(object):
         :returns: str
         """
         # if not isinstance(full_path, (str, unicode)):
-        if not isinstance(full_path, str):
+        import stalker_pyramid
+        if not isinstance(full_path, stalker_pyramid.__string_types__):
             raise TypeError(
                 '"full_path" argument in '
                 '%(class)s.convert_full_path_to_file_link() method should be '
-                'a str, not %(full_path_class)s' % {
+                'a %(string_types), not %(full_path_class)s' % {
                     'class': cls.__name__,
+                    'string_types': stalker_pyramid.__string_types__,
                     'full_path_class': full_path.__class__.__name__
                 }
             )

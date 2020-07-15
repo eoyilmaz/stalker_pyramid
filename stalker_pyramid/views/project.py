@@ -463,10 +463,14 @@ def get_entity_projects(request):
 
     for project in entity.projects:
 
-        lead = ProjectUser.query\
+        project_user = ProjectUser.query\
             .filter_by(project=project)\
             .filter_by(role=lead_role)\
             .first()
+
+        lead = None
+        if project_user:
+            lead = User.query.get(project_user.user_id)
 
         return_data.append(
             {

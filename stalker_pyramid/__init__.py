@@ -21,6 +21,7 @@
 Stalker Pyramid is a Production Asset Management System (ProdAM) designed for
 Animation and VFX Studios. See docs for more information.
 """
+import sys
 import pyramid_beaker
 
 from zope.sqlalchemy import register
@@ -33,7 +34,7 @@ from stalker import SimpleEntity, Project, Budget
 import logging
 
 
-__version__ = '0.1.11'
+__version__ = '0.1.12'
 
 __title__ = "stalker_pyramid"
 __description__ = 'Stalker (ProdAM) Based Web App'
@@ -56,6 +57,13 @@ logger = logging.getLogger(logger_name)
 
 stalker_server_external_url = None
 stalker_server_internal_url = None
+
+
+__string_types__ = []
+if sys.version_info[0] >= 3:  # Python 3
+    __string_types__ = tuple([str])
+else:  # Python 2
+    __string_types__ = tuple([str, unicode])
 
 
 def get_generic_text_attr(self, attr):
@@ -87,8 +95,6 @@ SimpleEntity.set_generic_text_attr = set_generic_text_attr
 def get_active_budget(self):
     """patch Simple entity to add new functionality
     """
-
-
     import json
     data = {}
     active_budget = None
@@ -100,6 +106,7 @@ def get_active_budget(self):
             active_budget = Budget.query.filter(Budget.id == active_budget_id).first()
 
     return active_budget
+
 
 Project.get_active_budget = get_active_budget
 
