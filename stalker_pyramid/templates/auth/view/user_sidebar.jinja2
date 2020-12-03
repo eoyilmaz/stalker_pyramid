@@ -26,7 +26,9 @@
             "{%- if request.current_route_path() == request.route_path('list_user_tasks', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('list_user_tasks', id=user.id) }}',
             get_icon('task'),
-            '/users/{{ entity.id }}/tasks/count/'
+            {#'/users/{{ entity.id }}/tasks/count/?open_projects=1'#}
+            '/tasks/count/?resource_id={{ entity.id }}&leaf_only=1&has_resource=1&project_status=RTS&project_status=WIP'
+
         );
 
         menu_of(
@@ -34,7 +36,7 @@
             "{%- if request.current_route_path() == request.route_path('list_user_tasks_responsible_of', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('list_user_tasks_responsible_of', id=user.id) }}',
             get_icon('task'),
-            '/tasks/count/?responsible_id={{ entity.id }}&leaf_only=1&has_resource=1'
+            '/tasks/count/?responsible_id={{ entity.id }}&leaf_only=1&has_resource=1&project_status=RTS&project_status=WIP'
         );
 
         menu_of(

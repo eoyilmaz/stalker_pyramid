@@ -34,7 +34,7 @@ from stalker import SimpleEntity, Project, Budget
 import logging
 
 
-__version__ = '0.1.12'
+__version__ = '0.1.13'
 
 __title__ = "stalker_pyramid"
 __description__ = 'Stalker (ProdAM) Based Web App'

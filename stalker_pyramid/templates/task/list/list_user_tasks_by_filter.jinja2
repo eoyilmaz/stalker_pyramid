@@ -466,7 +466,7 @@
         var table_body = table.find('tbody');
         var row_template = doT.template($('#tmpl_itemRow').html());
 
-        var query_str = 'status_code='+status_code+'&project_id='+project_id;
+        var query_str = 'status_code=' + status_code + '&project_id=' + project_id;
         var tableDataAddress = '/users/{{ entity.id }}/tasks/simple/?' + query_str;
 
 

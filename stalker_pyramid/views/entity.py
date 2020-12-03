@@ -239,7 +239,6 @@ logger = logging.getLogger(logger_name)
     route_name='view_asset',
     renderer='templates/task/view/view_task.jinja2'
 )
-
 @view_config(
     route_name='view_shot',
     renderer='templates/task/view/view_task.jinja2'
@@ -348,7 +347,6 @@ logger = logging.getLogger(logger_name)
     route_name='list_project_reviews',
     renderer='templates/review/list/list_reviews.jinja2'
 )
-
 @view_config(
     route_name='list_entity_resources',
     renderer='templates/resource/list/list_entity_resources.jinja2'

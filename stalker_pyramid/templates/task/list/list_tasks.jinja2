@@ -578,7 +578,7 @@ require([
     {#var tasks_memory_store = new Memory();#}
 
     {% if entity.entity_type == 'User' %}
-        target = '{{ request.route_url('get_entity_tasks', id=entity.id) }}';
+        target = '{{ request.route_url('get_entity_tasks', id=entity.id) }}' + '?open_projects=1';
     {% endif %}
 
     var tasks_jsonRest_store = new Rest({

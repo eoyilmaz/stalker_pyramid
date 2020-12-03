@@ -455,14 +455,20 @@ def get_entity_projects(request):
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
 
-    logger.debug('entity.projects count :%s', entity.projects)
+    # logger.debug('entity.projects count :%s', len(entity.projects))
 
     return_data = []
-
     lead_role = query_role('Lead')
+    # only list open projects
 
-    for project in entity.projects:
+    status_cmpl = Status.query.filter(Status.code=='CMPL').first()
 
+    if entity.entity_type == "User":
+        entity_projects = Project.query.filter(Project.users.contains(entity)).filter(Project.status!=status_cmpl).order_by(Project.name).all()
+    else:
+        entity_projects = sorted(entity.projects, key=lambda x: x.name)
+
+    for project in entity_projects:
         project_user = ProjectUser.query\
             .filter_by(project=project)\
             .filter_by(role=lead_role)\

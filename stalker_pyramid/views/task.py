@@ -1599,6 +1599,19 @@ def generate_where_clause(params):
             compress_buffer(temp_buffer, 'or')
         )
 
+    # project_statuses
+    temp_buffer = []
+    for project_status in params.get('project_status[]', params.get('project_status', [])):
+        temp_buffer.append(
+            """"Project_Statuses".code = '{project_status}'""".format(
+                project_status=project_status
+            )
+        )
+    if len(temp_buffer):
+        where_string_buffer.append(
+            compress_buffer(temp_buffer, 'or')
+        )
+
     # resource_id
     temp_buffer = []
     for resource_id in params.get('resource_id[]',
@@ -1671,7 +1684,7 @@ def generate_where_clause(params):
         if len(statuses) > 1:
             for i in range(1, len(statuses)):
                 where_string_status += \
-                    """\n{indent}or "Statuses".code ilike '%{status}%'""".format(status=statuses[i],indent=' '*4)
+                    """\n{indent}or "Statuses".code ilike '%{status}%'""".format(status=statuses[i], indent=' ' * 4)
 
         where_string_status += """\n    )"""
 
@@ -1700,7 +1713,9 @@ def generate_where_clause(params):
         where_string = \
             'where (\n%s\n)' % '\n{indent}and '.join(where_string_buffer)
         where_string = where_string.format(indent=' ' * 4)
-    #logger.debug("WHERE STRING: %s" % where_string)
+
+    # logger.debug("WHERE STRING: %s" % where_string)
+
     return where_string
 
 
@@ -1773,7 +1788,7 @@ def query_tasks(
         order_by_params=None,
         where_clause=None,
         task_id=None):
-    """an intermediate function to make caching work flowlessly
+    """an intermediate function to make caching work flawlessly
     """
     return cached_query_tasks(
         limit,
@@ -1963,6 +1978,10 @@ def cached_query_tasks(limit, offset, order_by_params, where_clause, task_id):
             join "Types" on "Task_SimpleEntities".type_id = "Types".id
             join "SimpleEntities" as "Type_SimpleEntities" on "Types".id = "Type_SimpleEntities".id
         ) as task_types on tasks.id = task_types.id
+
+        -- Project related data
+        join "Projects" on "Tasks".project_id = "Projects".id
+        join "Statuses" as "Project_Statuses" on "Projects".status_id = "Project_Statuses".id
 
         %(where_clause)s
 
@@ -2344,6 +2363,10 @@ def get_cached_tasks_count(entity_type, where_clause, task_id):
             join "SimpleEntities" as "Type_SimpleEntities" on "Types".id = "Type_SimpleEntities".id
         ) as task_types on tasks.id = task_types.id
 
+        -- Project related data
+        join "Projects" on "Tasks".project_id = "Projects".id
+        join "Statuses" as "Project_Statuses" on "Projects".status_id = "Project_Statuses".id
+
         %(where_clause)s
         ) as result
         """
@@ -2507,17 +2530,25 @@ def get_entity_tasks(request):
     parent_id = request.params.get('parent_id')
     parent = Entity.query.filter_by(id=parent_id).first()
 
+    open_projects = request.params.get('open_projects')
+
     return_data = []
     # set the content range to prevent JSONRest Store to query the data twice
     content_range = '%s-%s/%s'
 
     if entity:
         if parent:
-            #logger.debug('there is a parent')
+            # logger.debug('there is a parent')
             tasks = []
             if isinstance(entity, User):
                 # get user tasks
-                entity_tasks = entity.tasks
+                # only include open_projects
+                if open_projects:
+                    entity_tasks = Task.query.join(Project).filter(Task.resources.contain(entity)).filter()
+                else:
+                    rts = Status.query.filter(Status.code == 'RTS').first()
+                    wip = Status.query.filter(Status.code == 'WIP').first()
+                    entity_tasks = DBSession.query(Task).join(Task.project).filter(Task.resources.contains(entity)).filter(Project.status_id.in_([rts.id, wip.id])).all()
 
                 # add all parents
                 entity_tasks_and_parents = []
@@ -2547,7 +2578,7 @@ def get_entity_tasks(request):
 
             return_data = convert_to_dgrid_gantt_task_format(tasks)
         else:
-            #logger.debug('no parent')
+            # logger.debug('no parent')
             # no parent,
             # just return projects of the entity
             entity_projects = []
@@ -3040,9 +3071,21 @@ def get_user_tasks_count(request):
     # get all the tasks related in the given project
     user_id = request.matchdict.get('id', -1)
 
-    sql_query = """select count(task_id)
+    # get open_projects parameter
+    open_projects = request.GET.get("open_projects")
+
+    if not open_projects:
+        sql_query = """select count(task_id)
 from "Task_Resources"
 where "Task_Resources".resource_id = %s
+""" % user_id
+    else:
+        sql_query = """select count(task_id)
+from "Task_Resources"
+join "Tasks" on "Task_Resources".task_id = "Tasks".id
+join "Projects" on "Tasks".project_id = "Projects".id
+join "Statuses" on "Projects".status_id = "Statuses".id
+where "Task_Resources".resource_id = %s and ("Statuses".code = 'RTS' or "Statuses".code = 'WIP')
 """ % user_id
 
     return DBSession.connection().execute(sql_query).fetchone()[0]
