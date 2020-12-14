@@ -139,13 +139,13 @@
             if (brand.val()){
                 _client_query +="&client_ids="+brand.val();
             }
-            console.log("project_form.serialize(): _client_query="+_client_query);
+            console.log("project_form.serialize(): _client_query=" + _client_query);
 
 
             if (project_form.validate()) {
                 $.post(
                     project_form.attr('action'),
-                    project_form.serialize()+"&generic_text="+generic_text+_client_query
+                    project_form.serialize() + "&generic_text=" + generic_text + _client_query
                 ).done(function () {
                     window.location.reload();
                 }).fail(function (jqXHR) {

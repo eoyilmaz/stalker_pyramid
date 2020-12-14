@@ -63,7 +63,6 @@
     {% set page_title='Update' %}
     {% include 'page_header.jinja2' %}
 
-
       <div class="row-fluid">
         <div class="widget-box span12">
             <div class="widget-header widget-header-small header-color-grey">
@@ -108,11 +107,7 @@
 {% block extrascripts %}
 
     <script type="text/javascript">
-
-
         $(document).ready(function () {
-
-
             var submit_button = $('#submit_button');
             submit_button.on('click', function (e) {
 
@@ -121,16 +116,17 @@
                 submit_button.button('loading');
 
                 var studio_update_form = $("#studio_form");
-                $.post('/studios/{{ entity.id}}/update', studio_update_form.serialize()
-                        ).done(function (response_text) {
-                            bootbox.alert(response_text);
-                            window.location.assign('{{ came_from }}');
-                            submit_button.button('reset');
-                        }).fail(function (jqXHR) {
-                            bootbox.alert(jqXHR.responseText);
-                            submit_button.button('reset');
-                        });
 
+                let form_data = studio_update_form.serialize();
+                $.post('/studios/{{ entity.id}}/update', form_data)
+                    .done(function (response_text) {
+                        bootbox.alert(response_text);
+                        window.location.assign('{{ came_from }}');
+                        submit_button.button('reset');
+                    }).fail(function (jqXHR) {
+                        bootbox.alert(jqXHR.responseText);
+                        submit_button.button('reset');
+                    });
             });
         });
 

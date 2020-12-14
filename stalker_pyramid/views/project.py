@@ -40,16 +40,14 @@ from stalker_pyramid.views import (get_date_range,
                                    milliseconds_since_epoch,
                                    PermissionChecker,
                                    get_multi_integer, get_multi_string)
-# from stalker_pyramid.views.budget import update_budgetenties_startdate
 
 from stalker_pyramid.views.role import query_role
 from stalker_pyramid.views.type import query_type
 
-#logger = logging.getLogger(__name__)
-#logger.setLevel(logging.DEBUG)
+# logger = logging.getLogger(__name__)
+# logger.setLevel(logging.DEBUG)
 from stalker_pyramid import logger_name
 logger = logging.getLogger(logger_name)
-
 
 
 @view_config(
@@ -242,7 +240,6 @@ def update_project(request):
         transaction.abort()
         return Response('Can not find a status with code: %s' % status_id, 500)
 
-
     clients = []
     try:
         client_ids = get_multi_integer(request, 'client_ids')
@@ -279,10 +276,8 @@ def update_project(request):
 
     new_generic_data = json.loads(generic_text)
 
-    if name and fps and start and end and type_id:
-
-        project_type = Type.query.filter_by(target_entity_type="Project").\
-                                filter_by(id=type_id).first()
+    if name and fps and start and end:
+        project_type = Type.query.filter_by(target_entity_type="Project").filter_by(id=type_id).first()
 
         time_delta = milliseconds_since_epoch(start) - \
                      milliseconds_since_epoch(project.start)

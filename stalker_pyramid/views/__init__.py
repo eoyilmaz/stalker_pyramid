@@ -202,10 +202,17 @@ def get_time(request, time_attr):
     :param time_attr: the attribute name
     :return: datetime.timedelta
     """
-    time_part = datetime.datetime.strptime(
-        request.params[time_attr][:-4],
-        '%a, %d %b %Y %H:%M:%S'
-    )
+    # logger.debug("request.params[time_attr]: %s" % request.params[time_attr])
+    try:
+        time_part = datetime.datetime.strptime(
+            request.params[time_attr][:-4],
+            '%a, %d %b %Y %H:%M:%S'
+        )
+    except ValueError:
+        time_part = datetime.datetime.strptime(
+            request.params[time_attr],
+            '%H:%M'
+        )
 
     return datetime.timedelta(
         hours=time_part.hour,

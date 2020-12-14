@@ -1,9 +1,9 @@
 <table class="table table-striped table-bordered">
     <thead>
-        <tr style="background-color: #587a5c; color:#FFFFFF">
-            <th style="width:25%">Musteri</th>
-            <th style="width:25%">Marka</th>
-            <th style="width:25%">Urun</th>
+        <tr style="background-color: #587a5c;">
+            <th style="width:25%">Client</th>
+            <th style="width:25%">Brand</th>
+            <th style="width:25%">Product</th>
             <th style="width:25%">Contact</th>
         </tr>
     </thead>
@@ -13,47 +13,47 @@
             <td>{{ project.get_generic_text_attr("product_project_name") }}</td>
             <td>{{ project.get_generic_text_attr("mark_name") }}</td>
             <td><select id="contact"
-                                       name='contact'
-                                       placeholder="Contact"
-                                       required></select></td>
+                        name='contact'
+                        placeholder="Contact"
+                        required></select></td>
         </tr>
     </tbody>
 </table>
 
 <table class="table table-striped table-bordered">
     <thead>
-        <tr style="background-color: #297a7d; color:#FFFFFF">
-            <th style="width:25%">Reklam Ajansi</th>
-            <th style="width:25%">Yaratici Yönetmen</th>
-            <th style="width:25%">Müşteri Direktörü</th>
-            <th style="width:25%">Ajans Yapımcısı</th>
+        <tr style="background-color: #297a7d;">
+            <th style="width:25%">Agency</th>
+            <th style="width:25%">Creative Director</th>
+            <th style="width:25%">Customer Director</th>
+            <th style="width:25%">Agency Producer</th>
         </tr>
     </thead>
     <tbody>
         <tr>
             <td><span class="grey" id="agency_name"></span></td>
             <td><select id="creative_director"
-                                       name='creative_director'
-                                       placeholder="Yaratici Yönetmen"
-                                       required></select></td>
-            <td> <select id="customer_director"
-                                       name='customer_director'
-                                       placeholder="Müşteri Direktörü"
-                                       required></select></td>
+                        name='creative_director'
+                        placeholder="Creative Director"
+                        required></select></td>
+            <td><select id="customer_director"
+                        name='customer_director'
+                        placeholder="Customer Director"
+                        required></select></td>
             <td><select id="agency_producer"
-                                       name='agency_producer'
-                                       placeholder="Ajans Yapımcısı"
-                                       required></select></td>
+                        name='agency_producer'
+                        placeholder="Agency Producer"
+                        required></select></td>
         </tr>
     </tbody>
 </table>
 
 <table class="table table-striped table-bordered">
     <thead>
-        <tr style="background-color: #777b31; color:#FFFFFF">
-            <th style="width:20%">Yapim Sirketi</th>
-            <th style="width:20%">Yönetmen</th>
-            <th style="width:20%">Yapımcı</th>
+        <tr style="background-color: #777b31;">
+            <th style="width:20%">Production Company</th>
+            <th style="width:20%">Director</th>
+            <th style="width:20%">Producer</th>
             <th style="width:20%">Supervisor</th>
             <th style="width:20%">Coordinator</th>
         </tr>
@@ -62,193 +62,28 @@
         <tr>
             <td><span class="grey" id="production_firm_name"></span></td>
             <td><select id="director"
-                                       name='director'
-                                       placeholder="Yönetmen"
-                                       required></select></td>
+                        name='director'
+                        placeholder="Director"
+                        required></select></td>
             <td><select id="producer"
-                                       name='producer'
-                                       placeholder="Yapımcı"
-                                       required></select></td>
+                        name='producer'
+                        placeholder="Producer"
+                        required></select></td>
             <td><select id="supervisor"
-                                       name='supervisor'
-                                       placeholder="Supervisor"
-                                       required></select></td>
+                        name='supervisor'
+                        placeholder="Supervisor"
+                        required></select></td>
             <td><select id="coordinator"
-                                       name='coordinator'
-                                       placeholder="Coordinator"
-                                       required></select></td>
+                        name='coordinator'
+                        placeholder="Coordinator"
+                        required></select></td>
         </tr>
     </tbody>
 </table>
-{#<div class="widget-box">#}
-{#    <div class="widget-header widget-header-small header-color-green">#}
-{#        <h4 class="smaller">#}
-{#            <i class="icon-info-sign"></i>#}
-{#            Roles in Project#}
-{#        </h4>#}
-{#    </div>#}
-{#    <div class="widget-body">#}
-{#        <div class="widget-main" >#}
-{#            <div class='row-fluid'>#}
-{#                <form id='project_user_form'#}
-{#                  class='span12 form-horizontal'#}
-{#                  role='form'#}
-{#                  method="post"#}
-{#                  >#}
-{#                <div class="row-fluid">#}
-{#                    <h4 class="header blue bolder smaller">Musteri:#}
-{#                        <span class="grey" id="brand_name"></span>#}
-{##}
-{#                    </h4>#}
-{#                    <div id="brand_controls" class="hide">#}
-{#                         <div class="control-group">#}
-{#                            <label class="span3 control-label"#}
-{#                                   for="contact">Contact</label>#}
-{#                            <div class="span9">#}
-{#                                <select id="contact"#}
-{#                                       name='contact'#}
-{#                                       placeholder="Contact"#}
-{#                                       required></select>#}
-{#                            </div>#}
-{#                        </div>#}
-{#                    </div>#}
-{##}
-{#                    <h4 class="header blue bolder smaller">Reklam Ajansi:#}
-{#                        <span class="grey" id="agency_name"></span>#}
-{#                    </h4>#}
-{#                    <div id="agency_controls" class="hide">#}
-{#                        <div class="control-group">#}
-{#                            <label class="span3 control-label"#}
-{#                                   for="director">Yaratici Yönetmen</label>#}
-{#                            <div class="span9">#}
-{#                                <select id="creative_director"#}
-{#                                       name='creative_director'#}
-{#                                       placeholder="Yaratici Yönetmen"#}
-{#                                       required></select>#}
-{#                            </div>#}
-{#                        </div>#}
-{#                        <div class="control-group">#}
-{#                            <label class="span3 control-label"#}
-{#                                   for="customer_director">Müşteri Direktörü</label>#}
-{##}
-{#                            <div class="span9">#}
-{#                                <select id="customer_director"#}
-{#                                       name='customer_director'#}
-{#                                       placeholder="Müşteri Direktörü"#}
-{#                                       required></select>#}
-{#                            </div>#}
-{#                        </div>#}
-{#                        <div class="control-group">#}
-{#                            <label class="span3 control-label"#}
-{#                                   for="agency_producer">Ajans Yapımcısı</label>#}
-{#                            <div class="span9">#}
-{#                                <select id="agency_producer"#}
-{#                                       name='agency_producer'#}
-{#                                       placeholder="Ajans Yapımcısı"#}
-{#                                       required></select>#}
-{#                            </div>#}
-{#                        </div>#}
-{#                    </div>#}
-{#                    <h4 class="header blue bolder smaller">Yapim Sirketi:#}
-{#                        <span class="grey" id="production_firm_name"></span>#}
-{##}
-{#                    </h4>#}
-{#                    <div id="production_firm_controls" class="hide">#}
-{#                        <div class="control-group">#}
-{#                            <label class="span3 control-label"#}
-{#                                   for="director">Yönetmen</label>#}
-{#                            <div class="span9">#}
-{#                                <select id="director"#}
-{#                                       name='director'#}
-{#                                       placeholder="Yönetmen"#}
-{#                                       required></select>#}
-{#                            </div>#}
-{#                        </div>#}
-{#                        <div class="control-group">#}
-{#                            <label class="span3 control-label"#}
-{#                                   for="producer">Yapımcı</label>#}
-{#                            <div class="span9">#}
-{#                                <select id="producer"#}
-{#                                       name='producer'#}
-{#                                       placeholder="Yapımcı"#}
-{#                                       required></select>#}
-{#                            </div>#}
-{#                        </div>#}
-{#                        <div class="control-group">#}
-{#                            <label class="span3 control-label"#}
-{#                                   for="supervisor">Supervisor</label>#}
-{#                            <div class="span9">#}
-{#                                <select id="supervisor"#}
-{#                                       name='supervisor'#}
-{#                                       placeholder="Supervisor"#}
-{#                                       required></select>#}
-{#                            </div>#}
-{#                        </div>#}
-{#                        <div class="control-group">#}
-{#                            <label class="span3 control-label"#}
-{#                                   for="coordinator">Coordinator</label>#}
-{#                            <div class="span9">#}
-{#                                <select id="coordinator"#}
-{#                                       name='coordinator'#}
-{#                                       placeholder="Coordinator"#}
-{#                                       required></select>#}
-{#                            </div>#}
-{#                        </div>#}
-{#                    </div>#}
-{#                </div>#}
-{#                <h4 class="header blue bolder smaller">{{ studio.name }}</h4>#}
-{#                <div class="control-group">#}
-{#                    <label class="span3 control-label"#}
-{#                           for="studio_director">Yönetmen</label>#}
-{#                    <div class="span9">#}
-{#                        <select id="studio_director"#}
-{#                               name='studio_director'#}
-{#                               placeholder="Yönetmen"#}
-{#                               required></select>#}
-{#                    </div>#}
-{#                </div>#}
-{#                <div class="control-group">#}
-{#                    <label class="span3 control-label"#}
-{#                           for="studio_producer">Yapımcı</label>#}
-{#                    <div class="span9">#}
-{#                        <select id="studio_producer"#}
-{#                               name='studio_producer'#}
-{#                               placeholder="Yapımcı"#}
-{#                               required></select>#}
-{#                    </div>#}
-{#                </div>#}
-{#                <div class="control-group">#}
-{#                    <label class="span3 control-label"#}
-{#                           for="studio_supervisor">Supervisor</label>#}
-{#                    <div class="span9">#}
-{#                        <select id="studio_supervisor"#}
-{#                               name='studio_supervisor'#}
-{#                               placeholder="Supervisor"#}
-{#                               required></select>#}
-{#                    </div>#}
-{#                </div>#}
-{#                <div class="control-group">#}
-{#                    <label class="span3 control-label"#}
-{#                           for="studio_coordinator">Coordinator</label>#}
-{#                    <div class="span9">#}
-{#                        <select id="studio_coordinator"#}
-{#                               name='studio_coordinator'#}
-{#                               placeholder="Coordinator"#}
-{#                               required></select>#}
-{#                    </div>#}
-{#                </div>#}
-{#            </form>#}
-{#            </div>#}
-{#        </div>#}
-{#    </div>#}
-{#</div>#}
 
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery-ui-1.10.3.custom.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.inputlimiter.1.3.1.min.js") }}'></script>
-
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/additional-methods.min.js") }}'></script>
-
-
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery-ui-1.10.3.custom.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.inputlimiter.1.3.1.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/additional-methods.min.js") }}'></script>
 
 <script type="text/javascript">
     function get_project_client_by_type(client_type){
@@ -273,7 +108,7 @@
             var client_id = get_project_client_by_type(client_type)['id'];
             var client_name = get_project_client_by_type(client_type)['name'];
 
-            if (client_id != -1){
+            if (client_id !== -1){
                 $('#'+client_type_field_name+'_name').append('<a class="green" href="/clients/'+client_id+'/view">'+client_name+'</a>');
                 $('#'+client_type_field_name+'_controls').show();
 
@@ -312,7 +147,7 @@
                                     title: "Success!",
                                     message: response_text
                                 });
-               if (second_post_url != ""){
+               if (second_post_url !== ""){
                     setTimeout(function () {
                         $.post(
                             second_post_url
@@ -351,44 +186,14 @@
             );
         {% endraw %}
 
-
-
         $.getJSON('/entities/{{ studio.id }}/users/').then(function (p_data) {
             var studio_users = p_data;
-{#            var studio_director = $('#studio_director');#}
-{#            chosen_searchable_field_creator_by_data(studio_director, user_option_template, studio_users);#}
-{#            studio_director.on('change', function () {#}
-{#                set_user_role($(this).val(), "Studio Yonetmen", "");#}
-{#            });#}
-{#            set_field_value(studio_director, '/entities/{{ project.id }}/role_user/?role_name=Studio%20Yonetmen');#}
-{##}
-{#            var studio_producer = $('#studio_producer');#}
-{#            chosen_searchable_field_creator_by_data(studio_producer, user_option_template, studio_users);#}
-{#            studio_producer.on('change', function () {#}
-{#                set_user_role($(this).val(), "Studio Yapimci", "");#}
-{#            });#}
-{#            set_field_value(studio_producer, '/entities/{{ project.id }}/role_user/?role_name=Studio%20Yapimci');#}
-{##}
-{#            var studio_supervisor = $('#studio_supervisor');#}
-{#            chosen_searchable_field_creator_by_data(studio_supervisor, user_option_template, studio_users);#}
-{#            studio_supervisor.on('change', function () {#}
-{#                set_user_role($(this).val(), "Studio Supervisor", "");#}
-{#            });#}
-{#            set_field_value(studio_supervisor, '/entities/{{ project.id }}/role_user/?role_name=Studio%20Supervisor');#}
-{##}
-{#            var studio_coordinator = $('#studio_coordinator');#}
-{#            chosen_searchable_field_creator_by_data(studio_coordinator, user_option_template, studio_users);#}
-{#            studio_coordinator.on('change', function () {#}
-{#                set_user_role($(this).val(), "Studio Coordinator", "");#}
-{#            });#}
-{#            set_field_value(studio_coordinator, '/entities/{{ project.id }}/role_user/?role_name=Studio%20Coordinator');#}
-
             get_client_users("Brand","brand", [{'field_name':"contact", 'role_name':"Contact"}], studio_users);
-            get_client_users("Agency","agency", [{'field_name':"creative_director", 'role_name':"Yaratici Yönetmen"},
-                                        {'field_name':"customer_director", 'role_name':"Müşteri Direktörü"},
-                                        {'field_name':"agency_producer", 'role_name':"Ajans Yapımcısı"}], studio_users);
-            get_client_users("Production House","production_firm", [{'field_name':"director", 'role_name':"Yönetmen"},
-                                        {'field_name':"producer", 'role_name':"Yapımcı"},
+            get_client_users("Agency","agency", [{'field_name':"creative_director", 'role_name':"Creative Director"},
+                                        {'field_name':"customer_director", 'role_name':"Customer Director"},
+                                        {'field_name':"agency_producer", 'role_name':"Agency Producer"}], studio_users);
+            get_client_users("Production House","production_firm", [{'field_name':"director", 'role_name':"Director"},
+                                        {'field_name':"producer", 'role_name':"Producer"},
                                         {'field_name':"supervisor", 'role_name':"Supervisor"},
                                         {'field_name':"coordinator", 'role_name':"Coordinator"}], studio_users);
         });
@@ -415,7 +220,6 @@
              };
             var generic_text =  JSON.stringify(g_data);
 
-
             var _client_query = '';
             if (production_firm.val()){
                 _client_query +="&client_ids="+production_firm.val();
@@ -428,11 +232,10 @@
             }
             console.log("project_form.serialize(): _client_query="+_client_query);
 
-
             if (project_form.validate()) {
                 $.post(
                     project_form.attr('action'),
-                    project_form.serialize()+"&generic_text="+generic_text+_client_query
+                    project_form.serialize() + "&generic_text="+generic_text+_client_query
                 ).done(function () {
                     window.location.reload();
                 }).fail(function (jqXHR) {

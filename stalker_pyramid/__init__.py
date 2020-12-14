@@ -371,9 +371,9 @@ def main(global_config, **settings):
 
     # *************************************************************************
     # Project
-    config.add_route('create_project_dialog',      'projects/{id}/create/dialog')
-    config.add_route('update_project_dialog',      'projects/{id}/update/dialog')
-    config.add_route('update_project_details_view','projects/{id}/update/details/view')
+    config.add_route('create_project_dialog',       'projects/{id}/create/dialog')
+    config.add_route('update_project_dialog',       'projects/{id}/update/dialog')
+    config.add_route('update_project_details_view', 'projects/{id}/update/details/view')
 
     config.add_route('get_project_tasks',          'projects/{id}/tasks/')  # json
     config.add_route('get_project_tasks_count',    'projects/{id}/tasks/count/')  # json
