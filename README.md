@@ -1,12 +1,8 @@
-=====
 About
 =====
 
-Stalker is an Open Source Production Asset Management (ProdAM) System designed 
-specifically for Animation and VFX Studios but can be used for any kind of
-projects. Stalker is licensed under LGPL v2.1. And Stalker Pyramid is the
-Pyramid Web App package based on Stalker. Basically it supplies the web
-interfaces to the system. It is also licensed under LGPL v2.1.
+Stalker Pyramid is the Pyramid Web App package based on [Stalker](https://github.com/eoyilmaz/stalker). Basically it
+supplies the web interfaces to the system. It is also licensed under LGPL v2.1.
 
 Features:
  * Designed for animation and VFX Studios.
@@ -33,10 +29,7 @@ Stalker Pyramid is build over these other OpenSource projects:
 Source
 ======
 
-The latest development version is available in `Google Project page of
-Stalker`_ or can be directly cloned with the following command if you already
-have mercurial installed::
+The latest development version is available in [GitHub](https://www.github.com/eoyilmaz/stalker_pyramid)
+or can be directly cloned with the following command if you already have mercurial installed::
 
-  hg clone https://stalker-pyramid.googlecode.com/hg/ stalker_pyramid
-
-.. _Google Project page of Stalker: http://code.google.com/p/stalker-pyramid/
+  git clone https://github.com/eoyilmaz/stalker_pyramid stalker_pyramid

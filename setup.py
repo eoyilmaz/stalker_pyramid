@@ -48,7 +48,7 @@ INSTALL_REQUIRES = [
 TEST_REQUIRES = ['pytest', 'pytest-xdist', 'pytest-cov', 'coverage']
 DATA_FILES = [(
     '',
-    ['COPYING', 'COPYING.LESSER', 'INSTALL', 'MANIFEST.in', 'README.rst']),
+    ['COPYING', 'COPYING.LESSER', 'INSTALL', 'MANIFEST.in', 'README.md.rst']),
 ]
 
 HERE = os.path.abspath(os.path.dirname(__file__))
@@ -64,7 +64,7 @@ def read(*parts):
         return f.read()
 
 
-README = read(HERE, 'README')
+README = read(HERE, 'README.md')
 CHANGES = read(HERE, 'CHANGELOG')
 META_FILE = read(META_PATH)
 
