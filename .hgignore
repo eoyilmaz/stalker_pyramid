@@ -42,5 +42,7 @@ pyramid.log
 pyramid.pid
 anima.ini
 yoyo.ini
+home.ini
+imaj.ini
 local_production.ini
 local_production2.ini
