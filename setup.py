@@ -36,7 +36,7 @@ INSTALL_REQUIRES = [
     'waitress',
     'jinja2<3.0.0',
     'pyramid_jinja2',
-    'pillow<7.0.0',
+    'pillow',
     'stalker>=0.2.24.3',
     'exifread',
     'webtest',
