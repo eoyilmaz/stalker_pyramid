@@ -134,6 +134,7 @@ def get_repositories(request):
     return [
         {
             'id': repo.id,
+            'code': repo.code,
             'name': repo.name,
             'linux_path': repo.linux_path,
             'osx_path': repo.osx_path,
