@@ -1864,9 +1864,10 @@ class MediaManager(object):
             return self.generate_video_thumbnail(file_full_path)
 
         # not an image nor a video so no thumbnail, raise RuntimeError
-        raise RuntimeError('%s is not an image nor a video file, can not '
-                           'generate a thumbnail for it!' %
-                           file_full_path)
+        raise RuntimeError(
+            '%s is not an image nor a video file, can not '
+            'generate a thumbnail for it!' % file_full_path
+        )
 
     def generate_media_for_web(self, file_full_path):
         """Generates a media suitable for web browsers.
@@ -2510,19 +2511,15 @@ class MediaManager(object):
         ).replace('\\', '/')
 
         # upload it
-        reference_file_full_path = \
-            self.upload_file(file_object, file_path, filename)
-
+        reference_file_full_path = self.upload_file(file_object, file_path, filename)
         reference_file_file_name = os.path.basename(reference_file_full_path)
-        reference_file_base_name = \
-            os.path.splitext(reference_file_file_name)[0]
+        reference_file_base_name = os.path.splitext(reference_file_file_name)[0]
 
         # create a Link instance and return it.
         # use a Repository relative path
         repo = task.project.repository
         assert isinstance(repo, Repository)
-        os_independent_full_path = \
-            repo.to_os_independent_path(reference_file_full_path)
+        os_independent_full_path = repo.to_os_independent_path(reference_file_full_path)
         link = Link(
             full_path=os_independent_full_path,
             original_filename=filename
@@ -2535,21 +2532,16 @@ class MediaManager(object):
         ############################################################
         # WEB VERSION
         ############################################################
-        web_version_temp_full_path = \
-            self.generate_media_for_web(reference_file_full_path)
-        web_version_extension = \
-            os.path.splitext(web_version_temp_full_path)[-1]
-
-        web_version_file_name = '%s%s' % (reference_file_base_name,
-                                          web_version_extension)
+        web_version_temp_full_path = self.generate_media_for_web(reference_file_full_path)
+        web_version_extension = os.path.splitext(web_version_temp_full_path)[-1]
+        web_version_file_name = '%s%s' % (reference_file_base_name, web_version_extension)
         web_version_full_path = \
             os.path.join(
                 os.path.dirname(reference_file_full_path),
                 'ForWeb',
                 web_version_file_name
             ).replace('\\', '/')
-        web_version_os_independent_full_path = \
-            repo.to_os_independent_path(web_version_full_path)
+        web_version_os_independent_full_path = repo.to_os_independent_path(web_version_full_path)
         web_version_link = Link(
             full_path=web_version_os_independent_full_path,
             original_filename=web_version_file_name
