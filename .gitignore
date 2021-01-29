@@ -15,7 +15,6 @@ data/*
 dist/*
 build/*
 stalker_pyramid.egg-info/*
-upload_to_pypi
 lib/*
 bin/*
 include/*
