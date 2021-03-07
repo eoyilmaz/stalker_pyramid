@@ -1,22 +1,4 @@
 # -*- coding: utf-8 -*-
-# Stalker Pyramid a Web Base Production Asset Management System
-# Copyright (C) 2009-2018 Erkan Ozgur Yilmaz
-#
-# This file is part of Stalker Pyramid.
-#
-# This library is free software; you can redistribute it and/or
-# modify it under the terms of the GNU Lesser General Public
-# License as published by the Free Software Foundation;
-# version 2.1 of the License.
-#
-# This library is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public
-# License along with this library; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 """
 Stalker Pyramid is a Production Asset Management System (ProdAM) designed for
 Animation and VFX Studios. See docs for more information.
@@ -30,11 +12,10 @@ from zope.sqlalchemy import register
 from stalker import defaults
 from stalker import SimpleEntity, Project, Budget
 
-
 import logging
 
 
-__version__ = '0.2.0'
+__version__ = '0.3.0'
 
 __title__ = "stalker_pyramid"
 __description__ = 'Stalker (ProdAM) Based Web App'
@@ -44,8 +25,8 @@ __doc__ = __description__ + " <" + __uri__ + ">"
 __author__ = "Erkan Ozgur Yilmaz"
 __email__ = 'eoyilmaz@gmail.com'
 
-__license__ = 'LGPLv3'
-__copyright__ = "Copyright (C) 2009-2018 Erkan Ozgur Yilmaz"
+__license__ = 'MIT'
+__copyright__ = "Copyright (C) 2009-2021 Erkan Ozgur Yilmaz"
 
 logger_name = 'stalker_pyramid'
 

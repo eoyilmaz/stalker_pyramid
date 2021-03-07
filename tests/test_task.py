@@ -1,25 +1,4 @@
 # -*- coding: utf-8 -*-
-# Stalker Pyramid a Web Base Production Asset Management System
-# Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
-#
-# This file is part of Stalker Pyramid.
-#
-# This library is free software; you can redistribute it and/or
-# modify it under the terms of the GNU Lesser General Public
-# License as published by the Free Software Foundation;
-# version 2.1 of the License.
-#
-# This library is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public
-# License along with this library; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
-
-# from fpformat import fix_task_computed_time
-
 import mocker
 
 import datetime
@@ -34,7 +13,7 @@ from stalker import (db, Project, Status, StatusList, Repository, Task, User,
                      Asset, Type, TimeLog, Ticket)
 from stalker.db.session import DBSession
 
-from stalker_pyramid.views import task, milliseconds_since_epoch, local_to_utc
+from stalker_pyramid.views import task, milliseconds_since_epoch
 
 import logging
 from stalker_pyramid.testing import DummyMultiDict, DummySession
@@ -708,10 +687,10 @@ class TaskViewTestCase(TaskViewBaseTestCase):
 
         dummyRequest = testing.DummyRequest()
         dummyRequest.matchdict['id'] = self.test_task2.id
-        print 'self.test_task2.id: %s' % self.test_task2.id
+        print('self.test_task2.id: %s' % self.test_task2.id)
 
         response = task.duplicate_task_hierarchy(dummyRequest)
-        print ('response.text : %s' % response.text)
+        print('response.text : %s' % response.text)
         self.assertEqual(response.status_int, 200)
         dup_task = Task.query.filter_by(name='Test Task 2 - Duplicate').first()
         self.assertIsInstance(dup_task, Task)
@@ -1059,7 +1038,7 @@ class TaskViewTestCase(TaskViewBaseTestCase):
             start=datetime.datetime(2013, 6, 20, 10, 0),
             end=datetime.datetime(2013, 6, 20, 19, 0)
         )
-        utc_now = local_to_utc(datetime.datetime.now())
+        utc_now = datetime.datetime.now()
         time_log.date_created = utc_now
         self.test_task4.date_created = utc_now
 
@@ -1403,7 +1382,7 @@ class TaskViewTestCase(TaskViewBaseTestCase):
             start=datetime.datetime(2013, 6, 20, 10, 0),
             end=datetime.datetime(2013, 6, 20, 19, 0)
         )
-        utc_now = local_to_utc(datetime.datetime.now())
+        utc_now = datetime.datetime.now()
         time_log.date_created = utc_now
         self.test_task4.date_created = utc_now
 

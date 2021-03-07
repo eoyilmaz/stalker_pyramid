@@ -2,15 +2,8 @@
 Stalker Pyramid Changes
 =======================
 
-0.2.0
+0.3.0
 =====
 
-* It is now possible to submit alembic export and playblast jobs to Afanasy
-  when uploading new versions.
-
-* Moved all the functions under ``views.anima`` to corresponding modules under
-  ``views`` and deleted ``views.anima``.
-
-* Fixed a huge ancient bug in ``views.link.MediaManager.upload_file()`` that
-  corrupts the files over 128 kB of length by writing every 128 kB chunk twice.
-  The resultant file size was nearly twice the original.
+* Stalker Pyramid is now using MIT License.
+* Removed the bloat created by the license text on nearly every source file.

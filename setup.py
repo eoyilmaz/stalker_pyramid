@@ -12,7 +12,7 @@ KEYWORDS = [
 CLASSIFIERS = [
     "Programming Language :: Python",
     "Framework :: Pyramid",
-    "License :: OSI Approved :: GNU Lesser General Public License v2 (LGPLv2)",
+    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -48,7 +48,7 @@ INSTALL_REQUIRES = [
 TEST_REQUIRES = ['pytest', 'pytest-xdist', 'pytest-cov', 'coverage']
 DATA_FILES = [(
     '',
-    ['COPYING', 'COPYING.LESSER', 'INSTALL', 'MANIFEST.in', 'README.md.rst']),
+    ['LICENSE', 'INSTALL', 'MANIFEST.in', 'README.md']),
 ]
 
 HERE = os.path.abspath(os.path.dirname(__file__))

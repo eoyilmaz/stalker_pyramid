@@ -1,26 +1,7 @@
 # -*- coding: utf-8 -*-
-#
-# Stalker Pyramid Copyright (C) 2013 Erkan Ozgur Yilmaz
-#
-# This file is part of Stalker Pyramid.
-#
-# This library is free software; you can redistribute it and/or
-# modify it under the terms of the GNU Lesser General Public
-# License as published by the Free Software Foundation;
-# version 2.1 of the License.
-#
-# This library is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public
-# License along with this library; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
-
 import mocker
 
-import unittest2
+import unittest
 import transaction
 
 from pyramid import testing
@@ -30,7 +11,7 @@ from stalker.db.session import DBSession
 from stalker_pyramid.views import time_log
 
 
-class TimeLogViewTestCase(unittest2.TestCase):
+class TimeLogViewTestCase(unittest.TestCase):
     """tests the time log view
     """
 
@@ -391,7 +372,7 @@ class TimeLogViewTestCase(unittest2.TestCase):
         request.matchdict['id'] = task3.id
         request.params['send_email'] = 0
         response = request_review(request)
-        print response.body
+        print(response.body)
         self.assertEqual(response.status_int, 200)
 
         self.assertEqual(task3.status, self.status_prev)
