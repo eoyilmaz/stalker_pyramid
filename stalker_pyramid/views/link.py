@@ -2474,9 +2474,6 @@ class MediaManager(object):
             while data:
                 output_file.write(data)
                 data = file_object.read(2 << 16)
-                if not data:
-                    break
-                output_file.write(data)
 
         # data is written completely, rename temp file to original file
         os.rename(temp_file_full_path, file_full_path)
