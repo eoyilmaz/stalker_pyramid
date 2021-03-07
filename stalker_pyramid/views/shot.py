@@ -24,7 +24,7 @@ from pyramid.httpexceptions import HTTPServerError, HTTPOk
 from pyramid.view import view_config
 
 from stalker.db.session import DBSession
-from stalker import Sequence, StatusList, Status, Shot, Project, Entity
+from stalker import Sequence, StatusList, Status, Shot, Project, Entity, Task
 
 import logging
 import transaction
@@ -527,3 +527,38 @@ order by "Shot_SimpleEntities".name
     )
     resp.content_range = content_range
     return resp
+
+
+def update_shot_task_dependencies(action, shot, task_name, dependencies, user, date_updated):
+    """please add docstring
+    """
+    task = Task.query.filter(Task.name == task_name).filter(Task.parent == shot).first()
+    if not task:
+        return 'There is no %s under: %s' % (task_name, shot.name)
+
+    if task.status.code not in ['WFD', 'RTS']:
+        return '%s: %s status is %s, task can not change!!!' % (shot.name, task.name, task.status.code)
+
+    for dependency in dependencies:
+        if dependency:
+            if action == 'append':
+                if dependency not in task.depends:
+                    task.depends.append(dependency)
+                    task.updated_by = user
+                    task.date_updated = date_updated
+                #     return '%s: %s is added to dependencies of %s, ' % (shot.name, dependency.name, task.name)
+                # else:
+                #     return '%s: %s is already depended to %s, ' % (shot.name, task.name, dependency.name)
+            elif action == 'remove':
+                if dependency in task.depends:
+                    task.depends.remove(dependency)
+                    task.updated_by = user
+                    task.date_updated = date_updated
+                #     return '%s: %s is removed to dependencies of %s, ' % (shot.name, dependency.name, task.name)
+                # else:
+                #     return '%s: %s does not depend to %s, ' % (shot.name, task.name, dependency.name)
+            # else:
+            #     return 'There is no type'
+
+        # else:
+        #     return 'There is no dependency task'
