@@ -15,11 +15,11 @@ from stalker import SimpleEntity, Project, Budget
 import logging
 
 
-__version__ = '0.3.0'
+__version__ = '0.3.1'
 
 __title__ = "stalker_pyramid"
 __description__ = 'Stalker (ProdAM) Based Web App'
-__uri__ = 'http://code.google.com/p/stalker_pyramid/'
+__uri__ = 'https://github.com/eoyilmaz/stalker_pyramid/'
 __doc__ = __description__ + " <" + __uri__ + ">"
 
 __author__ = "Erkan Ozgur Yilmaz"
