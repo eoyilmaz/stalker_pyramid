@@ -2,7 +2,7 @@ About
 =====
 
 Stalker Pyramid is the Pyramid Web App package based on [Stalker](https://github.com/eoyilmaz/stalker). Basically it
-supplies the web interfaces to the system. It is also licensed under LGPL v2.1.
+supplies the web interfaces to the system. It is also licensed under MIT License.
 
 Features:
  * Designed for animation and VFX Studios.
