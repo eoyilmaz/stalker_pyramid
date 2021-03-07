@@ -6,19 +6,144 @@
 """This module is a direct copy&paste of anima.env.mayaEnv.archive thus the
 copyright information in this file belongs to Anima Istanbul.
 """
-import os
-import tempfile
 import logging
-import re
-import shutil
 
-#logger = logging.getLogger(__name__)
-#logger.setLevel(logging.DEBUG)
 from stalker_pyramid import logger_name
 logger = logging.getLogger(logger_name)
 
 
-class Archiver(object):
+class ArchiverBase(object):
+    """The base class for Archivers
+    """
+    default_project_structure = ""
+
+    def __init__(self, exclude_mask=None, recursive_search=False):
+        if exclude_mask is None:
+            exclude_mask = []
+        self.exclude_mask = exclude_mask
+        self.recursive_search = recursive_search
+
+    @classmethod
+    def create_default_project(cls, path, name='DefaultProject'):
+        """Creates default project structure.
+
+        :param str path: The path that the default project structure will be created.
+        :param str name: The name of the archived project.
+
+        :return:
+        """
+        import os
+        project_path = os.path.join(path, name)
+
+        # lets create the structure
+        for dir_name in cls.default_project_structure.split('\n'):
+            dir_path = os.path.join(project_path, dir_name.strip())
+            try:
+                os.makedirs(dir_path)
+            except OSError:
+                pass
+
+        return project_path
+
+    def flatten(self, path, project_name='DefaultProject'):
+        """Flattens the given scene in to a new default project.
+
+        It will also flatten all the referenced files, textures, image planes,
+        Redshift Proxy files.
+
+        :param path: The path to the file which wanted to be flattened.
+        :param project_name: The new project name.
+        :return:
+        """
+        # create a new Default Project
+        import tempfile
+        import os
+
+        tempdir = tempfile.gettempdir()
+        from stalker import Repository
+        all_repos = Repository.query.all()
+
+        default_project_path = \
+            self.create_default_project(path=tempdir, name=project_name)
+
+        logger.debug('creating new default project at: %s' % default_project_path)
+
+        ref_paths = self._move_file_and_fix_references(path, default_project_path, scenes_folder='scenes')
+
+        while len(ref_paths):
+            ref_path = ref_paths.pop(0)
+
+            if self.exclude_mask \
+                    and os.path.splitext(ref_path)[1] in self.exclude_mask:
+                logger.debug('skipping: %s' % ref_path)
+                continue
+
+            # fix different OS paths
+            for repo in all_repos:
+                if repo.is_in_repo(ref_path):
+                    ref_path = repo.to_native_path(ref_path)
+
+            new_ref_paths = \
+                self._move_file_and_fix_references(ref_path, default_project_path, scenes_folder='scenes/refs')
+
+            # extend ref_paths with new ones
+            for new_ref_path in new_ref_paths:
+                if new_ref_path not in ref_paths:
+                    ref_paths.append(new_ref_path)
+
+        return default_project_path
+
+    def _move_file_and_fix_references(self, path, project_path, scenes_folder='', refs_folder=''):
+        """Moves the given file to the given project path and moves any
+        references of it too
+
+        :param str path: The path of the scene file
+        :param str project_path: The project path
+        :param str scenes_folder: The scenes folder to store the original maya scene.
+        :param str refs_folder: The references folder to replace reference paths with.
+        :return list: returns a list of paths
+        """
+        # This needs to be implemented by the environment
+        raise NotImplementedError("This method needs to be implemented by the derived class")
+
+    def _extract_references(self):
+        """returns the list of references in the given scene
+
+        :return:
+        """
+        raise NotImplementedError("This method needs to be implemented by the derived class")
+
+    @classmethod
+    def archive(cls, path):
+        """Creates a zip file containing the given directory.
+
+        :param path: Path to the archived directory.
+        :return:
+        """
+        import zipfile
+        import os
+        import tempfile
+        dir_name = os.path.basename(path)
+        zip_path = os.path.join(tempfile.gettempdir(), '%s.zip' % dir_name)
+
+        parent_path = os.path.dirname(path) + '/'
+
+        with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED, allowZip64=True) as z:
+            for current_dir_path, dir_names, file_names in os.walk(path):
+                for dir_name in dir_names:
+                    dir_path = os.path.join(current_dir_path, dir_name)
+                    arch_path = dir_path[len(parent_path):]
+                    z.write(dir_path, arch_path)
+
+                for file_name in file_names:
+                    file_path = os.path.join(current_dir_path, file_name)
+                    arch_path = file_path[len(parent_path):]
+                    z.write(file_path, arch_path)
+
+        return zip_path
+
+
+class Archiver(ArchiverBase):
     """Archives a Maya scene for external use.
 
     This utility class can flatten a maya scene including all its references in
@@ -101,120 +226,86 @@ sound
 sourceimages
 sourceimages/3dPaintTextures"""
 
-    def __init__(self, exclude_mask=None):
-        if exclude_mask is None:
-            exclude_mask = []
-        self.exclude_mask = exclude_mask
-
-    @classmethod
-    def create_default_project(cls, path, name='DefaultProject'):
+    def create_default_project(self, path, name='DefaultProject'):
         """Creates default maya project structure along with a suitable
         workspace.mel file.
 
         :param str path: The path that the default project structure will be
           created.
+        :param str name: The name of the archived project.
 
         :return:
         """
-        project_path = os.path.join(path, name)
-
-        # lets create the structure
-        for dir_name in cls.default_project_structure.split('\n'):
-            dir_path = os.path.join(project_path, dir_name)
-            try:
-                os.makedirs(dir_path)
-            except OSError:
-                pass
+        import os
+        project_path = super(Archiver, self).create_default_project(path, name)
 
         # create the workspace.mel
         workspace_mel_path = os.path.join(project_path, 'workspace.mel')
         with open(workspace_mel_path, 'w+') as f:
-            f.writelines(cls.default_workspace_content)
+            f.writelines(self.default_workspace_content)
 
         return project_path
 
-    def flatten(self, path, project_name='DefaultProject'):
-        """Flattens the given maya scene in to a new default project externally
-        that is without opening it and returns the project path.
+    def _extract_references(self, data=None):
+        """returns the list of references in the given scene
 
-        It will also flatten all the referenced files, textures, image planes,
-        Arnold Scene Source and Redshift Proxy files.
+        :param str data: The content of the maya scene file
 
-        :param path: The path to the file which wanted to be flattened
         :return:
         """
-        # create a new Default Project
-        tempdir = tempfile.gettempdir()
-        from stalker import Repository
-        all_repos = Repository.query.all()
+        import os
+        import re
 
-        default_project_path = \
-            self.create_default_project(path=tempdir, name=project_name)
+        path_regex = r'\$REPO[\w\d\/_\.@]+'
+        # so we have all the data
+        # extract references
+        ref_paths = re.findall(path_regex, data)
 
-        logger.debug(
-            'creating new default project at: %s' % default_project_path
-        )
+        # also check for any paths that is starting with any of the $REPO
+        # variable value
+        for k in os.environ.keys():
+            if k.startswith('REPO'):
+                # consider this as a repository path and find all of the paths
+                # starting with this value
+                repo_path = os.environ[k]
+                path_regex = r'\%s[\w\d\/_\.@]+' % repo_path
+                temp_ref_paths = re.findall(path_regex, data)
+                ref_paths += temp_ref_paths
 
-        ref_paths = \
-            self._move_file_and_fix_references(path, default_project_path)
+        return filter(lambda x: os.path.splitext(x)[1] not in self.exclude_mask, ref_paths)
 
-        while len(ref_paths):
-            ref_path = ref_paths.pop(0)
+    def _move_file_and_fix_references(self, path, project_path, scenes_folder='', refs_folder=''):
+        """Moves the given file to the given project path and moves any references of it too
 
-            if self.exclude_mask \
-               and os.path.splitext(ref_path)[1] in self.exclude_mask:
-                    logger.debug('skipping: %s' % ref_path)
-                    continue
-
-            # fix different OS paths
-            for repo in all_repos:
-                if repo.is_in_repo(ref_path):
-                    ref_path = repo.to_native_path(ref_path)
-
-            new_ref_paths = \
-                self._move_file_and_fix_references(
-                    ref_path,
-                    default_project_path,
-                    scenes_folder='scenes/refs'
-                )
-
-            # extend ref_paths with new ones
-            for new_ref_path in new_ref_paths:
-                if new_ref_path not in ref_paths:
-                    ref_paths.append(new_ref_path)
-
-        return default_project_path
-
-    def _move_file_and_fix_references(self, path, project_path,
-                                      scenes_folder='scenes',
-                                      refs_folder='scenes/refs'):
-        """Moves the given maya file to the given project path and moves any
-        references of it to
-
-        :param str path: The path of the maya file
+        :param str path: The path of the scene file
         :param str project_path: The project path
-        :param str scenes_folder: The scenes folder to store the original maya
-          scene.
-        :param str refs_folder: The references folder to replace reference
-          paths with.
+        :param str scenes_folder: The scenes folder to store the original maya scene.
+        :param str refs_folder: The references folder to replace reference paths with.
         :return list: returns a list of paths
         """
+        import os
+        import shutil
+
         # fix any env vars
         path = os.path.expandvars(path)
 
         original_file_name = os.path.basename(path)
-        logger.debug('original_file_name: %s' % original_file_name)
+        logger.debug("original_file_name: %s" % original_file_name)
 
-        new_file_path = \
-            os.path.join(project_path, scenes_folder, original_file_name)
+        new_file_path = os.path.join(project_path, scenes_folder, original_file_name)
+        logger.debug("new_file_path: %s" % new_file_path)
 
         scenes_folder_lut = {
             '.ma': 'scenes/refs',
+
+            # alembic cache
+            '.abc': 'scenes/refs',
 
             # image files
             '.jpg': 'sourceimages',
             '.png': 'sourceimages',
             '.tif': 'sourceimages',
+            '.tiff': 'sourceimages',
             '.tga': 'sourceimages',
             '.exr': 'sourceimages',
             '.hdr': 'sourceimages',
@@ -277,50 +368,23 @@ sourceimages/3dPaintTextures"""
                 # get the rest of the textures
                 new_file_paths = glob.glob(
                     new_file_path
-                        .replace('1001', '*')
-                        .replace('u1_v1', 'u*_v*')
-                        .replace('U1_V1', 'U*_V*')
+                    .replace('1001', '*')
+                    .replace('u1_v1', 'u*_v*')
+                    .replace('U1_V1', 'U*_V*')
                 )
+                if new_file_paths:
+                    logger.debug("found UDIM textures:")
+
                 for p in new_file_paths:
-                    print(p)
+                    logger.debug(p)
 
             # just copy the file
             for new_file_path in new_file_paths:
+                logger.debug("%s -> %s" % (path, new_file_path))
                 try:
                     shutil.copy(path, new_file_path)
                 except IOError:
                     pass
-
-        return ref_paths
-
-    def _extract_references(self, data):
-        """returns the list of references in the given maya file
-
-        :param str data: The content of the maya scene file
-
-        :return:
-        """
-        path_regex = r'\$REPO[\w\d\/_\.@]+'
-        # so we have all the data
-        # extract references
-        ref_paths = re.findall(path_regex, data)
-
-        # also check for any paths that is starting with any of the $REPO
-        # variable value
-        for k in os.environ.keys():
-            if k.startswith('REPO'):
-                # consider this as a repository path and find all of the paths
-                # starting with this value
-                repo_path = os.environ[k]
-                path_regex = r'\%s[\w\d\/_\.@]+' % repo_path
-                temp_ref_paths = re.findall(path_regex, data)
-                ref_paths += temp_ref_paths
-
-        new_ref_paths = []
-        for ref_path in ref_paths:
-            if os.path.splitext(ref_path)[1] not in self.exclude_mask:
-                new_ref_paths.append(ref_path)
-        ref_paths = new_ref_paths
 
         return ref_paths
 
@@ -333,40 +397,13 @@ sourceimages/3dPaintTextures"""
 
         :return:
         """
+        import re
         path_regex = r'scenes/refs/[\w\d\/_\.@]+'
         # so we have all the data
         # extract references
         ref_paths = re.findall(path_regex, data)
 
         return ref_paths
-
-    @classmethod
-    def archive(cls, path):
-        """Creates a zip file containing the given directory.
-
-        :param path: Path to the archived directory.
-        :return:
-        """
-        import zipfile
-        dir_name = os.path.basename(path)
-        zip_path = os.path.join(tempfile.gettempdir(), '%s.zip' % dir_name)
-
-        parent_path = os.path.dirname(path) + '/'
-
-        with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED,
-                             allowZip64=True) as z:
-            for current_dir_path, dir_names, file_names in os.walk(path):
-                for dir_name in dir_names:
-                    dir_path = os.path.join(current_dir_path, dir_name)
-                    arch_path = dir_path[len(parent_path):]
-                    z.write(dir_path, arch_path)
-
-                for file_name in file_names:
-                    file_path = os.path.join(current_dir_path, file_name)
-                    arch_path = file_path[len(parent_path):]
-                    z.write(file_path, arch_path)
-
-        return zip_path
 
     @classmethod
     def bind_to_original(cls, path):
@@ -379,6 +416,7 @@ sourceimages/3dPaintTextures"""
 
         :return:
         """
+        import os
         # TODO: This will not fix the sound or texture files, that is anything
         #       other than a maya scene file.
         # get all reference paths
@@ -406,4 +444,3 @@ sourceimages/3dPaintTextures"""
             # save the file over itself
             with open(path, 'w+') as f:
                 f.write(data)
-

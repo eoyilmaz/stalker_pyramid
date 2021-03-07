@@ -108,11 +108,15 @@ def create_version(request):
     task = Task.query.filter(Task.id == task_id).first()
 
     take_name = request.params.get('take_name', 'Main')
-    is_published = \
-        True if request.params.get('is_published') == 'true' else False
+    is_published = True if request.params.get('is_published') == 'true' else False
     description = request.params.get('description')
-    bind_to_originals = \
-        True if request.params.get('bind_to_originals') == 'true' else False
+    bind_to_originals = True if request.params.get('bind_to_originals') == 'true' else False
+    export_alembics = True if request.params.get('export_alembics') == 'true' else False
+    do_playblast = True if request.params.get('do_playblast') == 'true' else False
+
+    # toggle export_alembics and do_playblast if no bind_to_originals with bind_to_originals
+    export_alembics = bind_to_originals and export_alembics
+    do_playblast = bind_to_originals and do_playblast
 
     file_object = request.POST.getall('file_object')[0]
 
@@ -121,6 +125,8 @@ def create_version(request):
     logger.debug('is_published: %s' % is_published)
     logger.debug('description: %s' % description)
     logger.debug('bind_to_originals: %s' % bind_to_originals)
+    logger.debug('export_alembics: %s' % export_alembics)
+    logger.debug('do_playblast: %s' % do_playblast)
 
     if task:
         extension = os.path.splitext(file_object.filename)[-1]
@@ -138,10 +144,17 @@ def create_version(request):
         v.description = description
 
         # check if bind_to_originals is true
-        if bind_to_originals and extension == '.ma':
-            from stalker_pyramid.views import archive
-            arch = archive.Archiver()
-            arch.bind_to_original(v.absolute_full_path)
+        if extension == '.ma':
+            if bind_to_originals:
+                from stalker_pyramid.views import archive
+                arch = archive.Archiver()
+                arch.bind_to_original(v.absolute_full_path)
+
+            if export_alembics:
+                submit_alembic_job(v.absolute_full_path, v.task.project.code)
+
+            if do_playblast:
+                submit_playblast_job(v.absolute_full_path, v.task.project.code)
 
         DBSession.add(v)
         logger.debug('version added to: %s' % v.absolute_full_path)
@@ -149,6 +162,66 @@ def create_version(request):
         return Response('No task with id: %s' % task_id, 500)
 
     return Response('Version is uploaded successfully!')
+
+
+def submit_job(job_name, block_name, command):
+    """Submits an Afanasy job
+
+    :param job_name:
+    :param block_name:
+    :param command:
+    :return:
+    """
+    import af
+    from stalker_pyramid import cgru_working_directory
+
+    block = af.Block(block_name, 'maya')
+    block.setCommand(" ".join(command))
+    block.setNumeric(1, 1, 1, 1)
+    block.setWorkingDirectory(cgru_working_directory)
+
+    job = af.Job(job_name)
+    job.blocks = [block]
+    status, data = job.send()
+
+    if not status:
+        RuntimeError('Something went wrong!')
+
+
+def submit_alembic_job(path, project_code=""):
+    """creates a afanasy job that exports the alembics on a given scene
+
+    :param str path: Path to a maya file
+    :param project_code: Project.code
+    """
+    job_name = "%s:%s - Alembic Export" % (project_code, os.path.basename(path))
+    block_name = job_name
+    command = [
+        "mayapy",
+        "-c",
+        "\"import pymel.core as pm;"
+        "from anima.env.mayaEnv import afanasy_publisher;"
+        "afanasy_publisher.export_alembics('{path}');\"".format(path=path)
+    ]
+    submit_job(job_name, block_name, command)
+
+
+def submit_playblast_job(path, project_code=''):
+    """creates a afanasy job that exports the alembics on a given scene
+
+    :param str path: Path to a maya file
+    :param project_code: Project.code
+    """
+    job_name = "%s:%s - Playblast" % (project_code, os.path.basename(path))
+    block_name = job_name
+    command = [
+        "mayapy",
+        "-c",
+        "\"import pymel.core as pm;"
+        "from anima.env.mayaEnv import afanasy_publisher;"
+        "afanasy_publisher.export_playblast('{path}');\"".format(path=path)
+    ]
+    submit_job(job_name, block_name, command)
 
 
 @view_config(

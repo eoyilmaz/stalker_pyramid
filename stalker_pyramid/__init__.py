@@ -34,7 +34,7 @@ from stalker import SimpleEntity, Project, Budget
 import logging
 
 
-__version__ = '0.1.13'
+__version__ = '0.2.0'
 
 __title__ = "stalker_pyramid"
 __description__ = 'Stalker (ProdAM) Based Web App'
@@ -52,11 +52,12 @@ logger_name = 'stalker_pyramid'
 
 logging.basicConfig()
 logger = logging.getLogger(logger_name)
-#logger.setLevel(logging.DEBUG)
+# logger.setLevel(logging.DEBUG)
 
 
 stalker_server_external_url = None
 stalker_server_internal_url = None
+cgru_working_directory = None
 
 
 __string_types__ = []
@@ -140,6 +141,21 @@ def main(global_config, **settings):
     stalker_server_external_url = settings.get('stalker.external_url')
     stalker_server_internal_url = settings.get('stalker.internal_url')
 
+    # setup CGRU
+    global cgru_working_directory
+    cgru_location = settings.get('cgru.location')
+    cgru_working_directory = settings.get('cgru.working_directory')
+
+    logger.debug('cgru_location: %s' % cgru_location)
+    logger.debug('cgru_working_directory: %s' % cgru_working_directory)
+
+    # add environment vars
+    logger.debug('adding new library paths!')
+    logger.debug("%s" % os.path.join(cgru_location, 'lib/python'))
+    logger.debug("%s" % os.path.join(cgru_location, 'afanasy/python'))
+    sys.path.append(os.path.join(cgru_location, 'lib/python'))
+    sys.path.append(os.path.join(cgru_location, 'afanasy/python'))
+
     # setup authorization and authentication
     authn_policy = AuthTktAuthenticationPolicy(
         'sosecret',
@@ -148,6 +164,7 @@ def main(global_config, **settings):
     )
     authz_policy = ACLAuthorizationPolicy()
 
+    global config
     config = Configurator(
         settings=settings,
         root_factory='stalker_pyramid.views.auth.RootFactory'

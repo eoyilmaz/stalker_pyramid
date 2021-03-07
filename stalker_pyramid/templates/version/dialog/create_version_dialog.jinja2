@@ -53,9 +53,21 @@
             </div>
         </div>
         <div class='control-group'>
-            <div class='span12 align-right'>
+            <div class='span12 align-left'>
                 <input class="ace" type="checkbox" id="bind_to_originals" />
                 <label class="lbl" for="bind_to_originals"> Bind To Originals</label>
+            </div>
+        </div>
+        <div class='control-group'>
+            <div class='span12 align-left'>
+                <input class="ace" type="checkbox" id="export_alembics" />
+                <label class="lbl" for="export_alembics">Export Alembics</label>
+            </div>
+        </div>
+        <div class='control-group'>
+            <div class='span12 align-left'>
+                <input class="ace" type="checkbox" id="do_playblast" />
+                <label class="lbl" for="do_playblast">Playblast</label>
             </div>
         </div>
     </form>
@@ -86,8 +98,26 @@
         });
 
 
+        let bind_to_originals = $('#bind_to_originals');
+        let export_alembics = $('#export_alembics');
+        let do_playblast = $('#do_playblast');
 
-        var submit_button = $('#dialog_template_submit_button');
+        export_alembics.attr('disabled', true);
+        do_playblast.attr('disabled', true);
+
+        bind_to_originals.on('change', function(e){
+            if(this.checked === true){
+                export_alembics.attr('disabled', false);
+                do_playblast.attr('disabled', false);
+            } else {
+                export_alembics.attr('disabled', true);
+                do_playblast.attr('disabled', true);
+                export_alembics.checked = false;
+                do_playblast.checked = false;
+            }
+        });
+
+        let submit_button = $('#dialog_template_submit_button');
 
         // register submit event
         submit_button.on('click', function(e){
@@ -111,6 +141,8 @@
             form_data.append('is_published', $('#is_published').prop('checked'));
             form_data.append('description', $('#version_description').val());
             form_data.append('bind_to_originals', $('#bind_to_originals').prop('checked'));
+            form_data.append('export_alembics', $('#export_alembics').prop('checked'));
+            form_data.append('do_playblast', $('#do_playblast').prop('checked'));
 
             $.ajax({
                 url: '{{ request.route_url('create_version') }}',
