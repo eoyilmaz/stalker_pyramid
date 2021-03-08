@@ -126,6 +126,7 @@ def main(global_config, **settings):
     global cgru_working_directory
     cgru_location = settings.get('cgru.location')
     cgru_working_directory = settings.get('cgru.working_directory')
+    os.environ["CGRU_LOCATION"] = cgru_location
 
     logger.debug('cgru_location: %s' % cgru_location)
     logger.debug('cgru_working_directory: %s' % cgru_working_directory)
