@@ -7,7 +7,7 @@ from pyramid.view import view_config
 from pyramid.response import Response
 
 from stalker.db.session import DBSession
-from stalker import defaults, Entity, Studio, Project, Task, Status
+from stalker import db, defaults, Entity, Studio, Project, User, Group, Department, Sequence, Asset, Shot, Ticket, Task, Status
 import transaction
 
 import stalker_pyramid
