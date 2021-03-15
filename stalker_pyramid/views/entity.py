@@ -7,6 +7,8 @@ from pyramid.view import view_config
 from pyramid.response import Response
 
 from stalker.db.session import DBSession
+
+# The seemingly unnecessary imports in the next line are important for some functions, do not remove them!
 from stalker import db, defaults, Entity, Studio, Project, User, Group, Department, Sequence, Asset, Shot, Ticket, Task, Status
 import transaction
 
