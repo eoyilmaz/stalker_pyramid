@@ -1728,7 +1728,7 @@ class MediaManager(object):
         #       images
         media_info = self.get_video_info(file_full_path)
         video_info = media_info['video_info']
-        print('video_info: %s' % video_info)
+        # print('video_info: %s' % video_info)
 
         # get the correct stream
         video_stream = None
@@ -1840,9 +1840,21 @@ class MediaManager(object):
         })
 
         # remove the intermediate data
-        os.remove(start_thumb_path)
-        os.remove(mid_thumb_path)
-        os.remove(end_thumb_path)
+        try:
+            os.remove(start_thumb_path)
+        except OSError:
+            pass
+
+        try:
+            os.remove(mid_thumb_path)
+        except OSError:
+            pass
+
+        try:
+            os.remove(end_thumb_path)
+        except OSError:
+            pass
+
         return thumbnail_path
 
     def generate_video_for_web(self, file_full_path):
@@ -2120,6 +2132,7 @@ class MediaManager(object):
         stderr_buffer = []
         while True:
             stderr = process.stderr.readline()
+            logger.debug(stderr)
 
             if stderr == b'' and process.poll() is not None:
                 break
