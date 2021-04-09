@@ -412,22 +412,22 @@ def assign_output(request):
         mm = MediaManager()
         for full_path, original_filename in zip(full_paths, original_filenames):
             with open(full_path, 'rb') as f:
-                l = mm.upload_version_output(entity, f, original_filename)
-            l.created_by = logged_in_user
+                link = mm.upload_version_output(entity, f, original_filename)
+            link.created_by = logged_in_user
             date_created = datetime.datetime.now(pytz.utc)
-            l.date_created = date_created
+            link.date_created = date_created
 
-            l.date_updated = l.date_created
+            link.date_updated = link.date_created
 
             for tag in tags:
-                if tag not in l.tags:
-                    l.tags.extend(tags)
+                if tag not in link.tags:
+                    link.tags.extend(tags)
 
-            DBSession.add(l)
-            links.append(l)
+            DBSession.add(link)
+            links.append(link)
             if daily:
-                if l not in daily.links:
-                    daily.links.append(l)
+                if link not in daily.links:
+                    daily.links.append(link)
 
 
     # to generate ids for links
@@ -1604,7 +1604,7 @@ class MediaManager(object):
 
         # commands
         self.ffmpeg_command_path = '/usr/bin/ffmpeg'
-        self.ffprobe_command_path = '/usr/local/bin/ffprobe'
+        self.ffprobe_command_path = '/usr/bin/ffprobe'
 
     @classmethod
     def reorient_image(cls, img):
@@ -1716,17 +1716,19 @@ class MediaManager(object):
         img.save(thumbnail_path)
         return thumbnail_path
 
-    def generate_video_thumbnail(self, file_full_path):
+    def generate_video_thumbnail(self, file_full_path, frame_rate=25):
         """Generates a thumbnail for the given video link
 
         :param str file_full_path: A string showing the full path of the video
           file.
+        :param float frame_rate: Set the default frame rate
         """
         # TODO: split this in to two different methods, one generating
         #       thumbnails from the video and another one accepting three
         #       images
         media_info = self.get_video_info(file_full_path)
         video_info = media_info['video_info']
+        print('video_info: %s' % video_info)
 
         # get the correct stream
         video_stream = None
@@ -1734,16 +1736,27 @@ class MediaManager(object):
             if stream['codec_type'] == 'video':
                 video_stream = stream
 
-        nb_frames = video_stream.get('nb_frames')
+        nb_frames = None
+        try:
+            nb_frames = video_stream.get('nb_frames')
+        except AttributeError:
+            pass
+
         if nb_frames is None or nb_frames == 'N/A':
             # no nb_frames
             # first try to use "r_frame_rate" and "duration"
-            frame_rate = video_stream.get('r_frame_rate')
+            try:
+                frame_rate = video_stream.get('r_frame_rate')
+            except AttributeError:
+                pass
 
             if frame_rate is None:  # still no frame rate
                 # try to use the video_info and duration
                 # and try to get frame rate
-                frame_rate = float(video_info.get('TAG:framerate', 23.976))
+                try:
+                    frame_rate = float(video_info.get('TAG:framerate', 23.976))
+                except AttributeError:
+                    pass
             else:
                 # check if it is in Number/Number format
                 if '/' in frame_rate:
@@ -1751,9 +1764,18 @@ class MediaManager(object):
                     frame_rate = float(nominator)/float(denominator)
 
             # get duration
-            duration = video_stream.get('duration')
-            if duration == 'N/A':  # no duration
-                duration = float(video_info.get('duration', 1))
+            duration = None
+            try:
+                duration = video_stream.get('duration')
+            except AttributeError:
+                pass
+
+            if not duration or duration == 'N/A':  # no duration
+                duration = 1
+                try:
+                    duration = float(video_info.get('duration', 1))
+                except AttributeError:
+                    pass
             else:
                 duration = float(duration)
 
@@ -2074,11 +2096,11 @@ class MediaManager(object):
 
             # overwrite output
 
-        # use all cpus
-        import multiprocessing
-        num_of_threads = multiprocessing.cpu_count()
-        args.append('-threads')
-        args.append('%s' % num_of_threads)
+        # # use all cpus
+        # import multiprocessing
+        # num_of_threads = multiprocessing.cpu_count()
+        # args.append('-threads')
+        # args.append('%s' % num_of_threads)
 
         # overwrite any file
         args.append('-y')
@@ -2096,10 +2118,10 @@ class MediaManager(object):
         while True:
             stderr = process.stderr.readline()
 
-            if stderr == '' and process.poll() is not None:
+            if stderr == b'' and process.poll() is not None:
                 break
 
-            if stderr != '':
+            if stderr != b'':
                 stderr_buffer.append(stderr)
 
         # if process.returncode:
@@ -2139,10 +2161,10 @@ class MediaManager(object):
         while True:
             stdout = process.stdout.readline()
 
-            if stdout == '' and process.poll() is not None:
+            if stdout == b'' and process.poll() is not None:
                 break
 
-            if stdout != '':
+            if stdout != b'':
                 stdout_buffer.append(stdout)
 
         # if process.returncode:
@@ -2659,18 +2681,15 @@ class MediaManager(object):
         ############################################################
         # WEB VERSION
         ############################################################
-        web_version_temp_full_path = \
-            self.generate_media_for_web(version_output_file_full_path)
-        web_version_extension = \
-            os.path.splitext(web_version_temp_full_path)[-1]
+        web_version_temp_full_path = self.generate_media_for_web(version_output_file_full_path)
+        web_version_extension = os.path.splitext(web_version_temp_full_path)[-1]
         web_version_full_path = \
             os.path.join(
                 os.path.dirname(version_output_file_full_path),
                 'ForWeb',
                 version_output_base_name + web_version_extension
             ).replace('\\', '/')
-        web_version_repo_relative_full_path = \
-            repo.to_os_independent_path(str(web_version_full_path))
+        web_version_repo_relative_full_path = repo.to_os_independent_path(str(web_version_full_path))
         web_version_link = Link(
             full_path=web_version_repo_relative_full_path,
             original_filename=filename
