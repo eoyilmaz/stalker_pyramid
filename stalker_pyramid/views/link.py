@@ -1759,9 +1759,12 @@ class MediaManager(object):
                     pass
             else:
                 # check if it is in Number/Number format
-                if '/' in frame_rate:
-                    nominator, denominator = frame_rate.split('/')
-                    frame_rate = float(nominator)/float(denominator)
+                try:
+                    if '/' in frame_rate:
+                        nominator, denominator = frame_rate.split('/')
+                        frame_rate = float(nominator)/float(denominator)
+                except TypeError:
+                    pass
 
             # get duration
             duration = None
