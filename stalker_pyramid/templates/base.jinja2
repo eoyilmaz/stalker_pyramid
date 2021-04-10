@@ -495,14 +495,46 @@
 
     {# copyToClipboard #}
     <script type="text/javascript">
-        var copyToClipboard = function (text) {
+        let copyToClipboard = function (text) {
             window.prompt("Copy to clipboard: Ctrl+C, Enter", text);
+        };
+    </script>
+
+    <script type="text/javascript">
+        let do_playblast = function (version_id) {
+            let result = window.confirm("Do Playblast?:" + version_id);
+            if (result === true){
+                $.post("/versions/" + version_id + "/do_playblast").done(function(){
+                    let message = '<div>Job created! Check Afanasy</div>';
+                    bootbox.alert(message);
+                    $('.bootbox').prepend('<div class="modal-header alert-success"><strong>Success</strong></div>');
+                }).fail(function(jqXHR){
+                    let message = '<div>' + jqXHR.responseText + '</div>';
+                    bootbox.alert(message);
+                    $('.bootbox').prepend('<div class="modal-header alert-danger"><strong>Fail</strong></div>');
+                });
+            }
+        };
+
+        let export_alembics = function (version_id) {
+            let result = window.confirm("Export Alembics?" + version_id);
+            if (result === true){
+                $.post("/versions/" + version_id + "/export_alembics").done(function(){
+                    let message = '<div>Job created! Check Afanasy</div>';
+                    bootbox.alert(message);
+                    $('.bootbox').prepend('<div class="modal-header alert-success"><strong>Success</strong></div>');
+                }).fail(function(jqXHR){
+                    let message = '<div>' + jqXHR.responseText + '</div>';
+                    bootbox.alert(message);
+                    $('.bootbox').prepend('<div class="modal-header alert-danger"><strong>Fail</strong></div>');
+                });
+            }
         };
     </script>
 
     {# Pop Flash Messages #}
     <script type='text/javascript'>
-        var flash_message = function (settings) {
+        let flash_message = function (settings) {
             settings.container = settings.container || 'body';
             settings.title = settings.title || '';
             settings.message = settings.message || '';

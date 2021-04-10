@@ -70,7 +70,7 @@
                 <th>Created With</th>
                 <th>Description</th>
                 <!--<th>Parent Version</th>-->
-                <th>Path</th>
+                <th>Actions</th>
             </tr>
     </script>
     {% endraw %}
@@ -114,6 +114,14 @@
                 <a class="green"
                    href='javascript:copyToClipboard("{{= it.absolute_full_path }}")'>
                     <i class="icon-copy bigger-130"></i>
+                </a>
+                <a class="yellow"
+                   href='javascript:do_playblast("{{= it.id }}")'>
+                    <i class="icon-play bigger-130"></i>
+                </a>
+                <a class="red"
+                   href='javascript:export_alembics("{{= it.id }}")'>
+                    <i class="icon-stop bigger-130"></i>
                 </a>
             </td>
         </tr>

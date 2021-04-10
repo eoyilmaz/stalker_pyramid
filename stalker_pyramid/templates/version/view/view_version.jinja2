@@ -123,6 +123,18 @@
                                                 <span>Preparing ZIP File... Be Patient!</span>
                                             </div>
                                         </div>
+
+                                        <span>
+                                            <button id='do_playblast_button' class="btn btn-block btn-red">
+                                                <i class="icon-wrench bigger-120"></i>Do Playblast
+                                            </button>
+                                        </span>
+                                        <span>
+                                            <button id='export_alembics_button' class="btn btn-block btn-red">
+                                                <i class="icon-wrench bigger-120"></i>Export Alembics
+                                            </button>
+                                        </span>
+
                                     {% endif %}
                                 </div>
                             </div>
@@ -146,73 +158,106 @@
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.ui.touch-punch.min.js") }}'></script>
     <script type="text/javascript">
         $(function () {
-            var icon_name = get_icon('version');
+            let icon_name = get_icon('version');
             $('#version_header').append('<i class="' + icon_name + ' bigger-125"></i>{{ version.take_name }} | {{ "%03i"|format(version.version_number) }}');
 
             $('.date').each(function () {
-                var date = moment.utc($(this).text());
+                let date = moment.utc($(this).text());
                 $(this).text(date.fromNow());
             });
 
-            var pack_version_url = "{{ request.route_url('pack_version', id=version.id) }}";
+            let pack_version_url = "{{ request.route_url('pack_version', id=version.id) }}";
+            let do_playblast_url = "{{ request.route_url('do_playblast', id=version.id) }}";
+            let export_alembics_url = "{{ request.route_url('export_alembics', id=version.id) }}";
 
-            var download_as_zip_button = $('#download_as_zip_button');
+            console.debug('do_playblast_url:', do_playblast_url);
+            console.debug('export_alembics_url:', export_alembics_url);
+
+            let download_as_zip_button = $('#download_as_zip_button');
             download_as_zip_button.on('click', function () {
-            var dialog = $("#download-as-zip-dialog-message").dialog({
-                modal: true,
-                title: "Preparing ZIP File",
-                title_html: true,
-                width: 340,
-                height: 155
-            });
+                let dialog = $("#download-as-zip-dialog-message").dialog({
+                    modal: true,
+                    title: "Preparing ZIP File",
+                    title_html: true,
+                    width: 340,
+                    height: 155
+                });
 
-            var timer_function;
-            var timer = 0;
-            // var last_scheduled_at = moment(data.last_scheduled_at);
-            var last_scheduling_took = 120;
-            var zip_progress = $('#zip-progress');
-            var zip_progress_bar = zip_progress.find('.bar');
 
-            // start timer
-            var current_scheduling_time = $('#current_scheduling_time');
-            function myTimer() {
-                timer += 1;
-                current_scheduling_time.html(timer);
-                // cycle
-                if ( timer >= last_scheduling_took){
-                    timer -= last_scheduling_took;
+                var timer_function;
+                var timer = 0;
+                // var last_scheduled_at = moment(data.last_scheduled_at);
+                var last_scheduling_took = 120;
+                var zip_progress = $('#zip-progress');
+                var zip_progress_bar = zip_progress.find('.bar');
+
+                // start timer
+                var current_scheduling_time = $('#current_scheduling_time');
+                function myTimer() {
+                    timer += 1;
+                    current_scheduling_time.html(timer);
+                    // cycle
+                    if ( timer >= last_scheduling_took){
+                        timer -= last_scheduling_took;
+                    }
+                    // extend the progress bar
+                    var percent = Math.min(100, timer / last_scheduling_took * 100).toFixed(1);
+                    zip_progress.attr('data-percent', percent + '%');
+                    zip_progress_bar.css({'width': percent + '%'});
                 }
-                // extend the progress bar
-                var percent = Math.min(100, timer / last_scheduling_took * 100).toFixed(1);
-                zip_progress.attr('data-percent', percent + '%');
-                zip_progress_bar.css({'width': percent + '%'});
-            }
-            // run it every 1 seconds
-            timer_function = setInterval(function(){myTimer()}, 1000);
+                // run it every 1 seconds
+                timer_function = setInterval(function(){myTimer()}, 1000);
 
-            // set the system on scheduling
-            $.post(pack_version_url).done(function(){
-                // destroy the dialog
-                dialog.dialog('destroy');
+                // set the system on scheduling
+                $.post(pack_version_url).done(function(){
+                    // destroy the dialog
+                    dialog.dialog('destroy');
 
-                // clear timer
-                clearInterval(timer_function);
+                    // clear timer
+                    clearInterval(timer_function);
 
-                // this is a very weird way of downloading a file, but it works
-                window.location = pack_version_url;
-            }).fail(function (jqXHR) {
-                // destroy the dialog
-                dialog.dialog('destroy');
+                    // this is a very weird way of downloading a file, but it works
+                    window.location = pack_version_url;
+                }).fail(function (jqXHR) {
+                    // destroy the dialog
+                    dialog.dialog('destroy');
 
-                // clear timer
-                clearInterval(timer_function);
+                    // clear timer
+                    clearInterval(timer_function);
 
-                var message = '<div>' + jqXHR.responseText + '</div>';
-                bootbox.alert(message);
-                $('.bootbox').prepend('<div class="modal-header alert-danger"><strong>Fail</strong></div>');
+                    let message = '<div>' + jqXHR.responseText + '</div>';
+                    bootbox.alert(message);
+                    $('.bootbox').prepend('<div class="modal-header alert-danger"><strong>Fail</strong></div>');
+                });
             });
 
-        })
+
+            let do_playblast_button = $('#do_playblast_button');
+            do_playblast_button.on('click', function () {
+                $.post(do_playblast_url).done(function(){
+                    let message = '<div>Job created! Check Afanasy</div>';
+                    bootbox.alert(message);
+                    $('.bootbox').prepend('<div class="modal-header alert-success"><strong>Success</strong></div>');
+                }).fail(function(jqXHR){
+                    let message = '<div>' + jqXHR.responseText + '</div>';
+                    bootbox.alert(message);
+                    $('.bootbox').prepend('<div class="modal-header alert-danger"><strong>Fail</strong></div>');
+                });
+            });
+
+            let export_alembics_button = $('#export_alembics_button');
+            export_alembics_button.on('click', function(){
+                $.post(export_alembics_url).done(function(){
+                    let message = '<div>Job created! Check Afanasy</div>';
+                    bootbox.alert(message);
+                    $('.bootbox').prepend('<div class="modal-header alert-success"><strong>Success</strong></div>');
+                }).fail(function(jqXHR){
+                    let message = '<div>' + jqXHR.responseText + '</div>';
+                    bootbox.alert(message);
+                    $('.bootbox').prepend('<div class="modal-header alert-danger"><strong>Fail</strong></div>');
+                });
+            });
+
         });
     </script>
 {% endblock extrascripts %}

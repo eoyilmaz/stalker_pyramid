@@ -122,6 +122,7 @@ def create_version(request):
         )
 
         v.created_by = logged_in_user
+        v.updated_by = logged_in_user
         v.is_published = is_published
         v.created_with = "StalkerPyramid"
         v.description = description
@@ -145,6 +146,51 @@ def create_version(request):
         return Response('No task with id: %s' % task_id, 500)
 
     return Response('Version is uploaded successfully!')
+
+
+@view_config(
+    route_name='do_playblast'
+)
+def do_playblast(request):
+    """does playblast on farm
+
+    :param request:
+    :return:
+    """
+    # TODO: Check if there is already an open playblast job for this version
+    logger.debug("running do_playblast!")
+    version_id = request.matchdict.get('id')
+    version = Version.query.get(version_id)
+    if version.absolute_full_path.endswith('.ma'):
+        logger.debug("version_id: %s" % version_id)
+        logger.debug("version   : %s" % version)
+        if version:
+            submit_playblast_job(version.absolute_full_path, version.task.project.code)
+        return Response('Playblast job created, check Afanasy!')
+    else:
+        return Response("This is not a Maya version!")
+
+
+@view_config(
+    route_name='export_alembics'
+)
+def export_alembics(request):
+    """does playblast on farm
+
+    :param request:
+    :return:
+    """
+    logger.debug("running export_alembics!")
+    version_id = request.matchdict.get('id')
+    version = Version.query.get(version_id)
+    if version.absolute_full_path.endswith('.ma'):
+        logger.debug("version_id: %s" % version_id)
+        logger.debug("version   : %s" % version)
+        if version:
+            submit_alembic_job(version.absolute_full_path, version.task.project.code)
+    else:
+        return Response("This is not a Maya version!")
+    return Response('Export Alembics job created, check Afanasy!')
 
 
 def submit_job(job_name, block_name, command):

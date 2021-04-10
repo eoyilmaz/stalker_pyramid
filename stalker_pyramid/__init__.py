@@ -957,6 +957,8 @@ def main(global_config, **settings):
     config.add_route('get_entity_versions_used_by_tasks',   'entities/{id}/version/used_by/tasks/') # json
 
     config.add_route('pack_version', 'versions/{id}/pack')  # json
+    config.add_route('do_playblast', 'versions/{id}/do_playblast')  # json
+    config.add_route('export_alembics', 'versions/{id}/export_alembics')  # json
 
     # *************************************************************************
     # Department
