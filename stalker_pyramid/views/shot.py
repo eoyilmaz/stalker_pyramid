@@ -169,7 +169,7 @@ def get_shots_children_task_type(request):
     order by "SimpleEntities".name"""
 
     sql_query = sql_query % {'where_condition': where_condition}
-    logger.debug('get_shots_children_task_type sql_query: %s' % sql_query)
+    # logger.debug('get_shots_children_task_type sql_query: %s' % sql_query)
     result = DBSession.connection().execute(sql_query)
 
     return [

@@ -598,3 +598,53 @@ order by "Task_Scenes".id"""
     )
     resp.content_range = content_range
     return resp
+
+
+@view_config(
+    route_name='get_entity_scenes_count',
+    renderer='json'
+)
+def get_entity_scenes_count(request):
+    """returns the Scenes count of the given entity
+    """
+
+    logger.debug('get_entity_scenes_count starts')
+
+    entity_id = request.matchdict.get('id', -1)
+    logger.debug('entity_id : %s' % entity_id)
+    entity = Entity.query.filter_by(id=entity_id).first()
+
+    sql_query = """select
+    count("Tasks".id)
+from "Tasks"
+left join "SimpleEntities" as "Task_SimpleEntities" on "Tasks".id = "Task_SimpleEntities".id
+left join "Types" on "Task_SimpleEntities".type_id = "Types".id
+left join "SimpleEntities" as "Type_SimpleEntities" on "Types".id = "Type_SimpleEntities".id
+
+-- where "Type_SimpleEntities".name = 'Scene' and "Tasks".parent_id = 70
+
+%(where_condition)s
+"""
+
+    # set the content range to prevent JSONRest Store to query the data twice
+    content_range = '%s-%s/%s'
+    where_condition = ''
+    project_id = ''
+
+    if entity.entity_type == 'Project':
+        where_condition = """where "Type_SimpleEntities".name = 'Scene' and "Tasks".project_id = %s""" % entity.id
+
+    elif entity.entity_type == 'Sequence':
+        where_condition = """where "Type_SimpleEntities".name = 'Scene' and "Tasks".parent_id = %s""" % entity_id
+
+    sql_query = sql_query % {
+        'where_condition': where_condition
+    }
+
+    result = DBSession.connection().execute(sql_query)
+
+    scene_count = result.fetchall()[0][0]
+    logger.debug("scene_count: %s" % scene_count)
+
+    logger.debug('get_entity_scenes_count ends')
+    return scene_count

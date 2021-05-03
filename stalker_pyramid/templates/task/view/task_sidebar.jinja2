@@ -170,7 +170,7 @@
                 "{%- if request.current_route_path() == request.route_path('list_entity_scenes', id=task.id) -%}'active',{%- else -%},{%- endif -%}",
                 '{{ request.route_url('list_entity_scenes', id=task.id) }}',
                 get_icon('shot'),
-                0
+                '/entities/{{ task.id }}/scenes/count/'
             );
         {% endif %}
 

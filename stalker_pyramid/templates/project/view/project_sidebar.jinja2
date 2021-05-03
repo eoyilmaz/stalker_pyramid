@@ -80,7 +80,7 @@
             "{%- if request.current_route_path() == request.route_path('list_entity_scenes', id=project.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('list_entity_scenes', id=project.id) }}',
             get_icon('shot'),
-            0
+            '/entities/{{ project.id }}/scenes/count/'
         );
 
         menu_of(
