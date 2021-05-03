@@ -377,9 +377,9 @@ resource_name, status
         var submit_form_url = '{{ request.route_url("create_task") }}';
         var selected_resources = [];
         var entity_type = 'Task';
-        var selected_responsibles = [];
-        var shot_cut_in = 1;
-        var shot_cut_out = 1;
+        var selected_responsible = [];
+        var shot_cut_in = 1001;
+        var shot_cut_out = 1100;
         var shot_fps = 1;
         var shot_sequences =[];
         var disable_dependency_field = false;
@@ -437,7 +437,7 @@ resource_name, status
                 {% endfor %}
             ];
             priority = {{ entity.priority }};
-            selected_responsibles = [
+            selected_responsible = [
                 {% for responsible in entity.responsible %}
                     {{ responsible.id }},
                 {% endfor %}
@@ -807,6 +807,7 @@ resource_name, status
         $('#shot_cut_in').ace_spinner({
             value: shot_cut_in,
             min: 0,
+            max: 9999999,
             step: 1,
             btn_up_class: 'btn-info',
             btn_down_class: 'btn-info'
@@ -821,6 +822,7 @@ resource_name, status
         $('#shot_cut_out').ace_spinner({
             value: shot_cut_out,
             min: 1,
+            max: 9999999,
             step: 1,
             btn_up_class: 'btn-info',
             btn_down_class: 'btn-info'
@@ -878,8 +880,8 @@ resource_name, status
                 task_resources.val(selected_resources);
             }
 
-            if (selected_responsibles.length > 0){
-                task_responsible.val(selected_responsibles);
+            if (selected_responsible.length > 0){
+                task_responsible.val(selected_responsible);
             }
 
             // update the chosen fields
