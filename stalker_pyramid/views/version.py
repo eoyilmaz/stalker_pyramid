@@ -128,20 +128,28 @@ def create_version(request):
         v.description = description
 
         # check if bind_to_originals is true
+        unknown_references = []
         if extension == '.ma':
             if bind_to_originals:
                 from stalker_pyramid.views import archive
                 arch = archive.Archiver()
-                arch.bind_to_original(v.absolute_full_path)
+                unknown_references = arch.bind_to_original(v.absolute_full_path)
 
-            if export_alembics:
-                submit_alembic_job(v.absolute_full_path, v.task.project.code)
+            if not unknown_references:
+                if export_alembics:
+                    submit_alembic_job(v.absolute_full_path, v.task.project.code)
 
-            if do_playblast:
-                submit_playblast_job(v.absolute_full_path, v.task.project.code)
+                if do_playblast:
+                    submit_playblast_job(v.absolute_full_path, v.task.project.code)
 
-        DBSession.add(v)
-        logger.debug('version added to: %s' % v.absolute_full_path)
+                DBSession.add(v)
+                logger.debug('version added to: %s' % v.absolute_full_path)
+
+            else:
+                # delete the version
+                os.remove(v.absolute_full_path)
+                DBSession.rollback()
+                return Response('There are unknown references: <br>%s' % '<br>%s'.join(unknown_references), 500)
     else:
         return Response('No task with id: %s' % task_id, 500)
 
