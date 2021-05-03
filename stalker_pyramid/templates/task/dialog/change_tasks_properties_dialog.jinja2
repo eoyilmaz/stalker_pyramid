@@ -1,6 +1,6 @@
 <script class="dialog_loaded"></script>
 
-<div class="row-fluid" >
+<div class="row-fluid">
     <div class="row-fluid" >
         <form id='change_properties_task_form'
           class='form-horizontal'
@@ -146,6 +146,7 @@
                 {% for task in tasks %}
                     {
                         'id':'{{ task.id }}',
+                        'thumbnail':'{{ task.parent.thumbnail.full_path }}',
                         'name':'{{ task.parent.name}}',
                         'status_code':'{{ task.status.code}}',
                         'resources':'{% for resource in task.resources %}<a href="/users/{{ resource.id}}/view">{{resource.name}}</a><br/>{% endfor %}',
@@ -181,24 +182,26 @@
                         //direction: "rtl",
                         data: grid_data,
                         datatype: "local",
-                        colNames:['Id', 'Name', 'Status', 'Resources', 'Responsible'],
+                        {#colNames:['Id', 'Thumbnail', 'Name', 'Status', 'Resources', 'Responsible'],#}
+                        colNames:['Thumbnail', 'Name', 'Status', 'Resources', 'Responsible'],
                         colModel:[
 
-                            {name:'id', index:'id', width:50, editable: false},
-                            {name:'name', index:'name', width:180, editable: false, formatter:taskLabelFormatter},
-                            {name:'status_code', index:'status_code',width:70, editable: false, formatter:statusLabelFormatter},
-                            {name:'resources', index:'resources',width:170, editable: false},
-                            {name:'responsible', index:'responsible',width:150, editable: false}
+                            {#{name:'id', index:'id', width:50, editable: false},#}
+                            {name:'thumbnail',   index:'thumbnail',   width:160, editable: false, formatter:taskThumbnailFormatter},
+                            {name:'name',        index:'name',        width:160, editable: false, formatter:taskLabelFormatter},
+                            {name:'status_code', index:'status_code', width: 55, editable: false, formatter:statusLabelFormatter},
+                            {name:'resources',   index:'resources',   width:170, editable: false},
+                            {name:'responsible', index:'responsible', width:150, editable: false}
 
                         ],
                         viewrecords : true,
-                        rowNum:grid_data.length,
-                        rowList:[grid_data.length, 10, 10],
+                        rowNum: grid_data.length,
+                        rowList: [grid_data.length, 10, 10],
                         pager : false,
                         altRows: true,
                         multiselect: true,
                         loadonce: true,
-                        height: grid_data.length*50,
+                        height: grid_data.length * 97,
                         sortname:'name',
                         footerrow: false, // set a footer row
                         userDataOnFooter: false, // the calculated sums and/or strings from server are put at footer row.
@@ -293,7 +296,7 @@
                 var indexOn = submit_url_list.indexOf('/tasks/watch');
 {#                var indexOff = submit_url_list.indexOf('/tasks/unwatch');#}
                 if(this.checked){
-                    if(indexOn == -1){
+                    if(indexOn === -1){
                         submit_url_list.push('/tasks/watch');
                     }
 {#                    if (indexOff > -1) {#}
@@ -366,7 +369,7 @@
 
             function post_actions(_q){
                 var change_properties_task_form = $("#change_properties_task_form");
-                console.log("submit_url_list[0]: "+ submit_url_list);
+                console.log("submit_url_list[0]: " + submit_url_list);
                 $.post(
                     submit_url_list[0]+_q,
                     change_properties_task_form.serialize()
@@ -391,21 +394,18 @@
                     bootbox.alert(jqXHR.responseText);
                     submit_button.button('reset');
                 });
-
+            }
+            function taskThumbnailFormatter(cellvalue, options, rowObject){
+                return '<img style="width:auto; height: auto; max-height: 80px;" class="img-thumbnail" src="/' + cellvalue + '">';
             }
 
             function taskLabelFormatter(cellvalue, options, rowObject){
                 console.log(rowObject);
-{#                return cellvalue;#}
-                return '<a href="/tasks/'+rowObject.id+'/view">'+cellvalue+'</a>';
+                return '<a href="/tasks/' + rowObject.id + '/view">' + cellvalue + '</a>';
             }
             function statusLabelFormatter(cellvalue, options, rowObject){
-                return '<span class="label label-large label-status_'+cellvalue.toLowerCase()+'">'+cellvalue+'</span>';
+                return '<span class="label label-large label-status_' + cellvalue.toLowerCase() + '">' + cellvalue + '</span>';
             }
-
-
-
-
 
         });
         console.debug('finished initializing the add_task_user_dialog dialog!')
