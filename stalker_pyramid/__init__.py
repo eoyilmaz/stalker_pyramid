@@ -1026,7 +1026,6 @@ def main(global_config, **settings):
     config.add_route('get_goods_names',        'goods/names/')
     config.add_route('get_good_related_goods', 'goods/{id}/related_goods/')
 
-
     config.add_route('get_studio_price_lists', 'studios/{id}/price_lists/')
     config.add_route('get_price_lists',        'price_lists/')
 

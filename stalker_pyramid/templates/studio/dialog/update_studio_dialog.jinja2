@@ -96,10 +96,10 @@
                 e.preventDefault();
                 submit_button.button('loading');
 
-                var studio_update_form = $("#studio_form");
-
+                let studio_update_form = $("#studio_form");
                 let form_data = studio_update_form.serialize();
-                $.post('/studios/{{ entity.id}}/update', form_data)
+
+                $.post('/studios/{{ entity.id }}/update', form_data)
                     .done(function (response_text) {
                         bootbox.alert(response_text);
                         window.location.assign('{{ came_from }}');

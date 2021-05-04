@@ -13,15 +13,12 @@ import transaction
 from stalker_pyramid.views import (get_time, get_logged_in_user,
                                    StdErrToHTMLConverter,
                                    invalidate_all_caches)
-from stalker_pyramid.views.task import check_task_status_by_schedule_model, \
-    check_all_tasks_status_by_schedule_model
+from stalker_pyramid.views.task import check_task_status_by_schedule_model, check_all_tasks_status_by_schedule_model
 
-#logger = logging.getLogger(__name__)
 from stalker_pyramid import logger_name
 logger = logging.getLogger(logger_name)
-#logger.setLevel(logging.DEBUG)
 
-#
+
 # @view_config(
 #     route_name='dialog_create_studio',
 #     renderer='templates/studio/dialog_create_studio.jinja2'
@@ -134,9 +131,8 @@ def update_studio(request):
     if studio and name and dwh:
         # update new studio
 
-        studio.name=name
-        studio.daily_working_hours=int(dwh)
-
+        studio.name = name
+        studio.daily_working_hours = int(dwh)
         wh = WorkingHours()
 
         def set_wh_for_day(day, start, end):
@@ -188,13 +184,11 @@ def auto_schedule_tasks(request):
         stderr = studio.schedule(scheduled_by=logged_in_user)
 
         # update schedule timings to UTC
-        studio.scheduling_started_at = \
-            studio.scheduling_started_at
+        studio.scheduling_started_at = studio.scheduling_started_at
         studio.last_scheduled_at = studio.last_scheduled_at
 
         # invalidate cache regions
-        from stalker_pyramid.views.task import cached_query_tasks,\
-            get_cached_user_tasks, get_cached_tasks_count
+        from stalker_pyramid.views.task import cached_query_tasks, get_cached_user_tasks, get_cached_tasks_count
         invalidate_all_caches()
 
         check_all_tasks_status_by_schedule_model(studio.scheduler.projects)
@@ -254,7 +248,7 @@ def schedule_info(request):
 def studio_scheduling_mode(request):
     """Sets the system to "in schedule" mode or "normal" mode. When the system
     is "in schedule" mode (Studio.is_scheduling == True) it is not allowed to
-    schedule the system again until the previous one is finishes.
+    schedule the system again until the previous one is finished.
     """
     logged_in_user = get_logged_in_user(request)
 
@@ -266,8 +260,11 @@ def studio_scheduling_mode(request):
 
     if not studio:
         transaction.abort()
-        return Response("There is no Studio instance\n"
-                        "Please create a studio first", 500)
+        return Response(
+            "There is no Studio instance\n"
+            "Please create a studio first",
+            500
+        )
 
     if mode:  # set the mode
         mode = bool(int(mode))

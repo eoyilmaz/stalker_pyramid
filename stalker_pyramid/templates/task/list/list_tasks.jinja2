@@ -574,7 +574,7 @@ require([
              JsonRestStore, dialogs, dialogCaller, dialogCreator, GanttGrid) {
 
     // The Memory
-    var target = '/tasks';
+    var target = '/tasks/';
     {#var tasks_memory_store = new Memory();#}
 
     {% if entity.entity_type == 'User' %}
