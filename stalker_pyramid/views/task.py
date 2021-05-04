@@ -4685,6 +4685,9 @@ def request_revisions(request):
     utc_now = datetime.datetime.now(pytz.utc)
 
     selected_task_list = get_multi_integer(request, 'task_ids', 'GET')
+
+    logger.debug("selected_task_list: %s" % selected_task_list)
+
     tasks = Task.query.filter(Task.id.in_(selected_task_list)).all()
     if not tasks:
         transaction.abort()
@@ -4703,24 +4706,26 @@ def request_revisions(request):
     has_permission = PermissionChecker(request)
 
     if has_permission('Create_Review'):
-        note = create_simple_note('Expanded the timing of the task by <b>'
-                                        '%(schedule_timing)s %(schedule_unit)s</b>.<br/>'
-                                        '%(description)s' % {
-                                            'schedule_timing': schedule_timing,
-                                            'schedule_unit': schedule_unit,
-                                            'description': description
-                                        },
-                                      'Request Revision',
-                                      'purple',
-                                      'requested_revision',
-                                      logged_in_user,
-                                      utc_now)
-        result_message =[]
+        note = create_simple_note(
+            'Expanded the timing of the task by <b>'
+            '%(schedule_timing)s %(schedule_unit)s</b>.<br/>'
+            '%(description)s' % {
+                'schedule_timing': schedule_timing,
+                'schedule_unit': schedule_unit,
+                'description': description
+            },
+            'Request Revision',
+            'purple',
+            'requested_revision',
+            logged_in_user,
+            utc_now
+        )
+        result_message = []
         for task in tasks:
             if task.status.code not in ['CMPL', 'PREV']:
-                result_message.append('%s/%s is  %s. You can not request revision!' % (task.parent.name,
-                                                                                       task.name,
-                                                                                       task.status.name))
+                result_message.append(
+                    '%s/%s is  %s. You can not request revision!' % (task.parent.name, task.name, task.status.name)
+                )
                 continue
 
             task.request_revision(
@@ -4733,10 +4738,7 @@ def request_revisions(request):
             task.updated_by = logged_in_user
             task.date_updated = utc_now
 
-            add_note_to_dependent_of_tasks(task,
-                                           description,
-                                           logged_in_user,
-                                           utc_now)
+            add_note_to_dependent_of_tasks(task, description, logged_in_user, utc_now)
     else:
         request.session.flash('error:You dont have permission!')
         return Response("You don't have permission", 500)

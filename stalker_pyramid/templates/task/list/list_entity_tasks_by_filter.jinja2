@@ -227,7 +227,7 @@
             {% endif %}
 
             {% if filter.entity_type == 'User' %}
-                query_str = 'has_resource=1&leaf_only=1&responsible_id={{ filter.id }}&project_status=RTS&project_status=WIP';
+                query_str = 'leaf_only=1&responsible_id={{ filter.id }}&project_status=RTS&project_status=WIP';
             {% elif filter.entity_type == 'Status'%}
                 query_str += '&status={{ filter.code }}';
             {% endif %}

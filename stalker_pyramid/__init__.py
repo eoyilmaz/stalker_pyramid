@@ -817,42 +817,41 @@ def main(global_config, **settings):
     config.add_route('get_gantt_tasks',          'tasks/{id}/gantt')
     config.add_route('get_gantt_task_children',  'tasks/{id}/children/gantt')
 
-    config.add_route('get_tasks',                   'tasks')
+    config.add_route('get_tasks',                   'tasks/')
     config.add_route('get_tasks_count',             'tasks/count/')
     config.add_route('get_tasks_stats',             'tasks/stats/')
 
-    config.add_route('get_task',                        'tasks/{id}')
-    config.add_route('get_task_events',                 'tasks/{id}/events/')  #json
+    config.add_route('get_task',                        'tasks/{id}/')
+    config.add_route('get_task_events',                 'tasks/{id}/events/')  # json
     config.add_route('get_task_children_task_types',    'tasks/{id}/children_task_types/')  # json
     config.add_route('get_task_children_tasks',         'tasks/{id}/children_tasks/')  # json
-    config.add_route('get_task_leafs_in_hierarchy',     'tasks/{id}/leafs_in_hierarchy/') #json
+    config.add_route('get_task_leafs_in_hierarchy',     'tasks/{id}/leafs_in_hierarchy/') # json
 
-    config.add_route('get_task_related_entities',       'tasks/{id}/related/{e_type}/{d_type}/') # json
-    config.add_route('get_task_dependency',             'tasks/{id}/dependency/{type}/') # json
+    config.add_route('get_task_related_entities',       'tasks/{id}/related/{e_type}/{d_type}/')  # json
+    config.add_route('get_task_dependency',             'tasks/{id}/dependency/{type}/')  # json
     config.add_route('get_task_tickets',                'tasks/{id}/tickets')  # json
 
     config.add_route('get_task_reviews',        'tasks/{id}/reviews/')  # json
     config.add_route('get_task_reviews_count',  'tasks/{id}/reviews/count/')  # json
     config.add_route('get_task_reviewers',      'tasks/{id}/reviewers/')  # json
-    config.add_route('get_task_last_reviews',   'tasks/{id}/last_reviews/') #json
+    config.add_route('get_task_last_reviews',   'tasks/{id}/last_reviews/')  # json
 
-    config.add_route('request_review',                  'tasks/{id}/request_review')
-    config.add_route('request_reviews',                  'tasks/request_reviews')
+    config.add_route('request_review',              'tasks/{id}/request_review')
+    config.add_route('request_reviews',             'tasks/request_reviews')
     config.add_route('request_reviews_dialog',      'tasks/request_review/dialog')
-    config.add_route('request_review_task_dialog',      'tasks/{id}/request_review/dialog')
+    config.add_route('request_review_task_dialog',  'tasks/{id}/request_review/dialog')
 
-
-    config.add_route('approve_task',   'tasks/{id}/approve')
-    config.add_route('request_revision',   'tasks/{id}/request_revision')
+    config.add_route('approve_task',               'tasks/{id}/approve')
+    config.add_route('request_revision',           'tasks/{id}/request_revision')
     config.add_route('request_revisions_dialog',   'tasks/request_revisions/dialog')
-    config.add_route('request_revisions',   'tasks/request_revisions')
+    config.add_route('request_revisions',          'tasks/request_revisions')
 
     # config.add_route('auto_extend_time', 'tasks/{id}/auto_extend_time')
 
     config.add_route('request_extra_time', 'tasks/{id}/request_extra_time')
     config.add_route('request_extra_time_dialog', 'tasks/{id}/request_extra_time/dialog')
 
-    config.add_route('get_task_resources',        'tasks/{id}/resources/') #json
+    config.add_route('get_task_resources',        'tasks/{id}/resources/') # json
     config.add_route('remove_task_user_dialog',   'tasks/{id}/remove/{user_type}/{user_id}/dialog')
     config.add_route('remove_task_user',          'tasks/{id}/remove/{user_type}/{user_id}')
     config.add_route('remove_tasks_user_dialog',   'tasks/remove/{user_type}/{user_id}/dialog')
@@ -894,23 +893,23 @@ def main(global_config, **settings):
     config.add_route('user_time_log_dialog',     'users/{id}/timelogs/create/dialog')
     config.add_route('asset_time_log_dialog',    'assets/{id}/timelogs/create/dialog')
     config.add_route('sequence_time_log_dialog', 'sequences/{id}/timelogs/create/dialog')
-    config.add_route('shot_time_log_dialog', 'shots/{id}/timelogs/create/dialog')
+    config.add_route('shot_time_log_dialog',     'shots/{id}/timelogs/create/dialog')
     # TODO: Change the TimeLog Entity plural name so we can use 'time_logs' string here.
-    config.add_route('time_log_update_dialog', 'timelogs/{id}/update/dialog')
+    config.add_route('time_log_update_dialog',   'timelogs/{id}/update/dialog')
 
     config.add_route('create_time_log', 'time_logs/create')
     config.add_route('update_time_log', 'time_logs/{id}/update')
 
-    config.add_route('user_general_time_log_dialog',     'users/{id}/general_timelogs/create/dialog')
-    config.add_route('user_multi_timelog_dialog',     'users/{id}/multi_timelogs/create/dialog')
-    config.add_route('create_multi_timelog', 'timelogs/multi/create')
+    config.add_route('user_general_time_log_dialog', 'users/{id}/general_timelogs/create/dialog')
+    config.add_route('user_multi_timelog_dialog',    'users/{id}/multi_timelogs/create/dialog')
+    config.add_route('create_multi_timelog',         'timelogs/multi/create')
 
     config.add_route('delete_time_log',  'time_logs/{id}/delete')
 
-    config.add_route('get_task_time_logs',  'task/{id}/time_logs/')  # json
-    config.add_route('get_project_time_logs',  'projects/{id}/time_logs/')  # json
-    config.add_route('get_monthly_time_logs',  'time_logs/monthly')  # json
-    config.add_route('list_task_time_logs', 'task/{id}/time_logs/list')  # html
+    config.add_route('get_task_time_logs',    'task/{id}/time_logs/')  # json
+    config.add_route('get_project_time_logs', 'projects/{id}/time_logs/')  # json
+    config.add_route('get_monthly_time_logs', 'time_logs/monthly')  # json
+    config.add_route('list_task_time_logs',   'task/{id}/time_logs/list')  # html
 
     # *************************************************************************
     # Ticket
@@ -931,7 +930,7 @@ def main(global_config, **settings):
     # Vacation
     config.add_route('entity_vacation_dialog', 'entities/{id}/vacations/create/dialog')
     config.add_route('studio_vacation_dialog', 'studios/{id}/vacations/create/dialog')
-    config.add_route('user_vacation_dialog', 'users/{id}/vacations/create/dialog')
+    config.add_route('user_vacation_dialog',   'users/{id}/vacations/create/dialog')
     config.add_route('vacation_update_dialog', 'vacations/{id}/update/dialog')
 
     config.add_route('create_vacation',  'vacations/create')
@@ -956,8 +955,8 @@ def main(global_config, **settings):
     config.add_route('get_entity_versions',                 'entities/{id}/versions/')  # json
     config.add_route('get_entity_versions_used_by_tasks',   'entities/{id}/version/used_by/tasks/') # json
 
-    config.add_route('pack_version', 'versions/{id}/pack')  # json
-    config.add_route('do_playblast', 'versions/{id}/do_playblast')  # json
+    config.add_route('pack_version',    'versions/{id}/pack')  # json
+    config.add_route('do_playblast',    'versions/{id}/do_playblast')  # json
     config.add_route('export_alembics', 'versions/{id}/export_alembics')  # json
 
     # *************************************************************************
@@ -967,22 +966,22 @@ def main(global_config, **settings):
     config.add_route('create_department_dialog', 'departments/create/dialog')
     config.add_route('update_department_dialog', 'departments/{id}/update/dialog')
 
-    config.add_route('create_department',     'departments/create')
-    config.add_route('update_department',     'departments/{id}/update')
-    config.add_route('view_department',       'departments/{id}/view')
+    config.add_route('create_department',       'departments/create')
+    config.add_route('update_department',       'departments/{id}/update')
+    config.add_route('view_department',         'departments/{id}/view')
     config.add_route('view_department_reports', 'departments/{id}/view/reports')
-    config.add_route('get_departments',       'departments/')
-    config.add_route('get_department',       'departments/{id}/')
+    config.add_route('get_departments',         'departments/')
+    config.add_route('get_department',         'departments/{id}/')
 
     config.add_route('list_department_users', 'departments/{id}/users/list')
     config.add_route('list_department_tasks', 'departments/{id}/tasks/list')
 
-    config.add_route('delete_department', 'departments/{id}/delete')
+    config.add_route('delete_department',        'departments/{id}/delete')
     config.add_route('delete_department_dialog', 'departments/{id}/delete/dialog')
 
     config.add_route('get_department_tasks',  'departments/{id}/tasks/')
 
-    config.add_route('append_departments',   'departments/{id}/append')  # TODO: this was not clear
+    config.add_route('append_departments',    'departments/{id}/append')  # TODO: this was not clear
 
     # *************************************************************************
     # Group
@@ -998,14 +997,14 @@ def main(global_config, **settings):
     config.add_route('get_group',           'groups/{id}/')  # json
     config.add_route('get_groups',          'groups/')
 
-    config.add_route('list_groups',         'groups/list')
-    config.add_route('list_group_users',    'groups/{id}/users/list')
+    config.add_route('list_groups',            'groups/list')
+    config.add_route('list_group_users',       'groups/{id}/users/list')
     config.add_route('list_group_permissions', 'groups/{id}/permissions/list')  # html
 
-    config.add_route('delete_group_dialog', 'groups/{id}/delete/dialog')
-    config.add_route('delete_group', 'groups/{id}/delete')
+    config.add_route('delete_group_dialog',    'groups/{id}/delete/dialog')
+    config.add_route('delete_group',           'groups/{id}/delete')
 
-    config.add_route('get_group_permissions', 'groups/{id}/permissions/')
+    config.add_route('get_group_permissions',  'groups/{id}/permissions/')
 
     # *************************************************************************
     # Tag
@@ -1021,24 +1020,24 @@ def main(global_config, **settings):
 
     # *************************************************************************
     # Price Lists / Good
-    config.add_route('list_studio_goods', 'studios/{id}/goods/list')
-    config.add_route('get_studio_goods', 'studios/{id}/goods/')
-    config.add_route('get_goods', 'goods/')
-    config.add_route('get_goods_names', 'goods/names/')
+    config.add_route('list_studio_goods',      'studios/{id}/goods/list')
+    config.add_route('get_studio_goods',       'studios/{id}/goods/')
+    config.add_route('get_goods',              'goods/')
+    config.add_route('get_goods_names',        'goods/names/')
     config.add_route('get_good_related_goods', 'goods/{id}/related_goods/')
 
 
     config.add_route('get_studio_price_lists', 'studios/{id}/price_lists/')
-    config.add_route('get_price_lists', 'price_lists/')
+    config.add_route('get_price_lists',        'price_lists/')
 
-    config.add_route('create_good_dialog', 'goods/create/dialog')
+    config.add_route('create_good_dialog',          'goods/create/dialog')
     config.add_route('update_good_relation_dialog', 'goods/{id}/update/relation/dialog')
-    config.add_route('update_good_relation', 'goods/{id}/update/relation')
+    config.add_route('update_good_relation',        'goods/{id}/update/relation')
     config.add_route('delete_good_relation_dialog', 'goods/{id}/delete/relation/dialog')
-    config.add_route('delete_good_relation', 'goods/{id}/delete/relation')
+    config.add_route('delete_good_relation',        'goods/{id}/delete/relation')
 
     config.add_route('create_good', 'goods/create')
-    config.add_route('edit_good', 'goods/edit')
+    config.add_route('edit_good',   'goods/edit')
     config.add_route('update_good', 'goods/update')
     config.add_route('delete_good', 'goods/delete')
 
