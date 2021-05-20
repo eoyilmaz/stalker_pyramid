@@ -2588,9 +2588,10 @@ def get_entity_tasks(request):
 
 
 @cache_region('long_term', 'load_tasks')
-def get_cached_user_tasks(statuses, user_id):
+def get_cached_user_tasks(statuses, user_id, project_statuses=None):
     """it is an intermediate function to make caching work
     """
+
     sql_query = """select
         "Tasks".id  as task_id,
         "ParentTasks".full_path as task_name,
@@ -2600,6 +2601,8 @@ def get_cached_user_tasks(statuses, user_id):
         join "Task_Resources" on "Task_Resources".task_id = "Tasks".id
         join "Statuses" as "Task_Statuses" on "Task_Statuses".id = "Tasks".status_id
         join "SimpleEntities" as "Task_SimpleEntities" on "Task_SimpleEntities".id = "Tasks".id
+        join "Projects" on "Tasks".project_id = "Projects".id
+        join "Statuses" as "Project_Statuses" on "Projects".status_id = "Project_Statuses".id
         left join (
             %(generate_recursive_task_query)s
         ) as "ParentTasks" on "Tasks".id = "ParentTasks".id
@@ -2614,7 +2617,17 @@ def get_cached_user_tasks(statuses, user_id):
             temp_buffer.append(""" "Task_Statuses".code='%s'""" % status.code)
         temp_buffer.append(' )')
         where_clause = ''.join(temp_buffer)
-    # logger.debug('where_clause: %s' % where_clause)
+
+    if project_statuses:
+        temp_buffer = [where_clause, """ and ("""]
+        for i, status in enumerate(project_statuses):
+            if i > 0:
+                temp_buffer.append(' or')
+            temp_buffer.append(""" "Project_Statuses".code='%s'""" % status.code)
+        temp_buffer.append(' )')
+        where_clause = ''.join(temp_buffer)
+
+    logger.debug('where_clause: %s' % where_clause)
     sql_query = sql_query % {
         'generate_recursive_task_query': generate_recursive_task_query(),
         'where_clause': where_clause
@@ -2814,7 +2827,13 @@ def get_user_tasks(request):
     if status_codes:
         statuses = Status.query.filter(Status.code.in_(status_codes)).all()
 
-    return_data = get_cached_user_tasks(statuses, user_id)
+    project_statuses = []
+    project_status_codes = request.GET.getall('project_status')
+    logger.debug("project_status_codes: %s" % project_status_codes)
+    if project_status_codes:
+        project_statuses = Status.query.filter(Status.code.in_(project_status_codes)).all()
+
+    return_data = get_cached_user_tasks(statuses, user_id, project_statuses)
 
     resp = Response(
         json_body=return_data
@@ -3450,24 +3469,19 @@ from "Tasks"
     where_clause_for_entity = ''
 
     if isinstance(entity, User):
-        where_clause_for_entity = \
-            '"Task_Resources".resource_id = %s' % entity_id
+        where_clause_for_entity = '"Task_Resources".resource_id = %s' % entity_id
     elif isinstance(entity, Project):
         where_clause_for_entity = '"Tasks".project_id =%s' % entity_id
 
     where_clause_for_filter = ''
-
     if isinstance(filter_, User):
         where_clause_for_entity = ''
-        where_clause_for_filter = \
-            '"Tasks_Responsible".responsible_id = %s' % filter_id
+        where_clause_for_filter = '"Tasks_Responsible".responsible_id = %s' % filter_id
     elif isinstance(filter_, Status):
-        where_clause_for_filter = \
-            'and "Statuses_SimpleEntities".id = %s' % filter_id
+        where_clause_for_filter = 'and "Statuses_SimpleEntities".id = %s' % filter_id
 
     sql_query = sql_query % {
-        'generate_recursive_task_query':
-        generate_recursive_task_query(),
+        'generate_recursive_task_query': generate_recursive_task_query(),
         'where_clause_for_entity': where_clause_for_entity,
         'where_clause_for_filter': where_clause_for_filter
     }
@@ -3500,11 +3514,11 @@ from "Tasks"
         for r in result.fetchall()
     ]
 
-    #task_count = len(return_data)
+    # task_count = len(return_data)
     # content_range = content_range % (0, task_count - 1, task_count)
 
     # logger.debug('return_data: %s' % return_data)
-    #end = time.time()
+    # end = time.time()
 
     resp = Response(
         json_body=return_data

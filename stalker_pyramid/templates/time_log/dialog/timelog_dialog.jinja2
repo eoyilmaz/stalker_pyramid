@@ -312,7 +312,7 @@ function init_dialog() {
             task_status_info.attr('class', 'pull-right infobox infobox-small infobox-dark infobox-status_'+data[0].status);
             task_view_page_btn.show();
 
-            task_view_page_btn.attr('href', "/tasks/"+task_id+"/view");
+            task_view_page_btn.attr('href', "/tasks/" + task_id + "/view");
             var schedule_unit_seconds = seconds_in_unit(sch_unit);
 
             var bid_seconds = to_seconds(parseFloat(data[0].bid_timing), data[0].bid_unit);
@@ -446,7 +446,7 @@ function init_dialog() {
 
             time_log_task.find('option').remove();
 
-            $.getJSON('/users/{{ entity.id }}/tasks/?status=RTS&status=WIP&status=HREV&status=DREV').then(function (data) {
+            $.getJSON('/users/{{ entity.id }}/tasks/?status=RTS&status=WIP&status=HREV&status=DREV&project_status=RTS&project_status=WIP').then(function (data) {
                 // append an empty one first
                 time_log_task.append('<option value="-1">&nbsp;</option>');
                 for (var i = 0; i < data.length; i++) {
