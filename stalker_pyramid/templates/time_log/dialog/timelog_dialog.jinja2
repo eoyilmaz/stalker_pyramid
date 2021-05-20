@@ -126,22 +126,6 @@
                 <div id="alert_information" class="infobox-content span10"></div>
             </div>
 
-
-            <div id="revision_type_cg" class='control-group hide'>
-                <label class='span2 control-label' for='revision_type'>Revision Type</label>
-                <div class='span10'>
-                    <select id='revision_type'
-                            class='input-block-level'
-                            name='revision_type'
-                            required>
-                        <option value="Ajans">Ajans</option>
-                        <option value="Yonetmen">Yonetmen</option>
-                        <option value="Ic_Revizyon">Ic Revizyon</option>
-                        <option value="Yetistiremedim">Yetistiremedim</option>
-                    </select>
-                </div>
-            </div>
-
             {# Description #}
             <div class="control-group">
                 <label class="span2 control-label" for="time_log_description">
@@ -164,10 +148,10 @@
                         <span class="lbl" > Not Finished Yet </span>
                     </label>
 
-                    <label>
-                        <input name="final_action" type="radio" class="ace" value="force_complete"/>
-                        <span class="lbl" > Set As Completed </span>
-                    </label>
+{#                    <label>#}
+{#                        <input name="final_action" type="radio" class="ace" value="force_complete"/>#}
+{#                        <span class="lbl" > Set As Completed </span>#}
+{#                    </label>#}
 
                     <label>
                         <input name="final_action" type="radio" class="ace" value="request_final_review"/>
@@ -383,7 +367,6 @@ function init_dialog() {
                     remaining_minutes_after_this_time_log_string +
                     "</strong> will remain to complete this task.</span>"
                 );
-                $('#revision_type_cg').hide();
                 completed_percent = (100 - ((remaining_seconds_after_this_time_log / parseFloat(data[0].schedule_seconds)) * 100)).toFixed(1);
             } else {
 
@@ -394,8 +377,6 @@ function init_dialog() {
 
                 alert_information.append(exceeding_message);
                 completed_percent = 100;
-
-                $('#revision_type_cg').show();
             }
 
 
@@ -419,8 +400,6 @@ function init_dialog() {
             });
         });
     };
-
-
 
     {% if mode == 'create' %}
         time_log_form.attr("action", "{{ request.route_url('create_time_log') }}");
@@ -651,11 +630,11 @@ function init_dialog() {
         var final_action = $('input[name="final_action"]:checked', '.controls').val();
 
         switch(final_action){
-            case 'force_complete':
-                submit_finalize_form_url = '/tasks/'+task_id+'/force_status/CMPL';
-                break;
+            {#case 'force_complete':#}
+            {#    submit_finalize_form_url = '/tasks/' + task_id + '/force_status/CMPL';#}
+            {#    break;#}
             case 'request_final_review':
-                submit_finalize_form_url = '/tasks/'+task_id+'/request_review?request_review_mode=Final';
+                submit_finalize_form_url = '/tasks/' + task_id + '/request_review?request_review_mode=Final';
                 break;
             case 'wip':
                 submit_finalize_form_url = null;
@@ -672,7 +651,7 @@ function init_dialog() {
         ).done(function (response_text) {
             refresh_page();
         }).fail(function (jqXHR) {
-            bootbox.alert('<div id="message" class="alert alert-danger bigger-110">'+jqXHR.responseText+'</div>');
+            bootbox.alert('<div id="message" class="alert alert-danger bigger-110">' + jqXHR.responseText + '</div>');
             refresh_page();
 {#            submit_button.button('reset');#}
         });
@@ -718,7 +697,7 @@ function init_dialog() {
                 $.param({
                     'start': start.toUTCString(),
                     'end': end.toUTCString(),
-                    'revision_type': $('#revision_type').val()
+                    {#'revision_type': $('#revision_type').val()#}
                 })
             ).done(function (response_text) {
                 if (submit_finalize_form_url){
