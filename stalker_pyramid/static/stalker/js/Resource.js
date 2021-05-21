@@ -150,15 +150,14 @@ define([
          * @param end
          */
         data_labels: function (start, end) {
-            var tasks = this.tasks_in_between(start, end);
-            var task, tasks_title, tasks_title_buffer = [];
-            for (var i = 0; i < tasks.length; i += 1) {
+            let tasks = this.tasks_in_between(start, end);
+            let task, tasks_title, tasks_title_buffer = [];
+            for (let i = 0; i < tasks.length; i += 1) {
                 task = tasks[i];
-                tasks_title_buffer.push(
-                    '<a href="/tasks/' + task.id + '/view">' + task.name + '</a>'
-                );
+                tasks_title_buffer.push('task_ids=' + task.id);
             }
-            tasks_title = tasks_title_buffer.join('<br/>');
+
+            tasks_title = '<a class="pull-right" data-target="#dialog_template" data-toggle="modal" data-keyboard="false" href="/tasks/change/properties/dialog?' + tasks_title_buffer.join("&") + '"> <i class="icon-edit bigger-130"></i> </a>';
             if (tasks_title === '') {
                 tasks_title = "<span>-- No Tasks --</span>";
             }

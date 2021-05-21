@@ -134,7 +134,7 @@
 <script type="text/javascript">
 
     function init_dialog() {
-        console.debug('starting to initialize add_task_user_dialog dialog  sadasdad!!!');
+        console.debug('starting to initialize add_task_user_dialog dialog!!!');
 
         $(function () {
             var label = $('#dialog_template_label');
@@ -147,7 +147,9 @@
                     {
                         'id':'{{ task.id }}',
                         'thumbnail':'{{ task.parent.thumbnail.full_path }}',
-                        'name':'{{ task.parent.name}}',
+                        'parent_id': '{{ task.parent.id }}',
+                        'parent_name': '{{ task.parent.name }}',
+                        'name':'{{ task.name}}',
                         'status_code':'{{ task.status.code}}',
                         'resources':'{% for resource in task.resources %}<a href="/users/{{ resource.id}}/view">{{resource.name}}</a><br/>{% endfor %}',
                         'responsible':'{% for resp in task.responsible %}<a href="/users/{{ resp.id}}/view">{{resp.name}}</a><br/>{% endfor %}'
@@ -183,12 +185,13 @@
                         data: grid_data,
                         datatype: "local",
                         {#colNames:['Id', 'Thumbnail', 'Name', 'Status', 'Resources', 'Responsible'],#}
-                        colNames:['Thumbnail', 'Name', 'Status', 'Resources', 'Responsible'],
+                        colNames:['Thumbnail', 'Parent Name', 'Name', 'Status', 'Resources', 'Responsible'],
                         colModel:[
 
                             {#{name:'id', index:'id', width:50, editable: false},#}
                             {name:'thumbnail',   index:'thumbnail',   width:160, editable: false, formatter:taskThumbnailFormatter},
-                            {name:'name',        index:'name',        width:160, editable: false, formatter:taskLabelFormatter},
+                            {name:'parent_name', index:'parent_name', width:160, editable: false, formatter:taskParentLabelFormatter},
+                            {name:'name',        index:'name',        width: 80, editable: false, formatter:taskLabelFormatter},
                             {name:'status_code', index:'status_code', width: 55, editable: false, formatter:statusLabelFormatter},
                             {name:'resources',   index:'resources',   width:170, editable: false},
                             {name:'responsible', index:'responsible', width:150, editable: false}
@@ -347,8 +350,8 @@
                     _query += "&task_ids=" + task_ids[i];
                 }
 
-                console.log("_query: " + _query);
-                console.log("submit_url_list[0]: " + submit_url_list);
+                {#console.log("_query: " + _query);#}
+                {#console.log("submit_url_list[0]: " + submit_url_list);#}
 
                 {#if (submit_url_list.indexOf('/tasks/set_start_end_date') > -1) {#}
                 {#    var start_end = get_date_range('start_end_date_range_picker');#}
@@ -399,8 +402,10 @@
                 return '<img style="width:auto; height: auto; max-height: 80px;" class="img-thumbnail" src="/' + cellvalue + '">';
             }
 
+            function taskParentLabelFormatter(cellvalue, options, rowObject){
+                return '<a href="/tasks/' + rowObject.parent_id + '/view">' + cellvalue + '</a>';
+            }
             function taskLabelFormatter(cellvalue, options, rowObject){
-                console.log(rowObject);
                 return '<a href="/tasks/' + rowObject.id + '/view">' + cellvalue + '</a>';
             }
             function statusLabelFormatter(cellvalue, options, rowObject){
