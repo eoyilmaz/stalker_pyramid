@@ -127,13 +127,13 @@
             var cb_data = select_seq_cb_data[index];
 
             var seq_index = findArrayElement(seq_list, 'sequence_name', cb_data['filter_name']);
-            var total_assigned_shot_seconds = seq_list[seq_index]["total_assigned_shot_seconds"].toFixed(2);
-            var total_assigned_shot_number = seq_list[seq_index]["total_assigned_shot_number"].toFixed(2);
+            var total_assigned_shot_seconds = seq_list[seq_index]["total_assigned_shot_seconds"].toFixed(1);
+            var total_assigned_shot_number = seq_list[seq_index]["total_assigned_shot_number"].toFixed(1);
 
-            var sum_of_approved_seconds = (cb_data.sum_of_approved_seconds).toFixed(2);
-            var sum_of_total_seconds = (cb_data.sum_of_total_seconds).toFixed(2);
-            var sum_of_approved_shots = (cb_data.sum_of_approved_shots).toFixed(2);
-            var sum_of_total_shots = (cb_data.sum_of_total_shots).toFixed(2);
+            var sum_of_approved_seconds = (cb_data.sum_of_approved_seconds).toFixed(1);
+            var sum_of_total_seconds = (cb_data.sum_of_total_seconds).toFixed(1);
+            var sum_of_approved_shots = (cb_data.sum_of_approved_shots).toFixed(1);
+            var sum_of_total_shots = (cb_data.sum_of_total_shots).toFixed(1);
 
             var sum_of_approved_seconds_str = sum_of_approved_seconds+' s';
             var sum_of_total_seconds_str = sum_of_total_seconds+ ' s';
@@ -184,10 +184,10 @@
             jQuery(grid_selector).jqGrid("footerData", "set",
                 {
                     resource_names: 'TOTAL',
-                    approved_seconds: (cb_data.sum_of_approved_seconds).toFixed(2)+' s ',
-                    total_seconds: (cb_data.sum_of_total_seconds).toFixed(2)+' s ',
-                    approved_shots:(cb_data.sum_of_approved_shots).toFixed(2) +' shots',
-                    total_shots:(cb_data.sum_of_total_shots).toFixed(2) +' shots',
+                    approved_seconds: (cb_data.sum_of_approved_seconds).toFixed(1)+' s ',
+                    total_seconds: (cb_data.sum_of_total_seconds).toFixed(1)+' s ',
+                    approved_shots:(cb_data.sum_of_approved_shots).toFixed(1) +' shots',
+                    total_shots:(cb_data.sum_of_total_shots).toFixed(1) +' shots',
                     total_assigned_shot_seconds:'',
                     total_assigned_shot_number:''
                 }
@@ -242,11 +242,11 @@
                     sum_of_total_shots += data[i]['total_shots'];
 
                     // TOTALS
-                    s_data['approved_seconds'] = data[i]['approved_seconds'].toFixed(2);
-                    s_data['approved_shots'] = data[i]['approved_shots'].toFixed(2);
-                    s_data['total_seconds'] = data[i]['total_seconds'].toFixed(2);
-                    s_data['total_shots'] = data[i]['total_shots'].toFixed(2);
-                    s_data['total_assigned_shot_seconds'] = data[i]['total_assigned_shot_seconds'].toFixed(2);
+                    s_data['approved_seconds'] = data[i]['approved_seconds'].toFixed(1);
+                    s_data['approved_shots'] = data[i]['approved_shots'].toFixed(1);
+                    s_data['total_seconds'] = data[i]['total_seconds'].toFixed(1);
+                    s_data['total_shots'] = data[i]['total_shots'].toFixed(1);
+                    s_data['total_assigned_shot_seconds'] = data[i]['total_assigned_shot_seconds'].toFixed(1);
                     s_data['total_assigned_shot_number'] = data[i]['shot_names'].length;
                     data[i]['total_assigned_shot_number'] = s_data['total_assigned_shot_number'];
 
@@ -388,27 +388,27 @@
     }
 
     function setFooterInitialValue(){
-        var approved_minutes = (sum_of_approved_seconds/60).toFixed(2);
-        var total_minutes = (sum_of_total_seconds/60).toFixed(2);
-        var average_seconds = (sum_of_total_seconds/shot_data.length).toFixed(2);
+        var approved_minutes = (sum_of_approved_seconds/60).toFixed(1);
+        var total_minutes = (sum_of_total_seconds/60).toFixed(1);
+        var average_seconds = (sum_of_total_seconds/shot_data.length).toFixed(1);
         jQuery(grid_selector).jqGrid(
             "footerData", "set", {
                 resource_names: 'TOTAL',
-                approved_seconds: sum_of_approved_seconds.toFixed(2)+'s = '+approved_minutes+' m',
-                total_seconds: sum_of_total_seconds.toFixed(2)+'s = '+total_minutes+' m',
+                approved_seconds: sum_of_approved_seconds.toFixed(1)+'s = '+approved_minutes+' m',
+                total_seconds: sum_of_total_seconds.toFixed(1)+'s = '+total_minutes+' m',
                 // start_date: 'AVERAGE',
                 // shot_names: average_seconds + ' s',
-                approved_shots:sum_of_approved_shots.toFixed(2) +' shots',
-                total_shots:sum_of_total_shots.toFixed(2) +' shots',
-                total_assigned_shot_seconds: (sum_of_total_assigned_shots).toFixed(2) +' s',
-                total_assigned_shot_number: (sum_of_total_assigned_number).toFixed(2) +' shots'
+                approved_shots:sum_of_approved_shots.toFixed(1) +' shots',
+                total_shots:sum_of_total_shots.toFixed(1) +' shots',
+                total_assigned_shot_seconds: (sum_of_total_assigned_shots).toFixed(1) +' s',
+                total_assigned_shot_number: (sum_of_total_assigned_number).toFixed(1) +' shots'
             });
 
         // var total = total_minutes +' m';
         // var approved_total = approved_minutes +' m';
         // if(t_type != 'Animation'){
-        // total = sum_of_total_shots.toFixed(2) +' shots';
-        //     approved_total = sum_of_approved_shots.toFixed(2) +' shots';
+        // total = sum_of_total_shots.toFixed(1) +' shots';
+        //     approved_total = sum_of_approved_shots.toFixed(1) +' shots';
         // }
 
         // $('#total').text(total);

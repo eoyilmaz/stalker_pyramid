@@ -257,7 +257,7 @@
                         for (i = 0; i < data.length; i++) {
 
                             total_seconds += data[i].total_seconds;
-                            data[i].total_seconds = data[i].total_seconds.toFixed(2);
+                            data[i].total_seconds = data[i].total_seconds.toFixed(1);
                             data[i].link = '/tasks/' + data[i].id + '/view';
                             // append it to the table
                             table_body.append(scene_template(data[i]));
@@ -290,7 +290,7 @@
 
                         var oTable1 = $('#scenes_table').dataTable();
 
-                        $('#items_header').append('<span>Total: '+total_seconds.toFixed(2)+' s = '+(total_seconds/60).toFixed(2)+' m  ---- '+total_shots+' Shots</span>');
+                        $('#items_header').append('<span>Total: '+total_seconds.toFixed(2)+' s = '+(total_seconds/60).toFixed(1)+' m  ---- '+total_shots+' Shots</span>');
 
                         $('#loading_spinner').hide();
                         $('#scenes_table').show();

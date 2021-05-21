@@ -182,10 +182,10 @@
                     sum_of_total_seconds += data[i]['total_seconds'];
                     sum_of_total_shots += data[i]['total_shots'];
 
-                    s_data['approved_seconds'] = data[i]['approved_seconds'].toFixed(2);
-                    s_data['approved_shots'] = data[i]['approved_shots'].toFixed(2);
-                    s_data['total_seconds'] = data[i]['total_seconds'].toFixed(2);
-                    s_data['total_shots'] = data[i]['total_shots'].toFixed(2);
+                    s_data['approved_seconds'] = data[i]['approved_seconds'].toFixed(1);
+                    s_data['approved_shots'] = data[i]['approved_shots'].toFixed(1);
+                    s_data['total_seconds'] = data[i]['total_seconds'].toFixed(1);
+                    s_data['total_shots'] = data[i]['total_shots'].toFixed(1);
 
                     var graph1_val = s_data['total_seconds'];
                     var graph2_val = s_data['approved_seconds'];
@@ -366,24 +366,29 @@
                     loadComplete : function() {
                         var $self = $(this);
 {#                        var total_seconds= $self.jqGrid('getCol', 'total_seconds', false, 'sum');#}
-                        var approved_minutes = (sum_of_approved_seconds/60).toFixed(2);
-                        var total_minutes = (sum_of_total_seconds/60).toFixed(2);
-                        var average_seconds = (sum_of_total_seconds/shot_data.length).toFixed(2);
-                        $self.jqGrid("footerData", "set", {resource_ids: 'TOTAL',
-                                                           approved_seconds: sum_of_approved_seconds.toFixed(2)+'s = '+approved_minutes+' m',
-                                                           total_seconds: sum_of_total_seconds.toFixed(2)+'s = '+total_minutes+' m',
-                                                           start_date: 'AVERAGE',
-                                                           shot_names: average_seconds+' s',
-                                                           approved_shots:sum_of_approved_shots.toFixed(2) +' shots',
-                                                           total_shots:sum_of_total_shots.toFixed(2) +' shots'
-                                                           });
+                        var approved_minutes = (sum_of_approved_seconds/60).toFixed(1);
+                        var total_minutes = (sum_of_total_seconds/60).toFixed(1);
+                        var average_seconds = (sum_of_total_seconds/shot_data.length).toFixed(1);
+                        $self.jqGrid(
+                            "footerData",
+                            "set",
+                            {
+                                resource_ids: 'TOTAL',
+                                approved_seconds: sum_of_approved_seconds.toFixed(1)+'s = '+approved_minutes+' m',
+                                total_seconds: sum_of_total_seconds.toFixed(1)+'s = '+total_minutes+' m',
+                                start_date: 'AVERAGE',
+                                shot_names: average_seconds+' s',
+                                approved_shots:sum_of_approved_shots.toFixed(1) +' shots',
+                                total_shots:sum_of_total_shots.toFixed(1) +' shots'
+                            }
+                        );
 
 
                         var total = total_minutes +' m';
                         var approved_total = approved_minutes +' m';
                         if(t_type!='Animation'){
-                            total = sum_of_total_shots.toFixed(2) +' shots';
-                            approved_total = sum_of_approved_shots.toFixed(2) +' shots';
+                            total = sum_of_total_shots.toFixed(1) +' shots';
+                            approved_total = sum_of_approved_shots.toFixed(1) +' shots';
                         }
 
                         calculate_average(weekly_shot_data,total_weeks,start_week);
