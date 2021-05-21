@@ -146,7 +146,7 @@
                 {% for task in tasks %}
                     {
                         'id':'{{ task.id }}',
-                        'thumbnail':'{{ task.parent.thumbnail.full_path }}',
+                        'thumbnail':'{{ task.parent.thumbnail.full_path if task.parent.thumbnail else "static/stalker/images/T_NO_IMAGE.gif" }}',
                         'parent_id': '{{ task.parent.id }}',
                         'parent_name': '{{ task.parent.name }}',
                         'name':'{{ task.name}}',
