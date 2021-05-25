@@ -3305,7 +3305,7 @@ select
     array_agg("Resource_SimpleEntities".id) as resource_id,
     array_agg("Resource_SimpleEntities".name) as resource_name,
     "Statuses_SimpleEntities".name as status_name,
-    "Statuses".code,
+    "Statuses".code as status_code,
     "Statuses_SimpleEntities".html_class as status_color,
     "Project_SimpleEntities".id as project_id,
     "Project_SimpleEntities".name as project_name,
@@ -3491,25 +3491,25 @@ from "Tasks"
 
     return_data = [
         {
-            'id': r[0],
-            'name': r[1],
-            'responsible_id': r[2],
-            'responsible_name': r[3],
-            'type': r[4],
-            'percent_complete': r[5],
-            'resource_id': r[6],
-            'resource_name': r[7],
-            'status': r[8],
-            'status_code': r[9],
-            'status_color': r[10],
-            'project_id': r[11],
-            'project_name': r[12],
-            'request_review': '1' if (logged_in_user.id in r[6] or r[2] == logged_in_user.id) and r[9] == 'WIP' else None,
-            'review': '1' if logged_in_user.id in r[13] and r[9] == 'PREV' else None,
-            'hour_to_complete':r[14],
-            'hour_based_on_bid':r[17],
-            'start_date':milliseconds_since_epoch(r[15]),
-            'priority':r[16]
+            'id': r["task_id"],
+            'name': r["task_name"],
+            'responsible_id': r["responsible_id"],
+            'responsible_name': r["responsible_name"],
+            'type': r["type_name"],
+            'percent_complete': r["percent_complete"],
+            'resource_id': r["resource_id"],
+            'resource_name': r["resource_name"],
+            'status': r["status_name"],
+            'status_code': r["status_code"],
+            'status_color': r["status_color"],
+            'project_id': r["project_id"],
+            'project_name': r["project_name"],
+            'request_review': '1' if (logged_in_user.id in r["resource_id"] or r["responsible_id"] == logged_in_user.id) and r["reviewer_id"] == 'WIP' else None,
+            'review': '1' if logged_in_user.id in r["reviewer_id"] and r["reviewer_id"] == 'PREV' else None,
+            'hour_to_complete':r["hour_to_complete"],
+            'hour_based_on_bid':r["hour_based_on_bid"],
+            'start_date':milliseconds_since_epoch(r["start_date"]),
+            'priority':r["priority"]
         }
         for r in result.fetchall()
     ]
