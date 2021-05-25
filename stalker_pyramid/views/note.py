@@ -178,7 +178,12 @@ def create_note(request):
                      },
                 attachments=attachments
             )
-            mailer.send_to_queue(message)
+            try:
+                mailer.send_to_queue(message)
+            except ValueError:
+                # no internet connection
+                # or not a maildir
+                pass
 
     logger.debug('note is created by %s' % logged_in_user.name)
     request.session.flash('success: note is created by %s' % logged_in_user.name)

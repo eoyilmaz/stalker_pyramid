@@ -129,7 +129,12 @@ def send_resource_remainder(resource):
         html=rendered_template
     )
 
-    mailer.send_to_queue(message)
+    try:
+        mailer.send_to_queue(message)
+    except ValueError:
+        # no internet connection
+        # or not a maildir
+        pass
 
 
 def send_responsible_remainder(responsible):
@@ -185,7 +190,12 @@ def send_responsible_remainder(responsible):
         html=rendered_template
     )
 
-    mailer.send_to_queue(message)
+    try:
+        mailer.send_to_queue(message)
+    except ValueError:
+        # no internet connection
+        # or not a maildir
+        pass
 
 
 def main(argv=sys.argv):

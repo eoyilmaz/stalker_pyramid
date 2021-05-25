@@ -4407,7 +4407,9 @@ def approve_task(request):
 
         try:
             mailer.send_to_queue(message)
-        except ValueError:  # no internet connection
+        except ValueError:
+            # no internet connection
+            # or not a maildir
             pass
 
     # invalidate all caches
@@ -4639,10 +4641,12 @@ def request_revision(request):
             )
         )
 
-        # try:
-        mailer.send_to_queue(message)
-        # except ValueError:  # no internet connection
-        #     pass
+        try:
+            mailer.send_to_queue(message)
+        except ValueError:
+            # no internet connection
+            # or not a maildir
+            pass
 
     # invalidate all caches
     invalidate_all_caches()
@@ -5086,7 +5090,12 @@ def request_reviews(request):
 #             )
 #         )
 #
-#         mailer.send_to_queue(message)
+#         try:
+#             mailer.send_to_queue(message)
+#         except ValueError:
+#             # no internet connection
+#             # or not a maildir
+#             pass
 #
 #     logger.debug(
 #         'success:Your progress review request has been sent to responsible'
@@ -5209,6 +5218,8 @@ def request_review_action(request, task, logged_in_user, desc, send_email, mode)
         try:
             mailer.send_to_queue(message)
         except ValueError:
+            # no internet connection
+            # or not a maildir
             pass
 
         #*******************************************************************
@@ -5252,6 +5263,8 @@ def request_review_action(request, task, logged_in_user, desc, send_email, mode)
         try:
             mailer.send_to_queue(message)
         except ValueError:
+            # no internet connection
+            # or not a maildir
             pass
 
     # invalidate all caches
@@ -5414,6 +5427,8 @@ def request_extra_time(request):
         try:
             mailer.send_to_queue(message)
         except ValueError:
+            # no internet connection
+            # or not a maildir
             pass
 
     # invalidate all caches
@@ -5524,6 +5539,8 @@ def auto_extend_time(task, description, revision_type, logged_in_user):
     #     try:
     #         mailer.send_to_queue(message)
     #     except ValueError:
+    #         # no internet connection
+    #         # or not a maildir
     #         pass
     #
     # # invalidate all caches

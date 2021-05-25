@@ -207,7 +207,12 @@ def create_ticket(request):
             body=description_text,
             html=description_html
         )
-        mailer.send_to_queue(message)
+        try:
+            mailer.send_to_queue(message)
+        except ValueError:
+            # no internet connection
+            # or not a maildir
+            pass
 
     DBSession.add(ticket)
 
@@ -363,7 +368,12 @@ def update_ticket(request):
             html=message_body_html,
             attachments=attachments
         )
-        mailer.send_to_queue(message)
+        try:
+            mailer.send_to_queue(message)
+        except ValueError:
+            # no internet connection
+            # or not a maildir
+            pass
 
     # mail about changes in ticket status
     if ticket_log:
@@ -412,7 +422,12 @@ def update_ticket(request):
             body=message_body_text,
             html=message_body_html
         )
-        mailer.send_to_queue(message)
+        try:
+            mailer.send_to_queue(message)
+        except ValueError:
+            # no internet connection
+            # or not a maildir
+            pass
 
     logger.debug('successfully updated ticket')
 
