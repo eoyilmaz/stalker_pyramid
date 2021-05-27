@@ -205,13 +205,6 @@
                                                  style="height: 100%; width: 100%; display: inline;
                                                         position: relative; left: 100%; margin-left: -200%"/>
                                         </div>
-                                        <script>
-                                            set_entity_thumbnail({
-                                                url: '{{ request.route_url('get_entity_thumbnail', id=entity.id) }}',
-                                                default_thumbnail: '{{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}',
-                                                dom_element_query: '#entity_avatar'
-                                            });
-                                        </script>
                                     {% endif %}
                                 </div>
     
@@ -895,6 +888,14 @@
                 $('#version_used_by_tasks_tree').append('<div class="alert alert-warning">No tasks</div>');
             }
         });
+    });
+</script>
+
+<script>
+    set_entity_thumbnail({
+        url: '{{ request.route_url('get_entity_thumbnail', id=entity.id) }}',
+        default_thumbnail: '{{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}',
+        dom_element_query: '#entity_avatar'
     });
 </script>
 
