@@ -30,7 +30,7 @@
                     {% endif %}
     
                     {% for sibling_task in sibling_tasks|sort(attribute='name') %}
-                        <li><a href="{{ request.route_url('view_task', id=sibling_task.id) }}">{{ sibling_task.name }}</a></li>
+                        <li {% if sibling_task == parent %}class="btn-mini btn-danger"{% endif %}><a href="{{ request.route_url('view_task', id=sibling_task.id) }}">{{ sibling_task.name }}</a></li>
                     {% endfor %}
                 </ul>
             </div>
