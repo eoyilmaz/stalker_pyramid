@@ -227,14 +227,14 @@ def get_entity_notes(request):
 
     sql_query = """
         select  "User_SimpleEntities".id as user_id,
-                "User_SimpleEntities".name,
-                "Users_Thumbnail_Links".full_path,
+                "User_SimpleEntities".name as name,
+                "Users_Thumbnail_Links".full_path as full_path,
                 "Notes_SimpleEntities".id as note_id,
-                "Notes_SimpleEntities".description,
-                "Notes_SimpleEntities".date_created,
-                "Notes_Types_SimpleEntities".id,
-                "Notes_Types_SimpleEntities".name,
-                "Notes_Types_SimpleEntities".html_class,
+                "Notes_SimpleEntities".description as description,
+                "Notes_SimpleEntities".date_created as date_created,
+                "Notes_Types_SimpleEntities".id as note_type_id,
+                "Notes_Types_SimpleEntities".name as note_type_name,
+                "Notes_Types_SimpleEntities".html_class as html_class,
                 dailies.name as daily_name,
                 dailies.id as daily_id
 
@@ -264,20 +264,21 @@ def get_entity_notes(request):
 
     return_data = [
         {
-            'created_by_id': r[0],
-            'created_by_name': r[1],
-            'created_by_thumbnail': r[2],
-            'note_id': r[3],
-            'content': r[4],
-            'created_date': milliseconds_since_epoch(r[5]),
-            'note_type_id': r[6],
-            'note_type_name': r[7],
-            'note_type_color': r[8],
-            'daily_name': r[9],
-            'daily_id': r[10]
+            'created_by_id': r["user_id"],
+            'created_by_name': r["name"],
+            'created_by_thumbnail': r["full_path"],
+            'note_id': r["note_id"],
+            'content': r["description"],
+            'created_date': milliseconds_since_epoch(r["date_created"]),
+            'note_type_id': r["note_type_id"],
+            'note_type_name': r["note_type_name"],
+            'note_type_color': r["html_class"],
+            'daily_name': r["daily_name"],
+            'daily_id': r["daily_id"]
         }
         for r in result.fetchall()
     ]
+
     return return_data
 
 

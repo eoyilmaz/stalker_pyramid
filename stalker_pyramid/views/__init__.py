@@ -413,8 +413,7 @@ def milliseconds_since_epoch(dt):
     if dt.tzinfo is None:
         dts = dt - datetime.datetime(1970, 1, 1)
     else:
-        import pytz
-        dts = dt - datetime.datetime(1970, 1, 1, tzinfo=pytz.utc)
+        dts = dt.astimezone(pytz.utc) - datetime.datetime(1970, 1, 1, tzinfo=pytz.utc)
     return dts.days * 86400000 + dts.seconds * 1000
 
 

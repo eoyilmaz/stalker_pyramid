@@ -188,7 +188,8 @@
             }
 
             $('.date').each(function () {
-                var date = moment.utc($(this).text());
+                console.debug("$(this).text(): ", $(this).text());
+                var date = moment($(this).text());
                 $(this).text(date.fromNow());
             });
 

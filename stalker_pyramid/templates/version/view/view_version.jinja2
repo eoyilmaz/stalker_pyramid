@@ -162,7 +162,7 @@
             $('#version_header').append('<i class="' + icon_name + ' bigger-125"></i>{{ version.take_name }} | {{ "%03i"|format(version.version_number) }}');
 
             $('.date').each(function () {
-                let date = moment.utc($(this).text());
+                let date = moment($(this).text());
                 $(this).text(date.fromNow());
             });
 

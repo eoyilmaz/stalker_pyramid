@@ -306,7 +306,7 @@
         });
 
         $('.date').each(function () {
-            var date = moment.utc($(this).text());
+            var date = moment($(this).text());
             $(this).text(date.fromNow());
         });
 
