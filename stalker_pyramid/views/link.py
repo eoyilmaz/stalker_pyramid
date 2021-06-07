@@ -104,9 +104,17 @@ class ImgToLinkConverter(HTMLParser):
                 # path exists
                 pass
 
+            import sys
+            if sys.version_info[0] < 3:
+                # Python 2.x
+                decoder = base64.decodestring
+            else:
+                # Python 3.1+
+                decoder = base64.decodebytes
+
             with open(file_full_path, 'wb') as f:
                 f.write(
-                    base64.decodestring(image_data.base64_data)
+                    decoder(image_data.base64_data.encode('ascii'))
                 )
 
             # create Link instances
@@ -1412,8 +1420,7 @@ def force_download_files(request):
         content_type='application/force-download',
     )
     # update the content-disposition header
-    response.headers['content-disposition'] = \
-        str('attachment; filename=' + original_filename)
+    response.headers['content-disposition'] = str('attachment; filename=' + original_filename)
     return response
 
 
@@ -1473,8 +1480,7 @@ def force_download_repository_files(request):
         content_type='application/force-download',
     )
     # update the content-disposition header
-    response.headers['content-disposition'] = \
-        str('attachment; filename=' + original_filename)
+    response.headers['content-disposition'] = str('attachment; filename=' + original_filename)
     return response
 
 
