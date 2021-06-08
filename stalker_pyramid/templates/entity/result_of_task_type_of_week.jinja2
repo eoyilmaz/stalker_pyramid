@@ -1,19 +1,12 @@
 
 <div class="row-fluid">
-
     <div class="span2">
         <select id='task_type' class='input-block-level'>
-                <option value="Animation">Animation</option>
-                <option value="Lighting">Lighting</option>
-                <option value="Comp">Comp</option>
-                <option value="Camera">Camera</option>
-                <option value="Scene Assembly">Scene Assembly</option>
-                <option value="Shot Previs">Shot Previs</option>
-                <option value="Render">Full Render</option>
-                <option value="FX">FX</option>
+            {% for task_type_name in task_type_names %}
+                <option value="{{ task_type_name }}">{{ task_type_name }}</option>
+            {% endfor %}
         </select>
     </div>
-
     <div class="span2">
         <select id='select_resource_cb' class='input-block-level'>
         </select>

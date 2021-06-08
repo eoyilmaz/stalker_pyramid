@@ -173,7 +173,7 @@
                             <a data-target="#dialog_template"
                                data-toggle="modal"
                                data-keyboard=false
-                               href='{{ request.route_url("create_task_dialog", id=-1, _query={'project_id': project.id}) }}'>
+                               href='{{ request.route_url("create_task_dialog", id=-1, _query={'project_id': project.id if project else -1}) }}'>
                                 <i class="icon-tasks bigger-120">&nbsp</i>
                                 Task
                             </a>
@@ -203,7 +203,7 @@
                             <a data-target="#dialog_template"
                                data-toggle="modal"
                                data-keyboard=false
-                               href='{{ request.route_url("create_asset_dialog", id=-1, _query={'project_id': project.id}) }}'>
+                               href='{{ request.route_url("create_asset_dialog", id=-1, _query={'project_id': project.id if project else -1}) }}'>
                                 <i class="icon-puzzle-piece bigger-120">&nbsp</i>
                                 Asset
                             </a>
@@ -213,7 +213,7 @@
                             <a data-target="#dialog_template"
                                data-toggle="modal"
                                data-keyboard=false
-                               href='{{ request.route_url("create_shot_dialog", id=-1, _query={'project_id': project.id}) }}'>
+                               href='{{ request.route_url("create_shot_dialog", id=-1, _query={'project_id': project.id if project else -1 }) }}'>
                                 <i class="icon-camera bigger-120">&nbsp</i>
                                 Shot
                             </a>
@@ -223,7 +223,7 @@
                             <a data-target="#dialog_template"
                                data-toggle="modal"
                                data-keyboard=false
-                               href='{{ request.route_url("create_sequence_dialog", id=-1, _query={'project_id': project.id}) }}'>
+                               href='{{ request.route_url("create_sequence_dialog", id=-1, _query={'project_id': project.id if project else -1 }) }}'>
                                 <i class="icon-film bigger-120">&nbsp</i>
                                 Sequence
                             </a>
@@ -924,7 +924,7 @@ require([
             bootbox.alert('Please select at least one item from the GanttChart!');
             return;
         }
-        var _query = '?project_id={{ project.id }}';
+        var _query = '?project_id={{ project.id if project else -1 }}';
         for (var i=0; i<selected_ids.length; i++){
            _query +='&task_ids='+selected_ids[i];
         }
@@ -948,7 +948,7 @@ require([
                     'GanttChart!');
             return;
         }
-        var _query = '?project_id={{ project.id }}';
+        var _query = '?project_id={{ project.id if project else -1}}';
         for (var i=0; i<selected_ids.length; i++){
            _query +='&task_ids='+selected_ids[i];
         }
@@ -972,7 +972,7 @@ require([
                 'GanttChart!');
             return;
         }
-        var _query = '?project_id={{ project.id }}';
+        var _query = '?project_id={{ project.id if project else -1 }}';
         for (var i=0; i<selected_ids.length; i++){
            _query +='&task_ids='+selected_ids[i];
         }

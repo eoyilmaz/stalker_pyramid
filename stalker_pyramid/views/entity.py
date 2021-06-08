@@ -409,6 +409,15 @@ def get_entity_related_data(request):
 
     projects = Project.query.all()
 
+    from stalker import Type
+    from stalker.db.session import DBSession
+    task_type_names = list(
+        map(
+            lambda x: x[0],
+            DBSession.query(Type.name).filter(Type.target_entity_type == 'Task').all()
+        )
+    )
+
     mode = request.matchdict.get('mode', None)
     if not mode:
         mode = request.params.get('mode', None)
@@ -418,6 +427,7 @@ def get_entity_related_data(request):
     return {
         'mode': mode,
         'entity': entity,
+        'task_type_names': task_type_names,
         'has_permission': PermissionChecker(request),
         'logged_in_user': logged_in_user,
         'milliseconds_since_epoch': milliseconds_since_epoch,
