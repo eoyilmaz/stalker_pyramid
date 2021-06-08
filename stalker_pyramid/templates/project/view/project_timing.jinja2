@@ -148,15 +148,15 @@
                         // start timer
                         var current_scheduling_time = $('#current_scheduling_time');
                         function myTimer() {
-                            timer += 1;
-                            current_scheduling_time.html(timer);
+                            timer += 0.1;
+                            current_scheduling_time.html(timer.toFixed());
                             // extend the progress bar
-                            var percent = Math.min(100, timer / last_scheduling_took * 100).toFixed(1);
-                            schedule_progress.attr('data-percent', percent + '%');
+                            var percent = Math.min(100, timer / last_scheduling_took * 100);
+                            schedule_progress.attr('data-percent', percent.toFixed() + '%');
                             schedule_progress_bar.css({'width': percent + '%'});
                         }
                         // run it every 1 seconds
-                        timer_function = setInterval(function(){myTimer()}, 1000);
+                        timer_function = setInterval(function(){myTimer()}, 100);
 
                         // now do the scheduling
                         $.post(
