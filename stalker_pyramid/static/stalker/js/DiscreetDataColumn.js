@@ -57,7 +57,7 @@ define([
         var parent_div = jQuery(jQuery.parseHTML('<div class="logContainer"></div>'));
         parent_div.css({
             width: Math.floor((end_date - start_date) / scale),
-            left: Math.floor((start_date - original_start) / scale), // offset as neccessary
+            left: Math.floor((start_date - original_start) / scale), // offset as necessary
             height: height,
             position: 'absolute'
         });
@@ -70,7 +70,9 @@ define([
         var denominator = height / (millies_possible_in_period * data_scale);
 
         while (period_start < end_date) {
-            data_in_between = data.data_in_between(+period_start, +period_end);
+            // millies_possible_in_period * data.resource_count
+            // works beautifully both for Departments and Resources, bravo!!!
+            data_in_between = Math.min(millies_possible_in_period * data.resource_count, data.data_in_between(+period_start, +period_end));
             data_labels = data.data_labels(period_start, period_end);
 
             // draw a div at that range with the height of data_in_between
