@@ -269,7 +269,7 @@
                             }
 
                             if(start_date!=null && end_date!=null){
-                                total_vacation_day += (end_date-start_date)/1000/3600/24 +1;
+                                total_vacation_day += (end_date-start_date) / 1000 / 3600 / 24 + 1;
                                 console.log('total_vacation_day '+ total_vacation_day);
                             }
                         }
@@ -360,9 +360,9 @@
                     loadComplete : function() {
                         var $self = $(this);
 {#                        var total_seconds= $self.jqGrid('getCol', 'total_seconds', false, 'sum');#}
-                        var approved_minutes = (sum_of_approved_seconds/60).toFixed(1);
-                        var total_minutes = (sum_of_total_seconds/60).toFixed(1);
-                        var average_seconds = (sum_of_total_seconds/shot_data.length).toFixed(1);
+                        var approved_minutes = (sum_of_approved_seconds / 60).toFixed(1);
+                        var total_minutes = (sum_of_total_seconds / 60).toFixed(1);
+                        var average_seconds = (sum_of_total_seconds / shot_data.length).toFixed(1);
                         $self.jqGrid(
                             "footerData",
                             "set",
@@ -371,7 +371,7 @@
                                 approved_seconds: sum_of_approved_seconds.toFixed(1)+'s = '+approved_minutes+' m',
                                 total_seconds: sum_of_total_seconds.toFixed(1)+'s = '+total_minutes+' m',
                                 start_date: 'AVERAGE',
-                                shot_names: average_seconds+' s',
+                                shot_names: average_seconds + ' s',
                                 approved_shots:sum_of_approved_shots.toFixed(1) +' shots',
                                 total_shots:sum_of_total_shots.toFixed(1) +' shots'
                             }
