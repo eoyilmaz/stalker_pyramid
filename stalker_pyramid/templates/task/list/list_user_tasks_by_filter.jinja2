@@ -138,7 +138,7 @@
 <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/dataTable_num-html_sort.js") }}'></script>
 
 <script>
-    var oTable1 = null;
+    let oTable1 = null;
     $(document).ready(function () {
         var project_id = localStorage.getItem("project_id");
         var status_code = '';
@@ -175,7 +175,7 @@
             project_id = project_cb.val();
 
             clear_html_modal();
-            initInfoLink('/entities/{{ entity.id }}/tasks_stats/?project_id='+project_id);
+            initInfoLink('/entities/{{ entity.id }}/tasks_stats/?project_id=' + project_id);
 
 
             project_cb.on('change', function () {
@@ -184,7 +184,7 @@
                 localStorage.setItem("status_code", '');
 
                 clear_html_modal();
-                initInfoLink('/entities/{{ entity.id }}/tasks_stats/?project_id='+project_id);
+                initInfoLink('/entities/{{ entity.id }}/tasks_stats/?project_id=' + project_id);
             });
         });
     });
@@ -213,7 +213,7 @@
     function submit_action(url, modal){
 
         var _query = generateQuery();
-        if(modal == 'true'){
+        if(modal === 'true'){
             var event_dialog = $('#dialog_template');
             event_dialog.modal({
                 'remote': url+_query
@@ -229,8 +229,7 @@
     }
 
     function get_task_notes(id, name){
-
-        var event_dialog = $('#html_template');
+        let event_dialog = $('#html_template');
         event_dialog.attr('title', name);
 {#        console.log('get_task_notes ' + name);#}
         event_dialog.modal({
@@ -239,33 +238,29 @@
     }
 
 
-    function get_task_absoulute_path(task_id){
-
+    function get_task_absolute_path(task_id){
         $.getJSON('/tasks/' + task_id + '/absolute_full_path/').then(function (absolute_full_path) {
             window.prompt("Copy to clipboard: Ctrl+C, Enter", absolute_full_path);
         });
     }
 
     function initInfoLink(address){
-
-        var tasks_status_tabs_container = $('#tasks_status_tabs_container');
+        let tasks_status_tabs_container = $('#tasks_status_tabs_container');
         tasks_status_tabs_container.find("ul").remove();
         tasks_status_tabs_container.append('<ul class="nav nav-tabs" id="tasks_status_tabs"></ul>');
-        var tasks_status_tabs = $('#tasks_status_tabs');
-
-        var link_template = doT.template($('#tmpl_taskStatusLink').html());
+        let tasks_status_tabs = $('#tasks_status_tabs');
+        let link_template = doT.template($('#tmpl_taskStatusLink').html());
 
         $.getJSON(address).then(function (data) {
+            let sorting_path = ['WFD','RTS','WIP', 'PREV','HREV', 'DREV', 'CMPL', 'OH','STOP'];
+            let sorted_data = [];
+            let first_status = '';
+            let first_status_name = '';
+            let index = -1;
 
-            var sorting_path = ['WFD','RTS','WIP', 'PREV','HREV', 'DREV', 'CMPL', 'OH','STOP'];
-            var sorted_data = [];
-            var first_status = '';
-            var first_status_name = '';
-            var index = -1;
+            for (let i = 0; i < data.length; i++) {
 
-            for (var i = 0; i < data.length; i++) {
-
-                if(data[i].status_icon == ''){
+                if(data[i].status_icon === ''){
                    data[i].status_icon = get_icon(data[i].status_code);
                 }
 
@@ -276,42 +271,40 @@
                 data[i].status_code_lc = (data[i].status_code).toLowerCase();
             }
 
-            for (var k = 0; k < sorted_data.length; k++) {
+            for (let k = 0; k < sorted_data.length; k++) {
                 if(sorted_data[k]){
-                    var status_code = localStorage.getItem("status_code");
-                    var status_name = localStorage.getItem("status_name");
+                    let status_code = localStorage.getItem("status_code");
+                    let status_name = localStorage.getItem("status_name");
 
-                    if (first_status == ''){
+                    if (first_status === ''){
                         first_status = sorted_data[k].status_code;
                         first_status_name = sorted_data[k].status_name;
                     }
 
-                    if (status_code != ''){
+                    if (status_code !== ''){
                         first_status = status_code;
                         first_status_name = status_name;
                     }
 
-                    if (sorted_data[k].status_code == status_code){
+                    if (sorted_data[k].status_code === status_code){
                         sorted_data[k].class = 'active';
                     }
 
                     tasks_status_tabs.append(link_template(sorted_data[k]));
 
-                    var link = $('#link_'+sorted_data[k].status_code);
+                    let link = $('#link_'+sorted_data[k].status_code);
                     link.attr("status_name", sorted_data[k].status_name );
 
                     link.on('click', function(){
-
-                        var status_code = $(this).attr('id').split('_')[1];
+                        let status_code = $(this).attr('id').split('_')[1];
                         localStorage.setItem("status_code", status_code);
                         localStorage.setItem("status_name", $(this).attr('status_name'));
                         init_table_data(status_code, $(this).attr('status_name'), $('#project_cb').val());
-
                     });
                 }
             }
-            if (first_status != ''){
-                var tab = $('#tab_'+first_status);
+            if (first_status !== ''){
+                let tab = $('#tab_' + first_status);
                 tab.attr('class','active');
                 init_table_data(first_status, first_status_name, $('#project_cb').val());
             }
@@ -329,11 +322,11 @@
 {#        if(oTable1){#}
 {#            oTable1.dataTable();#}
 {#        }#}
-        var tasks_table = $('#items_table_wrapper');
+        let tasks_table = $('#items_table_wrapper');
         tasks_table.find('thead').remove();
         tasks_table.find('tbody').remove();
 
-        var table_container = $('#table_container');
+        let table_container = $('#table_container');
         table_container.find(".dataTables_wrapper").remove();
     }
 
@@ -343,98 +336,96 @@
 
         console.debug('starting to initialize init_table_data dialog!!!');
 
-        var button_list = $('#button_list');
+        let button_list = $('#button_list');
         button_list.find('button').remove();
 
-        var btn_template = doT.template($('#tmpl_btn').html());
-        var remove_task_btn_info = {
-                                        'id':'remove_resource_btn',
-                                        'title':'Remove Task',
-                                        'icon':'icon-trash',
-                                        'url':'/tasks/remove/resources/{{ entity.id }}/dialog',
-                                        'modal':true
+        let btn_template = doT.template($('#tmpl_btn').html());
+        let remove_task_btn_info = {
+            'id':'remove_resource_btn',
+            'title':'Remove Task',
+            'icon':'icon-trash',
+            'url':'/tasks/remove/resources/{{ entity.id }}/dialog',
+            'modal':true
         };
 
-        var enter_timelog_btn_info = {
-                                        'id':'timelog_btn',
-                                        'title':'Enter Timelog',
-                                        'icon':'icon-calendar',
-                                        'url':'/users/{{ entity.id }}/multi_timelogs/create/dialog',
-                                        'modal':true
+        let enter_timelog_btn_info = {
+            'id':'timelog_btn',
+            'title':'Enter Timelog',
+            'icon':'icon-calendar',
+            'url':'/users/{{ entity.id }}/multi_timelogs/create/dialog',
+            'modal':true
         };
 
-        var force_complete_btn_info = {
-                                        'id':'force_complete_btn',
-                                        'title':'Force Complete',
-                                        'icon':'icon-ok',
-                                        'url': '/tasks/force_status/CMPL/dialog',
-                                        'modal':true
+        let force_complete_btn_info = {
+            'id':'force_complete_btn',
+            'title':'Force Complete',
+            'icon':'icon-ok',
+            'url': '/tasks/force_status/CMPL/dialog',
+            'modal':true
         };
 
-        var request_revisions_btn_info = {
-                                        'id':'request_revisions_btn',
-                                        'title':'Request Revisions',
-                                        'icon':'icon-comment-alt',
-                                        'url': '/tasks/request_revisions/dialog',
-                                        'modal':true
+        let request_revisions_btn_info = {
+            'id':'request_revisions_btn',
+            'title':'Request Revisions',
+            'icon':'icon-comment-alt',
+            'url': '/tasks/request_revisions/dialog',
+            'modal':true
         };
 
-        var request_review_btn_info = {
-                                        'id':'request_review_btn',
-                                        'title':'Request Review',
-                                        'icon':'icon-comment',
-                                        'url':'/tasks/request_review/dialog',
-                                        'modal':true
+        let request_review_btn_info = {
+            'id':'request_review_btn',
+            'title':'Request Review',
+            'icon':'icon-comment',
+            'url':'/tasks/request_review/dialog',
+            'modal':true
         };
 
-        var set_start_end_date_btn_info = {
-                                        'id':'set_start_end_date_btn',
-                                        'title':'Set Start End Date',
-                                        'icon':'icon-edit',
-                                        'url':'/tasks/set_start_end_date/dialog',
-                                        'modal':true
+        let set_start_end_date_btn_info = {
+            'id':'set_start_end_date_btn',
+            'title':'Set Start End Date',
+            'icon':'icon-edit',
+            'url':'/tasks/set_start_end_date/dialog',
+            'modal':true
         };
 
-        var fix_btn_info = {
-                                        'id':'fix_task_btn',
-                                        'title':'Fix Tasks',
-                                        'icon':'icon-cogs',
-                                        'url':'/tasks/fix/statuses/',
-                                        'modal':false
+        let fix_btn_info = {
+            'id':'fix_task_btn',
+            'title':'Fix Tasks',
+            'icon':'icon-cogs',
+            'url':'/tasks/fix/statuses/',
+            'modal':false
         };
-
-
 
         {% if logged_in_user.id == entity.id  or has_permission('Update_Task') %}
 
-            if ( status_code == 'RTS'){
+            if ( status_code === 'RTS'){
                 button_list.append(btn_template(enter_timelog_btn_info));
             }
 
-            if (status_code == 'WIP' || status_code == 'HREV'){
+            if (status_code === 'WIP' || status_code === 'HREV'){
                 button_list.append(btn_template(force_complete_btn_info));
                 button_list.append(btn_template(enter_timelog_btn_info));
-                if ( status_code == 'WIP'){
+                if (status_code === 'WIP'){
                     {% if entity == logged_in_user %}
                         button_list.append(btn_template(request_review_btn_info));
                     {% endif %}
                 }
             }
 
-            if (status_code == 'CMPL'){
+            if (status_code === 'CMPL'){
                 button_list.append(btn_template(request_revisions_btn_info));
             }
         {% endif %}
 
         {% if has_permission('Create_Review') %}
-            if (status_code == 'PREV'){
+            if (status_code === 'PREV'){
                 button_list.append(btn_template(force_complete_btn_info));
                 button_list.append(btn_template(request_revisions_btn_info));
             }
         {% endif %}
 
         {% if has_permission('Update_Task') %}
-            if (status_code == 'WFD' || status_code == 'RTS' || status_code == 'WIP' || status_code == 'HREV'){
+            if (status_code === 'WFD' || status_code === 'RTS' || status_code === 'WIP' || status_code === 'HREV'){
                 button_list.append(btn_template(set_start_end_date_btn_info));
             }
         {% endif %}
@@ -448,35 +439,34 @@
             submit_action($(this).attr("url"), $(this).attr("modal"));
         });
 
-
-        var items_header = $('#items_header');
+        let items_header = $('#items_header');
         items_header.text(status_name);
 
         $('#html_template_header').attr('class', 'widget-header widget-header-small header-color-status_'+status_code.toLowerCase());
         $('#tasks_list').show();
 
-        var table_container = $('#table_container');
+        let table_container = $('#table_container');
         table_container.append('<table id="items_table" class="table table-striped table-bordered table-hover"><thead></thead><tbody></tbody></table>');
-        var table = $('#items_table');
+        let table = $('#items_table');
 
-        var table_head = table.find('thead');
-        var thead_template = doT.template($('#tmpl_itemThead').html());
+        let table_head = table.find('thead');
+        let thead_template = doT.template($('#tmpl_itemThead').html());
         table_head.append(thead_template({}));
 
-        var table_body = table.find('tbody');
-        var row_template = doT.template($('#tmpl_itemRow').html());
+        let table_body = table.find('tbody');
+        let row_template = doT.template($('#tmpl_itemRow').html());
 
-        var query_str = 'status_code=' + status_code + '&project_id=' + project_id;
-        var tableDataAddress = '/users/{{ entity.id }}/tasks/simple/?' + query_str;
+        let query_str = 'status_code=' + status_code + '&project_id=' + project_id;
+        let tableDataAddress = '/users/{{ entity.id }}/tasks/simple/?' + query_str;
 
 
         $.getJSON(tableDataAddress).then(function (data) {
             $('#loading_spinner').hide();
             console.log("tableDataAddress is loaded");
-            var total_remain_st_seconds = 0;
-            var total_remain_bid_seconds = 0;
+            let total_remain_st_seconds = 0;
+            let total_remain_bid_seconds = 0;
 
-            for (var i = 0; i < data.length; i++) {
+            for (let i = 0; i < data.length; i++) {
 
                 data[i].start = new Date(data[i].start).format('yyyy-mm-dd');
 
@@ -490,34 +480,33 @@
                     }
                 }
 
-
-                var bid_seconds = to_seconds(
-                                        data[i].bid_timing,
-                                        data[i].bid_unit
-                                );
+                let bid_seconds = to_seconds(
+                    data[i].bid_timing,
+                    data[i].bid_unit
+                );
 
                 total_remain_bid_seconds += (bid_seconds-data[i].total_logged_seconds);
 
                 data[i].hour_based_on_bid = meaningful_time_between(
-                                                    bid_seconds,
-                                                    data[i].total_logged_seconds
-                                            );
+                    bid_seconds,
+                    data[i].total_logged_seconds
+                );
 
-                var st_seconds = to_seconds(
-                                        data[i].schedule_timing,
-                                        data[i].schedule_unit
-                                );
+                let st_seconds = to_seconds(
+                    data[i].schedule_timing,
+                    data[i].schedule_unit
+                );
 
                 total_remain_st_seconds += (st_seconds-data[i].total_logged_seconds);
 
                 data[i].hour_to_complete = meaningful_time_between(
-                                               st_seconds,
-                                               data[i].total_logged_seconds
-                                           );
+                    st_seconds,
+                    data[i].total_logged_seconds
+                );
 {#                data[i].actions = '<span class="btn btn-danger btn-small tooltip-error" data-rel="popover" data-placement="top" data-original-title=" Top Danger" data-content="Oh snap! Change a few things up and try submitting again.">Top</span>'#}
                 data[i].actions = '<div class="hidden-phone visible-desktop action-buttons"><a class="purple" title="Notes" onclick="get_task_notes('+data[i].id+', \''+data[i].full_path+'\')"><i class="icon-list bigger-130"></i></a>';
-                if (status_code == 'HREV' || status_code == 'DREV' || status_code == 'WIP' || status_code == 'CMPL' || status_code == 'PREV'){
-                     data[i].actions += '<a class="green"  title="Copy Path" onclick="get_task_absoulute_path('+data[i].id+')"><i class="icon-copy bigger-130"></i></a></div>';
+                if (status_code === 'HREV' || status_code === 'DREV' || status_code === 'WIP' || status_code === 'CMPL' || status_code === 'PREV'){
+                     data[i].actions += '<a class="green"  title="Copy Path" onclick="get_task_absolute_path('+data[i].id+')"><i class="icon-copy bigger-130"></i></a></div>';
                 }
                 else{
                     data[i].actions += '</div>';
@@ -532,105 +521,35 @@
                 table_body.append(row_template(data[i]));
             }
 
-            oTable1 = table.dataTable({ "aoColumns": [
-                                                                { "bSortable": false },
-                                                                null,
-                                                                null,
-                                                                null,
-                                                                null,
-                                                                null,
-                                                                { "bSortable": false }
-                                                            ]
-                });
+            oTable1 = table.dataTable({
+                "aoColumns": [
+                    { "bSortable": false },
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    { "bSortable": false }
+                ],
+                "aaSorting": [[ 1, "asc", 0 ]]
+            });
             oTable1.show();
 
-{#            var footerData = {#}
-{#                full_path:'TOTAL',#}
-{#                hour_based_on_bid: meaningful_time(total_remain_bid_seconds),#}
-{#                hour_to_complete: meaningful_time(total_remain_st_seconds)#}
-{#            };#}
             $('#total_bid').text(meaningful_time(total_remain_bid_seconds));
             $('#total_st').text(meaningful_time(total_remain_st_seconds));
 
             $('table th input:checkbox').on('click', function () {
-                    var that = this;
+                    let that = this;
                     $(this).closest('table').find('tr > td:first-child input:checkbox')
-                            .each(function () {
-                                this.checked = that.checked;
-                                $(this).closest('tr').toggleClass('selected');
-                            });
+                        .each(function () {
+                            this.checked = that.checked;
+                            $(this).closest('tr').toggleClass('selected');
+                        });
                 });
 
 
             $('[data-rel=popover]').popover({html:true});
         });
-
-{#        function endDateFormatter(cellvalue, options, rowObject){#}
-{#                var val = cellvalue.format('yyyy-mm-dd');#}
-{#                if (cellvalue< new Date()){#}
-{#                    val = '<span class="red">'+cellvalue.format('yyyy-mm-dd')+'</span>'#}
-{#                }#}
-{#                return val;#}
-{#        }#}
-
-{#        function taskLabelFormatter(cellvalue, options, rowObject){#}
-{##}
-{#                return '<a href="/tasks/'+rowObject.id+'/view">'+cellvalue+'</a>';#}
-{#        }#}
-{##}
-{##}
-{#        function bidFormatter(cellvalue, options, rowObject){#}
-{#                return '<span style="background-color: '+rowObject.bid_stat+'; opacity:0.8;">'+cellvalue+'</span>';#}
-{#        }#}
-
-{#        var submit_form_url = '/tasks/force_status/CMPL/dialog';#}
-{#        var force_complete_btn = $('#force_complete_btn');#}
-{#        if(force_complete_btn){#}
-{#            force_complete_btn.on('click', function(){#}
-{#                submit_form_url = '/tasks/force_status/CMPL/dialog';#}
-{#                submit_action()#}
-{#            });#}
-{#        }#}
-{##}
-{#        var request_revisions_btn = $('#request_revisions_btn');#}
-{#        if(request_revisions_btn){#}
-{#            request_revisions_btn.on('click', function(){#}
-{#                submit_form_url = '/tasks/request_revisions/dialog';#}
-{#                submit_action()#}
-{#            });#}
-{#        }#}
-{##}
-{#        var remove_resource_btn = $('#remove_resource_btn');#}
-{#        if(remove_resource_btn){#}
-{#            remove_resource_btn.on('click', function(){#}
-{#                submit_form_url = '/tasks/remove/resources/{{ entity.id }}/dialog';#}
-{#                submit_action()#}
-{#            });#}
-{#        }#}
-{##}
-{#        var timelog_btn = $('#timelog_btn');#}
-{#        if(timelog_btn){#}
-{#            timelog_btn.on('click', function(){#}
-{#                submit_form_url = '/users/{{ entity.id }}/multi_timelogs/create/dialog?';#}
-{#                submit_action();#}
-{#            });#}
-{#        }#}
-{##}
-{#        var set_start_end_date_btn = $('#set_start_end_date_btn');#}
-{#        if(set_start_end_date_btn){#}
-{#            set_start_end_date_btn.on('click', function(){#}
-{#                submit_form_url = '/tasks/set_start_end_date/dialog';#}
-{#                submit_action()#}
-{#            });#}
-{#        }#}
-{##}
-{#        var request_review_btn = $('#request_review_btn');#}
-{#        if(request_review_btn){#}
-{#            request_review_btn.on('click', function(){#}
-{#                submit_form_url = '/tasks/request_review/dialog';#}
-{#                submit_action()#}
-{#            });#}
-{#        }#}
 
 
         console.debug('finished initializing the init_table_data dialog!')
