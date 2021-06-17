@@ -265,11 +265,11 @@
 
 
 <script>
-    var menu_of = function (title, state, address, icon, count) {
-        var sidebar_list = $('#sidebar_list');
-        var link_template = doT.template($('#tmpl_sidebar_link').html());
+    let menu_of = function (title, state, address, icon, count) {
+        let sidebar_list = $('#sidebar_list');
+        let link_template = doT.template($('#tmpl_sidebar_link').html());
 
-        var options = {
+        let options = {
             'title': title,
             'state': state,
             'link': address,
@@ -277,10 +277,10 @@
             'count': count
         };
 
-        var rendered_template = $($.parseHTML(link_template(options)));
+        let rendered_template = $($.parseHTML(link_template(options)));
         sidebar_list.append(rendered_template);
 
-        var badge = rendered_template.find('.badge');
+        let badge = rendered_template.find('.badge');
 
         // update the badge
         if ( typeof(count) === 'string' && count !== 'no_badge') {
@@ -298,12 +298,12 @@
 </script>
 
 <script>
-    var submenu_of = function (id, treeItemType) {
+    let submenu_of = function (id, treeItemType) {
         $.getJSON('/entities/' + id + '/' + treeItemType.toLowerCase() + 's/').then(function (data) {
             $(function () {
-                var sidebar_list = $('#sidebar_list');
-                var tree_link_template = doT.template($('#tmpl_sidebar_tree_link').html());
-                var data_counts = data.length;
+                let sidebar_list = $('#sidebar_list');
+                let tree_link_template = doT.template($('#tmpl_sidebar_tree_link').html());
+                let data_counts = data.length;
 
                 if (data_counts > 0) {
                     sidebar_list.append(tree_link_template({
@@ -312,10 +312,10 @@
                     }));
                 }
 
-                var item_sublink = $('#' + treeItemType + 's_sublink');
-                var tree_sublink_template = doT.template($('#tmpl_sidebar_tree_sublink').html());
+                let item_sublink = $('#' + treeItemType + 's_sublink');
+                let tree_sublink_template = doT.template($('#tmpl_sidebar_tree_sublink').html());
 
-                for (var i = 0; i < data_counts; i++) {
+                for (let i = 0; i < data_counts; i++) {
                     data[i].link = '/' + treeItemType.toLowerCase() + 's/' + data[i].id + '/view';
                     item_sublink.append(tree_sublink_template(data[i]));
                 }
@@ -325,11 +325,11 @@
 </script>
 
 <script>
-    var menus_under_title = function (title, icon, menuItems) {
+    let menus_under_title = function (title, icon, menuItems) {
         $(function () {
-            var sidebar_list = $('#sidebar_list');
-            var tree_link_template = doT.template($('#tmpl_sidebar_tree_link').html());
-            var data_counts = menuItems.length;
+            let sidebar_list = $('#sidebar_list');
+            let tree_link_template = doT.template($('#tmpl_sidebar_tree_link').html());
+            let data_counts = menuItems.length;
 
             if (data_counts > 0) {
                 sidebar_list.append(tree_link_template({
@@ -338,10 +338,10 @@
                 }));
             }
 
-            var item_sublink = $('#' + title + '_sublink');
-            var tree_sublink_template = doT.template($('#tmpl_sidebar_tree_sublink').html());
+            let item_sublink = $('#' + title + '_sublink');
+            let tree_sublink_template = doT.template($('#tmpl_sidebar_tree_sublink').html());
 
-            for (var i = 0; i < data_counts; i++) {
+            for (let i = 0; i < data_counts; i++) {
                 item_sublink.append(tree_sublink_template(menuItems[i]));
             }
         });
@@ -350,8 +350,8 @@
 
 <script>
     // cache user ids and names
-    var all_users = [];
-    var all_projects = [];
+    let all_users = [];
+    let all_projects = [];
 
     $.getJSON('/users/').then(function (data) {
         all_users = data;
@@ -361,8 +361,8 @@
         all_projects = data;
     });
 
-    var get_entity_name = function(id, entity_list){
-        var user = objectFindByKey(entity_list, 'id', id);
+    let get_entity_name = function(id, entity_list){
+        let user = objectFindByKey(entity_list, 'id', id);
         if(user != null){
             return user.name;
         }
@@ -370,7 +370,7 @@
     };
 
     function objectFindByKey(array, key, value) {
-        for (var i = 0; i < array.length; i++) {
+        for (let i = 0; i < array.length; i++) {
             if (array[i][key] == value){
                 return array[i];
             }
@@ -378,11 +378,11 @@
         return null;
     }
 
-    var get_user_name = function(id){
+    let get_user_name = function(id){
         return get_entity_name(id, all_users);
     };
 
-    var get_project_name = function(id){
+    let get_project_name = function(id){
         return get_entity_name(id, all_projects);
     };
 </script>
@@ -453,20 +453,20 @@
     <script type="text/javascript">
         // choose default skin
         $(function () {
-            var skin_class = 'skin-1';
-            var body = $(document.body);
+            let skin_class = 'skin-1';
+            let body = $(document.body);
             body.removeClass('skin-1 skin-2 skin-3');
             body.addClass(skin_class);
             $('.ace-nav > li.grey').addClass('dark');
         });
         
         // if it is smaller resize the page content to the window height
-        var resize_page_content = function () {
-            var page_content = $('.page-content');
-            var page_content_height = page_content.height();
-            var window_height = $(window).height() - 118;
+        let resize_page_content = function () {
+            let page_content = $('.page-content');
+            let page_content_height = page_content.height();
+            let window_height = $(window).height() - 118;
             {# 230 #}
-            var new_height = Math.max(window_height, page_content_height);
+            let new_height = Math.max(window_height, page_content_height);
             if (page_content_height < window_height) {
                 page_content.css({'min-height': window_height});
             }
@@ -550,9 +550,9 @@
         // flash all session messages as gritter
         $(function () {
 
-            var item, title, type, message;
-            var all_messages = $.parseHTML($('#tmpl_flash_message').text());
-            for (var i=0; i < all_messages.length; i++){
+            let item, title, type, message;
+            let all_messages = $.parseHTML($('#tmpl_flash_message').text());
+            for (let i=0; i < all_messages.length; i++){
                 item = $(all_messages[i]);
                 title = item.attr('title');
                 type = item.attr('type');
@@ -572,7 +572,7 @@
     <script type='text/javascript'>
         $(function () {
             $('a.dialog').each(function (i) {
-                var href = this.getAttribute('href');
+                let href = this.getAttribute('href');
                 if (href != '#') {
                     this.setAttribute('href', href + '?came_from={{ request.path }}')
                 }
@@ -582,7 +582,7 @@
 
     {# Gantt Chart Scroll #}
     <script type="text/javascript">
-        var scrollToTaskItem = function (start) {
+        let scrollToTaskItem = function (start) {
             $("#gantt_scroll_to_button").attr('start', start).trigger('click');
         };
     </script>
@@ -590,9 +590,9 @@
     {# Event Dialog Initialize #}
     <script type="text/javascript">
         $(function () {
-            var event_dialog = $('#dialog_template');
+            let event_dialog = $('#dialog_template');
 
-            var init_them_all = function(){
+            let init_them_all = function(){
                 if (event_dialog.find('script.dialog_loaded')[0] !== undefined){
                     try {
                         setTimeout(function(){
@@ -632,7 +632,7 @@
     {# HTML Dialog Initialize #}
     <script type="text/javascript">
         $(function () {
-            var html_dialog = $('#html_template');
+            let html_dialog = $('#html_template');
             html_dialog.on('shown', function (e) {
                 e.stopPropagation();
                 e.preventDefault();

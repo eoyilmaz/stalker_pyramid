@@ -87,7 +87,7 @@
                       .addClass('ace ace-switch ace-switch-5').wrap('<label class="inline" />').after('<span class="lbl"></span>');
 
             //update buttons classes
-            var buttons = form.next().find('.EditButton .fm-button');
+            let buttons = form.next().find('.EditButton .fm-button');
             buttons.addClass('btn btn-small').find('[class*="-icon"]').remove();//ui-icon, s-icon
             buttons.eq(0).addClass('btn-primary').prepend('<i class="icon-ok"></i>');
             buttons.eq(1).prepend('<i class="icon-remove"></i>')
@@ -98,19 +98,19 @@
             buttons.eq(1).append('<i class="icon-chevron-right"></i>');
         }
 
-        var icon_name = get_icon('{{ list_item_type.lower() }}');
+        let icon_name = get_icon('{{ list_item_type.lower() }}');
         $('#'+'{{ list_item_type.lower() }}'+'_items_header').append('<i class=' + icon_name + '></i>{{ list_item_type }}s');
 
         console.log('{{ address }}');
         // fill items table with dynamic data
         $.getJSON('{{ address }}').then(function (data) {
             console.log('{{ address }} loaded');
-            var row_template = doT.template($('#tmpl_list_item').html());
+            let row_template = doT.template($('#tmpl_list_item').html());
 
             // wait until document is ready
             $(function () {
-                var editable_list = $('#'+'{{ list_item_type.lower() }}'+'_editable_list');
-                for (var i = 0; i < data.length; i++) {
+                let editable_list = $('#'+'{{ list_item_type.lower() }}'+'_editable_list');
+                for (let i = 0; i < data.length; i++) {
 
                     // fix dates
                     // data[i].date_created = new Date(data[i].date_created).format('yyyy-mm-dd HH:MM');
@@ -125,7 +125,7 @@
                     // append it to the table
                     editable_list.append(row_template(data[i]));
                     if (data[i].item_remove_link){
-                        var delete_template = doT.template($('#tmpl_item_remove').html());
+                        let delete_template = doT.template($('#tmpl_item_remove').html());
                         $('#editable_list_item_actions_' + data[i].id).append(delete_template(data[i]));
                     }
                 }

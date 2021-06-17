@@ -66,14 +66,14 @@
 
     function init_dialog() {
 
-        var event_dialog = $('#dialog_template');
+        let event_dialog = $('#dialog_template');
         console.debug('starting to initialize calendar_milestone dialog!!!');
 
-        var dialog_label = $('#dialog_template_label');
+        let dialog_label = $('#dialog_template_label');
         dialog_label.find('span').remove();
         dialog_label.append('<span>{{mode}} Milestone</span>');
 
-        var calendar_milestone_name = $("#calendar_milestone_name");
+        let calendar_milestone_name = $("#calendar_milestone_name");
          if(event_dialog.attr('milestone_name')){
             calendar_milestone_name.val(event_dialog.attr('milestone_name'));
         }
@@ -83,9 +83,9 @@
             $(this).prev().focus();
         });
 
-        var calendar_milestone_start_date = $("#calendar_milestone_start_date");
+        let calendar_milestone_start_date = $("#calendar_milestone_start_date");
 
-        var start_date_val = (new Date(event_dialog.attr('project_start_date'))).format("dd-mm-yyyy");
+        let start_date_val = (new Date(event_dialog.attr('project_start_date'))).format("dd-mm-yyyy");
         if(event_dialog.attr('start_date')){
             start_date_val = (new Date(event_dialog.attr('start_date'))).format("dd-mm-yyyy");
         }
@@ -93,15 +93,15 @@
 
         {# ***************************************************************** #}
         {# Submit Button #}
-        var submit_button = $('#dialog_template_submit_button');
+        let submit_button = $('#dialog_template_submit_button');
         submit_button.on('click', function (e) {
             e.stopPropagation();
             e.preventDefault();
 
             submit_button.button('loading');
 
-            var start_date = calendar_milestone_start_date.datepicker().val().split('-');
-            var start = new Date(
+            let start_date = calendar_milestone_start_date.datepicker().val().split('-');
+            let start = new Date(
                 parseInt(start_date[2]),
                 parseInt(start_date[1]) - 1,
                 parseInt(start_date[0]),
@@ -111,15 +111,15 @@
                 0
             );
 
-            var sdate = start.getTime();
+            let sdate = start.getTime();
 
-            var calendar_milestone_form = $('#calendar_milestone_form');
-            var milestone_id = -1;
+            let calendar_milestone_form = $('#calendar_milestone_form');
+            let milestone_id = -1;
             if(event_dialog.attr('milestone_id')){
                     milestone_id = event_dialog.attr('milestone_id');
             }
 
-            var url = '/budgets/{{ budget.id }}/calendar/milestone/action';
+            let url = '/budgets/{{ budget.id }}/calendar/milestone/action';
             $.post(
                 url,
                 calendar_milestone_form.serialize()+"&"+
@@ -145,10 +145,10 @@
                 e.preventDefault();
 
                 // disable the submit_button
-                var delete_button = $(this);
+                let delete_button = $(this);
                 delete_button.button('loading');
 
-                var confirm_message =
+                let confirm_message =
                     '<h3 class="header red"><i class="icon-warning-sign">' +
                     '</i> Warning</h3>' +
                     '<div id="message" class="alert alert-info bigger-110">' +
@@ -157,7 +157,7 @@
 
                 bootbox.confirm(confirm_message, function (result) {
                     if (result) {
-                        var milestone_id = event_dialog.attr('milestone_id');
+                        let milestone_id = event_dialog.attr('milestone_id');
                         $.post(
                             '/budgets/{{ budget.id }}/calendar/milestone/delete',
                              $.param({

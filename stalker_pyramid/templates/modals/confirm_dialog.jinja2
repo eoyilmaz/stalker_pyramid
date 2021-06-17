@@ -34,7 +34,7 @@
     function init_dialog() {
         console.debug('starting to initialize confirm dialog!!!');
 
-        var dialog_template_label = $('#dialog_template_label');
+        let dialog_template_label = $('#dialog_template_label');
         dialog_template_label.find('span').remove();
         dialog_template_label.append('<span class="red"><i class="icon-warning-sign"></i> Warning</span>');
 
@@ -46,16 +46,16 @@
             e.stopPropagation();
             e.preventDefault();
             // disable the submit_button
-            var submit_button = $(this);
+            let submit_button = $(this);
 
-            var url= '{{ action | safe}}';
+            let url= '{{ action | safe}}';
             if(url==''){
                 $('#dialog_template').modal('hide');
             }
             else{
                 submit_button.button('loading');
-                var confirm_form = $('#confirm_form');
-                var confirm_form_data = confirm_form.serialize();
+                let confirm_form = $('#confirm_form');
+                let confirm_form_data = confirm_form.serialize();
 
                 $.post(url, confirm_form_data).done(function (response) {
                     $('#dialog_template').modal('hide');
@@ -71,7 +71,7 @@
         });
 
         $('.date').each(function () {
-            var date = moment($(this).text());
+            let date = moment($(this).text());
             $(this).text(date.fromNow());
         });
 

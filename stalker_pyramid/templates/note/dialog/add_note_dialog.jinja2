@@ -32,12 +32,12 @@
             e.preventDefault();
 
             // disable the submit_button
-            var submit_button = $(this);
+            let submit_button = $(this);
             submit_button.button('loading');
 
-            var editor = $('.wysiwyg-editor');
-            var content = editor.cleanHtml();
-            var content_as_text = editor.text();
+            let editor = $('.wysiwyg-editor');
+            let content = editor.cleanHtml();
+            let content_as_text = editor.text();
 
             $.post(
                 "/note/create",
@@ -50,7 +50,7 @@
                 ).done(function () {
                     window.location.assign('{{ came_from }}');
     {#                // just append the note to the top#}
-    {#                var note_simple_template = doT.template($('#tmpl_note_simple_text').html());#}
+    {#                let note_simple_template = doT.template($('#tmpl_note_simple_text').html());#}
                 }).fail(function (jqXHR) {
                     bootbox.alert('<div id="message" class="alert alert-danger bigger-110">' + jqXHR.responseText + '</div>');
                     submit_button.button('reset');
@@ -61,7 +61,7 @@
 <script type="text/javascript">
 
     function showErrorAlert(reason, detail) {
-        var msg = '';
+        let msg = '';
         if (reason === 'unsupported-file-type') {
             msg = "Unsupported format " + detail;
         } else if (reason === 'big-file-size') {
@@ -117,7 +117,7 @@
         //another option would be opening a dialog for user to enter dimensions.
         if (typeof jQuery.ui !== 'undefined' && /applewebkit/.test(navigator.userAgent.toLowerCase())) {
 
-            var lastResizableImg = null;
+            let lastResizableImg = null;
 
             function destroyResizable() {
                 if (lastResizableImg == null) return;
@@ -126,9 +126,9 @@
                 lastResizableImg = null;
             }
 
-            var enableImageResize = function () {
+            let enableImageResize = function () {
                 $('.wysiwyg-editor').on('mousedown', function (e) {
-                    var target = $(e.target);
+                    let target = $(e.target);
                     if (e.target instanceof HTMLImageElement) {
                         if (!target.data('resizable')) {
                             target.resizable({

@@ -25,12 +25,12 @@
         console.debug('starting to initialize add_task_user_dialog dialog!!!');
 
         $(function () {
-            var label = $('#dialog_template_label');
+            let label = $('#dialog_template_label');
             label.find('span').remove();
             label.append('<span>Append {{ user_type }}</span>');
             $('#dialog_template_body').attr('style', "height: 300px");
     
-            var selected_users = [];
+            let selected_users = [];
 
             selected_users = [
                 {% for user in task[ user_type.lower()] %}
@@ -38,7 +38,7 @@
                 {% endfor %}
             ];
 
-            var task_users = $('#task_users');
+            let task_users = $('#task_users');
 
             task_users.chosen({
                 search_contains: true,
@@ -46,7 +46,7 @@
             });
 
             {% raw %}
-                var user_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
+                let user_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
             {% endraw %}
 
             $.getJSON('/projects/{{ task.project.id }}/users/?simple=1').then(function(data){
@@ -54,9 +54,9 @@
                 task_users.find('option').remove();
 
                 // append new ones
-                var data_count = data.length;
+                let data_count = data.length;
                 // append a single empty option to the responsible field
-                for (var i=0; i < data_count; i++){
+                for (let i=0; i < data_count; i++){
                     task_users.append(user_template(data[i]));
                 }
 
@@ -67,14 +67,14 @@
                 task_users.trigger('liszt:updated');
             });
 
-            var submit_button = $('#dialog_template_submit_button');
+            let submit_button = $('#dialog_template_submit_button');
             submit_button.on('click', function (e) {
 
                 e.stopPropagation();
                 e.preventDefault();
                 submit_button.button('loading');
 
-                var append_form = $("#append_form");
+                let append_form = $("#append_form");
 
                 $.post(
                     '/tasks/{{ task.id }}/change/{{ user_type.lower() }}',

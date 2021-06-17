@@ -95,7 +95,7 @@
         $(document).ready(function () {
 
             $('.slim-scroll').each(function () {
-                var $this = $(this);
+                let $this = $(this);
                 $this.slimScroll({
                     height: $this.data('height') || 100,
                     railVisible:true
@@ -103,19 +103,19 @@
             });
 
             $('#add_project_entries_to_budget_button').hide();
-            var total_cost = 0;
-            var total_msrp = 0;
-            var total_price = 0;
-            var grid_lists_data = {};
-            var grid_lists_report = [];
-            var grid_data;
-            var lastSelection;
-            var lastSelectionIndex;
-            var lastGrid;
-            var colModel = [];
-            var colModel_report = [];
-            var editable = true;
-            var hide_cell = false;
+            let total_cost = 0;
+            let total_msrp = 0;
+            let total_price = 0;
+            let grid_lists_data = {};
+            let grid_lists_report = [];
+            let grid_data;
+            let lastSelection;
+            let lastSelectionIndex;
+            let lastGrid;
+            let colModel = [];
+            let colModel_report = [];
+            let editable = true;
+            let hide_cell = false;
 
             {% if entity.status.code == 'PLN'  %}
                editable = true;
@@ -150,7 +150,7 @@
                          ];
 
             $("#custom_entry_button").on('click', function (e) {
-                 var event_dialog = $('#dialog_template');
+                 let event_dialog = $('#dialog_template');
 
                 event_dialog.modal({
                     'remote': '{{request.route_path('budgetentry_dialog',id=-1, mode="create", _query={'budget_id':entity.id }) }}'
@@ -158,7 +158,7 @@
             });
 
             $("#duplicate_button").on('click', function (e) {
-                 var event_dialog = $('#dialog_template');
+                 let event_dialog = $('#dialog_template');
 
                 event_dialog.modal({
                     'remote': '{{ request.route_url("duplicate_budget_dialog", id=entity.id)}}'
@@ -174,7 +174,7 @@
 
                 grid_lists_data[id].push(data);
 
-                var arr_index = findArrayElement(grid_lists_report,'id', id);
+                let arr_index = findArrayElement(grid_lists_report,'id', id);
                 if(arr_index == -1){
                     console.log(data.total_cost + "  : "+ data.price);
                     grid_lists_report.push(
@@ -202,7 +202,7 @@
 
             function create_discount_report(){
 
-                var report_table = "#report_table";
+                let report_table = "#report_table";
                 jQuery(function($) {
                         jQuery(report_table).jqGrid({
                             //direction: "rtl",
@@ -238,17 +238,17 @@
 
             function find_table(table_id){
 
-                var grid_selector = "#"+table_id;
+                let grid_selector = "#"+table_id;
                 return jQuery(grid_selector);
 
             }
 
             function noteTheDiscount(cost, price, note){
-                var new_note = note;
-                var re = /[%]\d+(\.\d*)[*]( indirimli!)/;
+                let new_note = note;
+                let re = /[%]\d+(\.\d*)[*]( indirimli!)/;
                 if(cost > price){
-                    var discount = cost - price;
-                    var discount_pro = ((discount/cost)*100).toFixed(2);
+                    let discount = cost - price;
+                    let discount_pro = ((discount/cost)*100).toFixed(2);
 
                     if(note.search(re) != -1){
                         new_note = note.replace(re, "%"+discount_pro+"* indirimli!");
@@ -269,14 +269,14 @@
                     if(lastGrid){
                         lastGrid.restoreRow(lastSelection);
                     }
-                    var arr_index = findArrayElement(grid_data,'id', id);
+                    let arr_index = findArrayElement(grid_data,'id', id);
                     if(arr_index!=-1){
                         if (id !== lastSelection) {
 
-                            var grid = find_table(grid_data[arr_index].type_id);
+                            let grid = find_table(grid_data[arr_index].type_id);
                             lastGrid = grid;
 {#                            grid.restoreRow(lastSelection);#}
-                            var editParameters = {
+                            let editParameters = {
                                 keys: true,
                                 successfunc: editSuccessful,
                                 errorfunc: editFailed,
@@ -292,15 +292,15 @@
 
             function editSuccessful(data, stat) {
 
-                var type_id = grid_data[lastSelectionIndex].type_id;
+                let type_id = grid_data[lastSelectionIndex].type_id;
 
-                var grid = find_table(type_id);
+                let grid = find_table(type_id);
                 grid.restoreRow(lastSelection);
 
                 setTimeout(function(){
-                    var index_01 = findArrayElement(grid_lists_data[type_id], 'id', lastSelection);
-                    var selected_data = grid_data[lastSelectionIndex];
-                    var recalculated_selected_data = recalculateGridData(selected_data, data.responseJSON);
+                    let index_01 = findArrayElement(grid_lists_data[type_id], 'id', lastSelection);
+                    let selected_data = grid_data[lastSelectionIndex];
+                    let recalculated_selected_data = recalculateGridData(selected_data, data.responseJSON);
                     grid_lists_data[type_id][index_01] = recalculated_selected_data;
                     grid_data[lastSelectionIndex] = recalculated_selected_data;
 
@@ -331,8 +331,8 @@
             }
 
             function priceFmatter (cellvalue, options, rowObject){
-               var index = findArrayElement(grid_data,'id', options.rowId);
-               var cValue = accounting.formatMoney(cellvalue, { symbol: "TL",  format: "%v %s", precision:0 });
+               let index = findArrayElement(grid_data,'id', options.rowId);
+               let cValue = accounting.formatMoney(cellvalue, { symbol: "TL",  format: "%v %s", precision:0 });
                if(grid_data[index].total_cost != grid_data[index].price){
                    cValue += " ("+ accounting.formatMoney(grid_data[index].total_cost , { symbol: "TL",  format: "%v %s", precision:0 })+")";
                }
@@ -340,7 +340,7 @@
             }
 
             function priceUnformatter (cellvalue, options, rowObject){
-               var index = findArrayElement(grid_data,'id', options.rowId);
+               let index = findArrayElement(grid_data,'id', options.rowId);
                return grid_data[index].price ;
             }
 
@@ -353,22 +353,22 @@
             }
 
             function unitFmatter (cellvalue, options, rowObject){
-                var index = findArrayElement(grid_data,'id', options.rowId);
+                let index = findArrayElement(grid_data,'id', options.rowId);
                 return grid_data[index].amount+" "+ grid_data[index].unit;
             }
 
             function  unformatUnit (cellvalue, options, rowObject){
-                var index = findArrayElement(grid_data,'id', options.rowId);
+                let index = findArrayElement(grid_data,'id', options.rowId);
                 return grid_data[index].amount;
             }
 
             function secondUnitFmatter (cellvalue, options, rowObject){
-                var index = findArrayElement(grid_data,'id', options.rowId);
+                let index = findArrayElement(grid_data,'id', options.rowId);
                 return grid_data[index].second_amount+" "+ grid_data[index].second_unit;
             }
 
             function  secondUnformatUnit (cellvalue, options, rowObject){
-                var index = findArrayElement(grid_data,'id', options.rowId);
+                let index = findArrayElement(grid_data,'id', options.rowId);
                 return grid_data[index].second_amount;
             }
 
@@ -387,15 +387,15 @@
             }
 
             function getCellValue(rowId, cellId) {
-                var cell = jQuery('#' + rowId + '_' + cellId);
+                let cell = jQuery('#' + rowId + '_' + cellId);
 
-                var val = cell.val();
+                let val = cell.val();
                 return val;
             }
 
             function recalculateGridData(s_data, n_data){
 
-                var selected_data = s_data;
+                let selected_data = s_data;
                 selected_data = {};
                 for(prop in s_data){
                     selected_data[prop] = s_data[prop];
@@ -443,9 +443,9 @@
                 total_msrp = 0;
                 total_price = 0;
 
-                for(var t=0; t<grid_data.length; t++ ){
+                for(let t=0; t<grid_data.length; t++ ){
 
-                    var grid = find_table(grid_data[t].type_id);
+                    let grid = find_table(grid_data[t].type_id);
 
                     if(grid_data[t].total_cost>grid_data[t].price){
                         grid.jqGrid('setCell', grid_data[t].id, 'price', grid_data[t].price, {color:'red'});
@@ -461,7 +461,7 @@
                 $('#total_msrp').text(accounting.formatMoney(total_msrp, { symbol: "TL",  format: "%v %s" }));
 {#                $('#total_cost').text(accounting.formatMoney(total_cost, { symbol: "TL",  format: "%v %s" }));#}
                 $('#total_price').text(accounting.formatMoney(total_price, { symbol: "TL",  format: "%v %s" }));
-                var discount = total_cost-total_price;
+                let discount = total_cost-total_price;
                 $('#total_discount').text(accounting.formatMoney(discount, { symbol: "TL",  format: "%v %s" }));
                 $('#total_discount_proportion').text(((discount/total_cost)*100).toFixed(2) + "%");
 
@@ -484,7 +484,7 @@
 
                 for( prop in grid_lists_data){
 
-                    var grid = find_table(prop);
+                    let grid = find_table(prop);
 
                     jQuery(function($) {
                         grid.jqGrid({
@@ -519,7 +519,7 @@
 
                 grid_data = entry_data;
 
-                for(var j=0; j<grid_data.length; j++ ){
+                for(let j=0; j<grid_data.length; j++ ){
                     if(grid_data[j].good_type == "Custom"){
                        grid_data[j].actions = "<a data-target='#dialog_template' data-toggle='modal' data-keyboard=false href='/budgetentries/"+grid_data[j].id+"/update/dialog?budget_id={{ entity.id }}'> <i class='icon-pencil'></i></a>"
                     }
@@ -531,7 +531,7 @@
 
                     grid_data[j].unit = grid_data[j].unit.split('*')[0];
 
-                    var secondaryFactor = grid_data[j].generic_data.secondaryFactor;
+                    let secondaryFactor = grid_data[j].generic_data.secondaryFactor;
                     if (secondaryFactor.unit){
                         grid_data[j].second_unit = secondaryFactor.unit;
                         grid_data[j].second_amount = secondaryFactor.second_amount;
@@ -540,7 +540,7 @@
                         grid_data[j].second_unit = secondaryFactor[0].unit;
                         grid_data[j].second_amount = 0;
 
-                        for(var t=0; t < secondaryFactor.length; t++){
+                        for(let t=0; t < secondaryFactor.length; t++){
                             grid_data[j].second_amount += parseFloat(secondaryFactor[t].second_amount);
                         }
                     }
@@ -577,17 +577,17 @@
                 {% if entity.status.code == 'PLN' and mode == 'table_detail' %}
                     $.getJSON('/studios/{{ entity.id }}/goods/').then(function (good_data) {
 
-                        for(var k=0; k<good_data.length; k++ ){
+                        for(let k=0; k<good_data.length; k++ ){
 
-                            var add_grid_data = true;
-                            for(var m=0; m<grid_data.length; m++ ){
+                            let add_grid_data = true;
+                            for(let m=0; m<grid_data.length; m++ ){
                                 if(good_data[k].name == grid_data[m].name || good_data[k].type_name == 'Custom'){
                                     add_grid_data = false;
                                 }
                             }
 
                             if(add_grid_data){
-                                var new_entry = {
+                                let new_entry = {
                                                     'budget_id': '{{ entity.id }}',
                                                     'good_id':good_data[k].id,
                                                     'id':good_data[k].id,

@@ -74,18 +74,18 @@
 </div>
 
 <script type="text/javascript">
-    var switch_for_rig = $("#switch-field");
-    var submit_button = $('#dialog_template_submit_button');
-    var character_data = [];
-    var activeprop_data = [];
-    var vehicle_data = [];
+    let switch_for_rig = $("#switch-field");
+    let submit_button = $('#dialog_template_submit_button');
+    let character_data = [];
+    let activeprop_data = [];
+    let vehicle_data = [];
 
     {% raw %}
-        var asset_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
+        let asset_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
     {% endraw %}
 
-    var format_field = function(field_name){
-        var field = $('#'+field_name);
+    let format_field = function(field_name){
+        let field = $('#'+field_name);
         field.chosen({
             search_contains: true,
             enable_split_word_search: true
@@ -96,7 +96,7 @@
         return field;
     }
 
-    var field_update_mode_checker = function(){
+    let field_update_mode_checker = function(){
 
         if ($('#environments').attr('is_updating') === 'true' ||
             $('#characters').attr('is_updating') === 'true' ||
@@ -115,10 +115,10 @@
         }
     };
 
-    var load_data_to_field = function(data, field_name, asset_template, checker){
-        var field = format_field(field_name);
+    let load_data_to_field = function(data, field_name, asset_template, checker){
+        let field = format_field(field_name);
 
-        for (var i=0; i < data.length; i++){
+        for (let i=0; i < data.length; i++){
             if(checker){
                 if(data[i]['Rig']){
                     if(data[i]['Rig'][0].status == 'CMPL'){
@@ -141,7 +141,7 @@
         console.debug('starting to initialize add_related_assets dialog!!!');
 
         $(function () {
-            var label = $('#dialog_template_label');
+            let label = $('#dialog_template_label');
             label.find('span').remove();
             label.append('<span>Add Assets</span>');
 
@@ -152,23 +152,23 @@
             format_field('vehicles');
 
 
-            var environment_type_names=['Exterior', 'Interior','Building','Building%20Part','BG-Building'];
-            var environment_type_query ='asset_type_names='+environment_type_names[0];
-            for (var j=1; j<environment_type_names.length; j++){
+            let environment_type_names=['Exterior', 'Interior','Building','Building%20Part','BG-Building'];
+            let environment_type_query ='asset_type_names='+environment_type_names[0];
+            for (let j=1; j<environment_type_names.length; j++){
                 environment_type_query +='&asset_type_names='+environment_type_names[j];
             }
             $('#environments').attr('is_updating', true);
             $.getJSON('/projects/{{ project.id }}/assets/?'+environment_type_query).then(function(data){
-                var data_count = data.length;
+                let data_count = data.length;
                 load_data_to_field(data, 'environments', asset_template, switch_for_rig.checked);
 
                 $('#environments').attr('is_updating', false);
                 field_update_mode_checker();
             });
 
-            var character_type_names=['Character%20A1', 'Character%20A2','Character%20B','Character%20C','Character%20F'];
-            var characters_type_query ='asset_type_names='+character_type_names[0];
-            for (var i=1; i<character_type_names.length; i++){
+            let character_type_names=['Character%20A1', 'Character%20A2','Character%20B','Character%20C','Character%20F'];
+            let characters_type_query ='asset_type_names='+character_type_names[0];
+            for (let i=1; i<character_type_names.length; i++){
                 characters_type_query +='&asset_type_names='+character_type_names[i];
             }
 
@@ -198,7 +198,7 @@
 
             $('#vehicles').attr('is_updating', true);
             $.getJSON('/projects/{{ project.id }}/assets/?asset_type_names=Vehicle').then(function(data){
-                var data_count = data.length;
+                let data_count = data.length;
                 vehicle_data = data;
                 load_data_to_field(vehicle_data, 'vehicles', asset_template, switch_for_rig.checked);
 
@@ -217,7 +217,7 @@
                 e.preventDefault();
                 submit_button.button('loading');
 
-                var add_related_asset_form = $("#add_related_asset_form");
+                let add_related_asset_form = $("#add_related_asset_form");
 
                 $.post(
                     '/entities/{{ entity.id }}/assets/add',

@@ -96,14 +96,14 @@
 
     <script type="text/javascript">
         $(function () {
-            var submit_button = $('#submit_button');
+            let submit_button = $('#submit_button');
             submit_button.on('click', function (e) {
 
                 e.stopPropagation();
                 e.preventDefault();
                 submit_button.button('loading');
 
-                var department_form = $("#department_form");
+                let department_form = $("#department_form");
                 $.post(department_form.attr('action'),
                     department_form.serialize()
                 ).done(function (response_text) {

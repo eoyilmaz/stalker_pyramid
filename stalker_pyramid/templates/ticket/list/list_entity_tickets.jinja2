@@ -87,22 +87,22 @@
 {% endraw %}
 
     <script>
-        var tableParameters = {"aoColumns": [{'sType': 'num-html'}, null, null, null, null, null, null, null, null]};
-        var sortingParameters = [[0, 'desc']];
-        var tableDataAddress = '{{ request.route_path('get_entity_tickets', id=entity.id) }}';
+        let tableParameters = {"aoColumns": [{'sType': 'num-html'}, null, null, null, null, null, null, null, null]};
+        let sortingParameters = [[0, 'desc']];
+        let tableDataAddress = '{{ request.route_path('get_entity_tickets', id=entity.id) }}';
     </script>
 
 <script>
 {#    // fill tickets table with dynamic data#}
 {#    $.getJSON('/entities/{{ entity.id }}/tickets/').then(function(data){#}
 {##}
-{#        var tickets = data;#}
-{#        var ticket_template = doT.template($('#tmpl_ticketRow').html());#}
+{#        let tickets = data;#}
+{#        let ticket_template = doT.template($('#tmpl_ticketRow').html());#}
 {##}
 {#        // wait until document is ready#}
 {#        $(function(){#}
-{#            var i;#}
-{#            var table_body = $('#tickets_table>tbody');#}
+{#            let i;#}
+{#            let table_body = $('#tickets_table>tbody');#}
 {#            for (i=0; i<data.length; i++) {#}
 {#                // fix dates#}
 {#                data[i].date_created = new Date(data[i].date_created).format('yyyy-mm-dd HH:MM');#}
@@ -110,7 +110,7 @@
 {#                table_body.append(ticket_template(data[i]));#}
 {#            }#}
 {##}
-{#            var oTable1 = $('#tickets_table').dataTable({#}
+{#            let oTable1 = $('#tickets_table').dataTable({#}
 {#                "aoColumns": [#}
 {#                        {'sType': 'num-html'}, null, null, null, null, null,#}
 {#                        null, null, null#}

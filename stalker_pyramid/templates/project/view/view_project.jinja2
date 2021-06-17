@@ -109,10 +109,10 @@
         $(document).ready(function () {
             {% set budget = entity.get_active_budget() %}
             {% if budget %}
-                var total_msrp = {{ budget.get_generic_text_attr('total_msrp') }};
-                var total_cost = {{ budget.get_generic_text_attr('total_cost') }};
-                var total_price = {{ budget.get_generic_text_attr('total_price') }};
-                var approved_total_price = {{ budget.get_generic_text_attr('approved_total_price') }};
+                let total_msrp = {{ budget.get_generic_text_attr('total_msrp') }};
+                let total_cost = {{ budget.get_generic_text_attr('total_cost') }};
+                let total_price = {{ budget.get_generic_text_attr('total_price') }};
+                let approved_total_price = {{ budget.get_generic_text_attr('approved_total_price') }};
 
                 calculateSummaryTotals(total_msrp, total_cost, total_price, approved_total_price);
         {% endif %}

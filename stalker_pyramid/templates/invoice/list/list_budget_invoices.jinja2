@@ -60,7 +60,7 @@
                     <div class="progress">
 
                         {{ if(it.payments){ }}
-                            {{ for(var j=0;j<it.payments.length;j++){ }}
+                            {{ for(let j=0;j<it.payments.length;j++){ }}
                                 {{ if(it.payments[j]){ }}
                                     {{ if(j%2==0){ }}
                                         <div class="bar bar-blue" style="width: {{=it.payments[j]}}%;">{{=it.payments[j]}}%</div>
@@ -85,9 +85,9 @@
 
     <script>
 
-        var tableParameters = {};
-        var sortingParameters = [[0, 'desc'], [1, 'desc']];
-        var tableDataAddress = '{{ request.route_path('get_budget_invoices', id=entity.id) }}';
+        let tableParameters = {};
+        let sortingParameters = [[0, 'desc'], [1, 'desc']];
+        let tableDataAddress = '{{ request.route_path('get_budget_invoices', id=entity.id) }}';
 
     </script>
 

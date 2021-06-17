@@ -68,12 +68,12 @@
 
         // ********************************************************************
         // Generate default values
-        var url;
-        var name;
-        var linux_path;
-        var windows_path;
-        var osx_path;
-        var additional_data = {};
+        let url;
+        let name;
+        let linux_path;
+        let windows_path;
+        let osx_path;
+        let additional_data = {};
 
         {% if mode=='CREATE' %}
             url = '{{ request.route_url('create_repository') }}';
@@ -92,15 +92,15 @@
 
         // **********************************************************************
         // Form
-        var repository_form = new Form({}, 'repository_form');
+        let repository_form = new Form({}, 'repository_form');
         repository_form.startup();
 
-        var dialog = repository_form.getParent();
+        let dialog = repository_form.getParent();
 
 
         // **********************************************************************
         // Name
-        var name_textBox = new ValidationTextBox({
+        let name_textBox = new ValidationTextBox({
             name: 'name',
             label: 'Name',
             placeHolder: 'Enter a Name',
@@ -112,7 +112,7 @@
 
         // **********************************************************************
         // Windows Path
-        var windows_path_textBox = new ValidationTextBox({
+        let windows_path_textBox = new ValidationTextBox({
             name: 'windows_path',
             label: 'Windows Path',
             placeHolder: 'Enter the Windows Path',
@@ -124,7 +124,7 @@
 
         // **********************************************************************
         // Linux Path
-        var linux_path_textBox = new ValidationTextBox({
+        let linux_path_textBox = new ValidationTextBox({
             name: 'linux_path',
             label: 'Linux Path',
             placeHolder: 'Enter the Linux Path',
@@ -136,7 +136,7 @@
 
         // **********************************************************************
         // OSX Path
-        var osx_path_textBox = new ValidationTextBox({
+        let osx_path_textBox = new ValidationTextBox({
             name: 'osx_path',
             label: 'OSX Path',
             placeHolder: 'Enter the OSX Path',
@@ -148,7 +148,7 @@
 
         // **********************************************************************
         // Ok Button
-        var ok_button = new Button({
+        let ok_button = new Button({
             label: 'OK',
             type: 'button',
             onClick: function () {
@@ -166,7 +166,7 @@
 
         // **********************************************************************
         // Cancel Button
-        var cancel_button = new Button({
+        let cancel_button = new Button({
             label: 'Cancel',
             type: 'button',
             onClick: function () {

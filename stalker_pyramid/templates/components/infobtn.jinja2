@@ -11,18 +11,18 @@
 <script>
         function initInfoBtn(address){
 
-            var infobtn = $('#infobox');
+            let infobtn = $('#infobox');
             infobtn.find(".btn").remove();
-            var infobtn_template = doT.template($('#tmpl_infobtn').html());
+            let infobtn_template = doT.template($('#tmpl_infobtn').html());
 
             $.getJSON(address).then(function (data) {
 
-                var sorting_path = ['WFD','RTS','WIP', 'PREV','HREV', 'DREV', 'CMPL', 'OH','STOP'];
-                var sorted_data = [];
-                var first_status = '';
+                let sorting_path = ['WFD','RTS','WIP', 'PREV','HREV', 'DREV', 'CMPL', 'OH','STOP'];
+                let sorted_data = [];
+                let first_status = '';
 
-                var index = -1;
-                for (var i = 0; i < data.length; i++) {
+                let index = -1;
+                for (let i = 0; i < data.length; i++) {
 
                     data[i].entity_id = '{{ entity.id }}';
                     data[i].entity_type = '{{ entity.entity_type }}';
@@ -37,9 +37,9 @@
                     data[i].status_code = (data[i].status_code).toLowerCase();
                 }
 
-                for (var k = 0; k < sorted_data.length; k++) {
+                for (let k = 0; k < sorted_data.length; k++) {
                     if(sorted_data[k]){
-                        var status_code = localStorage.getItem("status_code");
+                        let status_code = localStorage.getItem("status_code");
 
                         if (first_status == ''){
                             first_status = sorted_data[k].status_code;
@@ -50,9 +50,9 @@
                         }
 
                         infobtn.append(infobtn_template(sorted_data[k]));
-                        var btn = $('#btn_'+sorted_data[k].status_code);
+                        let btn = $('#btn_'+sorted_data[k].status_code);
                         btn.on('click', function(){
-                            var status_code = $(this).attr('id').split('_')[1];
+                            let status_code = $(this).attr('id').split('_')[1];
                             localStorage.setItem("status_code", status_code);
                             init_table_data(status_code, $('#project_cb').val());
                         });

@@ -86,20 +86,20 @@
     }
 
     $(function () {
-        var bar_chart = $('#bar_chart');
+        let bar_chart = $('#bar_chart');
 
         {#        $.getJSON(bar_chart.attr('address')).then(function (data) {#}
         {##}
         {#            alert('loaded')#}
-        {#            var series_data = [];#}
+        {#            let series_data = [];#}
         {##}
-        {#            var colors = [];#}
+        {#            let colors = [];#}
         {##}
-        {#            var labels = [];#}
+        {#            let labels = [];#}
         {##}
-        {#            var ticks = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];#}
+        {#            let ticks = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];#}
         {##}
-        {#            for (var i = 0; i < data.length; i++) {#}
+        {#            for (let i = 0; i < data.length; i++) {#}
         {##}
         {#                series_data.push(data[i].data);#}
         {#                colors.push(data[i].color);#}

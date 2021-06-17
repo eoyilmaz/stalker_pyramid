@@ -51,25 +51,25 @@
 
 
 <script type="text/javascript">
-    var select_resource_cb_data=[''];
-    var select_seq_cb_data=[''];
-    var sum_of_approved_seconds = 0;
-    var sum_of_approved_shots = 0;
-    var sum_of_total_seconds = 0;
-    var sum_of_total_shots = 0;
-    var sum_of_total_assigned_shots = 0;
-    var sum_of_total_assigned_number = 0;
-    var shot_data = [];
-    var seq_list = [];
-    var grid_selector = "#grid-table";
-    var pager_selector = "#grid-pager";
+    let select_resource_cb_data=[''];
+    let select_seq_cb_data=[''];
+    let sum_of_approved_seconds = 0;
+    let sum_of_approved_shots = 0;
+    let sum_of_total_seconds = 0;
+    let sum_of_total_shots = 0;
+    let sum_of_total_assigned_shots = 0;
+    let sum_of_total_assigned_number = 0;
+    let shot_data = [];
+    let seq_list = [];
+    let grid_selector = "#grid-table";
+    let pager_selector = "#grid-pager";
 
     function add_cb_data(array, filter_value, data){
 
-        var c_array = array;
-        var index = findArrayElement(c_array, "filter_name", filter_value);
+        let c_array = array;
+        let index = findArrayElement(c_array, "filter_name", filter_value);
         if (index === -1){
-            var new_data = {
+            let new_data = {
                 'index':c_array.length,
                 'filter_name': filter_value,
                 'sum_of_approved_seconds': data['approved_seconds'],
@@ -93,7 +93,7 @@
     }
 
     function initiate_cb(field_name, data_array, op_template, func){
-        var current_cb = $(field_name);
+        let current_cb = $(field_name);
         current_cb.chosen({
             search_contains: true,
             enable_split_word_search: true
@@ -101,7 +101,7 @@
 
         current_cb.find('option').remove();
         current_cb.append(op_template({'index':-1, 'filter_name':"ALL"}));
-        for (var j=0; j < data_array.length; j++){
+        for (let j=0; j < data_array.length; j++){
             current_cb.append(op_template(data_array[j]));
         }
         current_cb.trigger('liszt:updated');
@@ -109,7 +109,7 @@
     }
 
     function setSequenceFilter(){
-        var index = $(this).val();
+        let index = $(this).val();
         if(index === -1){
             jQuery(grid_selector).jqGrid('filterInput', "");
             setFooterInitialValue();
@@ -117,23 +117,23 @@
         else{
 
             index = select_seq_cb_data.length-index;
-            var cb_data = select_seq_cb_data[index];
+            let cb_data = select_seq_cb_data[index];
 
-            var seq_index = findArrayElement(seq_list, 'sequence_name', cb_data['filter_name']);
-            var total_assigned_shot_seconds = seq_list[seq_index]["total_assigned_shot_seconds"].toFixed(1);
-            var total_assigned_shot_number = seq_list[seq_index]["total_assigned_shot_number"].toFixed(1);
+            let seq_index = findArrayElement(seq_list, 'sequence_name', cb_data['filter_name']);
+            let total_assigned_shot_seconds = seq_list[seq_index]["total_assigned_shot_seconds"].toFixed(1);
+            let total_assigned_shot_number = seq_list[seq_index]["total_assigned_shot_number"].toFixed(1);
 
-            var sum_of_approved_seconds = (cb_data.sum_of_approved_seconds).toFixed(1);
-            var sum_of_total_seconds = (cb_data.sum_of_total_seconds).toFixed(1);
-            var sum_of_approved_shots = (cb_data.sum_of_approved_shots).toFixed(1);
-            var sum_of_total_shots = (cb_data.sum_of_total_shots).toFixed(1);
+            let sum_of_approved_seconds = (cb_data.sum_of_approved_seconds).toFixed(1);
+            let sum_of_total_seconds = (cb_data.sum_of_total_seconds).toFixed(1);
+            let sum_of_approved_shots = (cb_data.sum_of_approved_shots).toFixed(1);
+            let sum_of_total_shots = (cb_data.sum_of_total_shots).toFixed(1);
 
-            var sum_of_approved_seconds_str = sum_of_approved_seconds+' s';
-            var sum_of_total_seconds_str = sum_of_total_seconds+ ' s';
-            var sum_of_approved_shots_str = sum_of_approved_shots +' shots';
-            var sum_of_total_shots_str = sum_of_total_shots +' shots';
-            var total_assigned_shot_seconds_str = total_assigned_shot_seconds +' s';
-            var total_assigned_shot_number_str = total_assigned_shot_number +' shots';
+            let sum_of_approved_seconds_str = sum_of_approved_seconds+' s';
+            let sum_of_total_seconds_str = sum_of_total_seconds+ ' s';
+            let sum_of_approved_shots_str = sum_of_approved_shots +' shots';
+            let sum_of_total_shots_str = sum_of_total_shots +' shots';
+            let total_assigned_shot_seconds_str = total_assigned_shot_seconds +' s';
+            let total_assigned_shot_number_str = total_assigned_shot_number +' shots';
 
             if(total_assigned_shot_seconds === sum_of_approved_seconds){
                 sum_of_approved_seconds_str = '<span class="green"><b>'+sum_of_approved_seconds+' s </b><i class="icon-ok"></i></span>'
@@ -163,7 +163,7 @@
     }
 
     function setStartDateFilter(){
-        var index = $(this).val();
+        let index = $(this).val();
         if(index === -1){
             jQuery(grid_selector).jqGrid('filterInput', "");
             setFooterInitialValue();
@@ -171,7 +171,7 @@
         else{
 
             index = select_resource_cb_data.length-index;
-            var cb_data = select_resource_cb_data[index];
+            let cb_data = select_resource_cb_data[index];
 
             jQuery(grid_selector).jqGrid('filterInput', cb_data['filter_name']);
             jQuery(grid_selector).jqGrid("footerData", "set",
@@ -201,7 +201,7 @@
         shot_data = [];
         seq_list = [];
 
-        var result_table = $('#result_table');
+        let result_table = $('#result_table');
         result_table.find("#table_container").remove();
         result_table.find("#grid-pager").remove();
 
@@ -209,14 +209,14 @@
 
             if (data.length>0){
 
-                for (var i=0; i<data.length; i+=1){
-                    var m;
-                    var s_data = {};
+                for (let i=0; i<data.length; i+=1){
+                    let m;
+                    let s_data = {};
                     // SEQUENCE NAME
                     s_data['sequence_name'] = data[i]['sequence_name'];
 
                     // SHOT NAMES
-                    var shot_names = '';
+                    let shot_names = '';
                     for (m=0; m < data[i]['shot_names'].length; m+=1){
                         shot_names += data[i]['shot_names'][m]+'<br/>';
                     }
@@ -224,7 +224,7 @@
 
                     s_data['resource_names']  = "";
                     for (m=0; m < data[i]['resource_ids'].length; m+=1){
-                        var r_id = data[i]['resource_ids'][m];
+                        let r_id = data[i]['resource_ids'][m];
                         s_data['resource_names']  += "<a href='/users/" + r_id + "/view'>" + get_user_name(r_id) + "</a><br/>";
                     }
 
@@ -244,9 +244,9 @@
                     data[i]['total_assigned_shot_number'] = s_data['total_assigned_shot_number'];
 
                     // // DATE
-                    // var start_date_ms = moment(data[i]['start_date']*1000);
-                    // var week_day = start_date_ms.isoWeekday() - 1;
-                    // var current_week = start_date_ms.isoWeek();
+                    // let start_date_ms = moment(data[i]['start_date']*1000);
+                    // let week_day = start_date_ms.isoWeekday() - 1;
+                    // let current_week = start_date_ms.isoWeek();
                     // start_date_ms = start_date_ms.subtract(week_day, 'day');
                     // s_data['start_date'] = start_date_ms.format('YYYY-MM-DD').toString();
 
@@ -263,7 +263,7 @@
                 select_seq_cb_data.pop();
 
                 {% raw %}
-                    var option_template = doT.template('<option value={{=it.index}} >{{=it.filter_name}}</option>');
+                    let option_template = doT.template('<option value={{=it.index}} >{{=it.filter_name}}</option>');
                 {% endraw %}
 
                 initiate_cb(
@@ -283,14 +283,14 @@
                 $.getJSON('/entities/{{ entity.id }}/' + t_type + '/assigned?project_id='+p_id).then(function (s_data) {
                     if (s_data.length>0){
                         seq_list = [];
-                        for (var i=0; i < s_data.length; i+=1){
+                        for (let i=0; i < s_data.length; i+=1){
 
-                            var seq_data = {};
-                            var seq_name_split = s_data[i]["seq_name"].split("_");
+                            let seq_data = {};
+                            let seq_name_split = s_data[i]["seq_name"].split("_");
                             seq_data['sequence_name'] = seq_name_split[0];
 
-                            var shot_names = '';
-                            for (var m=0; m < s_data[i]['shot_names'].length; m+=1){
+                            let shot_names = '';
+                            for (let m=0; m < s_data[i]['shot_names'].length; m+=1){
                                 shot_names += s_data[i]['shot_names'][m]+'<br/>';
                             }
                             seq_data['shot_names'] = shot_names;
@@ -337,8 +337,8 @@
                         userDataOnFooter: true,
                         grouping: false,
                         loadComplete : function() {
-                            // var $self = $(this);
-                            // var total_seconds= $self.jqGrid('getCol', 'total_seconds', false, 'sum');
+                            // let $self = $(this);
+                            // let total_seconds= $self.jqGrid('getCol', 'total_seconds', false, 'sum');
                             setFooterInitialValue();
                             setTimeout(function(){
                                 updatePagerIcons(grid_selector);
@@ -381,9 +381,9 @@
     }
 
     function setFooterInitialValue(){
-        var approved_minutes = (sum_of_approved_seconds/60).toFixed(1);
-        var total_minutes = (sum_of_total_seconds/60).toFixed(1);
-        var average_seconds = (sum_of_total_seconds/shot_data.length).toFixed(1);
+        let approved_minutes = (sum_of_approved_seconds/60).toFixed(1);
+        let total_minutes = (sum_of_total_seconds/60).toFixed(1);
+        let average_seconds = (sum_of_total_seconds/shot_data.length).toFixed(1);
         jQuery(grid_selector).jqGrid(
             "footerData", "set", {
                 resource_names: 'TOTAL',
@@ -397,8 +397,8 @@
                 total_assigned_shot_number: (sum_of_total_assigned_number).toFixed(1) +' shots'
             });
 
-        // var total = total_minutes +' m';
-        // var approved_total = approved_minutes +' m';
+        // let total = total_minutes +' m';
+        // let approved_total = approved_minutes +' m';
         // if(t_type != 'Animation'){
         // total = sum_of_total_shots.toFixed(1) +' shots';
         //     approved_total = sum_of_approved_shots.toFixed(1) +' shots';
@@ -409,7 +409,7 @@
         // $('#info_box').show();
     }
     function updatePagerIcons(table) {
-        var replacement =
+        let replacement =
         {
             'ui-icon-seek-first' : 'icon-double-angle-left bigger-140',
             'ui-icon-seek-prev' : 'icon-angle-left bigger-140',
@@ -417,20 +417,20 @@
             'ui-icon-seek-end' : 'icon-double-angle-right bigger-140'
         };
         $('.ui-pg-table:not(.navtable) > tbody > tr > .ui-pg-button > .ui-icon').each(function(){
-            var icon = $(this);
-            var $class = $.trim(icon.attr('class').replace('ui-icon', ''));
+            let icon = $(this);
+            let $class = $.trim(icon.attr('class').replace('ui-icon', ''));
 
             if($class in replacement) icon.attr('class', 'ui-icon '+replacement[$class]);
         })
     }
 
     $(document).ready(function () {
-        var project_cb = $('#project_cb');
-        var project_id = localStorage.getItem("result_project_id");
+        let project_cb = $('#project_cb');
+        let project_id = localStorage.getItem("result_project_id");
         console.log("project_id: " + project_id);
 
-        var task_type = $('#task_type');
-        var task_type_str = localStorage.getItem("result_task_type");
+        let task_type = $('#task_type');
+        let task_type_str = localStorage.getItem("result_task_type");
         if (task_type_str){
             task_type.val(task_type_str)
         }
@@ -440,22 +440,22 @@
 
         {% if entity.entity_type != 'Project' %}
             {% raw %}
-                var option_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
+                let option_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
             {% endraw %}
             project_cb.chosen({
                 search_contains: true,
                 enable_split_word_search: true
             });
 
-            var projects_url  = '/projects/'
+            let projects_url  = '/projects/'
             {% if entity.entity_type == 'User' %}
                 projects_url = '/entities/{{ entity.id }}/projects/';
             {% endif %}
 
             $.getJSON(projects_url).then(function(data){
                 project_cb.find('option').remove();
-                var data_count = data.length;
-                for (var i=0; i < data_count; i++){
+                let data_count = data.length;
+                for (let i=0; i < data_count; i++){
                     project_cb.append(option_template(data[i]));
                 }
 

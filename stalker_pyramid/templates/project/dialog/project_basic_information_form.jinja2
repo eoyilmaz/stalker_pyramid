@@ -247,9 +247,9 @@
 
 <script type="text/javascript">
     function get_project_client_by_type(client_type){
-            var client_id = -1;
-            var client_name = "";
-            var client_type_name = '';
+            let client_id = -1;
+            let client_name = "";
+            let client_type_name = '';
 
             {% for client in project.clients %}
                 client_type_name = '{{ client.type.name }}';
@@ -267,10 +267,10 @@
 
             $.getJSON('/clients/?type_name='+client_type).then(function(available_clients){
                 // map available types to an array
-                var field = $('#'+field_name);
-                var available_client_as_list = [];
+                let field = $('#'+field_name);
+                let available_client_as_list = [];
 
-                for (var i=0; i < available_clients.length; i++){
+                for (let i=0; i < available_clients.length; i++){
                     available_client_as_list.push(available_clients[i].name);
                 }
 
@@ -287,13 +287,13 @@
             });
 
 {#            {% raw %}#}
-{#                var option_template = doT.template(#}
+{#                let option_template = doT.template(#}
 {#                    '<option value={{=it.id}}>{{=it.name}}</option>'#}
 {#                );#}
 {#            {% endraw %}#}
 {#            $.getJSON('/clients/?type_name='+client_type).then(function (c_data) {#}
-{#                var field = $('#'+field_name);#}
-{#                var clients_data = c_data;#}
+{#                let field = $('#'+field_name);#}
+{#                let clients_data = c_data;#}
 {#                chosen_searchable_field_creator_by_data(field, option_template, clients_data);#}
 {##}
 {#                {% if mode == 'Update' %}#}
@@ -304,8 +304,8 @@
 {#            });#}
         }
 
-        var product_project_name = $('#product_project_name');
-        var mark_name = $('#mark_name');
+        let product_project_name = $('#product_project_name');
+        let mark_name = $('#mark_name');
 
         {% if mode == 'Update' %}
             product_project_name.val('{{ project.get_generic_text_attr("product_project_name") }}');
@@ -313,13 +313,13 @@
         {% endif %}
 
         {% raw %}
-            var option_template = doT.template(
+            let option_template = doT.template(
                 '<option value={{=it.id}}>{{=it.name}}</option>'
             );
         {% endraw %}
 
 
-        var start_end_date_range_picker = $('#start_end_date_range_picker').daterangepicker();
+        let start_end_date_range_picker = $('#start_end_date_range_picker').daterangepicker();
         start_end_date_range_picker.next().on('click', function () {
             $(this).prev().focus();
         });
@@ -336,8 +336,8 @@
         // fill data if mode is update
         {% if mode == 'Update' %}
 
-            var start_date = new Date({{ milliseconds_since_epoch(project.start) }});
-            var end_date = new Date({{ milliseconds_since_epoch(project.end) }});
+            let start_date = new Date({{ milliseconds_since_epoch(project.start) }});
+            let end_date = new Date({{ milliseconds_since_epoch(project.end) }});
             start_end_date_range_picker.val(
                     start_date.format('dd/mm/yyyy') + ' - ' + end_date.format('dd/mm/yyyy')
             );
@@ -346,7 +346,7 @@
         {% endif %}
 
         {# FPS Spinner #}
-        var fps = 25;
+        let fps = 25;
         console.log('{{ project.fps }}');
         {% if mode == 'Update' %}
             fps = {{ project.fps }};
@@ -359,7 +359,7 @@
             btn_up_class:'btn-info',
             btn_down_class:'btn-info'}).on('change', function(){
             // check if it is in the range
-            var curr_value = $(this).val();
+            let curr_value = $(this).val();
             $(this).val(curr_value <= 1 ? 1 : curr_value);
         });
 
@@ -367,12 +367,12 @@
         {# IMAGE FORMAT #}
 
         {% raw %}
-            var image_format_option_template = doT.template(
+            let image_format_option_template = doT.template(
                 '<option value={{=it.id}}>{{=it.name}} ({{=it.width}} x {{=it.height}} x {{=it.pixel_aspect}})</option>'
             );
         {% endraw %}
-        var image_format = $('#image_format');
-        var deferred = chosen_field_creator(image_format, '/image_formats/', image_format_option_template);
+        let image_format = $('#image_format');
+        let deferred = chosen_field_creator(image_format, '/image_formats/', image_format_option_template);
         {% if mode == 'Update' %}
             deferred.then(function () {
                 image_format.val({{ project.image_format.id }}).trigger('liszt:updated');
@@ -381,8 +381,8 @@
 
         {# ***************************************************************** #}
         {# REPOSITORY #}
-        var repository = $('#repository');
-        var deferred = chosen_field_creator(repository, '/repositories/', option_template);
+        let repository = $('#repository');
+        let deferred = chosen_field_creator(repository, '/repositories/', option_template);
         {% if mode == 'Update' %}
             deferred.then(function () {
                     repository.val({{ project.repository.id }}).trigger('liszt:updated');
@@ -392,8 +392,8 @@
 
         {# ***************************************************************** #}
         {# STRUCTURE #}
-        var structure = $('#structure');
-        var deferred = chosen_field_creator(structure, '/structures/', option_template);
+        let structure = $('#structure');
+        let deferred = chosen_field_creator(structure, '/structures/', option_template);
         {% if mode == 'Update' %}
             deferred.then(function () {
                     structure.val({{ project.structure.id }}).trigger('liszt:updated');
@@ -402,8 +402,8 @@
 
         {# ***************************************************************** #}
         {# STATUS #}
-        var status = $('#status');
-        var deferred = chosen_field_creator(status,'/statuses/Project/', option_template);
+        let status = $('#status');
+        let deferred = chosen_field_creator(status,'/statuses/Project/', option_template);
         {% if mode == 'Update' %}
             deferred.then(function () {
                 status.val({{ project.status.id }}).trigger('liszt:updated');
@@ -413,8 +413,8 @@
 
         {# ***************************************************************** #}
         {# TYPE #}
-        var project_type = $('#project_type');
-        var deferred = chosen_field_creator(project_type, '/types/?target_entity_type=Project', option_template);
+        let project_type = $('#project_type');
+        let deferred = chosen_field_creator(project_type, '/types/?target_entity_type=Project', option_template);
         {% if mode == 'Update' %}
             deferred.then(function () {
                 project_type.val({{ project.type.id }}).trigger('liszt:updated');
@@ -478,7 +478,7 @@
 
             errorPlacement: function (error, element) {
                 if (element.is(':checkbox') || element.is(':radio')) {
-                    var controls = element.closest('.controls');
+                    let controls = element.closest('.controls');
                     if (controls.find(':checkbox,:radio').length > 1) controls.append(error);
                     else error.insertAfter(element.nextAll('.lbl:eq(0)').eq(0));
                 }

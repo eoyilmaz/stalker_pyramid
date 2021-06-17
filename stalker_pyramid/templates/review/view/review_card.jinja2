@@ -89,15 +89,15 @@
 
 <script type="text/javascript">
     $(function () {
-        var icon_name = get_icon('resource');
+        let icon_name = get_icon('resource');
         $('#responsible_items_header').append('<i class=' + icon_name + '></i>Responsible');
 
         $.getJSON('/tasks/{{ entity.id }}/last_reviews/').then(function (data) {
 
-            var review_box = $('#review_box');
-            var reviewer_template = doT.template($('#tmpl_reviewer_card').html());
+            let review_box = $('#review_box');
+            let reviewer_template = doT.template($('#tmpl_reviewer_card').html());
 
-            for (var i = 0; i < data.length; i++) {
+            for (let i = 0; i < data.length; i++) {
 
                 data[i].project_id = '{% if entity.entity_type != "Project" %}{{ entity.project.id }}{% else %}{{ entity.id }}{% endif %}';
                 if (data[i].review_status_code == 'new') {
@@ -153,16 +153,16 @@
             //show the user info on right or left depending on its position
             $('.memberdiv').on('mouseenter', function () {
 
-                var self = $(this);
-                var parent = self.closest('.row-fluid');
+                let self = $(this);
+                let parent = self.closest('.row-fluid');
 
-                var off1 = parent.offset();
-                var w1 = parent.width();
+                let off1 = parent.offset();
+                let w1 = parent.width();
 
-                var off2 = self.offset();
-                var w2 = self.width();
+                let off2 = self.offset();
+                let w2 = self.width();
 
-                var place = 'left';
+                let place = 'left';
                 if (parseInt(off2.left) < parseInt(off1.left) + parseInt(w1 / 2)) place = 'right';
 
                 self.find('.popover').removeClass('right left').addClass(place);

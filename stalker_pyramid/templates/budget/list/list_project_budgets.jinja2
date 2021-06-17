@@ -236,9 +236,9 @@
     <script type="text/javascript">
 
         $(document).ready(function () {
-            var budget_template = doT.template($('#tmpl_budget').html());
+            let budget_template = doT.template($('#tmpl_budget').html());
             $.getJSON('{{ request.route_path('get_project_budgets', id=entity.id) }}').then(function (b_data) {
-                for(var i=0; i<b_data.length; i++ ){
+                for(let i=0; i<b_data.length; i++ ){
 
                     if (b_data[i].date_created) {
                         b_data[i].date_created = new Date(b_data[i].date_created).format('yyyy-mm-dd HH:MM');
@@ -262,7 +262,7 @@
                         b_data[i].onaylanan_net_tutar  = parseInt(b_data[i].generic_data.approved_total_price);
                         b_data[i].onaylanan_net_tutar_fmt  = accounting.formatMoney(b_data[i].onaylanan_net_tutar , { symbol: "TL",  format: "%v %s" });
 
-                        var son_tutar = b_data[i].net_toplam;
+                        let son_tutar = b_data[i].net_toplam;
                         if(b_data[i].onaylanan_net_tutar>0){
                             son_tutar = b_data[i].onaylanan_net_tutar
                         }
@@ -283,9 +283,9 @@
             });
         });
 
-{#        var tableParameters = {};#}
-{#        var sortingParameters = [[0, 'desc'], [1, 'desc']];#}
-{#        var tableDataAddress = '{{ request.route_path('get_project_budgets', id=entity.id) }}';#}
+{#        let tableParameters = {};#}
+{#        let sortingParameters = [[0, 'desc'], [1, 'desc']];#}
+{#        let tableDataAddress = '{{ request.route_path('get_project_budgets', id=entity.id) }}';#}
 
 
 {#        function callBackFunction(data){#}
@@ -299,9 +299,9 @@
 {##}
 {#            gantt.config.scale_height = 90;#}
 {##}
-{#            var monthScaleTemplate = function(date){#}
-{#            var dateToStr = gantt.date.date_to_str("%M");#}
-{#            var endDate = gantt.date.add(date, 2, "month");#}
+{#            let monthScaleTemplate = function(date){#}
+{#            let dateToStr = gantt.date.date_to_str("%M");#}
+{#            let endDate = gantt.date.add(date, 2, "month");#}
 {#            return dateToStr(date) + " - " + dateToStr(endDate);#}
 {#            };#}
 {##}
@@ -321,15 +321,15 @@
 {#                    {name:"text", label:"Budget Name", width:150, tree:true }#}
 {#                ];#}
 {##}
-{#            var budgets = {data:[]};#}
+{#            let budgets = {data:[]};#}
 {#            budgets.data.push({#}
 {#                                id:'{{ entity.id }}',#}
 {#                                text:'{{ entity.name }}',#}
 {#                                open:true#}
 {#                            });#}
 {##}
-{#            for(var k=0; k<data.length;k++){#}
-{#                var budget = {#}
+{#            for(let k=0; k<data.length;k++){#}
+{#                let budget = {#}
 {#                                id:data[k].id,#}
 {#                                text:data[k].name,#}
 {#                                start_date:(moment(parseInt(data[k].generic_data.start_date))).format('DD MM YYYY'),#}

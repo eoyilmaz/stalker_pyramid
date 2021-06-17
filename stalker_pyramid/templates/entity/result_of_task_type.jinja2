@@ -112,13 +112,13 @@
 <script type="text/javascript">
     function calculate_average(data_array, working_weeks, start_week){
         console.log('working_weeks: '+working_weeks);
-         var total_for_last_six_week = 0;
+         let total_for_last_six_week = 0;
 
-        for (var i=start_week;i<data_array.length;i++){
+        for (let i=start_week;i<data_array.length;i++){
             total_for_last_six_week += parseFloat(data_array[i][1]);
         }
 
-        var average_for_weeks = (total_for_last_six_week/working_weeks).toFixed(2);
+        let average_for_weeks = (total_for_last_six_week/working_weeks).toFixed(2);
         $('#average_for_weeks').text(average_for_weeks)
     }
 
@@ -126,10 +126,10 @@
     function loadShotTaskData(t_type, p_id){
         console.log('loadShotTaskData: '+t_type+' : ' +p_id);
 
-        var result_chart = $('#result_chart');
+        let result_chart = $('#result_chart');
         result_chart.find("#chart_shot").remove();
 
-        var result_table = $('#result_table');
+        let result_table = $('#result_table');
         result_table.find("#table_container").remove();
         result_table.find("#grid-pager").remove();
         $('#info_box').hide();
@@ -137,35 +137,35 @@
         $.getJSON('/entities/{{ entity.id }}/'+t_type+'/result?project_id='+p_id).then(function (data) {
             console.log('loaded: '+t_type+' : ' +p_id);
             if (data.length>0){
-                var shot_data = [];
+                let shot_data = [];
 
                 result_chart.append('<div id="chart_shot" style="height:500px; margin-left: 0px; background: rgb(57,57,57)"></div>');
 
-                var sum_of_approved_seconds = 0;
-                var sum_of_approved_shots = 0;
-                var sum_of_total_seconds = 0;
-                var sum_of_total_shots = 0;
-                var graph_val_type = 'Seconds';
-                var max_val = 0;
-                var min_val = 0;
-                var weekly_shot_data = [];
-                var weekly_approved_shot_data = [];
+                let sum_of_approved_seconds = 0;
+                let sum_of_approved_shots = 0;
+                let sum_of_total_seconds = 0;
+                let sum_of_total_shots = 0;
+                let graph_val_type = 'Seconds';
+                let max_val = 0;
+                let min_val = 0;
+                let weekly_shot_data = [];
+                let weekly_approved_shot_data = [];
 
 
-                for (var i=0; i<data.length; i+=1){
-                    var s_data = {}
+                for (let i=0; i<data.length; i+=1){
+                    let s_data = {}
                     {#SCENE NAME#}
                     s_data['scene_name'] = data[i]['scene_name'];
                     {#SHOT NAMES#}
-                    var shot_names = '';
-                    for (var m=0; m < data[i]['shot_names'].length; m+=1){
+                    let shot_names = '';
+                    for (let m=0; m < data[i]['shot_names'].length; m+=1){
                         shot_names += data[i]['shot_names'][m]+'<br/>';
                     }
                     s_data['shot_names'] = shot_names;
 
                     {#RESOURCES NAMES#}
-                    var resource_ids = '';
-{#                    for (var m=0; m<data[i]['resource_ids'].length; m+=1){#}
+                    let resource_ids = '';
+{#                    for (let m=0; m<data[i]['resource_ids'].length; m+=1){#}
                         resource_ids += "<a href='/users/"+data[i]['resource_ids']+"/view'>"+get_user_name(data[i]['resource_ids'])+"</a><br/>";
 {#                    }#}
                     s_data['resource_ids'] = resource_ids;
@@ -181,8 +181,8 @@
                     s_data['total_seconds'] = data[i]['total_seconds'].toFixed(1);
                     s_data['total_shots'] = data[i]['total_shots'].toFixed(1);
 
-                    var graph1_val = s_data['total_seconds'];
-                    var graph2_val = s_data['approved_seconds'];
+                    let graph1_val = s_data['total_seconds'];
+                    let graph2_val = s_data['approved_seconds'];
                     if(t_type!='Animation'){
                         graph1_val = s_data['total_shots'];
                         graph2_val = s_data['approved_shots'];
@@ -191,9 +191,9 @@
 
                     {# DATE #}
 
-                    var start_date_ms = moment(data[i]['start_date']*1000);
-                    var week_day = start_date_ms.isoWeekday() - 1;
-                    var current_week = start_date_ms.isoWeek();
+                    let start_date_ms = moment(data[i]['start_date']*1000);
+                    let week_day = start_date_ms.isoWeekday() - 1;
+                    let current_week = start_date_ms.isoWeek();
                     start_date_ms = start_date_ms.subtract(week_day, 'day');
                     s_data['start_date'] = start_date_ms.format('YYYY-MM-DD').toString();
 
@@ -203,13 +203,13 @@
                     max_val = parseFloat(graph1_val)>max_val?parseFloat(graph1_val):max_val;
                     min_val = parseFloat(graph1_val)<min_val?parseFloat(graph1_val):min_val;
 
-                    var next_week = start_date_ms.isoWeek()+1;
+                    let next_week = start_date_ms.isoWeek()+1;
                     next_week = next_week>start_date_ms.isoWeeksInYear()?1:next_week;
-                    var data_next_week = i+1< data.length?moment(data[i+1]['start_date']*1000).isoWeek():moment().isoWeek()+1;
+                    let data_next_week = i+1< data.length?moment(data[i+1]['start_date']*1000).isoWeek():moment().isoWeek()+1;
 
                     while(next_week < data_next_week){
 
-                        var next_week_date_format = start_date_ms.add(1, 'w').format('YYYY-MM-DD').toString();
+                        let next_week_date_format = start_date_ms.add(1, 'w').format('YYYY-MM-DD').toString();
                         s_data = {  'start_date':next_week_date_format,
                                     'scene_name':'---',
                                     'shot_names':'---',
@@ -227,32 +227,32 @@
                     }
 
                 }
-                var total_weeks = 6;
-                var start_week = weekly_shot_data.length-total_weeks<0?0:weekly_shot_data.length-total_weeks;
-                var total_vacation_day = 0;
+                let total_weeks = 6;
+                let start_week = weekly_shot_data.length-total_weeks<0?0:weekly_shot_data.length-total_weeks;
+                let total_vacation_day = 0;
 
 
                 {% if entity.entity_type =='User' %}
                     $.getJSON('/entities/{{ entity.id }}/events/?keys=vacation').then(function (vacations) {
 
-                        var av_start_date = new Date(weekly_shot_data[start_week][0]);
-                        var av_end_date = new Date();
+                        let av_start_date = new Date(weekly_shot_data[start_week][0]);
+                        let av_end_date = new Date();
                         av_start_date.setHours(0);
                         av_end_date.setHours(0);
                         av_start_date = av_start_date.getTime();
                         av_end_date = av_end_date.getTime();
 
-                        for (var i = 0; i < vacations.length; i++) {
+                        for (let i = 0; i < vacations.length; i++) {
 
-                            var v_start_date = new Date(parseInt(vacations[i].start));
-                            var v_end_date = new Date(parseInt(vacations[i].end));
+                            let v_start_date = new Date(parseInt(vacations[i].start));
+                            let v_end_date = new Date(parseInt(vacations[i].end));
                             v_start_date.setHours(0);
                             v_end_date.setHours(0);
                             v_start_date = v_start_date.getTime();
                             v_end_date = v_end_date.getTime();
 
-                            var start_date = null;
-                            var end_date = null;
+                            let start_date = null;
+                            let end_date = null;
                             if(av_start_date<=v_start_date && av_end_date>=v_start_date){
                                 start_date = v_start_date;
                                 end_date = v_end_date;
@@ -329,8 +329,8 @@
 
                 result_table.append('<div id="table_container"><table id="grid-table"></table></div><div id="grid-pager"></div>');
 
-                var grid_selector = "#grid-table";
-                var pager_selector = "#grid-pager";
+                let grid_selector = "#grid-table";
+                let pager_selector = "#grid-pager";
                 jQuery(grid_selector).jqGrid({
                     data: shot_data,
                     datatype: "local",
@@ -358,11 +358,11 @@
                     userDataOnFooter: true,
                     grouping: false,
                     loadComplete : function() {
-                        var $self = $(this);
-{#                        var total_seconds= $self.jqGrid('getCol', 'total_seconds', false, 'sum');#}
-                        var approved_minutes = (sum_of_approved_seconds / 60).toFixed(1);
-                        var total_minutes = (sum_of_total_seconds / 60).toFixed(1);
-                        var average_seconds = (sum_of_total_seconds / shot_data.length).toFixed(1);
+                        let $self = $(this);
+{#                        let total_seconds= $self.jqGrid('getCol', 'total_seconds', false, 'sum');#}
+                        let approved_minutes = (sum_of_approved_seconds / 60).toFixed(1);
+                        let total_minutes = (sum_of_total_seconds / 60).toFixed(1);
+                        let average_seconds = (sum_of_total_seconds / shot_data.length).toFixed(1);
                         $self.jqGrid(
                             "footerData",
                             "set",
@@ -378,8 +378,8 @@
                         );
 
 
-                        var total = total_minutes +' m';
-                        var approved_total = approved_minutes +' m';
+                        let total = total_minutes +' m';
+                        let approved_total = approved_minutes +' m';
                         if(t_type!='Animation'){
                             total = sum_of_total_shots.toFixed(1) +' shots';
                             approved_total = sum_of_approved_shots.toFixed(1) +' shots';
@@ -428,7 +428,7 @@
         });
     }
     function updatePagerIcons(table) {
-        var replacement =
+        let replacement =
         {
             'ui-icon-seek-first' : 'icon-double-angle-left bigger-140',
             'ui-icon-seek-prev' : 'icon-angle-left bigger-140',
@@ -436,8 +436,8 @@
             'ui-icon-seek-end' : 'icon-double-angle-right bigger-140'
         };
         $('.ui-pg-table:not(.navtable) > tbody > tr > .ui-pg-button > .ui-icon').each(function(){
-            var icon = $(this);
-            var $class = $.trim(icon.attr('class').replace('ui-icon', ''));
+            let icon = $(this);
+            let $class = $.trim(icon.attr('class').replace('ui-icon', ''));
 
             if($class in replacement) icon.attr('class', 'ui-icon '+replacement[$class]);
         })
@@ -445,21 +445,21 @@
     $(document).ready(function () {
         $.jqplot._noToImageButton = true;
         $.jqplot.config.enablePlugins = true;
-        var task_type = $('#task_type');
-        var project_cb = $('#project_cb');
-        var project_id = project_cb.val();
-        var task_type_str = task_type.val();
+        let task_type = $('#task_type');
+        let project_cb = $('#project_cb');
+        let project_id = project_cb.val();
+        let task_type_str = task_type.val();
 
         {% if entity.entity_type != 'Project' %}
             {% raw %}
-                var option_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
+                let option_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
             {% endraw %}
             project_cb.chosen({
                 search_contains: true,
                 enable_split_word_search: true
             });
 
-            var projects_url  = '/projects/'
+            let projects_url  = '/projects/'
             {% if entity.entity_type == 'User' %}
                 projects_url = '/entities/{{ entity.id }}/projects/';
             {% endif %}
@@ -468,9 +468,9 @@
                 console.log('loaded '+data.length);
                 project_cb.find('option').remove();
 
-                var data_count = data.length;
+                let data_count = data.length;
 
-                for (var i=0; i < data_count; i++){
+                for (let i=0; i < data_count; i++){
                     console.log('loaded '+data[i].id+' : '+data[i].name);
                     project_cb.append(option_template(data[i]));
                 }

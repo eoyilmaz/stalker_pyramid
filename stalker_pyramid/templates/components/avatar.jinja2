@@ -28,7 +28,7 @@
             //it seems that editable plugin calls appendChild, and as Image doesn't have it, it causes errors on IE at unpredicted points
             //so let's have a fake appendChild for it!
 
-            var last_gritter;
+            let last_gritter;
             $('#entity_avatar').editable({
                 type: 'image',
                 name: 'avatar',
@@ -71,27 +71,27 @@
                 },
                 url: function (params) {
                     //please modify submit_url accordingly
-                    var submit_url = '/upload_files';
-                    var deferred;
+                    let submit_url = '/upload_files';
+                    let deferred;
 
 //if value is empty, means no valid files were selected
 //but it may still be submitted by the plugin, because "" (empty string) is different from previous non-empty value whatever it was
 //so we return just here to prevent problems
-                    var value = $('#entity_avatar').next().find('input[type=hidden]:eq(0)').val();
+                    let value = $('#entity_avatar').next().find('input[type=hidden]:eq(0)').val();
                     if (!value || value.length == 0) {
                         deferred = new $.Deferred;
                         deferred.resolve();
                         return deferred.promise();
                     }
 
-                    var $form = $('#entity_avatar').next().find('.editableform:eq(0)');
-                    var file_input = $form.find('input[type=file]:eq(0)');
+                    let $form = $('#entity_avatar').next().find('.editableform:eq(0)');
+                    let file_input = $form.find('input[type=file]:eq(0)');
 
 //user iframe for older browsers that don't support file upload via FormData & Ajax
                     if (!("FormData" in window)) {
                         deferred = new $.Deferred;
 
-                        var iframe_id = 'temporary-iframe-' + (new Date()).getTime() + '-' + (parseInt(Math.random() * 1000));
+                        let iframe_id = 'temporary-iframe-' + (new Date()).getTime() + '-' + (parseInt(Math.random() * 1000));
                         $form.after('<iframe id="' + iframe_id + '" name="' + iframe_id + '" frameborder="0" width="0" height="0" src="about:blank" style="position:absolute;z-index:-1;"></iframe>');
                         $form.append('<input type="hidden" name="temporary-iframe-id" value="' + iframe_id + '" />');
                         $form.next().data('deferrer', deferred);//save the deferred object to the iframe
@@ -102,7 +102,7 @@
 
                         //if we don't receive the response after 60 seconds, declare it as failed!
                         setTimeout(function () {
-                            var iframe = document.getElementById(iframe_id);
+                            let iframe = document.getElementById(iframe_id);
                             if (iframe != null) {
                                 iframe.src = "about:blank";
                                 $(iframe).remove();
@@ -111,7 +111,7 @@
                             }
                         }, 60000);
                     } else {
-                        var fd = null;
+                        let fd = null;
                         try {
                             fd = new FormData($form.get(0));
                         } catch (e) {
@@ -129,7 +129,7 @@
 
                         //if file has been drag&dropped , append it to FormData
                         if (file_input.data('ace_input_method') == 'drop') {
-                            var files = file_input.data('ace_input_files');
+                            let files = file_input.data('ace_input_files');
                             if (files && files.length > 0) {
                                 fd.append(file_input.attr('name'), files[0]);
                             }
@@ -146,12 +146,12 @@
                             enctype: "multipart/form-data",
                             data: fd,
                             xhr: function () {
-                                var req = $.ajaxSettings.xhr();
+                                let req = $.ajaxSettings.xhr();
                                 /*if (req && req.upload) {
                                  req.upload.addEventListener('progress', function(e) {
                                  if(e.lengthComputable) {
-                                 var done = e.loaded || e.position, total = e.total || e.totalSize;
-                                 var percent = parseInt((done/total)*100) + '%';
+                                 let done = e.loaded || e.position, total = e.total || e.totalSize;
+                                 let percent = parseInt((done/total)*100) + '%';
                                  //bar.css('width', percent).parent().attr('data-percent', percent);
                                  }
                                  }, false);
@@ -176,7 +176,7 @@
                                     // update the thumbnail
 
                                     $.getJSON('/entities/{{ entity.id }}/').done(function (data2) {
-                                        var new_thumb_path = '/' + data2[0].thumbnail_full_path;
+                                        let new_thumb_path = '/' + data2[0].thumbnail_full_path;
                                         $('#entity_avatar').attr('src', new_thumb_path);
                                         // also update side bar
                                     });

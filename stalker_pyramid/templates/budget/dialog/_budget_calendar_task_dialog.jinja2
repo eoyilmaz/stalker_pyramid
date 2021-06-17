@@ -110,23 +110,23 @@
 
     function init_dialog() {
 
-        var event_dialog = $('#dialog_template');
+        let event_dialog = $('#dialog_template');
         console.debug('starting to initialize calendar_task dialog!!!');
 
-        var dialog_label = $('#dialog_template_label');
+        let dialog_label = $('#dialog_template_label');
         dialog_label.find('span').remove();
         dialog_label.append('<span>{{mode}} Task</span>');
 
         {# Good ******************************************************* #}
         {% raw %}
-            var good_option_template = doT.template(
+            let good_option_template = doT.template(
                     '<option value={{=it.id}}>{{=it.name}}</option>'
             );
         {% endraw %}
-        var calendar_task_good = $('#calendar_task_good');
+        let calendar_task_good = $('#calendar_task_good');
         $.getJSON('/goods/').then(function (g_data) {
-            var filtered_goods= [];
-            for (var i=0;i<g_data.length;i++){
+            let filtered_goods= [];
+            for (let i=0;i<g_data.length;i++){
                 if(g_data[i].unit == "GUN*KISI"){
                     filtered_goods.push(g_data[i]);
                 }
@@ -147,16 +147,16 @@
             $(this).prev().focus();
         });
 
-        var calendar_task_start_date = $("#calendar_task_start_date");
+        let calendar_task_start_date = $("#calendar_task_start_date");
 
-        var start_date_val = (new Date(event_dialog.attr('project_start_date'))).format("dd-mm-yyyy");
+        let start_date_val = (new Date(event_dialog.attr('project_start_date'))).format("dd-mm-yyyy");
         if(event_dialog.attr('start_date')){
             start_date_val = (new Date(event_dialog.attr('start_date'))).format("dd-mm-yyyy");
         }
         calendar_task_start_date.val(start_date_val);
 
         {# Duration ******************************************************* #}
-        var calendar_task_duration = 1;
+        let calendar_task_duration = 1;
         if(event_dialog.attr('amount')){
             calendar_task_duration = parseInt(event_dialog.attr('amount'));
         }
@@ -169,7 +169,7 @@
         });
 
         {# Resources ******************************************************* #}
-        var calendar_task_num_of_resources = 1;
+        let calendar_task_num_of_resources = 1;
         if(event_dialog.attr('second_amount')){
             calendar_task_num_of_resources = event_dialog.attr('second_amount');
         }
@@ -183,15 +183,15 @@
 
         {# ***************************************************************** #}
         {# Submit Button #}
-        var submit_button = $('#dialog_template_submit_button');
+        let submit_button = $('#dialog_template_submit_button');
         submit_button.on('click', function (e) {
             e.stopPropagation();
             e.preventDefault();
 
             submit_button.button('loading');
 
-            var start_date = calendar_task_start_date.datepicker().val().split('-');
-            var start = new Date(
+            let start_date = calendar_task_start_date.datepicker().val().split('-');
+            let start = new Date(
                 parseInt(start_date[2]),
                 parseInt(start_date[1]) - 1,
                 parseInt(start_date[0]),
@@ -201,21 +201,21 @@
                 0
             );
 
-            var sdate = start.getTime();
-            var calendar_task_form = $('#calendar_task_form');
-            var task_id = -1;
+            let sdate = start.getTime();
+            let calendar_task_form = $('#calendar_task_form');
+            let task_id = -1;
             if(event_dialog.attr('task_id')){
                 task_id = event_dialog.attr('task_id');
             }
 
-            var folder_id = -1;
+            let folder_id = -1;
             if(event_dialog.attr('folder_id')){
                 folder_id = event_dialog.attr('folder_id');
             }
 
             console.log("folder_id: "+ folder_id);
 
-            var url = '/budgets/{{ budget.id }}/calendar/task/action';
+            let url = '/budgets/{{ budget.id }}/calendar/task/action';
             $.post(
                 url,
                 calendar_task_form.serialize()+"&"+
@@ -242,10 +242,10 @@
                 e.preventDefault();
 
                 // disable the submit_button
-                var delete_button = $(this);
+                let delete_button = $(this);
                 delete_button.button('loading');
 
-                var confirm_message =
+                let confirm_message =
                     '<h3 class="header red"><i class="icon-warning-sign">' +
                     '</i> Warning</h3>' +
                     '<div id="message" class="alert alert-info bigger-110">' +
@@ -254,7 +254,7 @@
 
                 bootbox.confirm(confirm_message, function (result) {
                     if (result) {
-                        var id = event_dialog.attr('task_id');
+                        let id = event_dialog.attr('task_id');
                         $.post(
                             '/budgetentries/'+id+'/delete?dataSource=Calendar'
                         ).done(function (jqXHR) {

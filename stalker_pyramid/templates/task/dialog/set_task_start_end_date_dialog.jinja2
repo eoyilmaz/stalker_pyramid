@@ -34,17 +34,17 @@
         console.debug('starting to initialize add_task_user_dialog dialog!!!');
 
         $(function () {
-            var label = $('#dialog_template_label');
+            let label = $('#dialog_template_label');
             label.find('span').remove();
             label.append('<span>Set Start End Date</span>');
             $('#dialog_template_body').attr('style', "height: auto");
 
-            var url= '{{ action | safe}}';
+            let url= '{{ action | safe}}';
             if(url==''){
                 $('#dialog_template').modal('hide');
             }
 
-            var start_end_date_range_picker = $('#start_end_date_range_picker').daterangepicker();
+            let start_end_date_range_picker = $('#start_end_date_range_picker').daterangepicker();
 
             // also update the icon
             start_end_date_range_picker.next().on('click', function () {
@@ -60,20 +60,20 @@
                 e.stopPropagation();
             });
 
-            var get_start_end = function () {
+            let get_start_end = function () {
 
-                var date_range = $('#start_end_date_range_picker').daterangepicker().val().split(' - ');
-                var start_date_string = date_range[0].split('/');
-                var end_date_string = date_range[1].split('/');
+                let date_range = $('#start_end_date_range_picker').daterangepicker().val().split(' - ');
+                let start_date_string = date_range[0].split('/');
+                let end_date_string = date_range[1].split('/');
 
-                var start = new Date(
+                let start = new Date(
                     parseInt(start_date_string[2]),
                     parseInt(start_date_string[0]) - 1,
                     parseInt(start_date_string[1]),
                     10,0,0, 0
                 );
 
-                var end = new Date(
+                let end = new Date(
                     parseInt(end_date_string[2]),
                     parseInt(end_date_string[0]) - 1,
                     parseInt(end_date_string[1]),
@@ -83,15 +83,15 @@
                 return [start, end];
             };
 
-            var submit_button = $('#dialog_template_submit_button');
+            let submit_button = $('#dialog_template_submit_button');
             submit_button.on('click', function (e) {
 
                 e.stopPropagation();
                 e.preventDefault();
                 submit_button.button('loading');
-                var start_end = get_start_end();
-                var start = start_end[0];
-                var end = start_end[1];
+                let start_end = get_start_end();
+                let start = start_end[0];
+                let end = start_end[1];
 
                 $.post(
                     url,

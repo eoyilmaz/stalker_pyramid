@@ -116,9 +116,9 @@
 
         {# ***************************************************************** #}
         {# CLIENT #}
-        var client_user = $('#client_user');
+        let client_user = $('#client_user');
         {% raw %}
-            var client_user_option_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
+            let client_user_option_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
         {% endraw %}
         $.getJSON('/clients/{{ client.id }}/user/out_stack/').then(function (u_data) {
             chosen_searchable_field_creator_by_data(client_user, client_user_option_template, u_data);
@@ -126,14 +126,14 @@
 
         {# ***************************************************************** #}
         {# ROLE #}
-        var role = $('#role');
+        let role = $('#role');
         {% raw %}
-            var role_option_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
+            let role_option_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
         {% endraw %}
         $.getJSON('/roles/').then(function(available_roles){
             // map available types to an array
-            var available_roles_as_list = [];
-            for (var i=0; i < available_roles.length; i++){
+            let available_roles_as_list = [];
+            for (let i=0; i < available_roles.length; i++){
                 available_roles_as_list.push(available_roles[i].name);
             }
 
@@ -148,14 +148,14 @@
 
         {# ***************************************************************** #}
         {# SUBMIT #}
-        var submit_button = $('#dialog_template_submit_button');
+        let submit_button = $('#dialog_template_submit_button');
         submit_button.on('click', function (e) {
 
             e.stopPropagation();
             e.preventDefault();
             submit_button.button('loading');
 
-            var append_form = $("#append_form");
+            let append_form = $("#append_form");
 
             $.post('/clients/{{ client.id }}/user/append', append_form.serialize() ).done(function (response_text) {
                 window.location.reload();

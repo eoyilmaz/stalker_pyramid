@@ -53,9 +53,9 @@
         $('#dialog_template_body').attr('style', "height: 500px");
 
 
-        var depends_to = [];
+        let depends_to = [];
 
-        var submit_form_url = '/tasks/{{ entity.id }}/update/dependencies';
+        let submit_form_url = '/tasks/{{ entity.id }}/update/dependencies';
 
 
         depends_to = [
@@ -65,12 +65,12 @@
         ];
 
 
-        var submit_button = $('#dialog_template_submit_button');
+        let submit_button = $('#dialog_template_submit_button');
         setTimeout(function(){submit_button.button('reset')}, 0);
         {# ***************************************************************** #}
         {# Depends To#}
 
-        var task_depends_to = $('#task_depends_to').chosen({
+        let task_depends_to = $('#task_depends_to').chosen({
             search_contains: true,
             enable_split_word_search: true
         });
@@ -84,8 +84,8 @@
         task_depends_to.trigger('liszt:updated');
 
 {#         {% if entity %}#}
-{#                var index = -1;#}
-{#                for(var i = 0; i < data.length; i++){#}
+{#                let index = -1;#}
+{#                for(let i = 0; i < data.length; i++){#}
 {#                    if (data[i].id === {{ entity.id }}){#}
 {#                        index = i;#}
 {#                        break;#}
@@ -99,13 +99,13 @@
 
             // now append the data to the task_parent
             {% raw %}
-            var task_parent_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
+            let task_parent_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
             {% endraw %}
 
-            var rendered_template = null;
+            let rendered_template = null;
             // add and empty option to both
 
-            for (var i=0; i < all_tasks_list.length; i++){
+            for (let i=0; i < all_tasks_list.length; i++){
                 rendered_template = task_parent_template(all_tasks_list[i]);
                 task_depends_to.append(rendered_template)
             }
@@ -132,8 +132,8 @@
 
             // enable fields
 
-            var task_form = $('#task_form');
-            var form_data = task_form.serialize();
+            let task_form = $('#task_form');
+            let form_data = task_form.serialize();
 {#            console.log('form_data :', form_data);#}
 
             if ( task_form.validate() ){
@@ -206,7 +206,7 @@
 
             errorPlacement: function (error, element) {
                 if (element.is(':checkbox') || element.is(':radio')) {
-                    var controls = element.closest('.controls');
+                    let controls = element.closest('.controls');
                     if (controls.find(':checkbox,:radio').length > 1) controls.append(error);
                     else error.insertAfter(element.nextAll('.lbl:eq(0)').eq(0));
                 }

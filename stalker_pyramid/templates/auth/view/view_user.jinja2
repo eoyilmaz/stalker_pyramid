@@ -60,31 +60,31 @@
 
         $(document).ready(function () {
             $.getJSON('/users/{{ entity.id }}/events/?keys=time_log&keys=vacation').then(function (data) {
-                var events = [];
+                let events = [];
 
-                var total_timelogs = 0;
+                let total_timelogs = 0;
 
-                for (var i = 0; i < data.length; i++) {
+                for (let i = 0; i < data.length; i++) {
 
-                    var start_date = new Date(parseInt(data[i].start));
-                    var end_date = new Date(parseInt(data[i].end));
+                    let start_date = new Date(parseInt(data[i].start));
+                    let end_date = new Date(parseInt(data[i].end));
 
                     if(data[i].entity_type == 'timelogs'){
-    {#                    var now = new Date();#}
+    {#                    let now = new Date();#}
     {#                    if(now>end_date){#}
     {#                        console.log(data[i].title +' : '+ end_date)#}
     {#                    }#}
-                        var timelog_hours = (end_date-start_date)/1000/60/60;
+                        let timelog_hours = (end_date-start_date)/1000/60/60;
                         total_timelogs += timelog_hours;
 
                     }
 
-                    var title = data[i].title;
+                    let title = data[i].title;
                     if(data[i].entity_type == 'timelogs'){
                         title =  end_date.format('HH:MM') +' '+ data[i].title;
                     }
 
-                    var event = {
+                    let event = {
                         eId: data[i].id,
                         entity_type: data[i].entity_type,
                         title: title,
@@ -101,8 +101,8 @@
                 $(document).ready(function () {
 
 
-    {#                var placeholder = $('#piechart-placeholder').css({'width':'90%' , 'min-height':'150px'});#}
-    {#                  var data = [#}
+    {#                let placeholder = $('#piechart-placeholder').css({'width':'90%' , 'min-height':'150px'});#}
+    {#                  let data = [#}
     {#                    { label: "You have worked",  data: total_timelogs, color: "#68BC31"},#}
     {#                    { label: "Your vacations",  data: 240.5, color: "#2091CF"},#}
     {#                    { label: "We don't know what you did",  data: 8.2, color: "#AF4E96"}#}
@@ -120,7 +120,7 @@
                 });
 
     {#      TODO: Please use this version later on, which loads events dynamically #}
-    {#            var events = {#}
+    {#            let events = {#}
     {#                url: '/users/{{ entity.id }}/events/',#}
     {#                type: 'POST',#}
     {#                data: {#}

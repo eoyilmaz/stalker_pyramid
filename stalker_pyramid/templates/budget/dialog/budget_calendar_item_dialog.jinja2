@@ -13,9 +13,9 @@
 <script type="text/javascript">
     function init_dialog() {
         console.debug('starting to initialize calendar_task dialog!!!');
-        var event_dialog = $('#dialog_template');
+        let event_dialog = $('#dialog_template');
 
-        var dialog_label = $('#dialog_template_label');
+        let dialog_label = $('#dialog_template_label');
         dialog_label.find('span').remove();
         dialog_label.append('<span>{{mode}} {{ item.type }}</span>');
 
@@ -40,17 +40,17 @@
 
         {# ***************************************************************** #}
         {# Submit Button #}
-        var submit_button = $('#dialog_template_submit_button');
+        let submit_button = $('#dialog_template_submit_button');
         submit_button.on('click', function (e) {
             e.stopPropagation();
             e.preventDefault();
 
             submit_button.button('loading');
 
-            var start_date = get_date_picker('calendar_start_date');
+            let start_date = get_date_picker('calendar_start_date');
 
-            var item_form = $('#item_form');
-            var params = {
+            let item_form = $('#item_form');
+            let params = {
                 'id': '{{ item.id }}',
                 'start_date': start_date.getTime(),
                 'mode': '{{ mode }}',
@@ -59,7 +59,7 @@
                 'dialog_action': 'dialog_action'
             };
 
-            var url = '/budgets/{{ budget.id }}/calendar/{{ item.type }}/action';
+            let url = '/budgets/{{ budget.id }}/calendar/{{ item.type }}/action';
             $.post(
                 url,
                 item_form.serialize()+"&"+
@@ -78,18 +78,18 @@
         {# ***************************************************************** #}
         {# Delete Button #}
         {% if mode=='Update' %}
-            var delete_btn = $('#dialog_template_delete_button');
+            let delete_btn = $('#dialog_template_delete_button');
             delete_btn.show();
             delete_btn.on('click', function (e) {
                 e.stopPropagation();
                 e.preventDefault();
 
                 // disable the submit_button
-                var delete_button = $(this);
+                let delete_button = $(this);
                 delete_button.button('loading');
 
                 deleteItem('{{item.id }}');
-{#                var confirm_message =#}
+{#                let confirm_message =#}
 {#                    '<h3 class="header red"><i class="icon-warning-sign">' +#}
 {#                    '</i> Warning</h3>' +#}
 {#                    '<div id="message" class="alert alert-info bigger-110">' +#}

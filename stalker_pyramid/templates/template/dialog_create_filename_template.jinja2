@@ -74,12 +74,12 @@
 
         // ********************************************************************
         // Generate default values
-        var url;
-        var name;
-        var target_entity_type;
-        var path;
-        var filename;
-        var additional_data = {};
+        let url;
+        let name;
+        let target_entity_type;
+        let path;
+        let filename;
+        let additional_data = {};
 
         {% if mode=='CREATE' %}
             url = '{{ request.route_url('create_filename_template') }}';
@@ -96,15 +96,15 @@
 
         // **********************************************************************
         // Form
-        var filename_template_form = new Form({}, 'filename_template_form');
+        let filename_template_form = new Form({}, 'filename_template_form');
         filename_template_form.startup();
 
-        var dialog = filename_template_form.getParent();
+        let dialog = filename_template_form.getParent();
 
 
         // **********************************************************************
         // Name
-        var name_textBox = new ValidationTextBox({
+        let name_textBox = new ValidationTextBox({
             name: 'name',
             label: 'Name',
             placeHolder: 'Enter a name',
@@ -117,7 +117,7 @@
         // **********************************************************************
         // Target Entity Type
         // No update needed here just use a simple memory
-        var target_entity_type_memory = new Memory({
+        let target_entity_type_memory = new Memory({
             data: [
                 {% for entity_type in entity_types %}
                     {
@@ -132,7 +132,7 @@
             target_entity_type = target_entity_type_memory.data[0].id;
         {% endif %}
 
-        var target_entity_type_select = new FilteringSelect({
+        let target_entity_type_select = new FilteringSelect({
             name: 'target_entity_type',
             label: 'Target Entity Type',
             required: true,
@@ -144,7 +144,7 @@
 
         // **********************************************************************
         // Path
-        var path_textBox = new TextBox({
+        let path_textBox = new TextBox({
             name: 'path',
             label: 'Path Template',
             placeHolder: 'Enter Jinja2 code here',
@@ -156,7 +156,7 @@
 
         // **********************************************************************
         // Filename
-        var filename_textBox = new TextBox({
+        let filename_textBox = new TextBox({
             name: 'filename',
             label: 'Filename Template',
             placeHolder: 'Enter Jinja2 code here',
@@ -168,7 +168,7 @@
 
         // **********************************************************************
         // Ok Button
-        var ok_button = new Button({
+        let ok_button = new Button({
             label: 'OK',
             type: 'button',
             onClick: function () {
@@ -186,7 +186,7 @@
 
         // **********************************************************************
         // Cancel Button
-        var cancel_button = new Button({
+        let cancel_button = new Button({
             label: 'Cancel',
             type: 'button',
             onClick: function () {

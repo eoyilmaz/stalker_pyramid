@@ -76,12 +76,12 @@
         
         // ********************************************************************
         // Generate some default values
-        var name;
-        var code;
-        var fg_color;
-        var bg_color;
-        var additional_data = {};
-        var url;
+        let name;
+        let code;
+        let fg_color;
+        let bg_color;
+        let additional_data = {};
+        let url;
         
         {% if mode=='CREATE' %}
             fg_color = '#000000';
@@ -103,15 +103,15 @@
         
         // **********************************************************************
         // Form
-        var status_form = new Form({}, 'status_form');
+        let status_form = new Form({}, 'status_form');
         status_form.startup();
 
-        var dialog = status_form.getParent();
+        let dialog = status_form.getParent();
 
 
         // **********************************************************************
         // Name
-        var name_textBox = new ValidationTextBox({
+        let name_textBox = new ValidationTextBox({
             name: 'name',
             label: 'Name',
             placeHolder: 'Enter a name',
@@ -123,7 +123,7 @@
 
         // **********************************************************************
         // Code
-        var code_textBox = new ValidationTextBox({
+        let code_textBox = new ValidationTextBox({
             name: 'code',
             label: 'Code',
             placeHolder: 'Enter a code',
@@ -135,7 +135,7 @@
 
         // **********************************************************************
         // FG Color
-        var fg_color_colorPalette = new ColorPalette({
+        let fg_color_colorPalette = new ColorPalette({
             name: 'fg_color',
             label: 'FG Color',
             required: true,
@@ -146,7 +146,7 @@
 
         // **********************************************************************
         // BG Color
-        var bg_color_colorPalette = new ColorPalette({
+        let bg_color_colorPalette = new ColorPalette({
             name: 'bg_color',
             label: 'BG Color',
             required: true,
@@ -157,7 +157,7 @@
 
         // **********************************************************************
         // Submit Button
-        var submit_button = new Button({
+        let submit_button = new Button({
             label: 'OK',
             type: 'button',
             onClick: function () {
@@ -175,7 +175,7 @@
 
         // **********************************************************************
         // Cancel Button
-        var cancel_button = new Button({
+        let cancel_button = new Button({
             label: 'Cancel',
             type: 'button',
             onClick: function () {

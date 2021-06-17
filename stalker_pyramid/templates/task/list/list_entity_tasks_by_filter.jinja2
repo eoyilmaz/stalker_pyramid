@@ -36,7 +36,7 @@
 
 <script>
     function getTableSelectedIds(){
-        var ids = [];
+        let ids = [];
         $('table td:first-child input:checkbox').each(function () {
 
             if(this.checked){
@@ -47,21 +47,21 @@
     }
 
     function generateQuery(){
-        var _query = '?entity_id={{ entity.id }}';
-        var ids = getTableSelectedIds();
-        for (var i=0; i<ids.length; i++){
+        let _query = '?entity_id={{ entity.id }}';
+        let ids = getTableSelectedIds();
+        for (let i=0; i<ids.length; i++){
                _query +='&task_ids='+ids[i];
             }
         return _query;
     }
 
     function submit_action(url, modal){
-        var _query = generateQuery();
+        let _query = generateQuery();
 
         {#console.log("modal: "+ modal);#}
 
         if(modal === 'true'){
-            var event_dialog = $('#dialog_template');
+            let event_dialog = $('#dialog_template');
             event_dialog.modal({
                 'remote': url+_query
             });
@@ -76,7 +76,7 @@
     }
 
     function get_task_notes(id, name){
-         var event_dialog = $('#html_template');
+         let event_dialog = $('#html_template');
         event_dialog.attr('title', name);
 {#        console.log('get_task_notes ' + name);#}
         event_dialog.modal({
@@ -95,14 +95,14 @@
     function init_table_data(params) {
 
         console.debug('starting to initialize init_table_data dialog!!!');
-        var oTable1;
-        var button_list = $('#button_list');
+        let oTable1;
+        let button_list = $('#button_list');
         button_list.find('button').remove();
-        var submit_form_url= '';
+        let submit_form_url= '';
 
-        var btn_template = doT.template($('#tmpl_btn').html());
+        let btn_template = doT.template($('#tmpl_btn').html());
 
-        var force_complete_btn_info = {
+        let force_complete_btn_info = {
             'id':'force_complete_btn',
             'title':'Force Complete',
             'icon':'icon-ok',
@@ -110,7 +110,7 @@
             'modal':true
         };
 
-        var request_revisions_btn_info = {
+        let request_revisions_btn_info = {
             'id':'request_revisions_btn',
             'title':'Request Revisions',
             'icon':'icon-comment-alt',
@@ -118,7 +118,7 @@
             'modal':true
         };
 
-        var request_review_btn_info = {
+        let request_review_btn_info = {
             'id':'request_review_btn',
             'title':'Request Review',
             'icon':'icon-comment',
@@ -126,7 +126,7 @@
             'modal':true
         };
 
-        var set_start_end_date_btn_info = {
+        let set_start_end_date_btn_info = {
             'id':'set_start_end_date_btn',
             'title':'Set Start End Date',
             'icon':'icon-edit',
@@ -134,14 +134,14 @@
             'modal':true
         };
 
-        var fix_btn_info = {
+        let fix_btn_info = {
             'id':'fix_task_btn',
             'title':'Fix Tasks',
             'icon':'icon-cogs',
             'url':'/tasks/fix/statuses/',
             'modal':false
         };
-        var watch_task_btn_info = {
+        let watch_task_btn_info = {
             'id':'watch_task_btn',
             'title':'Watch Tasks',
             'icon':'icon-eye-open',
@@ -149,7 +149,7 @@
             'modal':false
         };
 
-        var unwatch_task_btn_info = {
+        let unwatch_task_btn_info = {
             'id':'unwatch_task_btn_info',
             'title':'Unwatch Tasks',
             'icon':'icon-eye-close',
@@ -203,13 +203,13 @@
 
         {% endif %}
 
-        var query_str = '';
+        let query_str = '';
 
         {% if query_str %}
             query_str = "{{ query_str }}";
         {% else %}
             {% if filter.entity_type == 'Status' %}
-                var template_label = $('#html_template_label');
+                let template_label = $('#html_template_label');
                 template_label.find('span').remove();
                 {% if is_warning_list %}
                     template_label.append('<span>Black List<small> !! these tasks should have been sent to review or an extra time request should have been made for them !!</small></span>');
@@ -239,17 +239,17 @@
             // fill items table with dynamic data
             // wait until document is ready
             $(function () {
-                var thead_template = doT.template($('#tmpl_itemThead').html());
-                var table = $('#items_table');
-                var table_head = table.find('thead');
-                var total_hours = 0;
+                let thead_template = doT.template($('#tmpl_itemThead').html());
+                let table = $('#items_table');
+                let table_head = table.find('thead');
+                let total_hours = 0;
                 table_head.append(thead_template({}));
 
-{#                var items = data;#}
-                var row_template = doT.template($('#tmpl_itemRow').html());
+{#                let items = data;#}
+                let row_template = doT.template($('#tmpl_itemRow').html());
 
-                var i;
-                var table_body = table.find('tbody');
+                let i;
+                let table_body = table.find('tbody');
                 for (i = 0; i < data.length; i++) {
                     // fix dates
 
@@ -266,8 +266,8 @@
                     data[i].project_name = get_project_name(data[i].project_id);
 
                     if (data[i].responsible !=null){
-                        for (var k=0; k<data[i].responsible.length;k++){
-                            var r_id = data[i].responsible[k];
+                        for (let k=0; k<data[i].responsible.length;k++){
+                            let r_id = data[i].responsible[k];
                             data[i].responsible[k] = {
                                 'id':r_id,
                                 'name':get_user_name(r_id)
@@ -278,9 +278,9 @@
                             data[i].responsible = [];
                     }
 
-                    var bid_seconds = to_seconds(data[i].bid_timing, data[i].bid_unit);
+                    let bid_seconds = to_seconds(data[i].bid_timing, data[i].bid_unit);
                     data[i].hour_based_on_bid = meaningful_time_between(bid_seconds, data[i].total_logged_seconds);
-                    var st_seconds = to_seconds(data[i].schedule_timing, data[i].schedule_unit );
+                    let st_seconds = to_seconds(data[i].schedule_timing, data[i].schedule_unit );
                     total_hours +=(st_seconds-data[i].total_logged_seconds);
 
                     data[i].hour_to_complete = meaningful_time_between(
@@ -302,7 +302,7 @@
                         data[i].actions += '</div>';
                     }
 
-                    var r, resources, responsible;
+                    let r, resources, responsible;
                     if(data[i].status === 'wip') {
                         resources = data[i].resources;
                         for(r = 0; r < resources.length; r++){
@@ -347,7 +347,7 @@
                         table_body.append(row_template(data[i]));
                     {% endif %}
                 }
-{#                var rowFooter_template = doT.template($('#tmpl_itemFooterRow').html());#}
+{#                let rowFooter_template = doT.template($('#tmpl_itemFooterRow').html());#}
 {#                table_body.append(rowFooter_template({'total_hours':convert_seconds_to_time_range(total_hours)}));#}
 
 
@@ -357,7 +357,7 @@
 
 
                 $('table th input:checkbox').on('click', function () {
-                    var that = this;
+                    let that = this;
                     $(this).closest('table').find('tr > td:first-child input:checkbox')
                             .each(function () {
                                 this.checked = that.checked;

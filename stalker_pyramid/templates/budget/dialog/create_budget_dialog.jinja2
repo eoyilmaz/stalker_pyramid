@@ -20,16 +20,16 @@
 
         {# ***************************************************************** #}
         {# Submit Button #}
-        var submit_button = $('#dialog_template_submit_button');
+        let submit_button = $('#dialog_template_submit_button');
         submit_button.on('click', function (e) {
             e.stopPropagation();
             e.preventDefault();
 
             submit_button.button('loading');
-            var budget_form = $('#budget_form');
+            let budget_form = $('#budget_form');
 
-            var url = '/budgets/create';
-            var params = {
+            let url = '/budgets/create';
+            let params = {
                     'project_id': {{ project.id }}
                 };
 

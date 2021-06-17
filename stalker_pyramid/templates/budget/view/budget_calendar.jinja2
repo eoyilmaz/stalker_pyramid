@@ -146,14 +146,14 @@
     <script src='{{ request.static_url("stalker_pyramid:static/dhtmlx/ext/dhtmlxgantt_multiselect.js") }}' type='text/javascript' charset='utf-8'></script>
 {#    <script src="http://export.dhtmlx.com/gantt/api.js"></script>#}
     <script type="text/javascript">
-        var budget_start = moment({{ budget.get_generic_text_attr('start_date') }});
-        var budget_end = moment({{ budget.get_generic_text_attr('end_date') }});
-        var duration = budget_end.diff(budget_start, 'days');
-        var project_id = "{{ budget.project.id }}";
-        var project_name = "{{ budget.project.name }}";
-        var links = [];
-        var target_tasks = [];
-        var items = {data:[]};
+        let budget_start = moment({{ budget.get_generic_text_attr('start_date') }});
+        let budget_end = moment({{ budget.get_generic_text_attr('end_date') }});
+        let duration = budget_end.diff(budget_start, 'days');
+        let project_id = "{{ budget.project.id }}";
+        let project_name = "{{ budget.project.name }}";
+        let links = [];
+        let target_tasks = [];
+        let items = {data:[]};
 
 
 
@@ -211,13 +211,13 @@
 
 
         function setScaleConfig(){
-            var value = $('#zoom_type').val();
+            let value = $('#zoom_type').val();
             switch (value) {
                 case "Day":
-                    var weekScaleTemplate = function(date){
-                        var dateToStr = gantt.date.date_to_str("%d %M");
-                        var weekNum = gantt.date.date_to_str("(week %W)");
-                        var endDate = gantt.date.add(gantt.date.add(date, 1, "week"), -1, "day");
+                    let weekScaleTemplate = function(date){
+                        let dateToStr = gantt.date.date_to_str("%d %M");
+                        let weekNum = gantt.date.date_to_str("(week %W)");
+                        let endDate = gantt.date.add(gantt.date.add(date, 1, "week"), -1, "day");
                         return dateToStr(date) + " - " + dateToStr(endDate) + " " + weekNum(date);
                     };
                     gantt.config.scale_unit = "day";
@@ -229,9 +229,9 @@
                     gantt.config.scale_height = 40;
                     break;
                 case "Week":
-                    var weekScaleTemplate = function(date){
-                        var dateToStr = gantt.date.date_to_str("%d %M");
-                        var endDate = gantt.date.add(gantt.date.add(date, 1, "week"), -1, "day");
+                    let weekScaleTemplate = function(date){
+                        let dateToStr = gantt.date.date_to_str("%d %M");
+                        let endDate = gantt.date.add(gantt.date.add(date, 1, "week"), -1, "day");
                         return dateToStr(date) + " - " + dateToStr(endDate);
                     };
                     gantt.config.scale_unit = "week";
@@ -286,16 +286,16 @@
 
                 dhtmlx.message("Following holidays are excluded from working time:");
 
-                for (var i = 0; i < v_data.length; i++) {
-                    var start_date = new Date(parseInt(v_data[i].start));
-                    var end_date = new Date(parseInt(v_data[i].end));
+                for (let i = 0; i < v_data.length; i++) {
+                    let start_date = new Date(parseInt(v_data[i].start));
+                    let end_date = new Date(parseInt(v_data[i].end));
                     end_date.setHours(0);
                     start_date.setHours(0);
 
-                    var total_day = (end_date.getTime()-start_date.getTime())/1000/3600/24 + 1;
+                    let total_day = (end_date.getTime()-start_date.getTime())/1000/3600/24 + 1;
 
-                    for (var k=0; k<total_day;k++){
-                        var vacation = addDays(start_date,k);
+                    for (let k=0; k<total_day;k++){
+                        let vacation = addDays(start_date,k);
                         gantt.setWorkTime({
                             date:vacation,
                             hours:false
@@ -325,7 +325,7 @@
 
                 function showScaleDesc(){
 
-                    var min = gantt.getState().min_date,
+                    let min = gantt.getState().min_date,
                         max = gantt.getState().max_date,
                         to_str = gantt.templates.task_date;
 
@@ -340,7 +340,7 @@
                     return "";
                 };
 
-                var colHeader = '<div class="gantt_grid_head_cell gantt_grid_head_add" onclick="createTaskDialog(-1)"></div>',
+                let colHeader = '<div class="gantt_grid_head_cell gantt_grid_head_add" onclick="createTaskDialog(-1)"></div>',
                     colContent = function(item){
                             if(item.type=='folder'){
                                 return ('<i class="fa gantt_button_grid gantt_grid_add icon-plus" onclick="createTaskDialog(\''+item.id+'\')"></i>'+
@@ -365,11 +365,11 @@
                 ];
 
                 $.getJSON('/budgets/{{ budget.id }}/entries/?data_source=Calendar').then(function (entry_data) {
-                    var total_number_of_items = 1;
-                    var total_items = [];
-                    var budget_entries = entry_data;
-                    var folder_list = [];
-                    var project;
+                    let total_number_of_items = 1;
+                    let total_items = [];
+                    let budget_entries = entry_data;
+                    let folder_list = [];
+                    let project;
 
                     if(budget_entries.length != 0){
                         project = {
@@ -380,9 +380,9 @@
                                             open:true
                                         };
 
-                        for(var j=0; j<budget_entries.length; j++ ){
+                        for(let j=0; j<budget_entries.length; j++ ){
                             if(budget_entries[j].generic_data.dataSource == "Calendar"){
-                                var secondaryFactor = budget_entries[j].generic_data.secondaryFactor;
+                                let secondaryFactor = budget_entries[j].generic_data.secondaryFactor;
                                 total_number_of_items += secondaryFactor.length;
                                 console.log("budget_entries.length : "+ total_number_of_items)
                             }
@@ -405,22 +405,22 @@
                     total_items.push(project);
 
                     $.getJSON('/budgets/{{ budget.id }}/calendar/items/?item_type=folders').then(function (f_data) {
-                        var folders = f_data;
+                        let folders = f_data;
                         total_number_of_items += folders.length;
 
                         $.getJSON('/budgets/{{ budget.id }}/calendar/items/?item_type=milestones').then(function (m_data) {
-                            var milestones = m_data;
+                            let milestones = m_data;
                             total_number_of_items += milestones.length;
 
-                            for(var j=0; j<budget_entries.length; j++ ){
+                            for(let j=0; j<budget_entries.length; j++ ){
                                 total_items.push(null);
                             }
 
-                            for(var j=0; j<budget_entries.length; j++ ){
+                            for(let j=0; j<budget_entries.length; j++ ){
                                 if(budget_entries[j].generic_data.dataSource == "Calendar"){
-                                    var secondaryFactor = budget_entries[j].generic_data.secondaryFactor;
-                                    for(var t=0; t<secondaryFactor.length; t++){
-                                        var task = {
+                                    let secondaryFactor = budget_entries[j].generic_data.secondaryFactor;
+                                    for(let t=0; t<secondaryFactor.length; t++){
+                                        let task = {
                                             id:budget_entries[j].id+"_"+t,
                                             index: secondaryFactor[t].gantt_index,
                                             text: secondaryFactor[t].task_name,
@@ -442,9 +442,9 @@
                                     }
                                 }
                             }
-                            for(var f=0; f<folders.length; f++){
-                                var f_idex = folder_list.indexOf(folders[f].id);
-                                var folder = {
+                            for(let f=0; f<folders.length; f++){
+                                let f_idex = folder_list.indexOf(folders[f].id);
+                                let folder = {
                                     id:folders[f].id,
                                     text:folders[f].name,
                                     name:folders[f].name,
@@ -462,8 +462,8 @@
                                 console.log(folders[f].name+" : "+folders[f].id);
                                 items.data.push(folder);
                             }
-                            for(var k=0; k<milestones.length; k++){
-                                var milestone = {
+                            for(let k=0; k<milestones.length; k++){
+                                let milestone = {
                                     id:milestones[k].id,
                                     text:milestones[k].name,
                                     name:milestones[k].name,
@@ -491,7 +491,7 @@
 
                             total_items = total_items.splice(0, items.data.length);
 
-{#                            for(var m=0;m<total_items.length;m++){#}
+{#                            for(let m=0;m<total_items.length;m++){#}
 {#                                if(!total_items[m]){#}
 {#                                    total_items.splice(m,1);#}
 {#                                    m--;#}
@@ -503,8 +503,8 @@
                             setTimeout(showScaleDesc, 500);
 
                             $.getJSON('/budgets/{{ budget.id }}/calendar/items/?item_type=links').then(function (l_data) {
-                                var budget_links = l_data;
-                                for(var i=0; i<budget_links.length; i++){
+                                let budget_links = l_data;
+                                for(let i=0; i<budget_links.length; i++){
                                     gantt.addLink(budget_links[i]);
                                     convertLinkData(budget_links[i]);
                                 }
@@ -520,7 +520,7 @@
         }
 
         function initToolbar(){
-            var drag_id = null;
+            let drag_id = null;
 
             gantt.attachEvent("onRowDragStart", function(id, target, e) {
                 drag_id = id;
@@ -542,7 +542,7 @@
             };
 
             gantt.attachEvent("onTaskDblClick", function(id, e){
-                var item = gantt.getTask(id);
+                let item = gantt.getTask(id);
 
                 switch(item.type){
                     case "project":
@@ -559,7 +559,7 @@
 
             gantt.attachEvent("onLinkClick", function(id,e){
 
-                var confirm_message =
+                let confirm_message =
                     '<h3 class="header red"><i class="icon-warning-sign">' +
                     '</i> Warning</h3>' +
                     '<div id="message" class="alert alert-info bigger-110">' +
@@ -576,11 +576,11 @@
 
             gantt.attachEvent("onTaskDrag", function(id, mode, task, original, e){
 
-{#                var parent = task.parent ? gantt.getTask(task.parent) : null,#}
+{#                let parent = task.parent ? gantt.getTask(task.parent) : null,#}
 {#                    children = gantt.getChildren(id),#}
 {#                    modes = gantt.config.drag_mode;#}
 {##}
-{#                var limitLeft = null,#}
+{#                let limitLeft = null,#}
 {#                    limitRight = null;#}
 {##}
 {#                if(!(mode == modes.move || mode == modes.resize)) return;#}
@@ -603,8 +603,8 @@
 {#                }#}
 {##}
 {#                //check children constraints#}
-{#                for(var i=0; i < children.length; i++){#}
-{#                    var child = gantt.getTask(children[i]);#}
+{#                for(let i=0; i < children.length; i++){#}
+{#                    let child = gantt.getTask(children[i]);#}
 {#                    if(+task.end_date < +child.end_date){#}
 {#                        limitLeft(task, child);#}
 {#                    }#}
@@ -619,12 +619,12 @@
 
                 console.log('onAfterTaskDrag');
 
-                var task = gantt.getTask(id);
+                let task = gantt.getTask(id);
                 checkLinkedTasks(task);
                 updateEventAction(id);
                 if(task.type == 'milestone'){
 
-                    for (var i=0; i<target_tasks.length;i++){
+                    for (let i=0; i<target_tasks.length;i++){
                         updateTaskAction(target_tasks[i]);
                     }
                     target_tasks = [];
@@ -649,15 +649,15 @@
 
         function updateAllItemsGanttIndex() {
 
-{#            var project = gantt.getTask(project_id);#}
+{#            let project = gantt.getTask(project_id);#}
 
-            var all_items = [];
-            for(var i=0;i<items.data.length;i++){
-                var data = items.data[i];
-                var task = gantt.getTask(data.id);
-                var gantt_index = gantt.getGlobalTaskIndex(data.id);
+            let all_items = [];
+            for(let i=0;i<items.data.length;i++){
+                let data = items.data[i];
+                let task = gantt.getTask(data.id);
+                let gantt_index = gantt.getGlobalTaskIndex(data.id);
                 console.log(task.name +" : "+gantt_index );
-                var item = {
+                let item = {
                             'id':data.id,
                             'type':data.type,
                             'gantt_index':gantt.getGlobalTaskIndex(data.id),
@@ -666,7 +666,7 @@
                 all_items.push(item);
             }
 
-            var all_items_text =  JSON.stringify(all_items);
+            let all_items_text =  JSON.stringify(all_items);
 
             $.post(
                 '/budgets/{{ budget.id }}/calendar/list_order?items='+all_items_text
@@ -679,7 +679,7 @@
 
         function updateEventAction(id) {
 
-            var item = gantt.getTask(id);
+            let item = gantt.getTask(id);
             if(item.type == 'task'){
                 updateTaskAction(id);
             }
@@ -692,9 +692,9 @@
 
         function createItemDialog(iType) {
 
-            var project = gantt.getTask(project_id);
+            let project = gantt.getTask(project_id);
 
-            var _query = "?mode=Create";
+            let _query = "?mode=Create";
             _query += "&id="+(new Date()).getTime();
             _query += "&start_date="+(project.start_date).getTime();
             _query += "&index="+items.data.length;
@@ -702,7 +702,7 @@
             _query += "&end_date="+(project.end_date).getTime();
             _query += "&type="+iType;
 
-            var event_dialog = $('#dialog_template');
+            let event_dialog = $('#dialog_template');
             event_dialog.attr("name", "");
             event_dialog.attr("description", "");
             event_dialog.modal({
@@ -713,16 +713,16 @@
 
         function updateItemDialog(id) {
 
-            var item = gantt.getTask(id);
+            let item = gantt.getTask(id);
 
-            var _query = "?mode=Update";
+            let _query = "?mode=Update";
             _query += "&id="+item.id;
             _query += "&start_date="+(item.start_date).getTime();
             _query += "&end_date="+(item.end_date).getTime();
             _query += "&type="+item.type;
             _query += "&index="+gantt.getGlobalTaskIndex(id);
 
-            var event_dialog = $('#dialog_template');
+            let event_dialog = $('#dialog_template');
             event_dialog.attr("name", item.name);
             console.log("Event: "+ event_dialog.attr('name'));
             event_dialog.attr("description", item.description);
@@ -735,8 +735,8 @@
 
             console.log("updateItemAction");
             if (id != project_id){
-                var item = gantt.getTask(id);
-                var index = gantt.getGlobalTaskIndex(id);
+                let item = gantt.getTask(id);
+                let index = gantt.getGlobalTaskIndex(id);
                 $.post(
                     '/budgets/{{ budget.id }}/calendar/'+item.type+'/action',
                     $.param({
@@ -759,9 +759,9 @@
 
         function createTaskDialog(f_id) {
 
-            var project = gantt.getTask(project_id);
+            let project = gantt.getTask(project_id);
 
-            var _query = "?mode=Create";
+            let _query = "?mode=Create";
             _query += "&id=-1";
             _query += "&start_date="+(project.start_date).getTime();
             _query += "&end_date="+(project.end_date).getTime();
@@ -776,7 +776,7 @@
 
             console.log("_query: "+ _query);
 
-            var event_dialog = $('#dialog_template');
+            let event_dialog = $('#dialog_template');
             event_dialog.modal({
                 'remote': "/budgets/{{ budget.id }}/calendar/task/dialog"+_query
             });
@@ -784,9 +784,9 @@
 
         function updateTaskDialog(id) {
 
-            var task = gantt.getTask(id);
+            let task = gantt.getTask(id);
 
-            var _query = "?mode=Update";
+            let _query = "?mode=Update";
             _query += "&id="+task.id;
             _query += "&start_date="+(task.start_date).getTime();
             _query += "&end_date="+(task.end_date).getTime();
@@ -797,7 +797,7 @@
             _query += "&type="+task.type;
             _query += "&index="+gantt.getGlobalTaskIndex(id);
 
-            var event_dialog = $('#dialog_template');
+            let event_dialog = $('#dialog_template');
             event_dialog.attr("name", task.name);
             event_dialog.attr("description", task.description);
             event_dialog.modal({
@@ -806,8 +806,8 @@
         }
 
         function updateTaskAction(id) {
-            var task = gantt.getTask(id);
-            var index = gantt.getGlobalTaskIndex(id);
+            let task = gantt.getTask(id);
+            let index = gantt.getGlobalTaskIndex(id);
             if(task.type == "task"){
                 if(task.duration > 0){
                     $.post(
@@ -835,7 +835,7 @@
 
         function deleteItem(id){
 
-            var confirm_message =
+            let confirm_message =
                     '<h3 class="header red"><i class="icon-warning-sign">' +
                     '</i> Warning</h3>' +
                     '<div id="message" class="alert alert-info bigger-110">' +
@@ -852,14 +852,14 @@
         }
 
         function deleteItemAction(id){
-            var item = gantt.getTask(id);
+            let item = gantt.getTask(id);
             $.post(
                     '/budgets/{{ budget.id }}/calendar/'+item.type+'/delete?id='+id
             ).done(function (jqXHR) {
 
                 deleteChildTasksFromGantt(id);
 
-                var arr_index = findArrayElement(items.data,'id', id);
+                let arr_index = findArrayElement(items.data,'id', id);
                 items.data.splice(arr_index, 1);
                 gantt.deleteTask(id);
 
@@ -879,16 +879,16 @@
 
         function deleteChildTasksFromGantt(id) {
 
-            var children = gantt.getChildren(id);
+            let children = gantt.getChildren(id);
             if(children.length>0){
-                for(var i=0;i<children.length;i++){
+                for(let i=0;i<children.length;i++){
                     deleteItemAction(children[i]);
                 }
             }
         }
 
         function deleteTaskAction(id) {
-            var budgetEntry_id = id.split("_")[0];
+            let budgetEntry_id = id.split("_")[0];
             $.post(
                 '/budgetentries/'+budgetEntry_id+'/delete'
             ).done(function (jqXHR) {
@@ -926,9 +926,9 @@
         function convertLinkData(item){
 {#            console.log('item.id: '+ item.id);#}
 
-            var source_task = gantt.getTask(item.source);
-            var target_task = gantt.getTask(item.target);
-            var new_link_item;
+            let source_task = gantt.getTask(item.source);
+            let target_task = gantt.getTask(item.target);
+            let new_link_item;
 
             if(source_task && target_task){
                 if (source_task.type == "milestone" && item.type == '3'){
@@ -961,14 +961,14 @@
         }
 
         function checkLinkedTasks(task){
-            var project = gantt.getTask(project_id);
-            var budget_start = project.start_date;
-            var budget_end = project.end_date;
+            let project = gantt.getTask(project_id);
+            let budget_start = project.start_date;
+            let budget_end = project.end_date;
 
-            for(var i=0; i < links.length; i++){
+            for(let i=0; i < links.length; i++){
 
-                var item = links[i];
-                var target_task;
+                let item = links[i];
+                let target_task;
 
                 if (item.task == task.id){
                     target_task = task;
@@ -978,13 +978,13 @@
                 }
 
                 if(target_task){
-                    var milestone = gantt.getTask(item.milestone);
+                    let milestone = gantt.getTask(item.milestone);
                     switch (item.type){
                         case "1":
                                 if( +milestone.start_date < +target_task.end_date){
                                     target_task.end_date = new Date(milestone.start_date);
 
-                                    var min_start_day = addDays(target_task.end_date,-1);
+                                    let min_start_day = addDays(target_task.end_date,-1);
                                     if(target_task.start_date > min_start_day){
                                         target_task.start_date = min_start_day;
                                     }
@@ -994,7 +994,7 @@
                                 if( +target_task.start_date < +milestone.end_date ){
                                     target_task.start_date = new Date(milestone.end_date);
 
-                                    var min_end_day = addDays(target_task.start_date, 1);
+                                    let min_end_day = addDays(target_task.start_date, 1);
                                     if(target_task.end_date < min_end_day){
                                         target_task.end_date = min_end_day;
                                     }
@@ -1004,7 +1004,7 @@
                                 if( +target_task.start_date < +milestone.start_date ){
                                     target_task.start_date = new Date(milestone.start_date);
 
-                                    var min_end_day = addDays(target_task.start_date, 1);
+                                    let min_end_day = addDays(target_task.start_date, 1);
                                     if(target_task.end_date < min_end_day){
                                         target_task.end_date = min_end_day;
                                     }
@@ -1014,7 +1014,7 @@
                                 if( +target_task.end_date > +milestone.end_date ){
                                     target_task.end_date = new Date(milestone.end_date);
 
-                                    var min_start_day = addDays(target_task.end_date,-1);
+                                    let min_start_day = addDays(target_task.end_date,-1);
                                     if(target_task.start_date > min_start_day){
                                         target_task.start_date = min_start_day;
                                     }
@@ -1038,7 +1038,7 @@
          {# BUDGET  ---------------------------------------------------------------------      #}
 
         function updateBudgetDialog(id) {
-            var event_dialog = $('#dialog_template');
+            let event_dialog = $('#dialog_template');
             event_dialog.modal({
                         'remote': "/budgets/{{ budget.id }}/update/dialog?mode=Update"
                     });
@@ -1046,12 +1046,12 @@
 
         function updateBudgetStartEndDate(id){
 
-            var project = gantt.getTask(id);
-            var start = project.start_date;
-            var end = project.end_date;
+            let project = gantt.getTask(id);
+            let start = project.start_date;
+            let end = project.end_date;
 
-            var budget_start = '{{ budget.get_generic_text_attr('start_date') }}';
-            var budget_end = '{{ budget.get_generic_text_attr('end_date') }}';
+            let budget_start = '{{ budget.get_generic_text_attr('start_date') }}';
+            let budget_end = '{{ budget.get_generic_text_attr('end_date') }}';
 
             console.log("budget_start : "+budget_start);
             console.log("budget_end : "+budget_end);
@@ -1060,7 +1060,7 @@
             console.log("end : "+end.getTime());
 
             if(parseInt(budget_start) != start.getTime() || parseInt(budget_end) != end.getTime()){
-                var params = $.param({
+                let params = $.param({
                     attr_name: 'start_and_end_dates',
                     attr_value: start.getTime() + ' - ' + end.getTime()
                 });
@@ -1079,9 +1079,9 @@
         function shiftTask(task_id, direction) {
 
             console.log('direction: '+direction);
-            var task = gantt.getTask(task_id);
-            var new_start_date = gantt.date.add(task.start_date, direction, "day");
-            var new_end_date = gantt.calculateEndDate(new_start_date, task.duration);
+            let task = gantt.getTask(task_id);
+            let new_start_date = gantt.date.add(task.start_date, direction, "day");
+            let new_end_date = gantt.calculateEndDate(new_start_date, task.duration);
 
             task.start_date = new_start_date;
             task.end_date = new_end_date;
@@ -1096,7 +1096,7 @@
         function limitMoveLeft(task, limit){
 
             console.log('limitMoveLeft');
-            var dur = task.end_date - task.start_date;
+            let dur = task.end_date - task.start_date;
             task.end_date = new Date(limit.end_date);
             task.start_date = new Date(+task.end_date - dur);
 
@@ -1105,7 +1105,7 @@
         function limitMoveRight(task, limit){
 
             console.log('limitMoveRight');
-            var dur = task.end_date - task.start_date;
+            let dur = task.end_date - task.start_date;
             task.start_date = new Date(limit.start_date);
             task.end_date = new Date(+task.start_date + dur);
 
@@ -1122,7 +1122,7 @@
         }
 
         function addDays(date, days) {
-            var result = new Date(date);
+            let result = new Date(date);
             result.setDate(result.getDate() + days);
             return result;
         }

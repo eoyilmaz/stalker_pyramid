@@ -105,12 +105,12 @@
 <script type="text/javascript">
     function init_dialog() {
         console.debug('starting to initialize scene dialog!!!');
-        var dialog_label = $('#dialog_template_label');
+        let dialog_label = $('#dialog_template_label');
         dialog_label.find('span').remove();
         dialog_label.append('<span>{{ mode }} Scene</span>');
 
         {% raw %}
-            var option_template = doT.template(
+            let option_template = doT.template(
                 '<option value={{=it.id}}>{{=it.name}}</option>'
             );
         {% endraw %}
@@ -118,8 +118,8 @@
 
         {# ***************************************************************** #}
         {# Sequence #}
-        var sequence = $('#sequence');
-        var deferred = chosen_searchable_field_creator(sequence, '/entities/{{ project.id }}/sequences/', option_template);
+        let sequence = $('#sequence');
+        let deferred = chosen_searchable_field_creator(sequence, '/entities/{{ project.id }}/sequences/', option_template);
         {% if sequence %}
             deferred.then(function () {
                     sequence.val({{ sequence.id }}).trigger('liszt:updated');
@@ -129,15 +129,15 @@
 
         {# ***************************************************************** #}
         {# Temp Scene #}
-        var temp_scene = $('#temp_scene');
-        var deferred = chosen_searchable_field_creator(temp_scene, '/entities/{{ project.id }}/scenes/simple/', option_template);
+        let temp_scene = $('#temp_scene');
+        let deferred = chosen_searchable_field_creator(temp_scene, '/entities/{{ project.id }}/scenes/simple/', option_template);
         deferred.then(function () {
                     temp_scene.trigger('liszt:updated');
                 });
         {# ***************************************************************** #}
         {# Temp Shot #}
-        var temp_shot = $('#temp_shot');
-        var deferred = chosen_searchable_field_creator(temp_shot, '/entities/{{ project.id }}/shots/simple/', option_template);
+        let temp_shot = $('#temp_shot');
+        let deferred = chosen_searchable_field_creator(temp_shot, '/entities/{{ project.id }}/shots/simple/', option_template);
         deferred.then(function () {
             temp_shot.trigger('liszt:updated');
         });
@@ -152,20 +152,20 @@
             btn_up_class:'btn-info',
             btn_down_class:'btn-info'}).on('change', function(){
             // check if it is in the range
-            var curr_value = $(this).val();
+            let curr_value = $(this).val();
             $(this).val(curr_value <= 1 ? 1 : curr_value);
         });
         {# ***************************************************************** #}
         {# Submit Button #}
-        var submit_button = $('#dialog_template_submit_button');
+        let submit_button = $('#dialog_template_submit_button');
         submit_button.on('click', function (e) {
             e.stopPropagation();
             e.preventDefault();
 
             submit_button.button('loading');
-            var scene_form = $('#scene_form');
+            let scene_form = $('#scene_form');
 
-            var url = '/scenes/{{ mode.lower() }}'
+            let url = '/scenes/{{ mode.lower() }}'
             {% if mode == 'Update' %}
                 url = '/scenes/{{ scene.id }}/{{ mode.lower() }}'
             {% endif %}

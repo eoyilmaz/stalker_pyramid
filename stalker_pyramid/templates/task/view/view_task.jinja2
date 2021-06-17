@@ -253,6 +253,13 @@
                                                     <span class="date">{{ entity.end }}</span>
                                                 </strong>
                                             </div>
+                                            <div class="profile-info-value">
+                                                <strong>
+                                                    <span >{{ entity.start }}</span>
+                                                    <i class="icon-long-arrow-right blue"></i>
+                                                    <span >{{ entity.end }}</span>
+                                                </strong>
+                                            </div>
                                         </div>
                                         <div class="profile-info-row">
                                             <div class="profile-info-name">Priority</div>
@@ -520,7 +527,7 @@
 {#    <script type="text/javascript">#}
 {#        // convert all dates to moment#}
 {#        $('.date').each(function () {#}
-{#            var date = moment($(this).text());#}
+{#            let date = moment($(this).text());#}
 {#            $(this).text(date.fromNow());#}
 {#        });#}
 {#    </script>#}
@@ -528,7 +535,7 @@
 <script type="text/javascript">
 
     function showErrorAlert(reason, detail) {
-        var msg = '';
+        let msg = '';
         if (reason === 'unsupported-file-type') {
             msg = "Unsupported format " + detail;
         } else if (reason === 'big-file-size') {
@@ -555,8 +562,8 @@
         $('#watch_or_unwatch_task_button').on('click', function (e) {
             e.preventDefault();
             e.stopPropagation();
-            var self = $(this);
-            var url = self.attr('href');
+            let self = $(this);
+            let url = self.attr('href');
             $.post(url).done(function(){
                 // change icon
                 if (self.attr('watching') === 'true') {
@@ -583,11 +590,11 @@
 
 
     $(function () {
-        var icon_name = get_icon('{{ entity.entity_type.lower()}}');
+        let icon_name = get_icon('{{ entity.entity_type.lower()}}');
         $('#task_header').append('<i class="' + icon_name + ' bigger-125"></i>{{ entity.name }}');
 
         {% if has_permission('Update_Task') and entity.project in logged_in_user.projects %}
-            var inline_update_url = '/tasks/{{ entity.id }}/update/inline';
+            let inline_update_url = '/tasks/{{ entity.id }}/update/inline';
 
             //editables
             $('#editable_entity_name').editable({
@@ -595,7 +602,7 @@
                 name: 'name',
                 success: function (response, newValue) {
 
-                    var params = $.param({
+                    let params = $.param({
                         attr_name: 'name',
                         attr_value: newValue
                     });
@@ -618,7 +625,7 @@
                     icon_down:'icon-caret-down'
                 },
                 success: function (response, newValue) {
-                    var params = $.param({
+                    let params = $.param({
                         attr_name: 'priority',
                         attr_value: parseInt(newValue)
                     });
@@ -634,9 +641,9 @@
             });
 
             $.getJSON('/types/?target_entity_type={{ entity.entity_type }}').then(function (available_types) {
-                var entity_types = [];
+                let entity_types = [];
 
-                for (var i = 0; i < available_types.length; i++) {
+                for (let i = 0; i < available_types.length; i++) {
                     entity_types.push({
                         id: available_types[i].id,
                         text: available_types[i].name
@@ -650,7 +657,7 @@
                         source: entity_types,
                         success: function (response, newValue) {
 
-                            var params = $.param({
+                            let params = $.param({
                                 attr_name: 'type',
                                 attr_value: newValue
                             });
@@ -688,7 +695,7 @@
 {#                success: function (response, newValue) {#}
 {#                    $('#description_loading').show();#}
 {##}
-{#                    var params = $.param({#}
+{#                    let params = $.param({#}
 {#                        attr_name: 'description',#}
 {#                        attr_value: newValue#}
 {#                    });#}
@@ -723,12 +730,12 @@
             e.preventDefault();
 
             // disable the submit_button
-            var submit_button = $(this);
+            let submit_button = $(this);
             submit_button.button('loading');
 
-            var editor = $('.wysiwyg-editor');
-            var content = editor.cleanHtml();
-            var content_as_text = editor.text();
+            let editor = $('.wysiwyg-editor');
+            let content = editor.cleanHtml();
+            let content_as_text = editor.text();
 
             $.post(
                 "/note/create",
@@ -741,7 +748,7 @@
             ).done(function () {
                 window.location.assign('{{ came_from }}');
 {#                // just append the note to the top#}
-{#                var note_simple_template = doT.template($('#tmpl_note_simple_text').html());#}
+{#                let note_simple_template = doT.template($('#tmpl_note_simple_text').html());#}
             }).fail(function (jqXHR) {
                 bootbox.alert('<div id="message" class="alert alert-danger bigger-110">' + jqXHR.responseText + '</div>');
                 submit_button.button('reset');
@@ -752,17 +759,17 @@
 
     $.getJSON('/tasks/{{ entity.id }}/events/').then(function (data) {
         $(function () {
-            var events = [];
-            var resources = {};
+            let events = [];
+            let resources = {};
 
-            for (var i = 0; i < data.length; i++) {
-                var start_date = new Date(parseInt(data[i].start));
-                var end_date = new Date(parseInt(data[i].end));
-                var title = data[i].title;
+            for (let i = 0; i < data.length; i++) {
+                let start_date = new Date(parseInt(data[i].start));
+                let end_date = new Date(parseInt(data[i].end));
+                let title = data[i].title;
 
                 if (data[i].entity_type == 'tasks') {
-                    for (var k = 0; k < data[i].resources.length; k++) {
-                        var prop_id = (data[i].resources[k].id).toString();
+                    for (let k = 0; k < data[i].resources.length; k++) {
+                        let prop_id = (data[i].resources[k].id).toString();
                         title += ' - ' + data[i].resources[k].name;
 
                         if (!resources [prop_id]) {
@@ -778,9 +785,9 @@
                             resources[prop_id]['additionalParameters']['children'] = {};
                         }
 
-                        var time_to_complete_str = '<span> ( ' +  meaningful_time_between(data[i].schedule_seconds, data[i].total_logged_seconds) + ') </span>';
+                        let time_to_complete_str = '<span> ( ' +  meaningful_time_between(data[i].schedule_seconds, data[i].total_logged_seconds) + ') </span>';
 
-                        var percent_complete_str = '<span class="label label-status_' + data[i].status_color + '">' + data[i].status + '</span>';
+                        let percent_complete_str = '<span class="label label-status_' + data[i].status_color + '">' + data[i].status + '</span>';
 
                         resources[prop_id]['additionalParameters']['children'][(data[i].id).toString()] = {name: '<span  class="pull-left"><a href="/tasks/' + data[i].id + '/view">' + data[i].title + '  </a></span>' + time_to_complete_str + percent_complete_str, type: 'item'}
 
@@ -792,7 +799,7 @@
                     title = data[i].title + ' - ' + data[i].resource_name;
                 }
 
-                var event = {
+                let event = {
                     eId: data[i].id,
                     entity_type: data[i].entity_type,
                     title: title,
@@ -810,14 +817,14 @@
     });
 
 
-    var get_dependency = function (type) {
+    let get_dependency = function (type) {
         $.getJSON('/tasks/{{ entity.id }}/dependency/' + type + '/').then(function (data) {
 
-            var depends = {};
-            for (var i = 0; i < data.length; i++) {
+            let depends = {};
+            for (let i = 0; i < data.length; i++) {
 
-                var task_id = (data[i].id).toString();
-                var time_to_complete_str = '<span> (' +  meaningful_time_between(data[i].schedule_seconds, data[i].total_logged_seconds) + ')(' + data[i].priority + ')</span>';
+                let task_id = (data[i].id).toString();
+                let time_to_complete_str = '<span> (' +  meaningful_time_between(data[i].schedule_seconds, data[i].total_logged_seconds) + ')(' + data[i].priority + ')</span>';
 
                 if (!depends[task_id]) {
                     depends[task_id] = {
@@ -832,7 +839,7 @@
                     depends[task_id]['additionalParameters']['children'] = {};
                 }
 
-                for (var k = 0; k < data[i].resources.length; k++) {
+                for (let k = 0; k < data[i].resources.length; k++) {
                     depends[task_id]['additionalParameters']['children'][(data[i].resources[k].id).toString()] = {
                         name: '<span  class="pull-left"><a href="/users/' + data[i].resources[k].id + '/view">' + data[i].resources[k].name + '  </a></span>',
                         type: 'item'
@@ -857,10 +864,10 @@
     });
 
     $.getJSON('/entities/{{ entity.id }}/version/used_by/tasks/').then(function (data) {
-        var tasks = {};
-        for (var i = 0; i < data.length; i++) {
+        let tasks = {};
+        for (let i = 0; i < data.length; i++) {
 
-            var task_id = (data[i].id).toString();
+            let task_id = (data[i].id).toString();
 
             if (!tasks[task_id]) {
                 tasks[task_id] = {
@@ -915,7 +922,7 @@
         $('#calendar_tab').on('click', function(){
             // check if the title is visible
             // meaning that calendar tab is working (somebody clicked it before)
-            var today_button = $('.fc-button-today');
+            let today_button = $('.fc-button-today');
             if (today_button.attr('fixed_visibility_bug') !== '1') {
                 console.debug('calendar is not visible');
                 // it is not shown yet
@@ -934,7 +941,7 @@
 <script type="text/javascript">
 
     function showErrorAlert(reason, detail) {
-        var msg = '';
+        let msg = '';
         if (reason === 'unsupported-file-type') {
             msg = "Unsupported format " + detail;
         } else if (reason === 'big-file-size') {
@@ -990,7 +997,7 @@
         //another option would be opening a dialog for user to enter dimensions.
         if (typeof jQuery.ui !== 'undefined' && /applewebkit/.test(navigator.userAgent.toLowerCase())) {
 
-            var lastResizableImg = null;
+            let lastResizableImg = null;
 
             function destroyResizable() {
                 if (lastResizableImg == null) return;
@@ -999,9 +1006,9 @@
                 lastResizableImg = null;
             }
 
-            var enableImageResize = function () {
+            let enableImageResize = function () {
                 $('.wysiwyg-editor').on('mousedown', function (e) {
-                    var target = $(e.target);
+                    let target = $(e.target);
                     if (e.target instanceof HTMLImageElement) {
                         if (!target.data('resizable')) {
                             target.resizable({

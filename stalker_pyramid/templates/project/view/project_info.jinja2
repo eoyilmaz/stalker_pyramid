@@ -30,11 +30,10 @@
 
 <script type="text/javascript">
 
-
     $(document).ready(function () {
         function set_field_value(role_name, url){
             console.log("set_field_value");
-            var  project_role_list = $("#project_role_list");
+            let project_role_list = $("#project_role_list");
             $.getJSON(url).then(function (data) {
                 console.log("loaded: " +data);
 {#                if(data.name != ""){#}
@@ -50,7 +49,6 @@
         set_field_value("Ajans Yapimcisi", '/entities/{{ project.id }}/role_user/?role_name=Ajans%20Yapimcisi');
         set_field_value("Yonetmen", '/entities/{{ project.id }}/role_user/?role_name=Yonetmen');
         set_field_value( "Yapimci", '/entities/{{ project.id }}/role_user/?role_name=Yapimci');
-
 
     });
 

@@ -88,14 +88,14 @@
         $(document).ready(function () {
 
             $.getJSON('/entities/{{ entity.id }}/events/?keys=vacation').then(function (data) {
-                var events = [];
-                var vacations_types = {};
+                let events = [];
+                let vacations_types = {};
 
-                for (var i = 0; i < data.length; i++) {
-                    var start_date = new Date(parseInt(data[i].start));
-                    var end_date = new Date(parseInt(data[i].end));
+                for (let i = 0; i < data.length; i++) {
+                    let start_date = new Date(parseInt(data[i].start));
+                    let end_date = new Date(parseInt(data[i].end));
 
-                    var event = {
+                    let event = {
                         eId: data[i].id,
                         entity_type: data[i].entity_type,
                         title: data[i].title,
@@ -105,14 +105,14 @@
                         allDay: data[i].allDay
                     };
 
-                    var vtype = data[i].title;
+                    let vtype = data[i].title;
 
                     //console.debug(vacations_types)
 
                     end_date.setHours(0);
                     start_date.setHours(0);
 
-                    var total_day = (end_date.getTime()-start_date.getTime())/1000/3600/24 + 1;
+                    let total_day = (end_date.getTime()-start_date.getTime())/1000/3600/24 + 1;
 
                     if (!vacations_types [vtype]) {
                         vacations_types [vtype] = {

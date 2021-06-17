@@ -84,10 +84,10 @@
 
 
 
-        var priority = 500;
-        var schedule_timing = 1;
-        var schedule_unit = 'h';
-        var schedule_model = 'effort';
+        let priority = 500;
+        let schedule_timing = 1;
+        let schedule_unit = 'h';
+        let schedule_model = 'effort';
 
 
 
@@ -99,7 +99,7 @@
 
 
 
-        var submit_button = $('#dialog_template_submit_button');
+        let submit_button = $('#dialog_template_submit_button');
 
 
 
@@ -123,10 +123,10 @@
             setTimeout(function(){submit_button.button('loading')}, 0);
 
             // enable fields
-            var entity_type_value = $('#task_entity_type').val();
+            let entity_type_value = $('#task_entity_type').val();
 
-            var task_form = $('#task_form');
-            var form_data = task_form.serialize();
+            let task_form = $('#task_form');
+            let form_data = task_form.serialize();
 {#            console.log('form_data :', form_data);#}
 
             if ( task_form.validate() ){
@@ -210,7 +210,7 @@
 
             errorPlacement: function (error, element) {
                 if (element.is(':checkbox') || element.is(':radio')) {
-                    var controls = element.closest('.controls');
+                    let controls = element.closest('.controls');
                     if (controls.find(':checkbox,:radio').length > 1) controls.append(error);
                     else error.insertAfter(element.nextAll('.lbl:eq(0)').eq(0));
                 }

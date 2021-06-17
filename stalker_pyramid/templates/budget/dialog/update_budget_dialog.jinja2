@@ -89,23 +89,23 @@
 
         {# ***************************************************************** #}
         {# Submit Button #}
-        var submit_button = $('#submit_button');
+        let submit_button = $('#submit_button');
         submit_button.on('click', function (e) {
             e.stopPropagation();
             e.preventDefault();
 
             submit_button.button('loading');
 
-            var budget_form = $('#budget_form');
-            var url='/budgets/{{ entity.id }}/update';
+            let budget_form = $('#budget_form');
+            let url='/budgets/{{ entity.id }}/update';
 
-            var start_date = get_date_picker('start_date_picker');
+            let start_date = get_date_picker('start_date_picker');
             start_date.setDate(start_date.getDate() + 1);
-            var end_date = new Date(start_date);
-            var duration = parseInt($('#duration').attr("duration"));
+            let end_date = new Date(start_date);
+            let duration = parseInt($('#duration').attr("duration"));
             end_date.setDate(end_date.getDate() + duration);
 
-            var params = {
+            let params = {
                 'project_id': {{ entity.project.id }},
                 'start_date':start_date.getTime(),
                 'end_date':end_date.getTime()

@@ -140,14 +140,14 @@
 <script>
     let oTable1 = null;
     $(document).ready(function () {
-        var project_id = localStorage.getItem("project_id");
-        var status_code = '';
+        let project_id = localStorage.getItem("project_id");
+        let status_code = '';
 
         {% raw %}
-            var option_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
+            let option_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
         {% endraw %}
 
-        var project_cb = $('#project_cb');
+        let project_cb = $('#project_cb');
         project_cb.chosen({
             search_contains: true,
             enable_split_word_search: true
@@ -157,9 +157,9 @@
 
             project_cb.find('option').remove();
 
-            var data_count = data.length;
+            let data_count = data.length;
 
-            for (var i=0; i < data_count; i++){
+            for (let i=0; i < data_count; i++){
                 project_cb.append(option_template(data[i]));
             }
 
@@ -191,7 +191,7 @@
 
 
     function getTableSelectedIds(){
-        var ids = [];
+        let ids = [];
         $('table td:first-child input:checkbox').each(function () {
 
             if(this.checked){
@@ -202,9 +202,9 @@
     }
 
     function generateQuery(){
-        var _query = '?entity_id={{ entity.id }}';
-        var ids = getTableSelectedIds();
-        for (var i=0; i<ids.length; i++){
+        let _query = '?entity_id={{ entity.id }}';
+        let ids = getTableSelectedIds();
+        for (let i=0; i<ids.length; i++){
                _query +='&task_ids='+ids[i];
             }
         return _query;
@@ -212,9 +212,9 @@
 
     function submit_action(url, modal){
 
-        var _query = generateQuery();
+        let _query = generateQuery();
         if(modal === 'true'){
-            var event_dialog = $('#dialog_template');
+            let event_dialog = $('#dialog_template');
             event_dialog.modal({
                 'remote': url+_query
             });

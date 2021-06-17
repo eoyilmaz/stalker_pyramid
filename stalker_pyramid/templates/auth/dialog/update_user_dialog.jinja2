@@ -118,13 +118,13 @@
 
         {# ***************************************************************** #}
         {# Submit Button #}
-        var submit_button = $('#submit_button');
+        let submit_button = $('#submit_button');
         submit_button.on('click', function (e) {
             e.stopPropagation();
             e.preventDefault();
 
             submit_button.button('loading');
-            var user_form = $('#user_form');
+            let user_form = $('#user_form');
             if (user_form.validate()) {
                 $.post(
                     user_form.attr('action'),

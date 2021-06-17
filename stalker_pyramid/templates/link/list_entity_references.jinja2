@@ -167,7 +167,7 @@
     {% endraw %}
 
     <script type="text/javascript">
-        var colorbox_params = {
+        let colorbox_params = {
             rel: 'References',
             loop: false,
             reposition: true,
@@ -185,23 +185,23 @@
             title: function () {
                 // Filename (Tags)| Hires (DL)
 
-                var url = $(this).attr('href');
+                let url = $(this).attr('href');
 
-                var original_title = $(this).attr('original_filename');
+                let original_title = $(this).attr('original_filename');
 
-                var tags = $(this).attr('tags');
+                let tags = $(this).attr('tags');
 
-                var view_hires_url = '/' + $(this).attr('hires_full_path');
-                var download_hires_url = '/FD' + $(this).attr('hires_download_path');
+                let view_hires_url = '/' + $(this).attr('hires_full_path');
+                let download_hires_url = '/FD' + $(this).attr('hires_download_path');
 
-                var view_webres_url = '/' + $(this).attr('webres_full_path');
-                var download_webres_url = '/FD' + $(this).attr('webres_download_path');
+                let view_webres_url = '/' + $(this).attr('webres_full_path');
+                let download_webres_url = '/FD' + $(this).attr('webres_download_path');
 
-                var open_hires_in_new_tab_link = '<a title="View Original in new Tab"  href="' + view_hires_url + '" target="_blank">Original</a></span>';
-                var download_hires_link = '<span><a title="Download Original" class="icon-cloud-download blue" href="' + download_hires_url + '">&nbsp</a></span>';
+                let open_hires_in_new_tab_link = '<a title="View Original in new Tab"  href="' + view_hires_url + '" target="_blank">Original</a></span>';
+                let download_hires_link = '<span><a title="Download Original" class="icon-cloud-download blue" href="' + download_hires_url + '">&nbsp</a></span>';
 
-                var open_webres_in_new_tab_link = '<a title="View Web Version in new Tab"  href="' + view_webres_url + '" target="_blank">Web Version</a></span>';
-                var download_webres_link = '<span><a title="Download Web Version" class="icon-cloud-download green" href="' + download_webres_url + '">&nbsp</a></span>';
+                let open_webres_in_new_tab_link = '<a title="View Web Version in new Tab"  href="' + view_webres_url + '" target="_blank">Web Version</a></span>';
+                let download_webres_link = '<span><a title="Download Web Version" class="icon-cloud-download green" href="' + download_webres_url + '">&nbsp</a></span>';
 
                 return original_title + '&nbsp(' + tags + ')&nbsp|&nbsp' +
                        open_webres_in_new_tab_link + ' &nbsp ' + download_webres_link + '&nbsp|&nbsp' +
@@ -216,18 +216,18 @@
             },
             onComplete: function () {
                 // fit image to colorBox
-                var photo = $('.cboxPhoto');
-                var photo_width = photo.width();
-                var photo_height = photo.height();
-                var photo_ratio = photo_width / photo_height;
+                let photo = $('.cboxPhoto');
+                let photo_width = photo.width();
+                let photo_height = photo.height();
+                let photo_ratio = photo_width / photo_height;
     
-                var cbox = $('#cboxContent');
-                var cbox_width = cbox.width();
-                var cbox_height = cbox.height();
-                var cbox_ratio = cbox_width / cbox_height;
+                let cbox = $('#cboxContent');
+                let cbox_width = cbox.width();
+                let cbox_height = cbox.height();
+                let cbox_ratio = cbox_width / cbox_height;
     
-                var multiplier;
-                var css_options = {
+                let multiplier;
+                let css_options = {
                     'margin-left': 0,
                     'margin-right': 0,
                     'margin-top': 0,
@@ -262,8 +262,8 @@
         /**
          * Draws reference items
          */
-        var draw_reference_items = function (options) {
-            var referenceItemTemplate = doT.template(document.getElementById('tmpl_reference_item').text);
+        let draw_reference_items = function (options) {
+            let referenceItemTemplate = doT.template(document.getElementById('tmpl_reference_item').text);
 
             options = $.extend({
                 current_page: 1,
@@ -272,10 +272,10 @@
                 search: ''
             }, options);
 
-            var current_page = options.current_page;
-            var items_per_page = options.items_per_page;
+            let current_page = options.current_page;
+            let items_per_page = options.items_per_page;
 
-            var offset = (current_page - 1) * items_per_page;
+            let offset = (current_page - 1) * items_per_page;
             console.log("options.url: "+ options.url)
             // now generate the template items
             $.getJSON(options.url,
@@ -284,16 +284,16 @@
                           'limit': items_per_page,
                           'search': options.search
                       })).then(function (data) {
-                var ref_count = data.length;
+                let ref_count = data.length;
                 // remove any thumbnails first
 
-                var cbox_element = $('.ace-thumbnails');
+                let cbox_element = $('.ace-thumbnails');
 
                 remove_thumbnails({
                     container: cbox_element
                 });
 
-                for (var i = 0; i < ref_count; i++) {
+                for (let i = 0; i < ref_count; i++) {
 {#                    console.log('data: '+i);#}
                     append_thumbnail({
                         data: data[i],
@@ -308,17 +308,17 @@
                 $('.reference-deleter').on('click', function (e) {
                     e.preventDefault();
                     e.stopPropagation();
-                    var self = $(this);
-                    var ref_id = self.attr('ref_id');
-                    var ref_file_name = self.attr('ref_file_name');
+                    let self = $(this);
+                    let ref_id = self.attr('ref_id');
+                    let ref_file_name = self.attr('ref_file_name');
 
-                    var confirm_message = 'Delete ' + ref_file_name + ' ?';
+                    let confirm_message = 'Delete ' + ref_file_name + ' ?';
                     
                     bootbox.confirm(confirm_message, function (response) {
                         if (response) {
 {#                            console.debug('will delete ' + ref_id);#}
                             // remove the reference in the server
-                            var url = '/references/' + ref_id + '/delete';
+                            let url = '/references/' + ref_id + '/delete';
                             $.post(url).done(function (response_text) {
                                 // use he response text and give info
                                 // and also delete the HTML element
@@ -340,7 +340,7 @@
          * @param options
          *   Options for this function
          */
-        var create_paginator = function (options) {
+        let create_paginator = function (options) {
 
             options = $.extend({
                 total_number_of_items: 0,
@@ -356,7 +356,7 @@
                 'max_number_of_page_shortcuts': options.max_number_of_page_shortcuts,
                 'callback': function(current_page_number){
                     // get search string
-                    var search_string = $('#reference_search_field').val();
+                    let search_string = $('#reference_search_field').val();
     
                     draw_reference_items({
                         current_page: current_page_number,
@@ -369,9 +369,9 @@
 
         $(function () {
             // create pagination
-            var items_per_page = 40;
-            var total_number_of_items;
-            var count_url = '/entities/{{ entity.id }}/references/count/';
+            let items_per_page = 40;
+            let total_number_of_items;
+            let count_url = '/entities/{{ entity.id }}/references/count/';
 
             // get total number of references
             $.getJSON(count_url, function(data){
@@ -391,14 +391,14 @@
             // and add the new thumbnails when uploaded through Dropzone
             $('#dialog_template').on('hidden', function () {
                 // get the data from the storage
-                var repo_id = {% if entity.entity_type == 'Project' %}{{ entity.repository.id }}{% else %}{{ entity.project.repository.id }}{% endif %};
-                var repo_prepend = 'repositories/' + repo_id + '/';
-                var new_references_storage = $('#new_references_storage');
-                var data = $.parseJSON(new_references_storage.text());
+                let repo_id = {% if entity.entity_type == 'Project' %}{{ entity.repository.id }}{% else %}{{ entity.project.repository.id }}{% endif %};
+                let repo_prepend = 'repositories/' + repo_id + '/';
+                let new_references_storage = $('#new_references_storage');
+                let data = $.parseJSON(new_references_storage.text());
                 // empty the storage
                 new_references_storage.text('');
-                var referenceItemTemplate = doT.template(document.getElementById('tmpl_reference_item').text);
-                for (var i = 0; i < data.length; i++) {
+                let referenceItemTemplate = doT.template(document.getElementById('tmpl_reference_item').text);
+                for (let i = 0; i < data.length; i++) {
                     // prepend repositories/{id}/ to make it compatible with the
                     // new style references
                     data[i].thumbnail_full_path = repo_prepend + data[i].thumbnail_full_path;
@@ -418,7 +418,7 @@
                 e.stopPropagation();
 
                 // get search string
-                var search_string = $('#reference_search_field').val();
+                let search_string = $('#reference_search_field').val();
                 console.log("count_url: "+ count_url);
                 $.getJSON(count_url,
                     $.param({

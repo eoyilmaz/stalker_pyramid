@@ -184,15 +184,15 @@
                 });
 
 
-                var timer_function;
-                var timer = 0;
-                // var last_scheduled_at = moment(data.last_scheduled_at);
-                var last_scheduling_took = 120;
-                var zip_progress = $('#zip-progress');
-                var zip_progress_bar = zip_progress.find('.bar');
+                let timer_function;
+                let timer = 0;
+                // let last_scheduled_at = moment(data.last_scheduled_at);
+                let last_scheduling_took = 120;
+                let zip_progress = $('#zip-progress');
+                let zip_progress_bar = zip_progress.find('.bar');
 
                 // start timer
-                var current_scheduling_time = $('#current_scheduling_time');
+                let current_scheduling_time = $('#current_scheduling_time');
                 function myTimer() {
                     timer += 1;
                     current_scheduling_time.html(timer);
@@ -201,7 +201,7 @@
                         timer -= last_scheduling_took;
                     }
                     // extend the progress bar
-                    var percent = Math.min(100, timer / last_scheduling_took * 100).toFixed(1);
+                    let percent = Math.min(100, timer / last_scheduling_took * 100).toFixed(1);
                     zip_progress.attr('data-percent', percent + '%');
                     zip_progress_bar.css({'width': percent + '%'});
                 }

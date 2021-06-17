@@ -150,7 +150,7 @@
     <script type="text/javascript">
 
 
-    var permissions_loaded = function () {
+    let permissions_loaded = function () {
 
 
     }
@@ -159,14 +159,14 @@
     $(document).ready(function () {
 
 
-        var submit_button = $('#permissions_submit_button');
+        let submit_button = $('#permissions_submit_button');
         submit_button.on('click', function (e) {
 
             e.stopPropagation();
             e.preventDefault();
             submit_button.button('loading');
 
-            var group_update_form = $("#group_update_form");
+            let group_update_form = $("#group_update_form");
 
             bootbox.confirm(
                     '<div class="alert alert-info bigger-110">This will update the permission settings of {{ entity.name }}' +

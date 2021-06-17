@@ -55,21 +55,21 @@
 
         console.debug('starting to initialize budget dialog!!!');
 
-        var dialog_label = $('#dialog_template_label');
+        let dialog_label = $('#dialog_template_label');
         dialog_label.find('span').remove();
         dialog_label.append('<span>{{ type_name}} BUDGET</span>');
 
         {# ***************************************************************** #}
         {# Submit Button #}
-        var submit_button = $('#dialog_template_submit_button');
+        let submit_button = $('#dialog_template_submit_button');
         submit_button.on('click', function (e) {
             e.stopPropagation();
             e.preventDefault();
 
             submit_button.button('loading');
-            var budget_form = $('#budget_form');
+            let budget_form = $('#budget_form');
 
-            var url = '/budgets/{{ budget.id }}/type/{{ type_name }}';
+            let url = '/budgets/{{ budget.id }}/type/{{ type_name }}';
 
             $.post(
                 url,

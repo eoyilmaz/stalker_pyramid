@@ -3,16 +3,16 @@
 <!--inline scripts related to this page-->
 <script>
     function drawCalendar(cid, events) {
-        var update_event_action = function (eType, eId) {
-            var event_dialog = $('#dialog_template');
+        let update_event_action = function (eType, eId) {
+            let event_dialog = $('#dialog_template');
 
             event_dialog.modal({
                 'remote': "/" + eType + "/" + eId + "/update/dialog?came_from={{ request.current_route_path() }}"
             });
         };
 
-        var create_event_action = function (start, end, allDay, eId, eType) {
-            var event_dialog = $('#dialog_template');
+        let create_event_action = function (start, end, allDay, eId, eType) {
+            let event_dialog = $('#dialog_template');
 
             event_dialog.attr('start', start);
             event_dialog.attr('end', end);
@@ -25,12 +25,12 @@
 
         /* initialize the calendar
         -----------------------------------------------------------------*/
-        var calendar = $('#' + cid).fullCalendar({
+        let calendar = $('#' + cid).fullCalendar({
             {% if event_type %}
                 {% if has_permission('Create_' + event_type) %}
                     select: function (start, end, allDay) {
                         {% if  event_type=='TimeLog' %}
-                            var now = new Date();
+                            let now = new Date();
                             if(now>end){
                                 create_event_action(start, end, allDay, '{{ entity.id }}', '{{ event_type.lower() }}')
                             }
@@ -73,7 +73,7 @@
                 // add title attribute to each event
                 setTimeout(function(){
                     $(jsEvent.target).find('.fc-event-title').each(function(){
-                        var self = $(this);
+                        let self = $(this);
                         self.attr('title', self.text());
                     });
                 }, 0);

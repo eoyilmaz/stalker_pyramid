@@ -57,16 +57,16 @@
     </script>
     <script type="text/javascript">
         $(document).ready(function () {
-            var lastSelection;
-            var grid_selector = "#grid-table";
-            var grid = jQuery(grid_selector);
+            let lastSelection;
+            let grid_selector = "#grid-table";
+            let grid = jQuery(grid_selector);
 
             function editRow(id) {
                 if (id && id !== lastSelection) {
 
                     grid.restoreRow(lastSelection);
 
-                    var editParameters = {
+                    let editParameters = {
                         keys: true,
                         successfunc: editSuccessful,
                         errorfunc: editFailed,
@@ -92,13 +92,13 @@
 
                 console.log('data loaded');
 
-                var grid_data = entry_data;
+                let grid_data = entry_data;
 
                 $.getJSON('/roles/').then(function(available_roles){
                     // map available types to an array
 
-                    var available_rolelist = [];
-                    for (var k=0; k < available_roles.length; k++){
+                    let available_rolelist = [];
+                    for (let k=0; k < available_roles.length; k++){
                         console.log(available_roles[k].name)
                         available_rolelist.push(available_roles[k].name);
                     }
@@ -107,7 +107,7 @@
 
 
                     jQuery(function($) {
-                        var grid_selector = "#grid-table";
+                        let grid_selector = "#grid-table";
 
                         jQuery(grid_selector).jqGrid({
                             //direction: "rtl",
@@ -154,9 +154,9 @@
                             caption: "",
                             onSelectRow: editRow,
                             loadComplete : function() {
-                                var $self = $(this);
+                                let $self = $(this);
 
-                                var table = this;
+                                let table = this;
                                 setTimeout(function(){
     {#                                    styleCheckbox(table);#}
     {#                                    updateActionIcons(table);#}

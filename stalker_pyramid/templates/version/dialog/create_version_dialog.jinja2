@@ -62,7 +62,7 @@
         // init dialog
         console.debug('init dialog from create_version_dialog.jinja2 running!');
 
-        var task_id = {{ task.id }};
+        let task_id = {{ task.id }};
         
         $('.modal-header>h3').text('Create Version');
 
@@ -111,9 +111,9 @@
             );
 
             // prepare data
-            var form_data = new FormData();
+            let form_data = new FormData();
 
-            var file_info = $('#input_version').data('ace_input_files');
+            let file_info = $('#input_version').data('ace_input_files');
 
             form_data.append('file_object', file_info[0]);
             form_data.append('task_id', task_id);
@@ -133,11 +133,11 @@
                 enctype: 'multipart/form-data',
                 data: form_data,
                 xhr: function() {
-                    var xhr = new window.XMLHttpRequest();
+                    let xhr = new window.XMLHttpRequest();
                     //Upload progress
                     xhr.upload.addEventListener("progress", function(evt){
                         if (evt.lengthComputable) {
-                            var percentComplete = evt.loaded / evt.total;
+                            let percentComplete = evt.loaded / evt.total;
                             //Do something with upload progress
                             //console.log(percentComplete);
                             $('#upload_progress_control').attr('data-percent', (percentComplete * 100).toFixed(1) + '%');
@@ -148,7 +148,7 @@
 {#                    //Download progress#}
 {#                    xhr.addEventListener("progress", function(evt){#}
 {#                        if (evt.lengthComputable) {#}
-{#                            var percentComplete = evt.loaded / evt.total;#}
+{#                            let percentComplete = evt.loaded / evt.total;#}
 {#                            //Do something with download progress#}
 {#                            console.log(percentComplete);#}
 {#                        }#}

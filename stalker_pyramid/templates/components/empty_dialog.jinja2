@@ -95,12 +95,12 @@
         $('#dialog_template_label').text('Create Ticket Dialog');
 
         // generate default values;
-        var project = {
+        let project = {
             id: {{ project.id }},
             name: "{{ project.name }}"
         };
-        var submit_form_url = '{{ request.route_url("create_ticket") }}';
-        var submit_button = $('#dialog_template_submit_button');
+        let submit_form_url = '{{ request.route_url("create_ticket") }}';
+        let submit_button = $('#dialog_template_submit_button');
 
         {# ***************************************************************** #}
         {# Submit Button #}
@@ -112,8 +112,8 @@
             // disable submit button
             submit_button.button('loading');
 
-            var form = $('#ticket_form');
-            var form_data = form.serialize();
+            let form = $('#ticket_form');
+            let form_data = form.serialize();
 {#            console.log('form_data :', form_data);#}
 
             // prevent multiple sends

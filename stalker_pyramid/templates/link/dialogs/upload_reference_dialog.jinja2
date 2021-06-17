@@ -46,7 +46,7 @@
 
 
 <script>
-    var counter = 0;
+    let counter = 0;
     function init_dialog(){
         if (counter>0){
             return;
@@ -59,9 +59,9 @@
         // update dialog header
         $('.modal-header>h3').text('Upload References');
 
-        var submit_button = $('#dialog_template_submit_button');
+        let submit_button = $('#dialog_template_submit_button');
 
-        var field_update_mode_checker = function(){
+        let field_update_mode_checker = function(){
             // checks if the important fields are still updating
             // check if any of the fields are still in updating mode
             if ($('#reference_tags').attr('is_updating') === 'true' ||
@@ -77,10 +77,10 @@
 
         // tags
         // set the fields to updating mode
-        var tag_input = $('#reference_tags_input');
+        let tag_input = $('#reference_tags_input');
         tag_input.attr('is_updating', true);
         field_update_mode_checker();
-        var fill_tags = function(){
+        let fill_tags = function(){
             $.getJSON('/tags/?as_list=1').then(function(data){
                 tag_input.tag({
                     placeholder: tag_input.attr('placeholder'),
@@ -98,12 +98,12 @@
         fill_tags();
 
         //This is for holding info about the uploaded link ids
-        var entity_id = {{ entity.id }};
-        var files = [];
+        let entity_id = {{ entity.id }};
+        let files = [];
 
-        var uploading_file_counter = 0;
+        let uploading_file_counter = 0;
 
-        var dzone = new Dropzone($(".dropzone")[0], {
+        let dzone = new Dropzone($(".dropzone")[0], {
             init: function(){
                 this.on("addedfile", function(file){
                     // set the submit button to loading state
@@ -153,19 +153,19 @@
                 submit_button.button('loading')}, 0
             );
 
-            var tags_list = $('#reference_tags_input').val().split(', ');
+            let tags_list = $('#reference_tags_input').val().split(', ');
 
 {#            console.debug('accepted_files   : ', dzone.getAcceptedFiles());#}
 {#            console.debug('entity_id        : ', entity_id);#}
 {#            console.debug('tags             : ', tags_list);#}
 
             // prepare data
-            var file_info = [];
-            var full_paths = [];
-            var original_filenames = [];
-            var accepted_files = dzone.getAcceptedFiles();
-            var f;
-            for (var i=0; i < accepted_files.length; i++){
+            let file_info = [];
+            let full_paths = [];
+            let original_filenames = [];
+            let accepted_files = dzone.getAcceptedFiles();
+            let f;
+            for (let i=0; i < accepted_files.length; i++){
                 f = accepted_files[i];
                 full_paths.push(f.full_path);
                 original_filenames.push(f.original_filename);

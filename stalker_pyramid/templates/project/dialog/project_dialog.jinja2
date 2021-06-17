@@ -14,14 +14,14 @@
     function init_dialog() {
         console.debug('starting to initialize project dialog!!!');
 
-        var dialog_template_label = $('#dialog_template_label');
+        let dialog_template_label = $('#dialog_template_label');
         dialog_template_label.find('span').remove();
         dialog_template_label.append('<span>{{ mode }} Project</span>');
 
         {# ***************************************************************** #}
         {# Submit Button #}
         $(document).ready(function () {
-            var submit_button = $('#dialog_template_submit_button');
+            let submit_button = $('#dialog_template_submit_button');
             submit_button.on('click', function (e) {
                 e.stopPropagation();
                 e.preventDefault();
@@ -30,20 +30,20 @@
 
                 console.log('project_form');
 
-                var project_form = $('#project_form');
+                let project_form = $('#project_form');
 
-                var brand = $('#brand');
-                var production_house = $('#production_house');
-                var adv_agency = $('#adv_agency');
-                var product_project_name = $('#product_project_name');
-                var mark_name = $('#mark_name');
+                let brand = $('#brand');
+                let production_house = $('#production_house');
+                let adv_agency = $('#adv_agency');
+                let product_project_name = $('#product_project_name');
+                let mark_name = $('#mark_name');
 
-                var g_data = {
+                let g_data = {
                      'product_project_name' : product_project_name.val(),
                      'mark_name': mark_name.val()
                 };
-                var generic_text =  JSON.stringify(g_data);
-{#                var _client_query = '';#}
+                let generic_text =  JSON.stringify(g_data);
+{#                let _client_query = '';#}
 {#                if (production_firm.val()){#}
 {#                    _client_query +="&production_house="+production_house.val();#}
 {#                }#}

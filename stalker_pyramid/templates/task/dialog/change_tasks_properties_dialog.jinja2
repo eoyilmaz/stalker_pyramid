@@ -137,12 +137,12 @@
         console.debug('starting to initialize add_task_user_dialog dialog!!!');
 
         $(function () {
-            var label = $('#dialog_template_label');
+            let label = $('#dialog_template_label');
             label.find('span').remove();
             label.append('<span>{{ tasks[0].type.name }}</span>');
             $('#dialog_template_body').attr('style', "height: auto");
 
-            var tasks_names = [
+            let tasks_names = [
                 {% for task in tasks %}
                     {
                         'id':'{{ task.id }}',
@@ -158,7 +158,7 @@
             ];
             {# Start & End Date Picker #}
             // initialize date picker
-            var start_end_date_range_picker = $('#start_end_date_range_picker').daterangepicker();
+            let start_end_date_range_picker = $('#start_end_date_range_picker').daterangepicker();
 
             // also update the icon
             start_end_date_range_picker.next().on('click', function () {
@@ -175,10 +175,10 @@
                 e.stopPropagation();
             });
 
-            var grid_data = tasks_names;
+            let grid_data = tasks_names;
 
             jQuery(function($) {
-                var grid_selector = "#grid-table";
+                let grid_selector = "#grid-table";
 
                      jQuery(grid_selector).jqGrid({
                         //direction: "rtl",
@@ -215,18 +215,18 @@
                 });
             });
 
-            var submit_url_list = ['/tasks/change/resources']; //, '/tasks/set_start_end_date'];
-            var task_action = $('#task_action');
+            let submit_url_list = ['/tasks/change/resources']; //, '/tasks/set_start_end_date'];
+            let task_action = $('#task_action');
 
-            var change_users_control =  $('#change_users_control');
-            var force_status_control =  $('#force_status_control');
-            var request_revision_control =  $('#request_revision_control');
-            var start_end_date_control =  $('#start_end_date_control');
+            let change_users_control =  $('#change_users_control');
+            let force_status_control =  $('#force_status_control');
+            let request_revision_control =  $('#request_revision_control');
+            let start_end_date_control =  $('#start_end_date_control');
             start_end_date_control.show();
 
             task_action.on('change', function () {
 
-                var action = $(this).val();
+                let action = $(this).val();
                 switch (action){
                     case 'change_resources':
                         submit_url_list = ['/tasks/change/resources']; //,'/tasks/set_start_end_date'];
@@ -296,8 +296,8 @@
             });
 
             $('#watch_list_cb').on('click', function () {
-                var indexOn = submit_url_list.indexOf('/tasks/watch');
-{#                var indexOff = submit_url_list.indexOf('/tasks/unwatch');#}
+                let indexOn = submit_url_list.indexOf('/tasks/watch');
+{#                let indexOff = submit_url_list.indexOf('/tasks/unwatch');#}
                 if(this.checked){
                     if(indexOn === -1){
                         submit_url_list.push('/tasks/watch');
@@ -316,37 +316,37 @@
                 }
             });
 
-            var task_users = $('#task_users');
+            let task_users = $('#task_users');
             task_users.chosen({
                 search_contains: true,
                 enable_split_word_search: true
             });
 
             {% raw %}
-                var user_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
+                let user_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
             {% endraw %}
 
             $.getJSON('/projects/{{ tasks[0].project.id }}/users/?simple=1').then(function(data){
                 task_users.find('option').remove();
 
-                var data_count = data.length;
-                for (var i=0; i < data_count; i++){
+                let data_count = data.length;
+                for (let i=0; i < data_count; i++){
                     task_users.append(user_template(data[i]));
                 }
                 task_users.trigger('liszt:updated');
              });
 
 
-            var submit_button = $('#dialog_template_submit_button');
+            let submit_button = $('#dialog_template_submit_button');
             submit_button.on('click', function (e) {
 
                 e.stopPropagation();
                 e.preventDefault();
                 submit_button.button('loading');
 
-                var task_ids = jQuery('#grid-table').jqGrid('getGridParam', 'selarrrow');
-                var _query = "?project_id={{ tasks[0].project.id }}";
-                for (var i=0; i < task_ids.length; i++){
+                let task_ids = jQuery('#grid-table').jqGrid('getGridParam', 'selarrrow');
+                let _query = "?project_id={{ tasks[0].project.id }}";
+                for (let i=0; i < task_ids.length; i++){
                     _query += "&task_ids=" + task_ids[i];
                 }
 
@@ -354,9 +354,9 @@
                 {#console.log("submit_url_list[0]: " + submit_url_list);#}
 
                 {#if (submit_url_list.indexOf('/tasks/set_start_end_date') > -1) {#}
-                {#    var start_end = get_date_range('start_end_date_range_picker');#}
-                {#    var start = start_end[0];#}
-                {#    var end = start_end[1];#}
+                {#    let start_end = get_date_range('start_end_date_range_picker');#}
+                {#    let start = start_end[0];#}
+                {#    let end = start_end[1];#}
                 {#    if (start && end){#}
                 {#        _query += "&start="+start.toUTCString()+"&end="+end.toUTCString();#}
                 {#    }#}
@@ -371,7 +371,7 @@
             });
 
             function post_actions(_q){
-                var change_properties_task_form = $("#change_properties_task_form");
+                let change_properties_task_form = $("#change_properties_task_form");
                 console.log("submit_url_list[0]: " + submit_url_list);
                 $.post(
                     submit_url_list[0]+_q,

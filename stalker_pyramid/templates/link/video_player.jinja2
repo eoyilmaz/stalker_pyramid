@@ -88,18 +88,18 @@
         </div>
         <script>
             $(function(){
-                var video = $('#video');
+                let video = $('#video');
 
                 // Buttons
-                var playButton = $("#play-pause");
-                var muteButton = $("#mute");
-                var fullScreenButton = $("#full-screen");
+                let playButton = $("#play-pause");
+                let muteButton = $("#mute");
+                let fullScreenButton = $("#full-screen");
 
                 // Sliders
-                var seekBar = $("#seek-bar");
-                var volumeBar = $("#volume-bar");
+                let seekBar = $("#seek-bar");
+                let volumeBar = $("#volume-bar");
 
-                var pause_video = function(){
+                let pause_video = function(){
                     // Pause the video
                     video[0].pause();
 
@@ -108,7 +108,7 @@
                     playButton.find('i').addClass('icon-play');
                 };
 
-                var play_video = function(){
+                let play_video = function(){
                     // Play the video
                     video[0].play();
 
@@ -117,7 +117,7 @@
                     playButton.find('i').addClass('icon-pause');
                 };
 
-                var toggle_video_playback = function(){
+                let toggle_video_playback = function(){
                     if (video[0].paused == true) {
                         play_video();
                     } else {
@@ -127,7 +127,7 @@
 
 
                 function pad(num, size) {
-                    var s = "0000000000" + num;
+                    let s = "0000000000" + num;
                     return s.substr(s.length - size);
                 }
 
@@ -136,11 +136,11 @@
                  * 
                  * @param float_seconds
                  */
-                var get_timecode = function(float_seconds){
-                    var int_seconds = float_seconds.toFixed(0);
-                    var seconds = int_seconds % 60;
-                    var minutes = Math.floor(float_seconds / 60) % 60;
-                    var hours = (int_seconds / 3600).toFixed(0);
+                let get_timecode = function(float_seconds){
+                    let int_seconds = float_seconds.toFixed(0);
+                    let seconds = int_seconds % 60;
+                    let minutes = Math.floor(float_seconds / 60) % 60;
+                    let hours = (int_seconds / 3600).toFixed(0);
 
                     seconds = pad(seconds, 2);
                     minutes = pad(minutes, 2);
@@ -149,12 +149,12 @@
                     return hours + ':' + minutes + ':' + seconds;
                 };
 
-                var set_current_time_info_display = function(){
-                    var seconds = video[0].currentTime;
-                    var timecode = get_timecode(seconds);
+                let set_current_time_info_display = function(){
+                    let seconds = video[0].currentTime;
+                    let timecode = get_timecode(seconds);
                     $('#video_current_time_info').text(timecode);
 
-                    var duration_as_timecode = get_timecode(video[0].duration);
+                    let duration_as_timecode = get_timecode(video[0].duration);
                     $('#video_duration_info').text(duration_as_timecode);
                 };
 
@@ -214,9 +214,9 @@
                 video.on("timeupdate", function () {
                     // Calculate the slider value
                     // Update the slider value
-                    var duration = video[0].duration;
-                    var current_time = video[0].currentTime;
-{#                    var buffered = video[0].buffered.end(0);#}
+                    let duration = video[0].duration;
+                    let current_time = video[0].currentTime;
+{#                    let buffered = video[0].buffered.end(0);#}
 {#                    console.debug('buffered: ', buffered);#}
 
 {#                    $('buffer').css({#}
@@ -256,13 +256,13 @@
                     video[0].currentTime += 10/24;
                 });
 
-                var center_video = function(){
+                let center_video = function(){
                     video.css({
                         'margin-left': ($(window).width() - video.width()) * 0.5 + 'px'
                     });
                 };
 
-                var resize_seek_bar = function(){
+                let resize_seek_bar = function(){
                     seekBar.css({
                         'width': $(window).width() - 470 + 'px'
                     });
@@ -294,7 +294,7 @@
                     $(window).unbind('keypress');
                 });
 
-                var init_video = function(){
+                let init_video = function(){
                     if (video.width() !== 0){
                         center_video();
                     } else {

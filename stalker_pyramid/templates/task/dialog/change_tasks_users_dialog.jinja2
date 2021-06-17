@@ -23,11 +23,11 @@
         console.debug('starting to initialize add_task_user_dialog dialog!!!');
 
         $(function () {
-            var label = $('#dialog_template_label');
+            let label = $('#dialog_template_label');
             label.find('span').remove();
             label.append('<span>Append {{ user_type }}</span>');
     
-            var task_users = $('#task_users');
+            let task_users = $('#task_users');
 
             task_users.chosen({
                 search_contains: true,
@@ -35,7 +35,7 @@
             });
 
             {% raw %}
-                var user_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
+                let user_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
             {% endraw %}
 
             $.getJSON('/projects/{{ project_id }}/users/?simple=1').then(function(data){
@@ -43,13 +43,13 @@
                 task_users.find('option').remove();
 
                 // append new ones
-                var data_count = data.length;
+                let data_count = data.length;
                 // append a single empty option to the responsible field
-                for (var i=0; i < data_count; i++){
+                for (let i=0; i < data_count; i++){
                     task_users.append(user_template(data[i]));
                 }
                 {% if tasks | count == 1 %}
-                    var selected_users = [
+                    let selected_users = [
                         {% for user in tasks[0][ user_type.lower()] %}
                             {{ user.id }},
                         {% endfor %}
@@ -63,15 +63,15 @@
                 task_users.trigger('liszt:updated');
             });
 
-            var submit_button = $('#dialog_template_submit_button');
+            let submit_button = $('#dialog_template_submit_button');
             submit_button.on('click', function (e) {
                 e.stopPropagation();
                 e.preventDefault();
                 submit_button.button('loading');
 
-                var change_form = $("#change_form");
-                var _query = "?project_id={{ tasks[0].project.id }}";
-                var task_ids = [];
+                let change_form = $("#change_form");
+                let _query = "?project_id={{ tasks[0].project.id }}";
+                let task_ids = [];
                 {% for task in tasks %}
                     _query += "&task_ids={{ task.id }}";
                     task_ids.push({{ task.id }});

@@ -72,17 +72,17 @@
 
         console.debug('starting to initialize invoice dialog!!!');
 
-        var dialog_label = $('#dialog_template_label');
+        let dialog_label = $('#dialog_template_label');
         dialog_label.find('span').remove();
         dialog_label.append('<span>{{mode}} Invoice</span>');
 
         {% raw %}
-            var invoice_type_option_template = doT.template(
+            let invoice_type_option_template = doT.template(
                 '<option value={{=it.id}}>{{=it.name}}</option>'
             );
         {% endraw %}
 
-        var client = $('#client');
+        let client = $('#client');
 
         {% for client in budget.project.clients %}
             client.append(invoice_type_option_template({'name':'{{ client.name }}', 'id':'{{ client.id }}'}));
@@ -99,15 +99,15 @@
 
         {# ***************************************************************** #}
         {# Submit Button #}
-        var submit_button = $('#dialog_template_submit_button');
+        let submit_button = $('#dialog_template_submit_button');
         submit_button.on('click', function (e) {
             e.stopPropagation();
             e.preventDefault();
 
             submit_button.button('loading');
-            var invoice_form = $('#invoice_form');
+            let invoice_form = $('#invoice_form');
 
-            var url = '/invoices/create';
+            let url = '/invoices/create';
             {% if mode=='Update' %}
                 url='/invoices/{{ invoice.id }}/update';
             {% endif %}

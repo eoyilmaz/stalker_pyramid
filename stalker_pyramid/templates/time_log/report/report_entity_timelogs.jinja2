@@ -65,7 +65,7 @@
 
 <script type="text/javascript">
     function monthDiff(d1, d2) {
-        var months;
+        let months;
         months = (d2.getFullYear() - d1.getFullYear()) * 12;
         months -= d1.getMonth() + 1;
         months += d2.getMonth();
@@ -77,7 +77,7 @@
     }
     
     $(function () {
-        var query_str = '';
+        let query_str = '';
         {% if entity.entity_type == 'Project' %}
             query_str = 'project_id={{entity.id}}';
         {% elif entity.entity_type == 'User' %}
@@ -89,8 +89,8 @@
             query_str = query_str.slice(0,query_str.length-1);
         {% endif %}
 
-        var start_date = new Date(2013,4,1);
-        var end_date = new Date(2015,11,1);
+        let start_date = new Date(2013,4,1);
+        let end_date = new Date(2015,11,1);
 
         console.log('query_str: '+query_str);
         $.jqplot._noToImageButton = true;
@@ -105,23 +105,23 @@
                 
                 $.getJSON('/entities/{{ entity.id }}/total_schedule_seconds/').then(function (t_schedule_seconds) {
 
-                    var t_schedule_hours = t_schedule_seconds/3600.0;
+                    let t_schedule_hours = t_schedule_seconds/3600.0;
 
                     $.getJSON('/time_logs/monthly?'+query_str).then(function (data) {
 
-                        for (var j=0; j<data.length; j+=1){
+                        for (let j=0; j<data.length; j+=1){
                             t_schedule_hours += data[j]['total_hours'];
                             console.log('t_schedule_hours: '+ t_schedule_hours)
                         }
 
                         
-                        var remaining_schedule_hours = [[start_date.format('yyyy-mm').toString(), t_schedule_hours]];
-                        var monthly_timelogs = [];
-                        var previous_value = t_schedule_hours;
-                        var current_value;
-                        var current_total_hours;
+                        let remaining_schedule_hours = [[start_date.format('yyyy-mm').toString(), t_schedule_hours]];
+                        let monthly_timelogs = [];
+                        let previous_value = t_schedule_hours;
+                        let current_value;
+                        let current_total_hours;
 
-                        for (var i=0; i<data.length; i+=1){
+                        for (let i=0; i<data.length; i+=1){
                             current_total_hours = data[i]['total_hours'];
                             current_value = previous_value - current_total_hours;
 
@@ -131,7 +131,7 @@
                         }
         
         
-                        var target_final = [
+                        let target_final = [
                             remaining_schedule_hours[0],
                             [end_date.format('yyyy-mm').toString(), 1]
                         ];
@@ -211,23 +211,23 @@
                         });
                         $('.jqplot-highlighter-tooltip').addClass('ui-corner-all');
         
-{#                        var remaining_months = monthDiff(#}
+{#                        let remaining_months = monthDiff(#}
 {#                            new Date(),#}
 {#                            end_date#}
 {#                        );#}
 {##}
-{#                        var new_target_step = previous_value/(remaining_months+1);#}
-{#                        var new_target_timelogs = [#}
+{#                        let new_target_step = previous_value/(remaining_months+1);#}
+{#                        let new_target_timelogs = [#}
 {#                            [new Date().format('yyyy-mm').toString(), new_target_step ],#}
 {#                            [end_date.format('yyyy-mm').toString(), new_target_step]#}
 {#                        ];#}
 {#        #}
-{#                        var all_months = monthDiff(#}
+{#                        let all_months = monthDiff(#}
 {#                            start_date,#}
 {#                            end_date#}
 {#                        );#}
-{#                        var old_target_step = t_schedule_hours/all_months;#}
-{#                        var old_target_timelogs = [#}
+{#                        let old_target_step = t_schedule_hours/all_months;#}
+{#                        let old_target_timelogs = [#}
 {#                            [start_date.format('yyyy-mm').toString(), old_target_step ],#}
 {#                            [end_date.format('yyyy-mm').toString(), old_target_step]#}
 {#                        ];#}

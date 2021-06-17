@@ -31,7 +31,7 @@
         console.debug('starting to initialize add_task_user_dialog dialog!!!');
 
         $(function () {
-            var label = $('#dialog_template_label');
+            let label = $('#dialog_template_label');
             label.find('span').remove();
             label.append('<span>Change Priority</span>');
             $('#dialog_template_body').attr('style', "height: 300px");
@@ -47,22 +47,22 @@
                 btn_down_class: 'btn-info'
             }).on('change', function(){
                 // check if it is in the range
-                var curr_value = $(this).val();
+                let curr_value = $(this).val();
                 $(this).val(curr_value <= 1000 ? curr_value >= 1 ? curr_value : 1 : 1000 );
             });
     {#        console.log('entity.priority : ', priority);#}
 
 
-            var submit_button = $('#dialog_template_submit_button');
+            let submit_button = $('#dialog_template_submit_button');
             submit_button.on('click', function (e) {
 
                 e.stopPropagation();
                 e.preventDefault();
                 submit_button.button('loading');
 
-                var priority_form = $("#priority_form");
+                let priority_form = $("#priority_form");
 
-                var task_ids = [];
+                let task_ids = [];
                 {% for task in tasks %}
                     task_ids.push({{ task.id }});
                 {% endfor %}

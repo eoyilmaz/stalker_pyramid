@@ -64,7 +64,7 @@
         }
 
         function findArrayElement(array, attr_name, attr_value,s_attr_name, s_attr_value) {
-                for(var i=0;i<array.length;i++){
+                for(let i=0;i<array.length;i++){
                     if(array[i][attr_name] == attr_value && array[i][s_attr_name] == s_attr_value){
                         return i;
                     }
@@ -77,8 +77,8 @@
             console.debug('starting to initialize init_html_modal dialog!!!');
 
 
-            var colNames = ['User Name', 'Role', 'Date', 'Login', 'Logout', 'Hour'];
-            var colModel = [
+            let colNames = ['User Name', 'Role', 'Date', 'Login', 'Logout', 'Hour'];
+            let colModel = [
                             {
                                 name:'user_name',
                                 index:'user_name',
@@ -118,27 +118,27 @@
 
                     ];
 
-            var tableDataAddress = '/entities/{{ entity.id }}/authlogs/';
+            let tableDataAddress = '/entities/{{ entity.id }}/authlogs/';
             $('#loading_spinner').show();
 
             $.getJSON(tableDataAddress).then(function (data) {
                 $('#loading_spinner').hide();
                 console.log("tableDataAddress is loaded");
 
-                var new_list = [];
-                var total_hour = 0;
-                for (var i = 0; i < data.length; i++) {
-                    var new_data = {};
+                let new_list = [];
+                let total_hour = 0;
+                for (let i = 0; i < data.length; i++) {
+                    let new_data = {};
                     new_data.user_id = data[i].user_id;
                     new_data.date = new Date(data[i].date_created).format('yyyy-mm-dd');
-                    var index = findArrayElement(new_list,'date', new_data.date, 'user_id',new_data.user_id );
+                    let index = findArrayElement(new_list,'date', new_data.date, 'user_id',new_data.user_id );
                     console.log("new_data.user_id: " + new_data.user_id);
                     if(index == -1){
-                        for (var j = 0; j < data.length; j++) {
-                            var data_date = data[j].date_created;
-                            var data_action = data[j].action;
-                            var c_date = new Date(data_date).format('yyyy-mm-dd');
-                            var c_hour = new Date(data_date).format('HH:MM');
+                        for (let j = 0; j < data.length; j++) {
+                            let data_date = data[j].date_created;
+                            let data_action = data[j].action;
+                            let c_date = new Date(data_date).format('yyyy-mm-dd');
+                            let c_hour = new Date(data_date).format('HH:MM');
                             if(new_data.date == c_date && new_data.user_id == data[j].user_id){
                                 if(data_action == 'login'){
                                     if(new_data.login){
@@ -169,7 +169,7 @@
                             }
                         }
 
-                        var seconds_between = (new_data.logout_date_created - new_data.login_date_created)/1000;
+                        let seconds_between = (new_data.logout_date_created - new_data.login_date_created)/1000;
                         new_data.hour = convert_seconds_to_hour(seconds_between);
                         if(seconds_between && seconds_between>0){
                             total_hour += seconds_between;
@@ -180,7 +180,7 @@
                     }
                 }
 
-                var footerData = {
+                let footerData = {
                     user_name:'TOTAL',
                     hour: convert_seconds_to_hour(total_hour)
                 };

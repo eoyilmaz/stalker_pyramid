@@ -126,7 +126,7 @@
 <script type="text/javascript">
     function init_dialog() {
         console.debug('starting to initialize good dialog!!!');
-        var dialog_label = $('#dialog_template_label');
+        let dialog_label = $('#dialog_template_label');
         dialog_label.find('span').remove();
         dialog_label.append('<span>Create Good</span>');
 
@@ -135,10 +135,10 @@
 
 
         $.getJSON('/goods/').then(function (data) {
-            var good_unit = $('#good_unit');
+            let good_unit = $('#good_unit');
 
-            var available_good_units_as_list = [];
-            for (var i=0; i < data.length; i++){
+            let available_good_units_as_list = [];
+            for (let i=0; i < data.length; i++){
                 if (available_good_units_as_list.indexOf(data[i].unit) == -1){
                     available_good_units_as_list.push(data[i].unit);
                 }
@@ -155,10 +155,10 @@
         {# Price List #}
 
         $.getJSON('/price_lists/').then(function (data) {
-            var good_price_list = $('#good_price_list');
+            let good_price_list = $('#good_price_list');
 
-            var available_priceList_as_list = [];
-            for (var i=0; i < data.length; i++){
+            let available_priceList_as_list = [];
+            for (let i=0; i < data.length; i++){
                 available_priceList_as_list.push(data[i].name);
             }
 
@@ -174,16 +174,16 @@
         {# Type #}
 
         {% raw %}
-            var good_type_option_template = doT.template(
+            let good_type_option_template = doT.template(
                 '<option value={{=it.name}}>{{=it.name}}</option>'
             );
         {% endraw %}
 
         $.getJSON('/types/?target_entity_type=Good').then(function (data) {
-            var good_type = $('#good_type');
+            let good_type = $('#good_type');
 
-            var available_types_list = [];
-            for (var i=0; i < data.length; i++){
+            let available_types_list = [];
+            for (let i=0; i < data.length; i++){
                 available_types_list.push(data[i].name);
             }
 
@@ -193,7 +193,7 @@
                 minLength: 0
             });
 
-{#            for (var i = 0; i < data.length; i++) {#}
+{#            for (let i = 0; i < data.length; i++) {#}
 {#                good_type.append(good_type_option_template(data[i]));#}
 {#            }#}
 {##}
@@ -206,15 +206,15 @@
         });
         {# ***************************************************************** #}
         {# Submit Button #}
-        var submit_button = $('#dialog_template_submit_button');
+        let submit_button = $('#dialog_template_submit_button');
         submit_button.on('click', function (e) {
             e.stopPropagation();
             e.preventDefault();
 
             submit_button.button('loading');
-            var good_form = $('#good_form');
+            let good_form = $('#good_form');
 
-            var url = '/goods/create';
+            let url = '/goods/create';
 
 
             $.post(

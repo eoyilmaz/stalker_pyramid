@@ -78,24 +78,24 @@
 
     {# Form #}
     $(document).ready(function () {
-        var dialog_label = $('#dialog_template_label');
+        let dialog_label = $('#dialog_template_label');
         dialog_label.find('span').remove();
 
         dialog_label.append('<span>Teklif</span>');
 
-        var duration = 0;
+        let duration = 0;
 
         {#Type ----------------------------------------------------------------#}
         {% raw %}
-            var budget_type_option_template = doT.template(
+            let budget_type_option_template = doT.template(
                 '<option value={{=it.id}}>{{=it.name}}</option>'
             );
         {% endraw %}
 
         $.getJSON('/types/?target_entity_type=Budget').then(function (data) {
-            var budget_type = $('#budget_type');
+            let budget_type = $('#budget_type');
 
-            for (var i = 0; i < data.length; i++) {
+            for (let i = 0; i < data.length; i++) {
                 budget_type.append(budget_type_option_template(data[i]));
             }
 
@@ -113,7 +113,7 @@
 
         {#Start Date ----------------------------------------------------------#}
         {% if mode == 'Update' %}
-            var start_date_picker = $('#start_date_picker').datepicker();
+            let start_date_picker = $('#start_date_picker').datepicker();
 
             $('.date-picker').datepicker().next().on(ace.click_event, function(){
                         $(this).prev().focus();
@@ -126,8 +126,8 @@
                 e.stopPropagation();
             });
 
-            var start_date = moment({{ budget.get_generic_text_attr('start_date') }});
-            var end_date = moment({{ budget.get_generic_text_attr('end_date') }});
+            let start_date = moment({{ budget.get_generic_text_attr('start_date') }});
+            let end_date = moment({{ budget.get_generic_text_attr('end_date') }});
             duration = end_date.diff(start_date, 'days');
 
             $('#duration').text(duration+ " Days");

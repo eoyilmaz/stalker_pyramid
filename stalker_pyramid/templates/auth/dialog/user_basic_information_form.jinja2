@@ -164,14 +164,14 @@
 
         {# ***************************************************************** #}
         {# ROLE #}
-        var user_type = $('#user_type');
+        let user_type = $('#user_type');
         {% raw %}
-            var user_type_option_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
+            let user_type_option_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
         {% endraw %}
         $.getJSON('/types/?target_entity_type=User').then(function(available_type){
             // map available types to an array
-            var available_type_as_list = [];
-            for (var i=0; i < available_type.length; i++){
+            let available_type_as_list = [];
+            for (let i=0; i < available_type.length; i++){
                 available_type_as_list.push(available_type[i].name);
             }
 
@@ -182,9 +182,9 @@
             });
         });
 
-        var user_form = $('#user_form');
+        let user_form = $('#user_form');
 
-        var submit_button = $('#dialog_template_submit_button');
+        let submit_button = $('#dialog_template_submit_button');
 
         submit_button.on('click', function(e) {
             e.stopPropagation();
@@ -253,7 +253,7 @@
 
             errorPlacement: function (error, element) {
                 if (element.is(':checkbox') || element.is(':radio')) {
-                    var controls = element.closest('.controls');
+                    let controls = element.closest('.controls');
                     if (controls.find(':checkbox,:radio').length > 1) controls.append(error);
                     else error.insertAfter(element.nextAll('.lbl:eq(0)').eq(0));
                 }

@@ -141,36 +141,36 @@
 function init_dialog() {
     console.debug('starting to initialize time_log dialog!!!');
 
-    var completed_percent;
-    var time_log_form = $("#time_log_form");
-    var time_log_resource = $('#time_log_resource');
+    let completed_percent;
+    let time_log_form = $("#time_log_form");
+    let time_log_resource = $('#time_log_resource');
     {# ***************************************************************** #}
     {# Date Time Objects #}
-    var start_end_date_range_picker = $('#start_end_date_range_picker');
+    let start_end_date_range_picker = $('#start_end_date_range_picker');
     {# ***************************************************************** #}
     {# Schedule Unit and Model #}
-    var task_schedule_unit = $('#task_schedule_unit');
-    var task_schedule_timing = $('#task_schedule_timing');
+    let task_schedule_unit = $('#task_schedule_unit');
+    let task_schedule_timing = $('#task_schedule_timing');
 
-    var time_log_description = $('#time_log_description');
-    var parent = '';
+    let time_log_description = $('#time_log_description');
+    let parent = '';
 
-    var dialog_template_label = $('#dialog_template_label');
+    let dialog_template_label = $('#dialog_template_label');
     dialog_template_label.find('span').remove();
     dialog_template_label.append('<span>Timelog</span>');
 
-    var submit_button = $('#dialog_template_submit_button');
+    let submit_button = $('#dialog_template_submit_button');
     submit_button.attr('disabled', false);
     {# ***************************************************************** #}
     {# Get Start End  #}
-    var get_start_end = function () {
+    let get_start_end = function () {
 
-        var date_string = start_end_date_range_picker.datepicker().val().split('-');
+        let date_string = start_end_date_range_picker.datepicker().val().split('-');
 
-        var start_time_string = start_time.val().split(':');
-        var end_time_string = end_time.val().split(':');
+        let start_time_string = start_time.val().split(':');
+        let end_time_string = end_time.val().split(':');
 
-        var start = new Date(
+        let start = new Date(
             parseInt(date_string[2]),
             parseInt(date_string[1]) - 1,
             parseInt(date_string[0]),
@@ -179,7 +179,7 @@ function init_dialog() {
             0, 0
         );
 
-        var end = new Date(
+        let end = new Date(
             parseInt(date_string[2]),
             parseInt(date_string[1]) - 1,
             parseInt(date_string[0]),
@@ -191,24 +191,24 @@ function init_dialog() {
         return [start, end];
     };
 
-    var getProjectTasks = function(project_id){
+    let getProjectTasks = function(project_id){
         console.log(project_id);
         {# ***************************************************************** #}
         {# Task #}
         {% raw %}
-            var task_option_template = doT.template(
+            let task_option_template = doT.template(
                 '<option value={{=it.id}}>{{=it.name}}</option>'
             );
         {% endraw %}
 
-        var time_log_task = $('#time_log_task');
+        let time_log_task = $('#time_log_task');
         time_log_task.find('option').remove();
         console.log(time_log_task.find('option'));
 
         $.getJSON('/projects/'+project_id+'/tasks/?status=RTS&status=WIP&status=HREV&status=DREV').then(function (data) {
             // append an empty one first
             time_log_task.append('<option value="-1">&nbsp;</option>');
-            for (var i = 0; i < data.length; i++) {
+            for (let i = 0; i < data.length; i++) {
                 time_log_task.append(task_option_template(data[i]));
             }
 
@@ -225,18 +225,18 @@ function init_dialog() {
     {# ***************************************************************** #}
     {# Project #}
     {% raw %}
-        var project_option_template = doT.template(
+        let project_option_template = doT.template(
             '<option value={{=it.id}}>{{=it.name}}</option>'
         );
     {% endraw %}
 
-    var all_projects = $('#all_projects');
+    let all_projects = $('#all_projects');
     all_projects.find('option').remove();
 
     $.getJSON('/entities/{{ logged_in_user.id }}/projects/').then(function (data) {
         // append an empty one first
         all_projects.append('<option value="-1">&nbsp;</option>');
-        for (var i = 0; i < data.length; i++) {
+        for (let i = 0; i < data.length; i++) {
             all_projects.append(project_option_template(data[i]));
         }
 
@@ -269,7 +269,7 @@ function init_dialog() {
 
 
 
-    var refresh_page = function(){
+    let refresh_page = function(){
 
         setTimeout(function () { // wait for hide event to finish
             window.location.reload();
@@ -286,15 +286,15 @@ function init_dialog() {
         e.preventDefault();
 
         // disable the submit_button
-        var time_log_form = $('#time_log_form');
+        let time_log_form = $('#time_log_form');
         submit_button.button('loading');
         // merge end_date and end_time
-        var start_end = get_start_end();
-        var start = start_end[0];
-        var end = start_end[1];
+        let start_end = get_start_end();
+        let start = start_end[0];
+        let end = start_end[1];
 
         // validate the data first
-        var form_is_valid, error_messages;
+        let form_is_valid, error_messages;
         error_messages = [];
         form_is_valid = true;
 
@@ -316,8 +316,8 @@ function init_dialog() {
                 submit_button.button('reset');
             });
         } else {
-            var combined_error_messages = '';
-            for (var i=0; i < error_messages.length; i++){
+            let combined_error_messages = '';
+            for (let i=0; i < error_messages.length; i++){
                 combined_error_messages += error_messages[i] + '<br/>';
             }
 
@@ -361,7 +361,7 @@ function init_dialog() {
 
         errorPlacement: function (error, element) {
             if (element.is(':checkbox') || element.is(':radio')) {
-                var controls = element.closest('.controls');
+                let controls = element.closest('.controls');
                 if (controls.find(':checkbox,:radio').length > 1) controls.append(error);
                 else error.insertAfter(element.nextAll('.lbl:eq(0)').eq(0));
             }

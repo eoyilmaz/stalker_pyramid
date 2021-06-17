@@ -128,14 +128,14 @@
 
     <script>
         $(document).ready(function () {
-            var icon_name = get_icon('task');
+            let icon_name = get_icon('task');
             $('#items_header').append('<i class=' + icon_name + '></i>');
             // fill tasks table with dynamic data
             $.getJSON('/tasks/{{ task_type }}/children/task_type/').then(function (types_data) {
-                var column_template = doT.template($('#tmpl_taskColumn').html());
+                let column_template = doT.template($('#tmpl_taskColumn').html());
 
-                var k;
-                var table_column = $('#tasks_table_column');
+                let k;
+                let table_column = $('#tasks_table_column');
                 for (k = 0; k < types_data.length; k++) {
                     // append it to the table
                     table_column.append(column_template(types_data[k]));

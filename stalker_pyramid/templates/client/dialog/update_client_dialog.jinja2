@@ -114,13 +114,13 @@
 
         {# ***************************************************************** #}
         {# Submit Button #}
-        var submit_button = $('#submit_button');
+        let submit_button = $('#submit_button');
         submit_button.on('click', function (e) {
             e.stopPropagation();
             e.preventDefault();
 
             submit_button.button('loading');
-            var client_form = $('#client_form');
+            let client_form = $('#client_form');
             console.log("client_form.serialize(): "+ client_form.serialize());
             if (client_form.validate()) {
                 $.post(

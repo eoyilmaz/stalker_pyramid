@@ -101,7 +101,7 @@
 
 
         $("#new_project_button").on('click', function (e) {
-             var event_dialog = $('#dialog_template');
+             let event_dialog = $('#dialog_template');
 
             event_dialog.modal({
                 'remote': '{{request.route_path('create_project_dialog', id=-1, _query={'mode': "Create" }) }}'
@@ -110,12 +110,12 @@
 
         $.getJSON('/entities/{{ entity.id }}/projects/').then(function (data) {
 
-            var filter_template = doT.template($('#tmpl_filter_template').html());
-            var project_card_template = doT.template($('#tmpl_project_card').html());
-            var filter_lists = $('#filter_lists');
+            let filter_template = doT.template($('#tmpl_filter_template').html());
+            let project_card_template = doT.template($('#tmpl_project_card').html());
+            let filter_lists = $('#filter_lists');
 
 
-            for(var i=0; i<data.length;i++){
+            for(let i=0; i<data.length;i++){
                 if (data[i].thumbnail_full_path == null) {
                     data[i].thumbnail_full_path = '{{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}';
                 }
@@ -128,7 +128,7 @@
                    data[i].status_icon = get_icon(data[i].status_code.toUpperCase());
                 }
 
-                var entity_projects = $('#entity_projects_'+data[i].status_code);
+                let entity_projects = $('#entity_projects_'+data[i].status_code);
                 if (entity_projects.length==0){
                     filter_lists.append(filter_template(data[i]));
                     entity_projects = $('#entity_projects_'+data[i].status_code);
