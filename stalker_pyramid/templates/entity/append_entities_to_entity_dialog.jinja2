@@ -59,11 +59,11 @@
         $(document).ready(function () {
             $.getJSON('/entities/{{ entity.id }}/{{ entities_name }}/out_stack/').then(function (data) {
 
-                var item_template = doT.template($('#tmpl_append_item').html());
-                var table_body = $('#multiple_select_list>tbody');
+                let item_template = doT.template($('#tmpl_append_item').html());
+                let table_body = $('#multiple_select_list>tbody');
 
                 // append new options to the select
-                for (var i = 0; i < data.length; i++) {
+                for (let i = 0; i < data.length; i++) {
 {#                    data_ids.push(data[i].id)#}
 
                     if (data[i].thumbnail_full_path == null) {
@@ -84,13 +84,13 @@
                     table_body.append(item_template(data[i]));
                 }
 
-                var oTable = $('#multiple_select_list').dataTable({
+                let oTable = $('#multiple_select_list').dataTable({
                     "sScrollY": "400px",
                     "bPaginate": false,
                     "bInfo": false,
                     "bScrollInfinite": true,
                     "bScrollCollapse": true,
-                    "iScrollLoadGap": 50
+                    "iScrollLoadGap": 50,
                 });
 
 {#                 oTable.fnSort(sortingParameters);#}
@@ -107,14 +107,14 @@
         });
 
         $(document).ready(function () {
-            var submit_button = $('#dialog_template_submit_button');
+            let submit_button = $('#dialog_template_submit_button');
             submit_button.on('click', function (e) {
 
                 e.stopPropagation();
                 e.preventDefault();
                 submit_button.button('loading');
 
-                var append_form = $("#append_form");
+                let append_form = $("#append_form");
 
                 $.post('/entities/{{ entity.id }}/append', append_form.serialize()
                 ).done(function (response_text) {

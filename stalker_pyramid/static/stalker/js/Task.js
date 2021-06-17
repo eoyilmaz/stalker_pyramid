@@ -106,7 +106,7 @@ define([
 
 //            this.responsible = settings.responsible || null;
 
-            var i;
+            let i;
             if (this.resource_ids.length === 0) {
                 // no problem if there are no resources
                 for (i = 0; i < this.resources.length; i += 1) {
@@ -127,7 +127,7 @@ define([
         },
 
         link: function () {
-            var rendered;
+            let rendered;
             if (this.entity_type === 'Project') {
                 rendered = templates.projectLink(this);
             } else {
@@ -137,7 +137,7 @@ define([
         },
 
         getResourcesLinks: function () {
-            var ret = '', i, resource;
+            let ret = '', i, resource;
             if (this.resources) {
                 for (i = 0; i < this.resources.length; i += 1) {
                     resource = this.resources[i];
@@ -148,7 +148,7 @@ define([
         },
 
         getResourcesStr: function () {
-            var ret = '', i, resource;
+            let ret = '', i, resource;
             if (this.resources) {
                 for (i = 0; i < this.resources.length; i += 1) {
                     resource = this.resources[i];

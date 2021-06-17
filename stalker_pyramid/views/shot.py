@@ -482,17 +482,17 @@ order by "Shot_SimpleEntities".name
 
         for index in range(len(task_types_names)):
             task = {
-                     'id': task_ids[index],
-                     'name': task_names[index],
-                     'status': task_statuses[index],
-                     'percent': task_percent_complete[index],
-                     'bid_timing': task_bid_timing[index],
-                     'bid_unit': task_bid_unit[index],
-                     'schedule_timing': task_schedule_timing[index],
-                     'schedule_unit': task_schedule_unit[index],
-                     'resource_name': task_resource_name[index],
-                     'resource_id': task_resource_id[index],
-                     'review_count': task_review_count[index]
+                'id': task_ids[index],
+                'name': task_names[index],
+                'status': task_statuses[index],
+                'percent': task_percent_complete[index],
+                'bid_timing': task_bid_timing[index],
+                'bid_unit': task_bid_unit[index],
+                'schedule_timing': task_schedule_timing[index],
+                'schedule_unit': task_schedule_unit[index],
+                'resource_name': task_resource_name[index],
+                'resource_id': task_resource_id[index],
+                'review_count': task_review_count[index]
             }
             if task_types_names[index]:
                 r_data[task_types_names[index]].append(task)
