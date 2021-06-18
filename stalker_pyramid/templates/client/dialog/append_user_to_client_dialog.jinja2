@@ -111,8 +111,9 @@
     function init_dialog() {
         console.debug('starting to initialize append_class_to_entity dialog!!!555555');
 
-        $('#dialog_template_label').find('span').remove();
-        $('#dialog_template_label').append('<span>Append User</span>');
+        let dialog_template_label = $('#dialog_template_label');
+        dialog_template_label.find('span').remove();
+        dialog_template_label.append('<span>Append User</span>');
 
         {# ***************************************************************** #}
         {# CLIENT #}

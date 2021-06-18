@@ -118,8 +118,9 @@
 
         {# ***************************************************************** #}
         {# Sequence #}
+        let deferred;
         let sequence = $('#sequence');
-        let deferred = chosen_searchable_field_creator(sequence, '/entities/{{ project.id }}/sequences/', option_template);
+        deferred = chosen_searchable_field_creator(sequence, '/entities/{{ project.id }}/sequences/', option_template);
         {% if sequence %}
             deferred.then(function () {
                     sequence.val({{ sequence.id }}).trigger('liszt:updated');
@@ -130,14 +131,14 @@
         {# ***************************************************************** #}
         {# Temp Scene #}
         let temp_scene = $('#temp_scene');
-        let deferred = chosen_searchable_field_creator(temp_scene, '/entities/{{ project.id }}/scenes/simple/', option_template);
+        deferred = chosen_searchable_field_creator(temp_scene, '/entities/{{ project.id }}/scenes/simple/', option_template);
         deferred.then(function () {
                     temp_scene.trigger('liszt:updated');
                 });
         {# ***************************************************************** #}
         {# Temp Shot #}
         let temp_shot = $('#temp_shot');
-        let deferred = chosen_searchable_field_creator(temp_shot, '/entities/{{ project.id }}/shots/simple/', option_template);
+        deferred = chosen_searchable_field_creator(temp_shot, '/entities/{{ project.id }}/shots/simple/', option_template);
         deferred.then(function () {
             temp_shot.trigger('liszt:updated');
         });

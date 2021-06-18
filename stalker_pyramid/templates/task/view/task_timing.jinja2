@@ -118,11 +118,11 @@
 
         }
 
-        if(schedule_timing_seconds == total_logged_seconds) {
-            $('#total_logged_bar').addClass('bar-cmpl');
-        }
-        else{
-            $('#total_logged_bar').addClass('bar-wip');
+        let total_logged_bar = $('#total_logged_bar');
+        if(schedule_timing_seconds === total_logged_seconds) {
+            total_logged_bar.addClass('bar-cmpl');
+        } else {
+            total_logged_bar.addClass('bar-wip');
         }
 
         $('#bid_bar').attr('style','width: ' + bid_bar_percent + '%;');

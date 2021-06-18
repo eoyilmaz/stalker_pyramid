@@ -353,19 +353,19 @@
                 {#console.log("_query: " + _query);#}
                 {#console.log("submit_url_list[0]: " + submit_url_list);#}
 
-                {#if (submit_url_list.indexOf('/tasks/set_start_end_date') > -1) {#}
-                {#    let start_end = get_date_range('start_end_date_range_picker');#}
-                {#    let start = start_end[0];#}
-                {#    let end = start_end[1];#}
-                {#    if (start && end){#}
-                {#        _query += "&start="+start.toUTCString()+"&end="+end.toUTCString();#}
-                {#    }#}
-                {#    else{#}
-                {#        bootbox.alert("Hooop ! Start End Date girmedin!");#}
-                {#        submit_button.button('reset');#}
-                {#        return;#}
-                {#    }#}
-                {#}#}
+                {# if (submit_url_list.indexOf('/tasks/set_start_end_date') > -1) { #}
+                {#     let start_end = get_date_range('start_end_date_range_picker'); #}
+                {#     let start = start_end[0]; #}
+                {#     let end = start_end[1]; #}
+                {#     if (start && end){ #}
+                {#         _query += "&start="+start.toUTCString()+"&end="+end.toUTCString(); #}
+                {#     } #}
+                {#     else{ #}
+                {#         bootbox.alert("Hooop ! Start End Date girmedin!"); #}
+                {#         submit_button.button('reset'); #}
+                {#         return; #}
+                {#     } #}
+                {# } #}
 
                 post_actions(_query);
             });

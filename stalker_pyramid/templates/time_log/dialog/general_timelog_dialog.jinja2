@@ -254,10 +254,11 @@ function init_dialog() {
     {# ***************************************************************** #}
     {# Start & End Date Picker #}
     start_end_date_range_picker.datepicker();
-    $('.date-picker').datepicker('setEndDate', new Date());
-    $('.date-picker').datepicker().next().on(ace.click_event, function(){
-                $(this).prev().focus();
-            });
+    let date_picker = $('.date-picker');
+    date_picker.datepicker('setEndDate', new Date());
+    date_picker.datepicker().next().on(ace.click_event, function(){
+        $(this).prev().focus();
+    });
 
     start_end_date_range_picker.on('shown', function (e) {
         e.stopPropagation();
@@ -265,9 +266,6 @@ function init_dialog() {
     start_end_date_range_picker.on('hidden', function (e) {
         e.stopPropagation();
     });
-
-
-
 
     let refresh_page = function(){
 
@@ -395,8 +393,10 @@ function init_dialog() {
         $('#start_time').unbind();
         $('#end_time').unbind();
         $('#dialog_template_submit_button').unbind();
-        $('#dialog_template_delete_button').hide();
-        $('#dialog_template_delete_button').unbind();
+
+        let dialog_template_delete_button = $('#dialog_template_delete_button');
+        dialog_template_delete_button.hide();
+        dialog_template_delete_button.unbind();
 
         $('#dialog_template').data('modal', null);
 

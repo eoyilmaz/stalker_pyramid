@@ -130,8 +130,9 @@
             let end_date = moment({{ budget.get_generic_text_attr('end_date') }});
             duration = end_date.diff(start_date, 'days');
 
-            $('#duration').text(duration+ " Days");
-            $('#duration').attr("duration",duration);
+            let duration_tag = $('#duration');
+            duration_tag.text(duration+ " Days");
+            duration_tag.attr("duration",duration);
             start_date_picker.val(start_date.format('DD/MM/YYYY'));
 
         {% endif %}

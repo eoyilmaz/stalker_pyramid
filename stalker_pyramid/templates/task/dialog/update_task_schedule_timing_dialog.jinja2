@@ -143,14 +143,16 @@
 
                     $('#dialog_template').modal('hide');
 
-                    $('#schedule_timing_{{ entity.id }}').text($('#task_schedule_timing').val())
-                    $('#schedule_unit_{{ entity.id }}').text($('#task_schedule_unit').val())
+                    let task_schedule_timing = $('#task_schedule_timing');
+                    $('#schedule_timing_{{ entity.id }}').text(task_schedule_timing.val())
+                    let task_schedule_unit = $('#task_schedule_unit');
+                    $('#schedule_unit_{{ entity.id }}').text(task_schedule_unit.val())
 
 {#                    console.log($('#task_update_bid').prop('checked'))#}
 
                     if($('#task_update_bid').prop('checked')){
-                        $('#bid_timing_{{ entity.id }}').text($('#task_schedule_timing').val())
-                        $('#bid_unit_{{ entity.id }}').text($('#task_schedule_unit').val())
+                        $('#bid_timing_{{ entity.id }}').text(task_schedule_timing.val())
+                        $('#bid_unit_{{ entity.id }}').text(task_schedule_unit.val())
                     }
 
 
@@ -234,8 +236,9 @@
         console.log('destruct task dialog start');
         // unbind events
 
-        $('#dialog_template_submit_button').button('reset')
-        $('#dialog_template_submit_button').unbind();
+        let dialog_template_submit_button = $('#dialog_template_submit_button');
+        dialog_template_submit_button.button('reset')
+        dialog_template_submit_button.unbind();
 
         // remove dialog
         $('#dialog_template').data('modal', null);

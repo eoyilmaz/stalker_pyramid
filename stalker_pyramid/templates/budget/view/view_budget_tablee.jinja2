@@ -115,7 +115,7 @@
 
 
     </script>
-    <style type="text/css">
+    <style>
     .ui-jqgrid .ui-jqgrid-labels th.ui-th-column {
     background-color: #040404;
     color:#FFFFFF;
@@ -288,8 +288,7 @@
 
             function getCellValue(rowId, cellId) {
                 let cell = jQuery('#' + rowId + '_' + cellId);
-                let val = cell.val();
-                return val;
+                return cell.val();
             }
 
             function recalculateGridData(array, id, amount_value, second_amount_value, overtime_value, stoppage_add_value, price_value){
@@ -356,13 +355,13 @@
                 });
 
                 $('#total_cost_top').text(accounting.formatMoney(total_cost, { symbol: "TL",  format: "%v %s" }));
-                $('#total_price_top').text(accounting.formatMoney(total_price, { symbol: "TL",  format: "%v %s" }));
+                let total_price_top = $('#total_price_top');
+                total_price_top.text(accounting.formatMoney(total_price, { symbol: "TL",  format: "%v %s" }));
                 $('#approved_total_price').text(accounting.formatMoney({{ approved_total_price }}, { symbol: "TL",  format: "%v %s" }));
                 if (total_cost <= total_price){
-                    $('#total_price_top').attr('style', "color: green");
-                }
-                else{
-                    $('#total_price_top').attr('style', "color: red");
+                    total_price_top.attr('style', "color: green");
+                } else {
+                    total_price_top.attr('style', "color: red");
                 }
 
                 $('#total_price_bottom').text(accounting.formatMoney(total_price, { symbol: "TL",  format: "%v %s" }));

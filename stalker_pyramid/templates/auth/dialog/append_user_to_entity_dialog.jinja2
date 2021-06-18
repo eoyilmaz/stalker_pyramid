@@ -37,8 +37,9 @@
     function init_dialog() {
         console.debug('11111 starting to initialize append_class_to_entity dialog!!!');
 
-        $('#dialog_template_label').find('span').remove();
-        $('#dialog_template_label').append('<span>Append User</span>');
+        let dialog_template_label = $('#dialog_template_label');
+        dialog_template_label.find('span').remove();
+        dialog_template_label.append('<span>Append User</span>');
 
         let list_url= "";
         let post_url ="";

@@ -139,8 +139,9 @@
         {# ***************************************************************** #}
         {# Delete Button #}
         if(event_dialog.attr('milestone_id')){
-            $('#dialog_template_delete_button').show();
-            $('#dialog_template_delete_button').on('click', function (e) {
+            let dialog_template_delete_button = $('#dialog_template_delete_button');
+            dialog_template_delete_button.show();
+            dialog_template_delete_button.on('click', function (e) {
                 e.stopPropagation();
                 e.preventDefault();
 

@@ -69,8 +69,8 @@
         setTimeout(function(){submit_button.button('reset')}, 0);
         {# ***************************************************************** #}
         {# Depends To#}
-
-        let task_depends_to = $('#task_depends_to').chosen({
+        let task_depends_to_tag = $('#task_depends_to');
+        let task_depends_to = task_depends_to_tag.chosen({
             search_contains: true,
             enable_split_word_search: true
         });
@@ -114,12 +114,6 @@
             // trigger another update
             task_depends_to.trigger('liszt:updated');
 
-
-
-
-
-
-
         {# ***************************************************************** #}
         {# Submit Button #}
 
@@ -138,7 +132,7 @@
 
             if ( task_form.validate() ){
                 // prevent multiple sends
-                if (task_form.attr('is_sending') == 'true'){
+                if (task_form.attr('is_sending') === 'true'){
                     return;
                 } else {
                     task_form.attr('is_sending', true);
@@ -223,7 +217,7 @@
 
         {% if entity%}
             {% if entity.status.code != 'WFD' and entity.status.code != 'RTS'%}
-                 $('#task_depends_to').attr('disabled','disabled')
+                 task_depends_to_tag.attr('disabled','disabled')
             {% endif %}
         {% endif %}
         console.log('initialize task dialog end')

@@ -77,14 +77,15 @@
 //if value is empty, means no valid files were selected
 //but it may still be submitted by the plugin, because "" (empty string) is different from previous non-empty value whatever it was
 //so we return just here to prevent problems
-                    let value = $('#entity_avatar').next().find('input[type=hidden]:eq(0)').val();
+                    let entity_avatar = $('#entity_avatar');
+                    let value = entity_avatar.next().find('input[type=hidden]:eq(0)').val();
                     if (!value || value.length == 0) {
                         deferred = new $.Deferred;
                         deferred.resolve();
                         return deferred.promise();
                     }
 
-                    let $form = $('#entity_avatar').next().find('.editableform:eq(0)');
+                    let $form = entity_avatar.next().find('.editableform:eq(0)');
                     let file_input = $form.find('input[type=file]:eq(0)');
 
 //user iframe for older browsers that don't support file upload via FormData & Ajax
@@ -92,7 +93,7 @@
                         deferred = new $.Deferred;
 
                         let iframe_id = 'temporary-iframe-' + (new Date()).getTime() + '-' + (parseInt(Math.random() * 1000));
-                        $form.after('<iframe id="' + iframe_id + '" name="' + iframe_id + '" frameborder="0" width="0" height="0" src="about:blank" style="position:absolute;z-index:-1;"></iframe>');
+                        $form.after('<iframe id="' + iframe_id + '" name="' + iframe_id + '"  width="0" height="0" src="about:blank" style="border:0;position:absolute;z-index:-1;"></iframe>');
                         $form.append('<input type="hidden" name="temporary-iframe-id" value="' + iframe_id + '" />');
                         $form.next().data('deferrer', deferred);//save the deferred object to the iframe
                         $form.attr({'method': 'POST', 'enctype': 'multipart/form-data',

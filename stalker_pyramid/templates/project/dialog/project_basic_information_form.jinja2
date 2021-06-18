@@ -372,7 +372,8 @@
             );
         {% endraw %}
         let image_format = $('#image_format');
-        let deferred = chosen_field_creator(image_format, '/image_formats/', image_format_option_template);
+        let deferred;
+        deferred = chosen_field_creator(image_format, '/image_formats/', image_format_option_template);
         {% if mode == 'Update' %}
             deferred.then(function () {
                 image_format.val({{ project.image_format.id }}).trigger('liszt:updated');
@@ -382,7 +383,7 @@
         {# ***************************************************************** #}
         {# REPOSITORY #}
         let repository = $('#repository');
-        let deferred = chosen_field_creator(repository, '/repositories/', option_template);
+        deferred = chosen_field_creator(repository, '/repositories/', option_template);
         {% if mode == 'Update' %}
             deferred.then(function () {
                     repository.val({{ project.repository.id }}).trigger('liszt:updated');
@@ -393,7 +394,7 @@
         {# ***************************************************************** #}
         {# STRUCTURE #}
         let structure = $('#structure');
-        let deferred = chosen_field_creator(structure, '/structures/', option_template);
+        deferred = chosen_field_creator(structure, '/structures/', option_template);
         {% if mode == 'Update' %}
             deferred.then(function () {
                     structure.val({{ project.structure.id }}).trigger('liszt:updated');
@@ -403,7 +404,7 @@
         {# ***************************************************************** #}
         {# STATUS #}
         let status = $('#status');
-        let deferred = chosen_field_creator(status,'/statuses/Project/', option_template);
+        deferred = chosen_field_creator(status,'/statuses/Project/', option_template);
         {% if mode == 'Update' %}
             deferred.then(function () {
                 status.val({{ project.status.id }}).trigger('liszt:updated');
@@ -414,7 +415,7 @@
         {# ***************************************************************** #}
         {# TYPE #}
         let project_type = $('#project_type');
-        let deferred = chosen_field_creator(project_type, '/types/?target_entity_type=Project', option_template);
+        deferred = chosen_field_creator(project_type, '/types/?target_entity_type=Project', option_template);
         {% if mode == 'Update' %}
             deferred.then(function () {
                 project_type.val({{ project.type.id }}).trigger('liszt:updated');

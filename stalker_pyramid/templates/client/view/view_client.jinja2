@@ -113,7 +113,7 @@
                    data[i].status_icon = get_icon(data[i].status_code.toUpperCase());
                 }
 
-                let entity_projects = $('#entity_projects_'+data[i].status_code);
+                let entity_projects = $('#entity_projects_' + data[i].status_code);
                 if (entity_projects.length==0){
                     status_lists.append(status_template(data[i]));
                     entity_projects = $('#entity_projects_'+data[i].status_code);

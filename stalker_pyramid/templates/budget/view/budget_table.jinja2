@@ -79,7 +79,7 @@
         $.jgrid.defaults.responsive = true;
 {#        $.jgrid.defaults.styleUI = 'Bootstrap';#}
     </script>
-    <style type="text/css">
+    <style>
     .ui-jqgrid .ui-jqgrid-labels th.ui-th-column {
         background-color: #4e5962;
         color:#FFFFFF;
@@ -388,16 +388,14 @@
 
             function getCellValue(rowId, cellId) {
                 let cell = jQuery('#' + rowId + '_' + cellId);
-
-                let val = cell.val();
-                return val;
+                return cell.val();
             }
 
             function recalculateGridData(s_data, n_data){
 
                 let selected_data = s_data;
                 selected_data = {};
-                for(prop in s_data){
+                for(let prop in s_data){
                     selected_data[prop] = s_data[prop];
                 }
 
@@ -482,7 +480,7 @@
 
             function create_grids(){
 
-                for( prop in grid_lists_data){
+                for(let prop in grid_lists_data){
 
                     let grid = find_table(prop);
 

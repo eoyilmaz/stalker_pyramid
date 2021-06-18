@@ -120,11 +120,13 @@
 function init_dialog() {
     console.debug('starting to initialize vacation dialog!!!');
 
-    $('#dialog_template_label').find('span').remove();
-    $('#dialog_template_label').append('<span>Vacation</span>')
+    let dialog_template_label = $('#dialog_template_label');
+    dialog_template_label.find('span').remove();
+    dialog_template_label.append('<span>Vacation</span>')
 
     $('#dialog_template_body').attr('style', "height: 300px");
-    $('#dialog_template_delete_button').hide()
+    let dialog_template_delete_button = $('#dialog_template_delete_button');
+    dialog_template_delete_button.hide()
 
     {# ***************************************************************** #}
     let event_dialog = $('#dialog_template')
@@ -200,34 +202,26 @@ function init_dialog() {
 
 
 
-
+    let vacation_user = $('#vacation_user');
+    let vacation_form = $("#vacation_form");
     {% if mode == 'create' %}
         //*********************************************************
         //Action
-
-        $("#vacation_form").attr("action", "{{ request.route_url('create_vacation') }}");
-
+        vacation_form.attr("action", "{{ request.route_url('create_vacation') }}");
         //*********************************************************
         //User
 
-        let vacation_user = $('#vacation_user');
         vacation_user.append('<option value={{ entity.id }} selected>{{ entity.name }}</option>');
-
-
-
     {% elif mode == 'update' %}
         //*********************************************************
         //Action
 
-        $("#vacation_form").attr("action", "{{ request.route_url('update_vacation', id=vacation.id) }}");
+        vacation_form.attr("action", "{{ request.route_url('update_vacation', id=vacation.id) }}");
 
         //*********************************************************
         //User
 
-        let vacation_user = $('#vacation_user');
         vacation_user.append('<option value={{ entity.id }} selected>{{ entity.name }}</option>');
-
-
 
         //*********************************************************
         //Start, End
@@ -239,10 +233,9 @@ function init_dialog() {
         end_time_value = end_date_value;
 
         {% if has_permission('Delete_Vacation') %}
+            dialog_template_delete_button.show();
 
-            $('#dialog_template_delete_button').show();
-
-            $('#dialog_template_delete_button').on('click', function (e) {
+            dialog_template_delete_button.on('click', function (e) {
                 e.stopPropagation();
                 e.preventDefault();
 
@@ -280,8 +273,8 @@ function init_dialog() {
         {% endif %}
 
         {% if entity.entity_type != 'Studio' %}
-            if (vacation_type.val() == 'StudioWide') {
-                $('#dialog_template_delete_button').hide();
+            if (vacation_type.val() === 'StudioWide') {
+                dialog_template_delete_button.hide();
             }
         {% endif %}
 

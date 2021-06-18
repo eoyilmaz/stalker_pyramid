@@ -149,8 +149,9 @@
                 responsible_name = '{{ selected_responsible.name }}';
             {% endif %}
 
-            $('#request-review-warning-message').find('div').remove();
-            $('#request-review-warning-message').append(warning_message_template({'responsible_name': responsible_name}));
+            let request_review_warning_message = $('#request-review-warning-message');
+            request_review_warning_message.find('div').remove();
+            request_review_warning_message.append(warning_message_template({'responsible_name': responsible_name}));
 
         {% else %}
             $('#request_review_task_form').hide();

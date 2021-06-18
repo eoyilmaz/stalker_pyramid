@@ -77,26 +77,17 @@
 {% endraw %}
 
 <script type="text/javascript">
-
-
     $(document).ready(function () {
-
         let label_data;
-
         let checkedAll = function (isChecked, type) {
-
             let mode = '{{ mode }}';
-
-
             let checked = isChecked?'checked':'';
-
+            let mode_type_label_data;
             for (let k = 0; k < label_data.length; k++) {
-
-                $('#' + mode + '_' + type + '_' + label_data[k].label).prop('checked', isChecked);
-                $('#' + mode + '_' + type + '_' + label_data[k].label).attr('value', isChecked ? 'Allow' : '');
+                mode_type_label_data = $('#' + mode + '_' + type + '_' + label_data[k].label);
+                mode_type_label_data.prop('checked', isChecked);
+                mode_type_label_data.attr('value', isChecked ? 'Allow' : '');
             }
-
-
         }
 
         $.getJSON('{{ address }}').then(function (data) {

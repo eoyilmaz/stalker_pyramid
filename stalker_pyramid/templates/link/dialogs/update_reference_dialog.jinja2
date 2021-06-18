@@ -108,11 +108,12 @@
             );
 
             let tags_list = $('#reference_tags_input').val().split(', ');
-            console.log("$('#description').val(): " + $('#description').val());
+            let description_val = $('#description').val();
+            console.log("$('#description').val(): " + description_val);
 
             $.post('{{ request.route_url('update_reference', id=reference.id) }}', {
                 tags: tags_list,
-                description: $('#description').val()
+                description: description_val
             }).done(function(jqXHR){
                 // alert the user about the added files
                 // reload references

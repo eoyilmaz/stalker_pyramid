@@ -57,12 +57,11 @@
     function init_dialog() {
         console.debug('starting to initialize group dialog!!!');
 
-        $('#dialog_template_label').find('span').remove();
-        $('#dialog_template_label').append('<span>New Group</span>')
+        let dialog_template_label = $('#dialog_template_label');
+        dialog_template_label.find('span').remove();
+        dialog_template_label.append('<span>New Group</span>')
 
         $('#dialog_template_body').attr('style', "height: 600px");
-
-
 
         {# Submit Button #}
         let submit_button = $('#dialog_template_submit_button');

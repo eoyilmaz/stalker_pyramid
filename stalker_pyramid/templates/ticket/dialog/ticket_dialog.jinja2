@@ -220,7 +220,7 @@
 
 
             link_ids = $.map(raw_link_ids.split(','), function (value) {
-                values = value.match(/\(([0-9]+)\)/);
+                let values = value.match(/\(([0-9]+)\)/);
                 if( values !== null && values !== undefined ){
                     return values[1];
                 }
@@ -229,7 +229,7 @@
 
 
             // prevent multiple sends
-            if (form.attr('is_sending') == 'true'){
+            if (form.attr('is_sending') === 'true'){
                 return;
             } else {
                 form.attr('is_sending', true);

@@ -77,8 +77,7 @@ function init_dialog() {
 
     $('#dialog_template_body').attr('style', "height: 350px");
     let timeout_buffer;
-    let submit_button = $('#dialog_template_submit_button')
-
+    let submit_button = $('#dialog_template_submit_button');
 
     {# ***************************************************************** #}
     {# Task #}
@@ -236,7 +235,7 @@ function init_dialog() {
 
     {# ***************************************************************** #}
     {# Submit Button #}
-    $('#dialog_template_submit_button').on('click', function (e) {
+    submit_button.on('click', function (e) {
         e.stopPropagation();
         e.preventDefault();
 

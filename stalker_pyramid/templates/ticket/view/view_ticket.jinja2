@@ -430,8 +430,9 @@ $(function(){
         // change button state
         submit_button.button('loading');
         // submit changes
-        let comment = $('.wysiwyg-editor').cleanHtml();
-        let comment_as_text = $('.wysiwyg-editor').text();
+        let wysiwyg_editor = $('.wysiwyg-editor');
+        let comment = wysiwyg_editor.cleanHtml();
+        let comment_as_text = wysiwyg_editor.text();
         let action = $('input[name="action_radio"]:checked').val();
         let url = '/tickets/{{ ticket.id }}/update';
         let params = $.param({

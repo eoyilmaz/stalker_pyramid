@@ -58,7 +58,7 @@
     <div id="gantt_here" style='width:100%; height:700px;'></div>
 </div>
 
-<style type="text/css">
+<style>
         html, body{ height:100%; padding:0px; margin:0px; overflow: hidden;}
 
         .milestone{
@@ -212,9 +212,10 @@
 
         function setScaleConfig(){
             let value = $('#zoom_type').val();
+            let weekScaleTemplate;
             switch (value) {
                 case "Day":
-                    let weekScaleTemplate = function(date){
+                    weekScaleTemplate = function(date){
                         let dateToStr = gantt.date.date_to_str("%d %M");
                         let weekNum = gantt.date.date_to_str("(week %W)");
                         let endDate = gantt.date.add(gantt.date.add(date, 1, "week"), -1, "day");
@@ -229,7 +230,7 @@
                     gantt.config.scale_height = 40;
                     break;
                 case "Week":
-                    let weekScaleTemplate = function(date){
+                    weekScaleTemplate = function(date){
                         let dateToStr = gantt.date.date_to_str("%d %M");
                         let endDate = gantt.date.add(gantt.date.add(date, 1, "week"), -1, "day");
                         return dateToStr(date) + " - " + dateToStr(endDate);

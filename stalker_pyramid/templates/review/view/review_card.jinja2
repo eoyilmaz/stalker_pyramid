@@ -118,12 +118,14 @@
                         data[i].review_status_link = '/tasks/{{ entity.id }}/review/dialog?came_from={{ request.current_route_path() }}';
                     }
                 } else {
-                    if($('#force_review_button')){
-                        $('#force_review_button').hide()
+                    let force_review_button = $('#force_review_button');
+                    if(force_review_button){
+                        force_review_button.hide()
                     }
 
-                    if($('#cleanup_button')){
-                        $('#cleanup_button').show()
+                    let cleanup_button = $('#cleanup_button');
+                    if(cleanup_button){
+                        cleanup_button.show()
                     }
                 }
 

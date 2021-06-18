@@ -110,7 +110,8 @@
             // wait until document is ready
             $(function () {
                 let editable_list = $('#'+'{{ list_item_type.lower() }}'+'_editable_list');
-                for (let i = 0; i < data.length; i++) {
+                let i;
+                for (i = 0; i < data.length; i++) {
 
                     // fix dates
                     // data[i].date_created = new Date(data[i].date_created).format('yyyy-mm-dd HH:MM');
@@ -130,7 +131,7 @@
                     }
                 }
 
-                if (i == 0) {
+                if (i === 0) {
                     editable_list.append('<div class="profile-activity clearfix">No {{ list_item_type }} to list</div>');
                 }
 

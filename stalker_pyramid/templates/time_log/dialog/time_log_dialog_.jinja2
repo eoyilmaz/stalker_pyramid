@@ -364,6 +364,8 @@ function init_dialog() {
             let alert_information = $('#alert_information');
             alert_information.find('span').remove();
 
+            let percent_bar_container = $('#percent_bar_container');
+
             if (remaining_minutes_after_this_time_log > 0) {
                 submit_button.attr('disabled', false);
                 alert_information.append(
@@ -371,7 +373,7 @@ function init_dialog() {
                     remaining_minutes_after_this_time_log_string +
                     "</strong> will remain to complete this task.</span>"
                 );
-                $('#percent_bar_container').show();
+                percent_bar_container.show();
 
                 $('#if_completed').show();
                 $('#if_completed_cb').on('click', function () {
@@ -388,7 +390,7 @@ function init_dialog() {
                 alert_information.append(
                     "<span class='pull_left'>If you enter this time log, all schedule hours will be spent </span>"
                 );
-                $('#percent_bar_container').show();
+                percent_bar_container.show();
                 $('#finalize_task_form').show();
                 $('#if_completed').hide();
                 $('#if_completed_cb').prop('checked', '');
@@ -416,11 +418,11 @@ function init_dialog() {
                 submit_finalize_form_url = '/tasks/'+task_id+'/auto_extend_time';
 
 {#                submit_button.attr('disabled', true);#}
-                $('#percent_bar_container').hide();
+                percent_bar_container.hide();
             }
 
             $('#percent_bar').attr('style', 'width:' + completed_percent + '%');
-            $('#percent_bar_container').attr('data-percent', completed_percent + '%');
+            percent_bar_container.attr('data-percent', completed_percent + '%');
         });
         
     };
@@ -547,8 +549,9 @@ function init_dialog() {
         update_hours_to_complete();
 
         {% if has_permission('Delete_TimeLog') %}
-            $('#dialog_template_delete_button').show();
-            $('#dialog_template_delete_button').on('click', function (e) {
+            let dialog_template_delete_button = $('#dialog_template_delete_button');
+            dialog_template_delete_button.show();
+            dialog_template_delete_button.on('click', function (e) {
                 e.stopPropagation();
                 e.preventDefault();
 
