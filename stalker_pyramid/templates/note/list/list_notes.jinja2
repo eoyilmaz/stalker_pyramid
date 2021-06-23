@@ -146,17 +146,17 @@
 
     $.getJSON('/entities/{{ entity.id }}/notes/').then(function (n_data) {
         $(function () {
-            let logged_in_user_id = '{{ logged_in_user.id }}';
-            let notes = $('#notes');
-            let note_simple_template = doT.template($('#tmpl_note_simple_text').html());
-            let note_activity_template = doT.template($('#tmpl_note_activity').html());
-            let note_daily_template = doT.template($('#tmpl_note_daily').html());
+            var logged_in_user_id = '{{ logged_in_user.id }}';
+            var notes = $('#notes');
+            var note_simple_template = doT.template($('#tmpl_note_simple_text').html());
+            var note_activity_template = doT.template($('#tmpl_note_activity').html());
+            var note_daily_template = doT.template($('#tmpl_note_daily').html());
 
-            let event_dialog = $('#html_template');
-            let html_template_label = $('#html_template_label');
+            var event_dialog = $('#html_template');
+            var html_template_label = $('#html_template_label');
             html_template_label.text(event_dialog.attr('title'));
 
-            for (let i = 0; i < n_data.length; i++) {
+            for (var i = 0; i < n_data.length; i++) {
 
                 n_data[i].created_date = new Date(parseInt(n_data[i].created_date));
 
@@ -189,7 +189,7 @@
 
             $('.date').each(function () {
                 console.debug("$(this).text(): ", $(this).text());
-                let date = moment($(this).text());
+                var date = moment($(this).text());
                 $(this).text(date.fromNow());
             });
 

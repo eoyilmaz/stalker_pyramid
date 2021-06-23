@@ -85,15 +85,15 @@
 
         console.debug('starting to initialize budget dialog!!!');
 
-        let dialog_label = $('#dialog_template_label');
+        var dialog_label = $('#dialog_template_label');
         dialog_label.find('span').remove();
         dialog_label.append('<span>{{ type_name}} BUDGET</span>');
 
-        let status_code = '{{ status_code }}';
-        let save_as_btn = $('#save_as_btn');
+        var status_code = '{{ status_code }}';
+        var save_as_btn = $('#save_as_btn');
 
-        let first_post_url = '/budgets/{{ budget.id }}/status/'+status_code;
-        let second_post_url = "";
+        var first_post_url = '/budgets/{{ budget.id }}/status/'+status_code;
+        var second_post_url = "";
 
         {% if status_code == 'ATV' %}
             status_code = 'APP';
@@ -121,13 +121,13 @@
 
         {# ***************************************************************** #}
         {# Submit Button #}
-        let submit_button = $('#dialog_template_submit_button');
+        var submit_button = $('#dialog_template_submit_button');
         submit_button.on('click', function (e) {
             e.stopPropagation();
             e.preventDefault();
 
             submit_button.button('loading');
-            let budget_form = $('#budget_form');
+            var budget_form = $('#budget_form');
 
             $.post(
                 first_post_url,

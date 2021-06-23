@@ -52,19 +52,19 @@
 
 
 <script type="text/javascript">
-    let permissions_loaded = function () {};
+    var permissions_loaded = function () {};
 
     function init_dialog() {
         console.debug('starting to initialize group dialog!!!');
 
-        let dialog_template_label = $('#dialog_template_label');
+        var dialog_template_label = $('#dialog_template_label');
         dialog_template_label.find('span').remove();
         dialog_template_label.append('<span>New Group</span>')
 
         $('#dialog_template_body').attr('style', "height: 600px");
 
         {# Submit Button #}
-        let submit_button = $('#dialog_template_submit_button');
+        var submit_button = $('#dialog_template_submit_button');
         submit_button.on('click', function (e) {
             e.stopPropagation();
             e.preventDefault();
@@ -74,7 +74,7 @@
             submit_button.button('loading');
 
 
-            let group_create_form = $('#group_create_form');
+            var group_create_form = $('#group_create_form');
 
             $.post("{{ request.route_url('create_group') }}",
                    group_create_form.serialize()

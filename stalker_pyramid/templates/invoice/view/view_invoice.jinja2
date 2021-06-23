@@ -76,17 +76,17 @@
 
             $('#add_project_entries_to_invoice_button').hide();
 
-            let grid_data;
+            var grid_data;
 
-            let grid_selector = "#grid-table";
-            let grid = jQuery(grid_selector);
-            let total_payment = 0;
-            let lastSelection = -1;
+            var grid_selector = "#grid-table";
+            var grid = jQuery(grid_selector);
+            var total_payment = 0;
+            var lastSelection = -1;
 
 
 
             function unitFmatter (cellvalue, options, rowObject){
-                let index = findArrayElement(grid_data,'id', options.rowId);
+                var index = findArrayElement(grid_data,'id', options.rowId);
                 if (index!=-1){
                     return grid_data[index].amount+" "+ grid_data[index].unit;
                 }
@@ -96,7 +96,7 @@
             }
 
             function  unformatUnit (cellvalue, options, rowObject){
-                let index = findArrayElement(grid_data,'id', options.rowId);
+                var index = findArrayElement(grid_data,'id', options.rowId);
                 return grid_data[index].amount;
             }
 
@@ -104,7 +104,7 @@
                 if (id && id !== lastSelection) {
 
                     grid.restoreRow(lastSelection);
-                    let editParameters = {
+                    var editParameters = {
                         keys: true,
                         successfunc: editSuccessful,
                         errorfunc: editFailed,
@@ -116,17 +116,17 @@
                 }
             }
             function getCellValue(rowId, cellId) {
-                let cell = jQuery('#' + rowId + '_' + cellId);
+                var cell = jQuery('#' + rowId + '_' + cellId);
                 return cell.val();
             }
 
             function editSuccessful(data, stat) {
-                let amount = parseFloat(getCellValue(lastSelection, 'amount'));
-                let unit = getCellValue(lastSelection, 'unit');
+                var amount = parseFloat(getCellValue(lastSelection, 'amount'));
+                var unit = getCellValue(lastSelection, 'unit');
 
-                let index = findArrayElement(grid_data, 'id', lastSelection);
+                var index = findArrayElement(grid_data, 'id', lastSelection);
 
-                let selected_data = grid_data[index];
+                var selected_data = grid_data[index];
                 selected_data.amount = amount;
                 selected_data.unit = unit;
                 grid_data[index] = selected_data;
@@ -171,7 +171,7 @@
                 console.log('entry_data: '+ entry_data.length)
                 grid_data = entry_data;
 
-                for(let j=0; j<grid_data.length; j++ ){
+                for(var j=0; j<grid_data.length; j++ ){
                     if (grid_data[j].date_created) {
                             grid_data[j].date_created = new Date(grid_data[j].date_created).format('yyyy-mm-dd HH:MM');
                     }

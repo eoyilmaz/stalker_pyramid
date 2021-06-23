@@ -99,14 +99,14 @@
     <script type="text/javascript">
         $(document).ready(function () {
 
-            let lastSelection;
-            let grid_selector = "#grid-table";
-            let grid = jQuery(grid_selector);
+            var lastSelection;
+            var grid_selector = "#grid-table";
+            var grid = jQuery(grid_selector);
 
             function makelistLink(array, list_type){
 
-                let list_str = "";
-                for(let k=0; k<array.length;k++){
+                var list_str = "";
+                for(var k=0; k<array.length;k++){
                     list_str += "<a href='/"+list_type+"/"+array[k].id+"/view'>"+array[k].name+"</a><br/>";
                 }
                 return list_str
@@ -117,7 +117,7 @@
                 if (id && id !== lastSelection) {
 
                     grid.restoreRow(lastSelection);
-                    let editParameters = {
+                    var editParameters = {
                         keys: true,
                         successfunc: editSuccessful,
                         errorfunc: editFailed,
@@ -141,8 +141,8 @@
 
             $.getJSON('/entities/{{ entity.id }}/users/').then(function (entry_data) {
 
-                let grid_data = entry_data;
-                for(let j=0; j<grid_data.length; j++ ){
+                var grid_data = entry_data;
+                for(var j=0; j<grid_data.length; j++ ){
                     grid_data[j].remove_action = "<a data-target='#dialog_template' data-toggle='modal' data-keyboard=false href='/entities/{{ entity.id }}/"+grid_data[j].id+"/remove/dialog'> <i class='icon-trash'></i></a>"
                     grid_data[j].namelink = "<a href='/users/"+grid_data[j].id+"/view'>"+grid_data[j].name+"</a>";
                     grid_data[j].clients_list = makelistLink(grid_data[j].clients, 'clients');
@@ -156,19 +156,19 @@
 
                 $.getJSON('/roles/').then(function(available_roles){
 
-                    let available_rolelist = [];
-                    for (let k=0; k < available_roles.length; k++){
+                    var available_rolelist = [];
+                    for (var k=0; k < available_roles.length; k++){
                         available_rolelist.push(available_roles[k].name);
                     }
 
                     $.getJSON('/types/?target_entity_type=User').then(function(available_type){
-                        let available_type_as_list = [];
-                        for (let i=0; i < available_type.length; i++){
+                        var available_type_as_list = [];
+                        for (var i=0; i < available_type.length; i++){
                             available_type_as_list.push(available_type[i].name);
                         }
 
                         jQuery(function($) {
-                            let grid_selector = "#grid-table";
+                            var grid_selector = "#grid-table";
                             jQuery(grid_selector).jqGrid({
                                 //direction: "rtl",
                                 data: grid_data,
@@ -271,9 +271,9 @@
                                 caption: "",
                                 onSelectRow: editRow,
                                 loadComplete : function() {
-                                    let $self = $(this);
+                                    var $self = $(this);
 
-                                    let table = this;
+                                    var table = this;
                                     setTimeout(function(){
         {#                                    styleCheckbox(table);#}
         {#                                    updateActionIcons(table);#}
@@ -285,9 +285,9 @@
                             });
                         });
 
-                        let timer;
+                        var timer;
                         $("#search_cells").on("keyup", function() {
-                            let self = this;
+                            var self = this;
                             if(timer) { clearTimeout(timer); }
                             timer = setTimeout(function(){
                                 //timer = null;

@@ -190,7 +190,7 @@
     {% endraw %}
 
     <script type="text/javascript">
-        let colorbox_params = {
+        var colorbox_params = {
             rel: 'Outputs',
             loop: true,
             reposition: true,
@@ -208,23 +208,23 @@
             title: function () {
                 // Filename (Tags)| Hires (DL)
 
-                let url = $(this).attr('href');
+                var url = $(this).attr('href');
 
-                let original_title = $(this).attr('original_filename');
+                var original_title = $(this).attr('original_filename');
 
-                let tags = $(this).attr('tags');
+                var tags = $(this).attr('tags');
 
-                let view_hires_url = '/' + $(this).attr('hires_full_path');
-                let download_hires_url = '/FD' + $(this).attr('hires_download_path');
+                var view_hires_url = '/' + $(this).attr('hires_full_path');
+                var download_hires_url = '/FD' + $(this).attr('hires_download_path');
 
-                let view_webres_url = '/' + $(this).attr('webres_full_path');
-                let download_webres_url = '/FD' + $(this).attr('webres_download_path');
+                var view_webres_url = '/' + $(this).attr('webres_full_path');
+                var download_webres_url = '/FD' + $(this).attr('webres_download_path');
 
-                let open_hires_in_new_tab_link = '<a title="View Original in new Tab"  href="' + view_hires_url + '" target="_blank">Original</a></span>';
-                let download_hires_link = '<span><a title="Download Original" class="icon-cloud-download blue" href="' + download_hires_url + '">&nbsp</a></span>';
+                var open_hires_in_new_tab_link = '<a title="View Original in new Tab"  href="' + view_hires_url + '" target="_blank">Original</a></span>';
+                var download_hires_link = '<span><a title="Download Original" class="icon-cloud-download blue" href="' + download_hires_url + '">&nbsp</a></span>';
 
-                let open_webres_in_new_tab_link = '<a title="View Web Version in new Tab"  href="' + view_webres_url + '" target="_blank">Web Version</a></span>';
-                let download_webres_link = '<span><a title="Download Web Version" class="icon-cloud-download green" href="' + download_webres_url + '">&nbsp</a></span>';
+                var open_webres_in_new_tab_link = '<a title="View Web Version in new Tab"  href="' + view_webres_url + '" target="_blank">Web Version</a></span>';
+                var download_webres_link = '<span><a title="Download Web Version" class="icon-cloud-download green" href="' + download_webres_url + '">&nbsp</a></span>';
 
                 return original_title + '&nbsp(' + tags + ')&nbsp|&nbsp' +
                        open_webres_in_new_tab_link + ' &nbsp ' + download_webres_link + '&nbsp|&nbsp' +
@@ -239,18 +239,18 @@
             },
             onComplete: function () {
                 // fit image to colorBox
-                let photo = $('.cboxPhoto');
-                let photo_width = photo.width();
-                let photo_height = photo.height();
-                let photo_ratio = photo_width / photo_height;
+                var photo = $('.cboxPhoto');
+                var photo_width = photo.width();
+                var photo_height = photo.height();
+                var photo_ratio = photo_width / photo_height;
     
-                let cbox = $('#cboxContent');
-                let cbox_width = cbox.width();
-                let cbox_height = cbox.height();
-                let cbox_ratio = cbox_width / cbox_height;
+                var cbox = $('#cboxContent');
+                var cbox_width = cbox.width();
+                var cbox_height = cbox.height();
+                var cbox_ratio = cbox_width / cbox_height;
     
-                let multiplier;
-                let css_options = {
+                var multiplier;
+                var css_options = {
                     'margin-left': 0,
                     'margin-right': 0,
                     'margin-top': 0,
@@ -284,12 +284,12 @@
 
         $.getJSON('/dailies/{{ entity.id }}/outputs/').then(function (data) {
             $(function () {
-                let daily_task_template = doT.template($('#tmpl_daily_task').html());
-                let daily_tasks_list = $('#daily_tasks');
+                var daily_task_template = doT.template($('#tmpl_daily_task').html());
+                var daily_tasks_list = $('#daily_tasks');
 
-                for(let i=0; i< data.length; i++){
-                    let task = data[i];
-                    let task_div = $('#daily_task_'+task.task_id);
+                for(var i=0; i< data.length; i++){
+                    var task = data[i];
+                    var task_div = $('#daily_task_'+task.task_id);
                     if (task_div.length==0){
 
                         {% if logged_in_user.thumbnail %}
@@ -302,12 +302,12 @@
                         $('#add_note_button_'+data[i].task_id).on('click', function (e) {
                             e.stopPropagation();
                             e.preventDefault();
-                            let submit_button = $(this);
+                            var submit_button = $(this);
                             submit_button.button('loading');
-                            let task_id = parseInt($(this).attr('id').split('add_note_button_')[1]);
-                            let add_note_form = $('#add_note_form_'+task_id);
+                            var task_id = parseInt($(this).attr('id').split('add_note_button_')[1]);
+                            var add_note_form = $('#add_note_form_'+task_id);
 
-                            let content = $('#message').val();
+                            var content = $('#message').val();
 
                             console.log(add_note_form.serialize());
 
@@ -322,12 +322,12 @@
                             });
                         });
 
-                        let local_colorbox_params = {};
+                        var local_colorbox_params = {};
                         $.extend(local_colorbox_params, colorbox_params);
                         local_colorbox_params['rel'] = 'Group' + data[i]['task_id'];
 
-                        let output_template = doT.template($('#tmpl_output_item').html());
-                        let outputs = $('#outputs_' + task.task_id);
+                        var output_template = doT.template($('#tmpl_output_item').html());
+                        var outputs = $('#outputs_' + task.task_id);
 
                         // order the data according to the filename
                         task.links = task.links.sort(
@@ -340,8 +340,8 @@
                             }
                         );
 
-                        for (let j=0; j < task.links.length; j++){
-                            let link = task.links[j];
+                        for (var j=0; j < task.links.length; j++){
+                            var link = task.links[j];
                             append_thumbnail({
                                 data: link,
                                 template: output_template,
@@ -350,10 +350,10 @@
                             });
                         }
 
-                        let note_template = doT.template($('#tmpl_note_item').html());
-                        let notes = $('#notes_' + task.task_id);
-                        for (let k=0; k<task.notes.length; k++){
-                            let note = task.notes[k];
+                        var note_template = doT.template($('#tmpl_note_item').html());
+                        var notes = $('#notes_' + task.task_id);
+                        for (var k=0; k<task.notes.length; k++){
+                            var note = task.notes[k];
 
                             {% if has_permission('Delete_Note') %}
                                if(note.created_by_id === '{{ logged_in_user.id }}'){
@@ -373,7 +373,7 @@
                 }
 
                 $('.date').each(function () {
-                    let date = moment($(this).text());
+                    var date = moment($(this).text());
                     $(this).text(date.fromNow());
                 });
 

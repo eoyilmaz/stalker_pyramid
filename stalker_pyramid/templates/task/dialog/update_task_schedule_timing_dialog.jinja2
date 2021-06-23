@@ -84,10 +84,10 @@
 
 
 
-        let priority = 500;
-        let schedule_timing = 1;
-        let schedule_unit = 'h';
-        let schedule_model = 'effort';
+        var priority = 500;
+        var schedule_timing = 1;
+        var schedule_unit = 'h';
+        var schedule_model = 'effort';
 
 
 
@@ -99,7 +99,7 @@
 
 
 
-        let submit_button = $('#dialog_template_submit_button');
+        var submit_button = $('#dialog_template_submit_button');
 
 
 
@@ -123,15 +123,15 @@
             setTimeout(function(){submit_button.button('loading')}, 0);
 
             // enable fields
-            let entity_type_value = $('#task_entity_type').val();
+            var entity_type_value = $('#task_entity_type').val();
 
-            let task_form = $('#task_form');
-            let form_data = task_form.serialize();
+            var task_form = $('#task_form');
+            var form_data = task_form.serialize();
 {#            console.log('form_data :', form_data);#}
 
             if ( task_form.validate() ){
                 // prevent multiple sends
-                if (task_form.attr('is_sending') == 'true'){
+                if (task_form.attr('is_sending') === 'true'){
                     return;
                 } else {
                     task_form.attr('is_sending', true);
@@ -143,9 +143,9 @@
 
                     $('#dialog_template').modal('hide');
 
-                    let task_schedule_timing = $('#task_schedule_timing');
+                    var task_schedule_timing = $('#task_schedule_timing');
                     $('#schedule_timing_{{ entity.id }}').text(task_schedule_timing.val())
-                    let task_schedule_unit = $('#task_schedule_unit');
+                    var task_schedule_unit = $('#task_schedule_unit');
                     $('#schedule_unit_{{ entity.id }}').text(task_schedule_unit.val())
 
 {#                    console.log($('#task_update_bid').prop('checked'))#}
@@ -212,7 +212,7 @@
 
             errorPlacement: function (error, element) {
                 if (element.is(':checkbox') || element.is(':radio')) {
-                    let controls = element.closest('.controls');
+                    var controls = element.closest('.controls');
                     if (controls.find(':checkbox,:radio').length > 1) controls.append(error);
                     else error.insertAfter(element.nextAll('.lbl:eq(0)').eq(0));
                 }
@@ -236,7 +236,7 @@
         console.log('destruct task dialog start');
         // unbind events
 
-        let dialog_template_submit_button = $('#dialog_template_submit_button');
+        var dialog_template_submit_button = $('#dialog_template_submit_button');
         dialog_template_submit_button.button('reset')
         dialog_template_submit_button.unbind();
 

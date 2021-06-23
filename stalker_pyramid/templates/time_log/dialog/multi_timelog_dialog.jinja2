@@ -193,21 +193,21 @@ function init_dialog() {
 {#    console.log('mode {{ mode }}')#}
 
 
-    let dialog_template_label = $('#dialog_template_label');
+    var dialog_template_label = $('#dialog_template_label');
     dialog_template_label.find('span').remove();
     dialog_template_label.append('<span>Timelog</span>');
 
-    let submit_button = $('#dialog_template_submit_button');
-    let information = $('#information');
+    var submit_button = $('#dialog_template_submit_button');
+    var information = $('#information');
     submit_button.attr('disabled', false);
 
-    let submit_finalize_form_url = null;
-    let status_code = '';
-    let remaining_minutes_after_this_time_log_string = "";
+    var submit_finalize_form_url = null;
+    var status_code = '';
+    var remaining_minutes_after_this_time_log_string = "";
 
     {# ***************************************************************** #}
-    let event_dialog = $('#dialog_template');
-    let start_date_value;
+    var event_dialog = $('#dialog_template');
+    var start_date_value;
     if(event_dialog.attr('start') ){
         start_date_value = new Date(event_dialog.attr('start'));
     }
@@ -216,7 +216,7 @@ function init_dialog() {
         event_dialog.attr('allDay', 'true');
     }
 
-    let start_time_value = start_date_value;
+    var start_time_value = start_date_value;
 
     if (event_dialog.attr('allDay') == 'true') {
         start_time_value.setHours(10);
@@ -224,15 +224,15 @@ function init_dialog() {
     }
     {# ***************************************************************** #}
     {# Schedule Unit and Model #}
-    let task_schedule_unit = $('#task_schedule_unit');
-    let task_schedule_timing = $('#task_schedule_timing');
+    var task_schedule_unit = $('#task_schedule_unit');
+    var task_schedule_timing = $('#task_schedule_timing');
 
-    let time_log_form = $("#time_log_form");
-    let timelog_tasks = $('#timelog_tasks');
-    let time_log_resource = $('#time_log_resource');
-    let parent_name = '';
-    let parent = '';
-    let timeout_buffer;
+    var time_log_form = $("#time_log_form");
+    var timelog_tasks = $('#timelog_tasks');
+    var time_log_resource = $('#time_log_resource');
+    var parent_name = '';
+    var parent = '';
+    var timeout_buffer;
 
     information.append(
         '<span class="pull_left"><div id="message" class="alert alert-info bigger-110">' +
@@ -246,7 +246,7 @@ function init_dialog() {
     {# ***************************************************************** #}
     {# Task #}
     {% raw %}
-        let task_option_template = doT.template(
+        var task_option_template = doT.template(
             '<option value={{=it.id}}>{{=it.short_name}}</option>'
         );
     {% endraw %}
@@ -262,11 +262,11 @@ function init_dialog() {
 
         timelog_tasks.find('option').remove();
         timelog_tasks.append('<option value="-1">&nbsp;</option>');
-        for (let i = 0; i < data.length; i++) {
+        for (var i = 0; i < data.length; i++) {
             timelog_tasks.append(task_option_template(data[i]));
         }
 
-        let selected_tasks = [];
+        var selected_tasks = [];
         selected_tasks = [
                 {% for task in tasks %}
                     {{ task.id }},
@@ -284,10 +284,10 @@ function init_dialog() {
     {# ***************************************************************** #}
     {# Get Start End  #}
 
-    let get_start = function () {
+    var get_start = function () {
 
-        let date_string = $('#start_end_date_range_picker').datepicker().val().split('-');
-        let start_time_string = $('#start_time').val().split(':');
+        var date_string = $('#start_end_date_range_picker').datepicker().val().split('-');
+        var start_time_string = $('#start_time').val().split(':');
 
         return new Date(
             parseInt(date_string[2]),
@@ -302,8 +302,8 @@ function init_dialog() {
     {# ***************************************************************** #}
     {# Start & End Date Picker #}
     // initialize date picker
-    let start_end_date_range_picker = $('#start_end_date_range_picker');
-    let date_picker = $('.date-picker');
+    var start_end_date_range_picker = $('#start_end_date_range_picker');
+    var date_picker = $('.date-picker');
     date_picker.datepicker('setEndDate', new Date());
     start_end_date_range_picker.datepicker('setDate', start_date_value);
 
@@ -321,7 +321,7 @@ function init_dialog() {
 
     {# ***************************************************************** #}
     {# Start Time #}
-    let start_time = $('#start_time');
+    var start_time = $('#start_time');
     start_time.val(start_time_value.format('HH:MM'));
     start_time.timepicker({
         minuteStep: 10,
@@ -340,7 +340,7 @@ function init_dialog() {
 
         submit_finalize_form_url = null;
 
-        let final_action = $('input[name="final_action"]:checked', '.controls').val();
+        var final_action = $('input[name="final_action"]:checked', '.controls').val();
 
         switch(final_action){
             case 'force_complete':
@@ -356,12 +356,12 @@ function init_dialog() {
 
     });
 
-    let post_finalize_action = function () {
+    var post_finalize_action = function () {
 
         console.log("post_finalize_action");
 
         submit_button.button('loading');
-        let time_log_form = $('#time_log_form');
+        var time_log_form = $('#time_log_form');
 
         $.post(
             submit_finalize_form_url,
@@ -375,7 +375,7 @@ function init_dialog() {
         });
     };
 
-    let refresh_page = function(){
+    var refresh_page = function(){
 
         setTimeout(function () { // wait for hide event to finish
             window.location.reload();
@@ -392,13 +392,13 @@ function init_dialog() {
         e.preventDefault();
 
         // disable the submit_button
-        let time_log_form = $('#time_log_form');
+        var time_log_form = $('#time_log_form');
         submit_button.button('loading');
         // merge end_date and end_time
-        let start = get_start();
+        var start = get_start();
 
         // validate the data first
-        let form_is_valid, error_messages;
+        var form_is_valid, error_messages;
         error_messages = [];
         form_is_valid = true;
 
@@ -424,8 +424,8 @@ function init_dialog() {
                 submit_button.button('reset');
             });
         } else {
-            let combined_error_messages = '';
-            for (let i=0; i < error_messages.length; i++){
+            var combined_error_messages = '';
+            for (var i=0; i < error_messages.length; i++){
                 combined_error_messages += error_messages[i] + '<br/>';
             }
 
@@ -469,7 +469,7 @@ function init_dialog() {
 
         errorPlacement: function (error, element) {
             if (element.is(':checkbox') || element.is(':radio')) {
-                let controls = element.closest('.controls');
+                var controls = element.closest('.controls');
                 if (controls.find(':checkbox,:radio').length > 1) controls.append(error);
                 else error.insertAfter(element.nextAll('.lbl:eq(0)').eq(0));
             }

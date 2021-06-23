@@ -73,24 +73,24 @@
         console.debug('starting to initialize add_task_user_dialog dialog!!!');
 
         $(function () {
-            let label = $('#dialog_template_label');
+            var label = $('#dialog_template_label');
             label.find('span').remove();
             label.append('<span>Request Revisions</span>');
             $('#dialog_template_body').attr('style', "height: auto");
 
-            let url= '{{ action | safe}}';
+            var url= '{{ action | safe}}';
             if(url==''){
                 $('#dialog_template').modal('hide');
             }
 
-            let submit_button = $('#dialog_template_submit_button');
+            var submit_button = $('#dialog_template_submit_button');
             submit_button.on('click', function (e) {
 
                 e.stopPropagation();
                 e.preventDefault();
                 submit_button.button('loading');
 
-                let request_revisions_form = $("#request_revisions_form");
+                var request_revisions_form = $("#request_revisions_form");
 
                 $.post(
                     url,

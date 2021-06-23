@@ -151,7 +151,7 @@
         console.log('initialize review task dialog start');
 
         // update dialog header
-        let dialog_template_label = $('#dialog_template_label');
+        var dialog_template_label = $('#dialog_template_label');
         dialog_template_label.find('span').remove();
         dialog_template_label.append('<span class="green">Review Task Dialog</span>');
 
@@ -165,19 +165,19 @@
         {% endif %}
 
         // generate default values;
-        let project = {
+        var project = {
             id: {{ project.id }},
             name: "{{ project.name }}"
         };
-        let submit_form_url = '{{ request.route_url("approve_task", id=task.id) }}';
+        var submit_form_url = '{{ request.route_url("approve_task", id=task.id) }}';
 
-        let schedule_timing = {{ task.schedule_timing }};
-        let schedule_unit = '{{ task.schedule_unit }}';
-        let schedule_model = '{{ task.schedule_model }}';
+        var schedule_timing = {{ task.schedule_timing }};
+        var schedule_unit = '{{ task.schedule_unit }}';
+        var schedule_model = '{{ task.schedule_model }}';
 
-        let submit_button = $('#dialog_template_submit_button');
+        var submit_button = $('#dialog_template_submit_button');
 
-        let task_review_mode = $('#task_review_mode');
+        var task_review_mode = $('#task_review_mode');
     
         {% if review_mode %}
             task_review_mode.val('{{ review_mode }}');
@@ -198,7 +198,7 @@
                 // disable or enable revision_controls
                 $('#revision_controls').toggle();
 
-                submit_form_url = '/tasks/{{ task.id }}/'+$(this).val()
+                submit_form_url = '/tasks/{{ task.id }}/' + $(this).val()
 
             });
 
@@ -206,15 +206,15 @@
 
         {# ***************************************************************** #}
         {# Schedule Unit and Model #}
-        let task_schedule_unit = $('#task_schedule_unit');
-        let task_schedule_timing = $('#task_schedule_timing');
+        var task_schedule_unit = $('#task_schedule_unit');
+        var task_schedule_timing = $('#task_schedule_timing');
         $('#task_schedule_model').val(schedule_model);
 
 
 
         {# ***************************************************************** #}
         {# Priority Spinner #}
-        let priority = 500;
+        var priority = 500;
         priority = {{ task.priority }};
 
 {#        $('#task_priority').ace_spinner({#}
@@ -226,7 +226,7 @@
 {#            btn_down_class: 'btn-info'#}
 {#        }).on('change', function () {#}
 {#                    // check if it is in the range#}
-{#                    let curr_value = $(this).val();#}
+{#                    var curr_value = $(this).val();#}
 {#                    $(this).val(curr_value <= 1000 ? curr_value >= 1 ? curr_value : 1 : 1000);#}
 {#                });#}
 
@@ -240,8 +240,8 @@
             // disable submit button
             submit_button.button('loading');
 
-            let task_form = $('#review_task_form');
-            let form_data = task_form.serialize();
+            var task_form = $('#review_task_form');
+            var form_data = task_form.serialize();
 
             {% if forced  %}
                form_data += '&' +
@@ -259,15 +259,15 @@
             }
 
             // validate the data first
-            let form_is_valid, error_messages;
+            var form_is_valid, error_messages;
             form_is_valid = true;
             error_messages = [];
 
             if ($('#task_review_mode').val() === 'request_revision'){
-                let schedule_unit_value = task_schedule_unit.val();
-                let current_timing_value = task_schedule_timing.val();
+                var schedule_unit_value = task_schedule_unit.val();
+                var current_timing_value = task_schedule_timing.val();
 
-                let validation_result = validate_timing_value({
+                var validation_result = validate_timing_value({
                     value: current_timing_value,
                     unit: schedule_unit_value
                 });
@@ -294,8 +294,8 @@
                     bootbox.alert('<h6 class="red"><i class="icon-warning-sign"></i> Failed</h6>' + jqXHR.responseText);
                 });
             } else {
-                let combined_error_messages = '';
-                for (let i=0; i < error_messages.length; i++){
+                var combined_error_messages = '';
+                for (var i=0; i < error_messages.length; i++){
                     combined_error_messages += error_messages[i] + '<br/>';
                 }
                 // reset submit button
@@ -306,7 +306,7 @@
         });
 
         $('.date').each(function () {
-            let date = moment($(this).text());
+            var date = moment($(this).text());
             $(this).text(date.fromNow());
         });
 

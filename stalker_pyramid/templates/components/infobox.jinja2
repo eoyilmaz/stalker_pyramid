@@ -29,17 +29,17 @@
 
         function initInfoBox(address){
             console.log("initInfoBox is started");
-            let infobox = $('#infobox');
+            var infobox = $('#infobox');
 
             infobox.find(".infobox").remove();
-            let infobox_template = doT.template($('#tmpl_infobox').html());
+            var infobox_template = doT.template($('#tmpl_infobox').html());
 
             $.getJSON(address).then(function (data) {
-                let sorting_path = ['WFD','RTS','WIP', 'PREV','HREV', 'DREV', 'CMPL', 'OH','STOP'];
-                let sorted_data = [];
+                var sorting_path = ['WFD','RTS','WIP', 'PREV','HREV', 'DREV', 'CMPL', 'OH','STOP'];
+                var sorted_data = [];
 
-                let index = -1;
-                for (let i = 0; i < data.length; i++) {
+                var index = -1;
+                for (var i = 0; i < data.length; i++) {
 
                     data[i].entity_id = '{{ entity.id }}';
                     data[i].entity_type = '{{ entity.entity_type }}';
@@ -54,7 +54,7 @@
                     data[i].status_code = (data[i].status_code).toLowerCase();
                 }
 
-                for (let k = 0; k < sorted_data.length; k++) {
+                for (var k = 0; k < sorted_data.length; k++) {
                     if(sorted_data[k]){
                         infobox.append(infobox_template(sorted_data[k]));
                     }

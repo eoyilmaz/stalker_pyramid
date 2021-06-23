@@ -70,12 +70,12 @@
         
         // ********************************************************************
         // Generate default values
-        let url;
-        let name;
-        let width;
-        let height;
-        let pixel_aspect = 1.0;
-        let additional_data = {};
+        var url;
+        var name;
+        var width;
+        var height;
+        var pixel_aspect = 1.0;
+        var additional_data = {};
         
         {# fill values based on the dialog mode #}
         {% if mode == 'CREATE' %}
@@ -94,17 +94,17 @@
         
         // ********************************************************************
         // Form
-        let image_format_form = new Form({
+        var image_format_form = new Form({
             id: 'image_format_form'
         }, 'image_format_form');
         image_format_form.startup();
         
-        let dialog = image_format_form.getParent();
+        var dialog = image_format_form.getParent();
         
         
         // ********************************************************************
         // Name
-        let name_textBox = new ValidationTextBox({
+        var name_textBox = new ValidationTextBox({
             name: 'name',
             label: 'Name',
             placeHolder: 'Enter a name',
@@ -116,7 +116,7 @@
 
         // ********************************************************************
         // WIDTH
-        let width_numberTextBox = new NumberTextBox({
+        var width_numberTextBox = new NumberTextBox({
             name: 'width',
             label: 'Width',
             placeHolder: '',
@@ -128,7 +128,7 @@
 
         // ********************************************************************
         // HEIGHT
-        let height_numberTextBox = new NumberTextBox({
+        var height_numberTextBox = new NumberTextBox({
             name: 'height',
             label: 'Height',
             placeHolder: '',
@@ -140,7 +140,7 @@
 
         // ********************************************************************
         // PIXEL_ASPECT
-        let pixel_aspect_numberTextBox = new NumberTextBox({
+        var pixel_aspect_numberTextBox = new NumberTextBox({
             name: 'pixel_aspect',
             label: 'Pixel Aspect',
             required: true,
@@ -151,7 +151,7 @@
 
         // ********************************************************************
         // OK Button
-        let ok_button = new Button({
+        var ok_button = new Button({
             label: 'OK',
             type: 'button',
             onClick: function () {
@@ -169,7 +169,7 @@
         
         // ********************************************************************
         // CANCEL BUTTON
-        let cancel_button = new Button({
+        var cancel_button = new Button({
             label: 'Cancel',
             type: 'button',
             onClick: function () {

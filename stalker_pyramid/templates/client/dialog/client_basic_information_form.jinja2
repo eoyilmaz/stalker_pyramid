@@ -104,24 +104,24 @@
     {# Form #}
     $(document).ready(function () {
         {% raw %}
-            let report_templates_option_template = doT.template(
+            var report_templates_option_template = doT.template(
                 '<option value={{=it.id}}>{{=it.name}}</option>'
             );
         {% endraw %}
 
-        let report_templates = [
+        var report_templates = [
             {% for r_temp in report_templates %}
                 {'name':'{{ r_temp }}', 'id':'{{ r_temp }}'.replace(" ","%20")},
             {% endfor %}
         ];
 
-        let available_report_templates = [
+        var available_report_templates = [
             {% for r_temp in report_templates %}
                 '{{ r_temp }}',
             {% endfor %}
         ];
 
-        let client_report_template = $('#client_report_template');
+        var client_report_template = $('#client_report_template');
 {#        chosen_searchable_field_creator_by_data(client_report_template, report_templates_option_template, report_templates);#}
         client_report_template.autocomplete({
                 delay: 0,
@@ -136,12 +136,12 @@
 
         {# ***************************************************************** #}
         {# TYPE #}
-        let client_type = $('#client_type');
+        var client_type = $('#client_type');
 
         $.getJSON('/types/?target_entity_type=Client').then(function(available_type){
             // map available types to an array
-            let available_type_as_list = [];
-            for (let i=0; i < available_type.length; i++){
+            var available_type_as_list = [];
+            for (var i=0; i < available_type.length; i++){
                 available_type_as_list.push(available_type[i].name);
             }
 
@@ -204,7 +204,7 @@
 
             errorPlacement: function (error, element) {
                 if (element.is(':checkbox') || element.is(':radio')) {
-                    let controls = element.closest('.controls');
+                    var controls = element.closest('.controls');
                     if (controls.find(':checkbox,:radio').length > 1) controls.append(error);
                     else error.insertAfter(element.nextAll('.lbl:eq(0)').eq(0));
                 }

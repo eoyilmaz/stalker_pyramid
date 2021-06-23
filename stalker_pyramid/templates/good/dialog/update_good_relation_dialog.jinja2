@@ -39,16 +39,16 @@
 <script type="text/javascript">
     function init_dialog() {
         console.debug('starting to initialize good dialog!!!');
-        let dialog_label = $('#dialog_template_label');
+        var dialog_label = $('#dialog_template_label');
         dialog_label.find('span').remove();
         dialog_label.append('<span>{{ good.name }}</span>');
 
         {% raw %}
-            let good_option_template = doT.template(
+            var good_option_template = doT.template(
                 '<option value={{=it.id}}>{{=it.name}}</option>'
             );
         {% endraw %}
-        let related_good = $('#related_good');
+        var related_good = $('#related_good');
 
         $.getJSON('/goods/').then(function (all_goods) {
             $.getJSON('/goods/{{ good.id }}/related_goods/').then(function (related_goods) {
@@ -56,10 +56,10 @@
                 // remove current data
                 related_good.empty();
 
-                let i, data_count = all_goods.length;
+                var i, data_count = all_goods.length;
                 for (i = 0; i < data_count; i += 1) {
-                    let in_related_list = false;
-                    for (let j = 0; j < related_goods.length; j += 1) {
+                    var in_related_list = false;
+                    for (var j = 0; j < related_goods.length; j += 1) {
                         if(related_goods[j]['id'] == all_goods[i].id || '{{ good.id }}' == all_goods[i].id ){
                             in_related_list = true;
                         }
@@ -84,7 +84,7 @@
             btn_up_class:'btn-info',
             btn_down_class:'btn-info'}).on('change', function(){
             // check if it is in the range
-            let curr_value = $(this).val();
+            var curr_value = $(this).val();
 {#            $(this).val(curr_value <= 1 ? 1 : curr_value);#}
         });
 
@@ -93,15 +93,15 @@
         $('#dialog_template_footer').hide();
         {# ***************************************************************** #}
         {# Submit Button #}
-        let submit_button = $('#dialog_template_submit_button');
+        var submit_button = $('#dialog_template_submit_button');
         submit_button.on('click', function (e) {
             e.stopPropagation();
             e.preventDefault();
 
             submit_button.button('loading');
-            let related_good_form = $('#related_good_form');
+            var related_good_form = $('#related_good_form');
 
-            let url = '/goods/{{ good.id }}/update/relation';
+            var url = '/goods/{{ good.id }}/update/relation';
 
             $.post(
                 url,

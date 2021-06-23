@@ -73,13 +73,13 @@
                  submitForm, fieldUpdater, dialogCaller) {
         // ********************************************************************
         // Generate some default values
-        let name;
-        let name_disabled = false;
-        let target_entity_type;
-        let target_entity_type_disabled = false;
-        let url;
-        let additional_data = {};
-        let selected_statuses = [];
+        var name;
+        var name_disabled = false;
+        var target_entity_type;
+        var target_entity_type_disabled = false;
+        var url;
+        var additional_data = {};
+        var selected_statuses = [];
         
         {% if mode=='CREATE' %}
             url = '{{ request.route_url('create_status_list') }}';
@@ -108,13 +108,13 @@
         
         // ********************************************************************
         // Form
-        let status_list_form = new Form({}, 'status_list_form');
+        var status_list_form = new Form({}, 'status_list_form');
 
-        let dialog = status_list_form.getParent();
+        var dialog = status_list_form.getParent();
 
         // ********************************************************************
         // Name
-        let name_textBox = new ValidationTextBox({
+        var name_textBox = new ValidationTextBox({
             name: 'name',
             label: 'Name',
             placeHolder: 'Enter a name',
@@ -125,7 +125,7 @@
 
         // ********************************************************************
         // Target Entity Type
-        let target_entity_type_store = new Memory({
+        var target_entity_type_store = new Memory({
             data: [
                 {% for entity_type in entity_types %}
                     {
@@ -136,7 +136,7 @@
             ]
         });
 
-        let target_entity_type_select = new FilteringSelect({
+        var target_entity_type_select = new FilteringSelect({
             name: 'target_entity_type',
             label: 'Target Entity Type',
             required: true,
@@ -151,23 +151,23 @@
         // Statuses
         // 
         // The Memory
-        let statuses_memory = new JsonRest({
+        var statuses_memory = new JsonRest({
             target: '{{ request.route_url('get_statuses') }}'
         });
 
         // The Widget
-        let statuses_tagSelect = new TagSelect({
+        var statuses_tagSelect = new TagSelect({
             name: 'status_ids',
             required: true
         }, 'status_list_statuses');
 
 
-        let set_statuses_tagSelect_value = function(){
+        var set_statuses_tagSelect_value = function(){
             statuses_tagSelect.set('value', selected_statuses);
         }
 
         // The Updater
-        let statuses_field_updater = fieldUpdater({
+        var statuses_field_updater = fieldUpdater({
             'memory': statuses_memory,
             'widget': statuses_tagSelect,
             //'selected': selected_statuses
@@ -177,7 +177,7 @@
         statuses_field_updater({animate: false});
 
         // New Status Button
-        let create_status_button = dialogCaller({
+        var create_status_button = dialogCaller({
             label: 'New',
             dialog_id: 'status_dialog',
             content_creator: dialogs.create_status_dialog,
@@ -192,7 +192,7 @@
 
         // ********************************************************************
         // Ok Button
-        let ok_button = new Button({
+        var ok_button = new Button({
             label: 'OK',
             type: 'button',
             disabled: false,
@@ -212,7 +212,7 @@
 
         // ********************************************************************
         // Cancel Button
-        let cancel_button = new Button({
+        var cancel_button = new Button({
             label: 'Cancel',
             type: 'button',
             onClick: function () {

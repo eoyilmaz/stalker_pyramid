@@ -14,20 +14,20 @@
     function init_dialog() {
         console.debug('starting to initialize client dialog!!!');
 
-        let dialog_template_label = $('#dialog_template_label');
+        var dialog_template_label = $('#dialog_template_label');
         dialog_template_label.find('span').remove();
         dialog_template_label.append('<span>New Client</span>');
 
 {#        *****************************************************************#}
 {#        Submit Button#}
-        let submit_button = $('#dialog_template_submit_button');
+        var submit_button = $('#dialog_template_submit_button');
         submit_button.on('click', function (e) {
             e.stopPropagation();
             e.preventDefault();
 
             submit_button.button('loading');
 
-            let client_form = $('#client_form');
+            var client_form = $('#client_form');
             if (client_form.validate()) {
                 $.post(
                     client_form.attr('action'),

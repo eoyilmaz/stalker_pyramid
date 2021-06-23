@@ -81,26 +81,26 @@
     <script type="text/javascript">
         $(document).ready(function () {
             $.getJSON('/types/?target_entity_type=Good').then(function (good_type_data) {
-                let available_good_types = [];
-                for (let k=0; k < good_type_data.length; k++){
+                var available_good_types = [];
+                for (var k=0; k < good_type_data.length; k++){
                     available_good_types.push(good_type_data[k].name);
                 }
                 $.getJSON('/price_lists/').then(function (price_list_data) {
 
-                    let available_pricelist = [];
-                    for (let k=0; k < price_list_data.length; k++){
+                    var available_pricelist = [];
+                    for (var k=0; k < price_list_data.length; k++){
                         console.log(price_list_data[k].name);
                         available_pricelist.push(price_list_data[k].name);
                     }
 
                     $.getJSON('/studios/{{ entity.id }}/goods/').then(function (good_data) {
 
-                        let grid_data = good_data;
-                        let available_good_units_as_list = [];
-                        let good_names = [];
+                        var grid_data = good_data;
+                        var available_good_units_as_list = [];
+                        var good_names = [];
 
 
-                        for(let i=0; i<grid_data.length; i++ ){
+                        for(var i=0; i<grid_data.length; i++ ){
                             console.log('grid_data[i]: '+ grid_data[i].price_list_name);
                             good_names.push(grid_data[i].name);
 
@@ -115,19 +115,19 @@
                                 available_good_units_as_list.push(grid_data[i].unit);
                             }
     {#                            console.log(grid_data[i]['related_goods']);#}
-                            let related_goods = grid_data[i]['related_goods'];
-                            let related_goods_str = "";
+                            var related_goods = grid_data[i]['related_goods'];
+                            var related_goods_str = "";
 
-                            for(let m=0; m<related_goods.length;m++){
+                            for(var m=0; m<related_goods.length;m++){
                                 related_goods_str += "<b>"+related_goods[m].name+"</b> ratio: "+related_goods[m].ratio+"<a data-target='#dialog_template' data-toggle='modal' data-keyboard=false href='/goods/"+grid_data[i].id+"/delete/relation/dialog?related_good_id="+related_goods[m].id+"'> <i class='icon-trash'></i></a><br/>";
                             }
                             related_goods_str += "<a data-target='#dialog_template' data-toggle='modal' data-keyboard=false href='/goods/"+grid_data[i].id+"/update/relation/dialog'>Add New Relation</a>"
                             grid_data[i]['related_goods_str'] = related_goods_str;
 
-                            let linked_goods = grid_data[i]['linked_goods'];
-                            let linked_goods_str = "";
+                            var linked_goods = grid_data[i]['linked_goods'];
+                            var linked_goods_str = "";
 
-                            for(let m=0; m<linked_goods.length;m++){
+                            for(var m=0; m<linked_goods.length;m++){
                                 linked_goods_str += "<b>"+linked_goods[m].name+"</b> ratio: "+linked_goods[m].ratio+"<br/>";
                             }
                             grid_data[i]['linked_goods_str'] = linked_goods_str;
@@ -135,9 +135,9 @@
                         }
 
                         jQuery(function($) {
-                        let grid_selector = "#grid-table";
-                        let pager_selector = "#grid-pager";
-                        let grid = jQuery(grid_selector);
+                        var grid_selector = "#grid-table";
+                        var pager_selector = "#grid-pager";
+                        var grid = jQuery(grid_selector);
                         grid.jqGrid({
                             //direction: "rtl",
                             data: grid_data,
@@ -244,7 +244,7 @@
 
                             loadComplete : function() {
 
-                                let table = this;
+                                var table = this;
                                 setTimeout(function(){
                                     styleCheckbox(table);
                                     updatePagerIcons(table);
@@ -257,14 +257,14 @@
                             caption: ""
                         });
 
-                        let lastSelection;
+                        var lastSelection;
 
                         function editRow(id) {
                             if (id && id !== lastSelection) {
 
                                 grid.restoreRow(lastSelection);
 
-                                let editParameters = {
+                                var editParameters = {
                                     keys: true,
                                     successfunc: editSuccessful,
                                     errorfunc: editFailed,
@@ -296,7 +296,7 @@
                         function style_edit_form(form) {
 
                             //update buttons classes
-                            let buttons = form.next().find('.EditButton .fm-button');
+                            var buttons = form.next().find('.EditButton .fm-button');
                             buttons.addClass('btn btn-small').find('[class*="-icon"]').remove();//ui-icon, s-icon
                             buttons.eq(0).addClass('btn-primary').prepend('<i class="icon-ok"></i>');
                             buttons.eq(1).prepend('<i class="icon-remove"></i>')
@@ -308,7 +308,7 @@
                         }
 
                         function style_delete_form(form) {
-                            let buttons = form.next().find('.EditButton .fm-button');
+                            var buttons = form.next().find('.EditButton .fm-button');
                             buttons.addClass('btn btn-small').find('[class*="-icon"]').remove();//ui-icon, s-icon
                             buttons.eq(0).addClass('btn-danger').prepend('<i class="icon-trash"></i>');
                             buttons.eq(1).prepend('<i class="icon-remove"></i>')
@@ -321,15 +321,15 @@
                             form.find('.delete-group').addClass('btn btn-small btn-danger');
                         }
                         function style_search_form(form) {
-                            let dialog = form.closest('.ui-jqdialog');
-                            let buttons = dialog.find('.EditTable')
+                            var dialog = form.closest('.ui-jqdialog');
+                            var buttons = dialog.find('.EditTable')
                             buttons.find('.EditButton a[id*="_reset"]').addClass('btn btn-small btn-info').find('.ui-icon').attr('class', 'icon-retweet');
                             buttons.find('.EditButton a[id*="_query"]').addClass('btn btn-small btn-inverse').find('.ui-icon').attr('class', 'icon-comment-alt');
                             buttons.find('.EditButton a[id*="_search"]').addClass('btn btn-small btn-purple').find('.ui-icon').attr('class', 'icon-search');
                         }
 
                         function beforeDeleteCallback(e) {
-                            let form = $(e[0]);
+                            var form = $(e[0]);
                             if(form.data('styled')) return false;
 
                             form.closest('.ui-jqdialog').find('.ui-jqdialog-titlebar').wrapInner('<div class="widget-header" />')
@@ -339,7 +339,7 @@
                         }
 
                         function beforeEditCallback(e) {
-                            let form = $(e[0]);
+                            var form = $(e[0]);
                             console.log(e[0])
                             form.closest('.ui-jqdialog').find('.ui-jqdialog-titlebar').wrapInner('<div class="widget-header" />')
                             style_edit_form(form);
@@ -360,7 +360,7 @@
 
                         //replace icons with FontAwesome icons like above
                         function updatePagerIcons(table) {
-                            let replacement =
+                            var replacement =
                             {
                                 'ui-icon-seek-first' : 'icon-double-angle-left bigger-140',
                                 'ui-icon-seek-prev' : 'icon-angle-left bigger-140',
@@ -368,8 +368,8 @@
                                 'ui-icon-seek-end' : 'icon-double-angle-right bigger-140'
                             };
                             $('.ui-pg-table:not(.navtable) > tbody > tr > .ui-pg-button > .ui-icon').each(function(){
-                                let icon = $(this);
-                                let $class = $.trim(icon.attr('class').replace('ui-icon', ''));
+                                var icon = $(this);
+                                var $class = $.trim(icon.attr('class').replace('ui-icon', ''));
 
                                 if($class in replacement) icon.attr('class', 'ui-icon '+replacement[$class]);
                             })
@@ -380,22 +380,22 @@
                             $(table).find('.ui-pg-div').tooltip({container:'body'});
                         }
 
-                        let timer;
+                        var timer;
                         $("#search_cells").on("keyup", function() {
 
-                            let self = this;
+                            var self = this;
 
                             if(timer) { clearTimeout(timer); }
                             timer = setTimeout(function(){
                                 //timer = null;
-                                let grid_selector = "#grid-table";
+                                var grid_selector = "#grid-table";
                                 console.log(grid_selector);
                                 jQuery(grid_selector).jqGrid('filterInput', self.value);
                             },0);
                         });
 
                          $('.date').each(function () {
-                            let date = moment($(this).text());
+                            var date = moment($(this).text());
                             $(this).text(date.fromNow());
                         });
                     });

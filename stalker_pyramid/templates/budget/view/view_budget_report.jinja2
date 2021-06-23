@@ -78,14 +78,14 @@
         $(document).ready(function () {
 
             $('#add_project_entries_to_budget_button').hide();
-            let total_cost = 0;
-            let total_msrp = 0;
-            let total_price = 0;
-            let grid_data;
-            let lastSelection;
+            var total_cost = 0;
+            var total_msrp = 0;
+            var total_price = 0;
+            var grid_data;
+            var lastSelection;
 
-            let grid_selector = "#grid-table";
-            let grid = jQuery(grid_selector);
+            var grid_selector = "#grid-table";
+            var grid = jQuery(grid_selector);
 
             function currencyFmatter (cellvalue, options, rowObject){
                return accounting.formatMoney(cellvalue, { symbol: "TL",  format: "%v %s" });
@@ -117,10 +117,10 @@
 
                 grid_data = entry_data;
 
-                let price_list = [];
+                var price_list = [];
 
-                for(let j=0; j<grid_data.length; j++ ){
-                    let index = findArrayElement(price_list, 'type', grid_data[j].type);
+                for(var j=0; j<grid_data.length; j++ ){
+                    var index = findArrayElement(price_list, 'type', grid_data[j].type);
                     console.log('index: '+ index);
                     total_price += parseInt(grid_data[j].price);
 

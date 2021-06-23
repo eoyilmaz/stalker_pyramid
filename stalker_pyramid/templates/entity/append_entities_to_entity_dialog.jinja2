@@ -52,7 +52,7 @@
     function init_dialog() {
         console.debug('starting to initialize append_class_to_entity dialog!!!');
 
-        let dialog_template_label = $('#dialog_template_label');
+        var dialog_template_label = $('#dialog_template_label');
         dialog_template_label.find('span').remove();
         dialog_template_label.append('<span>Append {{ entities_name }}</span>')
 
@@ -60,11 +60,11 @@
         $(document).ready(function () {
             $.getJSON('/entities/{{ entity.id }}/{{ entities_name }}/out_stack/').then(function (data) {
 
-                let item_template = doT.template($('#tmpl_append_item').html());
-                let table_body = $('#multiple_select_list>tbody');
+                var item_template = doT.template($('#tmpl_append_item').html());
+                var table_body = $('#multiple_select_list>tbody');
 
                 // append new options to the select
-                for (let i = 0; i < data.length; i++) {
+                for (var i = 0; i < data.length; i++) {
 {#                    data_ids.push(data[i].id)#}
 
                     if (data[i].thumbnail_full_path == null) {
@@ -85,7 +85,7 @@
                     table_body.append(item_template(data[i]));
                 }
 
-                let oTable = $('#multiple_select_list').dataTable({
+                var oTable = $('#multiple_select_list').dataTable({
                     "sScrollY": "400px",
                     "bPaginate": false,
                     "bInfo": false,
@@ -108,14 +108,14 @@
         });
 
         $(document).ready(function () {
-            let submit_button = $('#dialog_template_submit_button');
+            var submit_button = $('#dialog_template_submit_button');
             submit_button.on('click', function (e) {
 
                 e.stopPropagation();
                 e.preventDefault();
                 submit_button.button('loading');
 
-                let append_form = $("#append_form");
+                var append_form = $("#append_form");
 
                 $.post('/entities/{{ entity.id }}/append', append_form.serialize()
                 ).done(function (response_text) {

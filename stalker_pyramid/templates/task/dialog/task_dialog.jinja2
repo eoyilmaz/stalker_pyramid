@@ -353,37 +353,37 @@ resource_name, status
     function init_dialog(){
         console.log('initialize task dialog start');
 
-        let timeout_buffer; // it is used in delaying AJAX calls see task_depends_to
+        var timeout_buffer; // it is used in delaying AJAX calls see task_depends_to
 
         // update dialog header
         $('#dialog_template_label').text('{{ mode.title() }} Task Dialog');
 
         // generate default values;
-        let project = {
+        var project = {
             id: {{ project.id }},
             name: "{{ project.name }}"
         };
-        let code = '';
-        let priority = 500;
-        let name = '';
-        let description = '';
-        let type = '';
-        let depends_to = [];
-        let parent_id = null;
-        let parent_info = "";
-        let schedule_timing = 1;
-        let schedule_unit = 'h';
-        let schedule_model = 'effort';
-        let submit_form_url = '{{ request.route_url("create_task") }}';
-        let selected_resources = [];
-        let entity_type = 'Task';
-        let selected_responsible = [];
-        let shot_cut_in = 1001;
-        let shot_cut_out = 1100;
-        let shot_fps = 1;
-        let shot_sequences =[];
-        let disable_dependency_field = false;
-        let good_id = null;
+        var code = '';
+        var priority = 500;
+        var name = '';
+        var description = '';
+        var type = '';
+        var depends_to = [];
+        var parent_id = null;
+        var parent_info = "";
+        var schedule_timing = 1;
+        var schedule_unit = 'h';
+        var schedule_model = 'effort';
+        var submit_form_url = '{{ request.route_url("create_task") }}';
+        var selected_resources = [];
+        var entity_type = 'Task';
+        var selected_responsible = [];
+        var shot_cut_in = 1001;
+        var shot_cut_out = 1100;
+        var shot_fps = 1;
+        var shot_sequences =[];
+        var disable_dependency_field = false;
+        var good_id = null;
 
         {% if mode == 'update' %}
             {% if entity.entity_type == 'Shot' %}
@@ -400,7 +400,7 @@ resource_name, status
 
         {% if depends_to %}
             depends_to = [];
-            let dep_item = [];
+            var dep_item = [];
             {% for dep in depends_to %}
                 dep_item = ["{{ dep.name }} ({{ dep.id }})"];
                 dep_item.input = "{{ dep.name }} ({{ dep.id }}) ({{ dep.project.code }}{% for dep_parent in dep.parents %} | {{ dep_parent.name }}{% endfor %})";
@@ -451,9 +451,9 @@ resource_name, status
 
         {% endif %}
 
-        let submit_button = $('#dialog_template_submit_button');
+        var submit_button = $('#dialog_template_submit_button');
 
-        let field_update_mode_checker = function(){
+        var field_update_mode_checker = function(){
             // checks if the important fields are still updating
             // check if any of the fields are still in updating mode
             if ($('#task_project').attr('is_updating') === 'true' ||
@@ -478,21 +478,21 @@ resource_name, status
         // {# Entity Type #}
         // {# Update fields according to the selected Entity Type #}
         // convert to chosen
-        let task_entity_type = $('#task_entity_type');
+        var task_entity_type = $('#task_entity_type');
 
         // {# set the entity type #}
         task_entity_type.val("{{ entity_type }}");
 
-        let task_inputs = $('.task_inputs');
-        let shot_inputs = $('.shot_inputs');
-        let code_inputs = $('.code_inputs');
-        let asset_inputs = $('.asset_inputs');
+        var task_inputs = $('.task_inputs');
+        var shot_inputs = $('.shot_inputs');
+        var code_inputs = $('.code_inputs');
+        var asset_inputs = $('.asset_inputs');
 
-        let update_entity_type_fields = function(){
+        var update_entity_type_fields = function(){
             // Asset - Code and Asset Type
             // Shot - Code and Sequence
             // Sequence - Code
-            let entity_type_value = task_entity_type.val();
+            var entity_type_value = task_entity_type.val();
             if (entity_type_value !== undefined){
                 entity_type_value = entity_type_value.trim();
             }
@@ -525,7 +525,7 @@ resource_name, status
 
         // {# ***************************************************************** #}
         // {# Projects #}
-        let task_project = $('#task_project');
+        var task_project = $('#task_project');
         task_project.val(project.name);
         task_project.attr('disabled', 'disabled');
 
@@ -535,8 +535,8 @@ resource_name, status
         // get tasks of that project as json from server
         // set the submit button to loading state while data is get from the server
         // set the fields to updating mode
-        let task_parent = $('#task_parent');
-        let task_depends_to = $('#task_depends_to');
+        var task_parent = $('#task_parent');
+        var task_depends_to = $('#task_depends_to');
 
         {% if parent %}
             // do a query for parent_info
@@ -555,7 +555,7 @@ resource_name, status
             placeholder: 'Parent',
             source: function (request, response) {
                 // condition search terms here
-                let search_string = request.term;
+                var search_string = request.term;
 
                 // delay ajax call for 300 milliseconds
                 if (timeout_buffer) {
@@ -579,11 +579,11 @@ resource_name, status
                 return false;
             },
             select: function(event, ui) {
-                let current_value = ui.item.value;
+                var current_value = ui.item.value;
                 this.value = current_value;
                 // get item id, I don't like doing it by parsing the string
                 // but it seems the easiest one
-                let id = current_value.match(/\(([0-9]+)\)/);
+                var id = current_value.match(/\(([0-9]+)\)/);
 
                 // store it HTML node
                 //$('#parent_storage').attr('parent_id', id[1]);
@@ -612,7 +612,7 @@ resource_name, status
             resultFilter: function(value){
                 // filter the results coming from the typeahead
 // {#                value = value.match(/[\w\s\d&!?\+\-]+\([0-9]+\)/);#}
-                let val_id = value.match(/\(([0-9]+)\)/)[1];
+                var val_id = value.match(/\(([0-9]+)\)/)[1];
                 value = value.match(/[\w\s\d&!?\+\-]+/);
                 return value+"("+val_id+")";
             },
@@ -627,7 +627,7 @@ resource_name, status
 
 
         // add tool tip helps
-        let tool_tip_help_text = document.getElementById('tmpl_title_help').text;
+        var tool_tip_help_text = document.getElementById('tmpl_title_help').text;
 
         $('#task_parent_helper').attr('title', tool_tip_help_text);
         $('#task_depends_to_helper').attr('title', tool_tip_help_text);
@@ -635,13 +635,13 @@ resource_name, status
 
         // {# ***************************************************************** #}
         // {# Code #}
-        let task_name = $('#task_name');
+        var task_name = $('#task_name');
         // set default values
         task_name.val(name);
 
         // {# ***************************************************************** #}
         // {# Code #}
-        let task_code = $('#task_code');
+        var task_code = $('#task_code');
         // set default values
         task_code.val(code);
 
@@ -652,15 +652,15 @@ resource_name, status
 
         // {# ***************************************************************** #}
         // {# Task Type #}
-        let task_type = $('#task_type');
+        var task_type = $('#task_type');
         // set the field to updating mode
         task_type.attr('is_updating', true);
         field_update_mode_checker();
         $.getJSON('/types/?target_entity_type=Task').then(function(available_types){
             // map available types to an array
-            let available_types_as_list = [];
+            var available_types_as_list = [];
 
-            for (let i=0; i < available_types.length; i++){
+            for (var i=0; i < available_types.length; i++){
                 available_types_as_list.push(available_types[i].name);
             }
 
@@ -680,12 +680,12 @@ resource_name, status
 
         // {# ***************************************************************** #}
         // {# Asset Type #}
-        let asset_type = $('#asset_type');
-        let dup_from_template = $('#dup_from_template');
-        let temp_asset = $('#temp_asset');
+        var asset_type = $('#asset_type');
+        var dup_from_template = $('#dup_from_template');
+        var temp_asset = $('#temp_asset');
         temp_asset.attr('is_updating', false);
         {% raw %}
-            let asset_option_template = doT.template(
+            var asset_option_template = doT.template(
                 '<option value={{=it.id}}>{{=it.name}}</option>'
             );
         {% endraw %}
@@ -695,8 +695,8 @@ resource_name, status
         field_update_mode_checker();
         $.getJSON('/types/?target_entity_type=Asset').then(function(available_types){
             // map available types to an array
-            let available_types_as_list = [];
-            for (let i=0; i < available_types.length; i++){
+            var available_types_as_list = [];
+            for (var i=0; i < available_types.length; i++){
                 available_types_as_list.push(available_types[i].name);
             }
 
@@ -720,7 +720,7 @@ resource_name, status
                     field_update_mode_checker();
                     temp_asset.find('option').remove();
 
-                    let deferred = chosen_searchable_field_creator(temp_asset,
+                    var deferred = chosen_searchable_field_creator(temp_asset,
                             '/projects/{{ project.id }}/assets/names?asset_type_names='+asset_type.val()+'&search_name=%Temp%',
                             asset_option_template);
 
@@ -742,18 +742,18 @@ resource_name, status
 
         // {# ***************************************************************** #}
         // {# Sequence #}
-        let shot_sequence = $('#shot_sequence');
+        var shot_sequence = $('#shot_sequence');
         // convert it to a chosen
         shot_sequence.chosen({
             inherit_select_classes: true
         });
 
         {% raw %}
-        let sequence_template = doT.template('<option value="{{=it.id}}">{{=it.name}}</option>');
+        var sequence_template = doT.template('<option value="{{=it.id}}">{{=it.name}}</option>');
         {% endraw %}
 
         // and update it on project change
-        let shot_sequence_updater = function(){
+        var shot_sequence_updater = function(){
             // set the field to updating mode
             shot_sequence.attr('is_updating', true);
             field_update_mode_checker();
@@ -762,8 +762,8 @@ resource_name, status
                 shot_sequence.find('option').remove();
 
                 // add new ones
-                let data_count = data.length;
-                for (let i=0 ; i < data_count; i++){
+                var data_count = data.length;
+                for (var i=0 ; i < data_count; i++){
                     shot_sequence.append(sequence_template(data[i]));
                 }
 
@@ -797,7 +797,7 @@ resource_name, status
             btn_down_class: 'btn-info'
         }).on('change', function(){
             // check if it is in the range
-            let curr_value = $(this).val();
+            var curr_value = $(this).val();
             $(this).val(Math.max(curr_value, 1));
         });
 
@@ -813,7 +813,7 @@ resource_name, status
             btn_down_class: 'btn-info'
         }).on('change', function(){
             // check if it is in the range
-            let curr_value = $(this).val();
+            var curr_value = $(this).val();
             $(this).val(Math.max(curr_value, 0));
         });
 
@@ -828,14 +828,14 @@ resource_name, status
             btn_down_class: 'btn-info'
         }).on('change', function(){
             // check if it is in the range
-            let curr_value = $(this).val();
+            var curr_value = $(this).val();
             $(this).val(Math.max(curr_value, 1));
         });
 
         // {# ***************************************************************** #}
         // {# Resources and Responsible#}
-        let task_resources = $('#task_resources');
-        let task_responsible = $('#task_responsible');
+        var task_resources = $('#task_resources');
+        var task_responsible = $('#task_responsible');
 
         task_resources.chosen({
             search_contains: true,
@@ -849,7 +849,7 @@ resource_name, status
         });
 
         {% raw %}
-        let resource_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
+        var resource_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
         {% endraw %}
 
         //
@@ -868,10 +868,10 @@ resource_name, status
             task_responsible.find('option').remove();
 
             // append new ones
-            let data_count = data.length;
+            var data_count = data.length;
             // append a single empty option to the responsible field
             task_responsible.append('<option value=""></option>');
-            for (let i=0; i < data_count; i++){
+            for (var i=0; i < data_count; i++){
                 task_resources.append(resource_template(data[i]));
                 task_responsible.append(resource_template(data[i]));
             }
@@ -911,7 +911,7 @@ resource_name, status
             btn_down_class: 'btn-info'
         }).on('change', function(){
             // check if it is in the range
-            let curr_value = $(this).val();
+            var curr_value = $(this).val();
             $(this).val(curr_value <= 1000 ? curr_value >= 1 ? curr_value : 1 : 1000 );
         });
 // {#        console.log('entity.priority : ', priority);#}
@@ -920,13 +920,13 @@ resource_name, status
         // {# ***************************************************************** #}
         // {# Good #}
         {% raw %}
-            let task_good_option_template = doT.template(
+            var task_good_option_template = doT.template(
                 '<option value={{=it.id}}>{{=it.name}}</option>'
             );
         {% endraw %}
-        let task_good = $('#task_good');
+        var task_good = $('#task_good');
         task_good.attr('is_updating', true);
-        let deferred = chosen_searchable_field_creator(task_good,'/goods/names/', task_good_option_template);
+        var deferred = chosen_searchable_field_creator(task_good,'/goods/names/', task_good_option_template);
 
         deferred.then(function () {
             task_good.attr('is_updating', false);
@@ -948,20 +948,20 @@ resource_name, status
             setTimeout(function(){submit_button.button('loading')}, 0);
 
             // enable fields
-            let entity_type_value = $('#task_entity_type').val();
+            var entity_type_value = $('#task_entity_type').val();
 
-            let task_form = $('#task_form');
-            let form_data_as_array = task_form.serializeArray();
-            let form_data = {
+            var task_form = $('#task_form');
+            var form_data_as_array = task_form.serializeArray();
+            var form_data = {
                 'responsible_ids': [],
                 'resource_ids': []
             };
-            let name_value_object;
-            let current_value;
-            let key, value;
+            var name_value_object;
+            var current_value;
+            var key, value;
 
             // decompress array data to an object
-            for (let i=0; i < form_data_as_array.length; i += 1) {
+            for (var i=0; i < form_data_as_array.length; i += 1) {
                 name_value_object = {};
                 key = form_data_as_array[i]['name'];
                 value = form_data_as_array[i]['value'];
@@ -987,8 +987,8 @@ resource_name, status
             form_data['entity_type'] = entity_type_value;
 
             // add parent info
-            let parent_id = '';
-            let parent_match = task_parent.val().match(/\(([\d]+)\)/);
+            var parent_id = '';
+            var parent_match = task_parent.val().match(/\(([\d]+)\)/);
             if (parent_match) {
                 parent_id = parent_match[1];
             }
@@ -1005,8 +1005,8 @@ resource_name, status
             }
 
 // {#            // add good info#}
-// {#            let good_id = '';#}
-// {#            let good_match = task_good.val().match(/\(([\d]+)\)/);#}
+// {#            var good_id = '';#}
+// {#            var good_match = task_good.val().match(/\(([\d]+)\)/);#}
 // {#            if (good_match) {#}
 // {#                good_id = good_match[1];#}
 // {#            }#}
@@ -1033,9 +1033,9 @@ resource_name, status
                     setTimeout(function(){submit_button.button('reset')}, 0);
                 });
             } else {
-                // let error_string = '';
-                // let errorMap = task_form.validate().errorMap;
-                // for(let i=0; i < errorMap.length; i++){
+                // var error_string = '';
+                // var errorMap = task_form.validate().errorMap;
+                // for(var i=0; i < errorMap.length; i++){
                 //     error_string += errorMap[i]
                 // }
                 // enable submit button
@@ -1092,7 +1092,7 @@ resource_name, status
 
             errorPlacement: function (error, element) {
                 if (element.is(':checkbox') || element.is(':radio')) {
-                    let controls = element.closest('.controls');
+                    var controls = element.closest('.controls');
                     if (controls.find(':checkbox,:radio').length > 1) controls.append(error);
                     else error.insertAfter(element.nextAll('.lbl:eq(0)').eq(0));
                 }

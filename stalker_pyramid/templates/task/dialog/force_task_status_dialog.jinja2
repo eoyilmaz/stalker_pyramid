@@ -52,13 +52,13 @@
     function init_dialog() {
         console.debug('starting to initialize confirm dialog!!!');
 
-        let dialog_template_label = $('#dialog_template_label');
+        var dialog_template_label = $('#dialog_template_label');
         dialog_template_label.find('span').remove();
         dialog_template_label.append('<span class="green">Request Review Dialog</span>');
 
         $('#warning-message').append('{{ message | safe}}');
 
-        let url = '{{ action }}';
+        var url = '{{ action }}';
 {#        console.log('url : '+url);#}
 
 
@@ -71,14 +71,14 @@
             e.preventDefault();
 
             // disable the submit_button
-            let submit_button = $(this);
+            var submit_button = $(this);
 
             console.log("url: "+url);
 
             if (url){
                 submit_button.button('loading');
-                let force_task_status_form = $('#force_task_status_form');
-                let force_task_status_form_data = force_task_status_form.serialize();
+                var force_task_status_form = $('#force_task_status_form');
+                var force_task_status_form_data = force_task_status_form.serialize();
 
                 $.post(url, force_task_status_form_data).done(function (response) {
                     $('#dialog_template').modal('hide');

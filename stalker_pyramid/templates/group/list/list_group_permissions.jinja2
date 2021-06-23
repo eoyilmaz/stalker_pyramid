@@ -78,12 +78,12 @@
 
 <script type="text/javascript">
     $(document).ready(function () {
-        let label_data;
-        let checkedAll = function (isChecked, type) {
-            let mode = '{{ mode }}';
-            let checked = isChecked?'checked':'';
-            let mode_type_label_data;
-            for (let k = 0; k < label_data.length; k++) {
+        var label_data;
+        var checkedAll = function (isChecked, type) {
+            var mode = '{{ mode }}';
+            var checked = isChecked?'checked':'';
+            var mode_type_label_data;
+            for (var k = 0; k < label_data.length; k++) {
                 mode_type_label_data = $('#' + mode + '_' + type + '_' + label_data[k].label);
                 mode_type_label_data.prop('checked', isChecked);
                 mode_type_label_data.attr('value', isChecked ? 'Allow' : '');
@@ -93,14 +93,14 @@
         $.getJSON('{{ address }}').then(function (data) {
 
             label_data = data;
-            let permission_template = doT.template($('#tmpl_permission').html());
+            var permission_template = doT.template($('#tmpl_permission').html());
 
-            let table_id = '{{mode }}_permission';
-            let table_body = $('#' + table_id + '>tbody');
+            var table_id = '{{mode }}_permission';
+            var table_body = $('#' + table_id + '>tbody');
 
             table_body.append(permission_template({'label': 'All', 'mode': '{{mode}}', 'Create': '', 'Read': '', 'Update': '', 'Delete': '', 'List': ''}));
 
-            for (let i = 0; i < data.length; i++) {
+            for (var i = 0; i < data.length; i++) {
 
                 data[i].mode = '{{ mode }}';
 
@@ -123,7 +123,7 @@
                 this.value = 'Allow';
             });
 
-            let mode = '{{ mode }}';
+            var mode = '{{ mode }}';
 
 
             $('#' + mode + '_Create_All').on('click', function () {

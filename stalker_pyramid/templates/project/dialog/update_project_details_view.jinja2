@@ -89,28 +89,28 @@
 
         {# ***************************************************************** #}
         {# Submit Button #}
-        let submit_button = $('#submit_button');
+        var submit_button = $('#submit_button');
         submit_button.on('click', function (e) {
             e.stopPropagation();
             e.preventDefault();
 
             submit_button.button('loading');
 
-            let project_form = $('#project_form');
+            var project_form = $('#project_form');
 
-            let brand = $('#brand');
-            let production_firm = $('#production_firm');
-            let adv_agency = $('#adv_agency');
-            let product_project_name = $('#product_project_name');
-            let mark_name = $('#mark_name');
+            var brand = $('#brand');
+            var production_firm = $('#production_firm');
+            var adv_agency = $('#adv_agency');
+            var product_project_name = $('#product_project_name');
+            var mark_name = $('#mark_name');
 
-            let g_data = {
+            var g_data = {
                 'product_project_name' : product_project_name.val(),
                 'mark_name': mark_name.val()
             };
-            let generic_text =  JSON.stringify(g_data);
+            var generic_text =  JSON.stringify(g_data);
 
-            let _client_query = '';
+            var _client_query = '';
             if (production_firm.val()){
                 _client_query +="&client_ids="+production_firm.val();
             }

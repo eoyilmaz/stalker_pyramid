@@ -61,41 +61,41 @@
     function calculateSummaryTotals(tMsrp, tCost, tPrice, aTotalPrice){
         console.log("calculateSummaryTotals")
         $('#ara_toplam').text(accounting.formatMoney(tPrice, { symbol: "TL",  format: "%v %s" }));
-        let yapimevi_servisi = tPrice*0.15;
+        var yapimevi_servisi = tPrice*0.15;
         $('#yapimevi_servisi').text(accounting.formatMoney(yapimevi_servisi, { symbol: "TL",  format: "%v %s" }));
-        let net_toplam = tPrice+yapimevi_servisi;
+        var net_toplam = tPrice+yapimevi_servisi;
         $('#net_toplam').text(accounting.formatMoney(net_toplam, { symbol: "TL",  format: "%v %s" }));
-        let onaylanan_net_tutar = parseInt(aTotalPrice);
+        var onaylanan_net_tutar = parseInt(aTotalPrice);
         $('#onaylanan_net_tutar').text(accounting.formatMoney(aTotalPrice, { symbol: "TL",  format: "%v %s" }));
 
-        let son_tutar = net_toplam;
+        var son_tutar = net_toplam;
         if(onaylanan_net_tutar>0){
             son_tutar = onaylanan_net_tutar;
         }
 
-        let kdv = son_tutar*0.18;
+        var kdv = son_tutar*0.18;
         $('#kdv').text(accounting.formatMoney(kdv, { symbol: "TL",  format: "%v %s" }));
-        let brut_toplam = son_tutar + kdv;
+        var brut_toplam = son_tutar + kdv;
         $('#brut_toplam').text(accounting.formatMoney(brut_toplam, { symbol: "TL",  format: "%v %s" }));
 
-        let ongorulen_maliyet = tMsrp;
+        var ongorulen_maliyet = tMsrp;
         $('#ongorulen_maliyet').text(accounting.formatMoney(ongorulen_maliyet, { symbol: "TL",  format: "%v %s" }));
-        let gerceklesen_maliyet = 0;
+        var gerceklesen_maliyet = 0;
         $('#gerceklesen_maliyet').text(gerceklesen_maliyet);
-        let ongorulen_kar = son_tutar - ongorulen_maliyet;
+        var ongorulen_kar = son_tutar - ongorulen_maliyet;
 
         $('#ongorulen_kar').text(accounting.formatMoney(ongorulen_kar, { symbol: "TL",  format: "%v %s" }));
-        let gerceklesen_kar = son_tutar - gerceklesen_maliyet;
+        var gerceklesen_kar = son_tutar - gerceklesen_maliyet;
         $('#gerceklesen_kar').text(accounting.formatMoney(gerceklesen_kar, { symbol: "TL",  format: "%v %s" }));
         console.log("onaylanan_net_tutar: "+ onaylanan_net_tutar);
         console.log("son_tutar: "+ son_tutar);
         console.log("net_toplam: "+ net_toplam);
-        let ongorulen_kar_yuzdesi = (100*(ongorulen_kar/ son_tutar)).toFixed(2);
+        var ongorulen_kar_yuzdesi = (100*(ongorulen_kar/ son_tutar)).toFixed(2);
         if (isNaN(ongorulen_kar_yuzdesi)){
             ongorulen_kar_yuzdesi = 0;
         }
         $('#ongorulen_kar_yuzdesi').text(ongorulen_kar_yuzdesi+"%");
-        let kar_yuzdesi = (100*(gerceklesen_kar/ son_tutar)).toFixed(2);
+        var kar_yuzdesi = (100*(gerceklesen_kar/ son_tutar)).toFixed(2);
         if (isNaN(kar_yuzdesi)){
             kar_yuzdesi = 0;
         }
@@ -105,10 +105,10 @@
 
     $(document).ready(function () {
         {% if budget %}
-            let total_msrp = parseInt({{ budget.get_generic_text_attr('total_msrp') }});
-            let total_cost = parseInt({{ budget.get_generic_text_attr('total_cost') }});
-            let total_price = parseInt({{ budget.get_generic_text_attr('total_price') }});
-            let approved_total_price = parseInt({{ budget.get_generic_text_attr('approved_total_price') }});
+            var total_msrp = parseInt({{ budget.get_generic_text_attr('total_msrp') }});
+            var total_cost = parseInt({{ budget.get_generic_text_attr('total_cost') }});
+            var total_price = parseInt({{ budget.get_generic_text_attr('total_price') }});
+            var approved_total_price = parseInt({{ budget.get_generic_text_attr('approved_total_price') }});
 
             calculateSummaryTotals(total_msrp, total_cost, total_price, approved_total_price);
         {% endif %}

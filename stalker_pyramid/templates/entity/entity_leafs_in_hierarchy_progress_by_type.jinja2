@@ -55,11 +55,11 @@
 
     $.getJSON('/tasks/{{ entity.id }}/leafs_in_hierarchy/').then(function (data) {
         $(function () {
-            let entity_children = $('#entity_children');
-            let child_template = doT.template($('#tmpl_child').html());
-            let group_by_type_list = {};
+            var entity_children = $('#entity_children');
+            var child_template = doT.template($('#tmpl_child').html());
+            var group_by_type_list = {};
 
-            for (let i = 0; i < data.length; i++) {
+            for (var i = 0; i < data.length; i++) {
 
                 if (group_by_type_list[data[i].type] == null) {
                     group_by_type_list[data[i].type] = {};
@@ -85,21 +85,21 @@
             }
 
 
-            for (let prop in group_by_type_list){
+            for (var prop in group_by_type_list){
                 if (group_by_type_list.hasOwnProperty(prop)) {
-                    let bid_seconds = group_by_type_list[prop]['bid_seconds'];
-                    let total_logged_seconds = group_by_type_list[prop]['total_logged_seconds'];
-                    let schedule_seconds = group_by_type_list[prop]['schedule_seconds'];
+                    var bid_seconds = group_by_type_list[prop]['bid_seconds'];
+                    var total_logged_seconds = group_by_type_list[prop]['total_logged_seconds'];
+                    var schedule_seconds = group_by_type_list[prop]['schedule_seconds'];
 
-                    let bar0_percent = 0;
-                    let bar1_percent = 0;
-                    let bar2_percent = 0;
-                    let bar3_percent = 0;
+                    var bar0_percent = 0;
+                    var bar1_percent = 0;
+                    var bar2_percent = 0;
+                    var bar3_percent = 0;
 
-                    let bar0_class = 'bar-wip';
-                    let bar1_class = 'bar-wip';
-                    let bar2_class = 'bar-wip';
-                    let bar3_class = 'bar-wip';
+                    var bar0_class = 'bar-wip';
+                    var bar1_class = 'bar-wip';
+                    var bar2_class = 'bar-wip';
+                    var bar3_class = 'bar-wip';
 
                     if(bid_seconds<schedule_seconds){
                         group_by_type_list[prop]['sign'] = "icon-warning-sign red";

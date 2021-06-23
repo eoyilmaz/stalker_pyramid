@@ -76,7 +76,7 @@
                         success: function (response, newValue) {
                             $('#description_loading').show();
 
-                            let params = $.param({
+                            var params = $.param({
                                 attr_name: 'description',
                                 attr_value: newValue
                             });

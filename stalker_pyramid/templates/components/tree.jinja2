@@ -2,14 +2,14 @@
         src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.tree.min.js") }}'></script>
 <script type="text/javascript">
 
-    let DataSourceTree = function (options) {
+    var DataSourceTree = function (options) {
         this._data = options.data;
         this._delay = options.delay;
     };
 
     DataSourceTree.prototype.data = function (options, callback) {
-        let self = this;
-        let $data = null;
+        var self = this;
+        var $data = null;
 
         if (!("name" in options) && !("type" in options)) {
             $data = this._data;//the root tree

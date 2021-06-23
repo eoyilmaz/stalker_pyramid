@@ -204,39 +204,39 @@
 
     <script>
         $(function(){
-            let icon_name = get_icon('shot');
+            var icon_name = get_icon('shot');
             $('#items_header').append('<i class=' + icon_name + '></i>');
         });
     </script>
     
     <script>
 
-        let all_tasks_list = [];
+        var all_tasks_list = [];
 
         // fill shots table with dynamic data
         // first get all the children task types
         // to define the columns
         $.getJSON('/shots/children/task_type/?entity_id={{ entity.id }}').then(function (types_data) {
 
-            let types = types_data;
+            var types = types_data;
 
             $(function () {
-                let column_template = doT.template($('#tmpl_shotColumn').html());
-                let k;
-                let table_column = $('#shots_table_column');
+                var column_template = doT.template($('#tmpl_shotColumn').html());
+                var k;
+                var table_column = $('#shots_table_column');
                 for (k = 0; k < types_data.length; k++) {
                     table_column.append(column_template(types[k]));
                 }
 
                 $.getJSON('/entities/{{ entity.id }}/shots/').then(function (data) {
 
-                    let shots = data;
-                    let shot_template = doT.template($('#tmpl_shotRow').html());
+                    var shots = data;
+                    var shot_template = doT.template($('#tmpl_shotRow').html());
                     // wait until document is ready
                     $(function () {
-                        let i;
-                        let shots_table = $('#shots_table');
-                        let table_body = shots_table.find('tbody');
+                        var i;
+                        var shots_table = $('#shots_table');
+                        var table_body = shots_table.find('tbody');
 
                         for (i = 0; i < data.length; i++) {
                             data[i].link = '/shots/' + data[i].id + '/view';
@@ -262,13 +262,13 @@
                             // append it to the table
                             table_body.append(shot_template(data[i]));
 
-                            let cell_template = doT.template($('#tmpl_taskCell').html());
-                            let shot_row = $('#shot_row_' + data[i].id);
+                            var cell_template = doT.template($('#tmpl_taskCell').html());
+                            var shot_row = $('#shot_row_' + data[i].id);
 
-                            for (let j = 0; j < types_data.length; j++) {
-                                let tasks = data[i][types_data[j].name];
+                            for (var j = 0; j < types_data.length; j++) {
+                                var tasks = data[i][types_data[j].name];
                                 if (tasks) {
-                                    let task = tasks[0];
+                                    var task = tasks[0];
 
                                     shot_row.append(
                                         cell_template({
@@ -301,16 +301,16 @@
                                 }
                             }
 
-                            let shot_summary_cell = $('#shot_summary_cell_' + data[i].id);
-                            let shot_summary_cell_template = doT.template($('#tmpl_shotSummaryCell').html());
+                            var shot_summary_cell = $('#shot_summary_cell_' + data[i].id);
+                            var shot_summary_cell_template = doT.template($('#tmpl_shotSummaryCell').html());
 
-                            for (let n = 0; n < data[i]['nulls'].length; n++) {
-                                let null_type_task = data[i]['nulls'][n];
+                            for (var n = 0; n < data[i]['nulls'].length; n++) {
+                                var null_type_task = data[i]['nulls'][n];
                                 shot_summary_cell.append(shot_summary_cell_template({'link': '/tasks/' + null_type_task[0] + '/update/dialog', 'name': null_type_task[1], 'status': null_type_task[2], 'status_color': null_type_task[3]}));
                             }
                         }
 
-                        let oTable1 = shots_table.dataTable({
+                        var oTable1 = shots_table.dataTable({
                             'aLengthMenu': [[-1, 10, 25, 50, 100, 200], ["All", 10, 25, 50, 100, 200]],
                             "iDisplayLength": -1,
                         });

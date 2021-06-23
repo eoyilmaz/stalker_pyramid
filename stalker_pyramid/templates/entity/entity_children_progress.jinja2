@@ -30,10 +30,10 @@
 <script class="code" type="text/javascript">
     $.getJSON('/tasks/?parent_id={{ entity.id }}').then(function (data) {
         $(function () {
-            let entity_children = $('#entity_children');
-            let child_template = doT.template($('#tmpl_child').html());
+            var entity_children = $('#entity_children');
+            var child_template = doT.template($('#tmpl_child').html());
 
-            for (let i = 0; i < data.length; i++) {
+            for (var i = 0; i < data.length; i++) {
                 if (!data[i].completed) {
                     data[i].bar_width = 100;
                     data[i].completed = 0;

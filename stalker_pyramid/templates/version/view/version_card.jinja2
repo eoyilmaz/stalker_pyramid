@@ -37,14 +37,14 @@
 <script>
 
     $('.date').each(function () {
-        let date = moment($(this).text());
+        var date = moment($(this).text());
         $(this).text(date.fromNow());
     });
 
     $.getJSON('/tasks/{{ task.id }}/outputs/count/').then(function (data) {
         $(function () {
-            let badge = $('#output_count');
-            let alert = $('#outputs_alert');
+            var badge = $('#output_count');
+            var alert = $('#outputs_alert');
             if (data > 0){
                 badge.text(data);
                 alert.removeClass('alert-danger').addClass('alert-success');

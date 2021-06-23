@@ -47,13 +47,13 @@
 function init_dialog() {
     console.debug('starting to initialize time_log dialog!!!');
 
-    let dialog_template_label = $('#dialog_template_label');
+    var dialog_template_label = $('#dialog_template_label');
     dialog_template_label.find('span').remove();
     dialog_template_label.append('<span>Duplicate Budget</span>');
 
     $('#dialog_template_body').attr('style', "height: 350px");
-    let timeout_buffer;
-    let submit_button = $('#dialog_template_submit_button');
+    var timeout_buffer;
+    var submit_button = $('#dialog_template_submit_button');
 
 
     {# ***************************************************************** #}
@@ -65,10 +65,10 @@ function init_dialog() {
 
         submit_button.button('loading');
 
-        let dup_budget_form = $('#dup_budget_form');
+        var dup_budget_form = $('#dup_budget_form');
 
-        let form_data_as_array = dup_budget_form.serializeArray();
-        let form_data = {};
+        var form_data_as_array = dup_budget_form.serializeArray();
+        var form_data = {};
 
 
 
@@ -127,7 +127,7 @@ function init_dialog() {
 
         errorPlacement: function (error, element) {
             if (element.is(':checkbox') || element.is(':radio')) {
-                let controls = element.closest('.controls');
+                var controls = element.closest('.controls');
                 if (controls.find(':checkbox,:radio').length > 1) controls.append(error);
                 else error.insertAfter(element.nextAll('.lbl:eq(0)').eq(0));
             }

@@ -35,15 +35,15 @@
         {% if task.status.code in ['WIP','DREV','PREV', 'CMPL'] %}
             {# Daily #}
             {% raw %}
-                let daily_option_template = doT.template(
+                var daily_option_template = doT.template(
                     '<option value={{=it.id}}>{{=it.name}}</option>'
                 );
             {% endraw %}
 
-            let daily = $('#daily');
+            var daily = $('#daily');
 
             $.getJSON('{{ request.route_path('get_project_dailies', id=task.project.id, _query={'status_code':'OPEN'}) }}').then(function (data) {
-                for (let i = 0; i < data.length; i++) {
+                for (var i = 0; i < data.length; i++) {
                     daily.append(daily_option_template(data[i]));
                 }
                 daily.chosen({
@@ -53,7 +53,7 @@
                 });
             });
 
-            let submit_button = $('#dialog_template_submit_button');
+            var submit_button = $('#dialog_template_submit_button');
             // register submit event
             submit_button.on('click', function(e){
                 e.preventDefault();
@@ -63,7 +63,7 @@
                     submit_button.button('loading')}, 0
                 );
 
-                let daily_id = daily.val();
+                var daily_id = daily.val();
 
                 $.post('/links/{{ link.id }}/dailies/'+daily_id+'/append').done(function(jqXHR){
                     $('#dialog_template').modal('hide');

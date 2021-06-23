@@ -61,14 +61,14 @@
 <script>
 
     $(document).ready(function () {
-        let project_id = localStorage.getItem("project_id");
-        let status_code = '';
+        var project_id = localStorage.getItem("project_id");
+        var status_code = '';
 
         {% raw %}
-            let option_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
+            var option_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
         {% endraw %}
 
-        let project_cb = $('#project_cb');
+        var project_cb = $('#project_cb');
         project_cb.chosen({
             search_contains: true,
             enable_split_word_search: true
@@ -78,9 +78,9 @@
 
             project_cb.find('option').remove();
 
-            let data_count = data.length;
+            var data_count = data.length;
 
-            for (let i=0; i < data_count; i++){
+            for (var i=0; i < data_count; i++){
                 project_cb.append(option_template(data[i]));
             }
 
@@ -118,19 +118,19 @@
     }
 
     function initInfoLink(address){
-        let tasks_status_tabs = $('#tasks_status_tabs');
+        var tasks_status_tabs = $('#tasks_status_tabs');
         console.log("address: " + address);
         tasks_status_tabs.find("li").remove();
-        let link_template = doT.template($('#tmpl_taskStatusLink').html());
+        var link_template = doT.template($('#tmpl_taskStatusLink').html());
 
 
         $.getJSON(address).then(function (data) {
-            let sorting_path = ['WFD','RTS','WIP', 'PREV','HREV', 'DREV', 'CMPL', 'OH','STOP'];
-            let sorted_data = [];
-            let first_status = '';
-            let index = -1;
+            var sorting_path = ['WFD','RTS','WIP', 'PREV','HREV', 'DREV', 'CMPL', 'OH','STOP'];
+            var sorted_data = [];
+            var first_status = '';
+            var index = -1;
 
-            for (let i = 0; i < data.length; i++) {
+            for (var i = 0; i < data.length; i++) {
 
                 data[i].entity_id = '{{ entity.id }}';
                 data[i].entity_type = '{{ entity.entity_type }}';
@@ -145,9 +145,9 @@
                 data[i].status_code = (data[i].status_code).toLowerCase();
             }
 
-            for (let k = 0; k < sorted_data.length; k++) {
+            for (var k = 0; k < sorted_data.length; k++) {
                 if(sorted_data[k]){
-                    let status_code = localStorage.getItem("status_code");
+                    var status_code = localStorage.getItem("status_code");
 
                     if (first_status == ''){
                         first_status = sorted_data[k].status_code;
@@ -162,16 +162,16 @@
                     }
 
                     tasks_status_tabs.append(link_template(sorted_data[k]));
-                    let link = $('#link_'+sorted_data[k].status_code);
+                    var link = $('#link_'+sorted_data[k].status_code);
                     link.on('click', function(){
-                        let status_code = $(this).attr('id').split('_')[1];
+                        var status_code = $(this).attr('id').split('_')[1];
                         localStorage.setItem("status_code", status_code);
                         init_html_modal(status_code, $('#project_cb').val());
                     });
                 }
             }
             if (first_status != ''){
-                let tab = $('#tab_'+first_status);
+                var tab = $('#tab_'+first_status);
                 tab.attr('class','active');
                 init_html_modal(first_status, $('#project_cb').val());
             }
@@ -190,47 +190,47 @@
 
         console.debug('starting to initialize init_html_modal dialog!!!');
 
-        let items_header = $('#items_header');
+        var items_header = $('#items_header');
         items_header.text(status_code);
 
         $('#html_template_header').attr('class', 'widget-header widget-header-small header-color-status_'+status_code);
         $('#tasks_list').show();
 
-        let button_list = $('#button_list');
+        var button_list = $('#button_list');
         button_list.find('button').remove();
 
-        let btn_template = doT.template($('#tmpl_btn').html());
-        let remove_task_btn_info = {
+        var btn_template = doT.template($('#tmpl_btn').html());
+        var remove_task_btn_info = {
                                         'id':'remove_resource_btn',
                                         'title':'Remove Task',
                                         'icon':'icon-trash'
         };
 
-        let enter_timelog_btn_info = {
+        var enter_timelog_btn_info = {
                                         'id':'timelog_btn',
                                         'title':'Enter Timelog',
                                         'icon':'icon-calendar'
         };
 
-        let force_complete_btn_info = {
+        var force_complete_btn_info = {
                                         'id':'force_complete_btn',
                                         'title':'Force Complete',
                                         'icon':'icon-ok'
         };
 
-        let request_revisions_btn_info = {
+        var request_revisions_btn_info = {
                                         'id':'request_revisions_btn',
                                         'title':'Request Revisions',
                                         'icon':'icon-comment-alt'
         };
 
-        let request_review_btn_info = {
+        var request_review_btn_info = {
                                         'id':'request_review_btn',
                                         'title':'Request Review',
                                         'icon':'icon-comment'
         };
 
-        let set_start_end_date_btn_info = {
+        var set_start_end_date_btn_info = {
                                         'id':'set_start_end_date_btn',
                                         'title':'Set Start End Date',
                                         'icon':'icon-edit'
@@ -272,10 +272,10 @@
             }
         {% endif %}
 
-        let query_str = 'status_code=' + status_code + '&project_id=' + project_id;
+        var query_str = 'status_code=' + status_code + '&project_id=' + project_id;
 
-        let colNames = ['Start', 'End', 'Name', 'Bid', 'ST', ''];
-        let colModel = [
+        var colNames = ['Start', 'End', 'Name', 'Bid', 'ST', ''];
+        var colModel = [
                         {
                             name:'start',
                             index:'start',
@@ -317,16 +317,16 @@
                         }
                 ];
 
-        let tableDataAddress = '/users/{{ entity.id }}/tasks/simple/?' + query_str;
+        var tableDataAddress = '/users/{{ entity.id }}/tasks/simple/?' + query_str;
         $('#loading_spinner').show();
 
         $.getJSON(tableDataAddress).then(function (data) {
             $('#loading_spinner').hide();
             console.log("tableDataAddress is loaded");
-            let total_remain_st_seconds = 0;
-            let total_remain_bid_seconds = 0;
+            var total_remain_st_seconds = 0;
+            var total_remain_bid_seconds = 0;
 
-            for (let i = 0; i < data.length; i++) {
+            for (var i = 0; i < data.length; i++) {
 
                 data[i].start = new Date(data[i].start).format('yyyy-mm-dd');
 
@@ -336,7 +336,7 @@
 
                 data[i].project_name = get_project_name(data[i].project_id);
 
-                let bid_seconds = to_seconds(
+                var bid_seconds = to_seconds(
                                         data[i].bid_timing,
                                         data[i].bid_unit
                                 );
@@ -348,7 +348,7 @@
                                                     data[i].total_logged_seconds
                                             );
 
-                let st_seconds = to_seconds(
+                var st_seconds = to_seconds(
                                         data[i].schedule_timing,
                                         data[i].schedule_unit
                                 );
@@ -372,7 +372,7 @@
                 }
             }
 
-            let footerData = {
+            var footerData = {
                 full_path:'TOTAL',
                 hour_based_on_bid: meaningful_time(total_remain_bid_seconds),
                 hour_to_complete: meaningful_time(total_remain_st_seconds)
@@ -390,7 +390,7 @@
         });
 
         function endDateFormatter(cellvalue, options, rowObject){
-            let val = cellvalue.format('yyyy-mm-dd');
+            var val = cellvalue.format('yyyy-mm-dd');
             if (cellvalue< new Date()){
                 val = '<span class="red">'+cellvalue.format('yyyy-mm-dd')+'</span>'
             }
@@ -406,8 +406,8 @@
             return '<span style="background-color: '+rowObject.bid_stat+'; opacity:0.8;">'+cellvalue+'</span>';
         }
 
-        let submit_form_url = '/tasks/force_status/CMPL/dialog';
-        let force_complete_btn = $('#force_complete_btn');
+        var submit_form_url = '/tasks/force_status/CMPL/dialog';
+        var force_complete_btn = $('#force_complete_btn');
         if(force_complete_btn){
             force_complete_btn.on('click', function(){
                 submit_form_url = '/tasks/force_status/CMPL/dialog';
@@ -415,7 +415,7 @@
             });
         }
 
-        let request_revisions_btn = $('#request_revisions_btn');
+        var request_revisions_btn = $('#request_revisions_btn');
         if(request_revisions_btn){
             request_revisions_btn.on('click', function(){
                 submit_form_url = '/tasks/request_revisions/dialog';
@@ -423,7 +423,7 @@
             });
         }
 
-        let remove_resource_btn = $('#remove_resource_btn');
+        var remove_resource_btn = $('#remove_resource_btn');
         if(remove_resource_btn){
             remove_resource_btn.on('click', function(){
                 submit_form_url = '/tasks/remove/resources/{{ entity.id }}/dialog';
@@ -431,7 +431,7 @@
             });
         }
 
-        let timelog_btn = $('#timelog_btn');
+        var timelog_btn = $('#timelog_btn');
         if(timelog_btn){
             timelog_btn.on('click', function(){
                 submit_form_url = '/users/{{ entity.id }}/multi_timelogs/create/dialog?';
@@ -439,7 +439,7 @@
             });
         }
 
-        let set_start_end_date_btn = $('#set_start_end_date_btn');
+        var set_start_end_date_btn = $('#set_start_end_date_btn');
         if(set_start_end_date_btn){
             set_start_end_date_btn.on('click', function(){
                 submit_form_url = '/tasks/set_start_end_date/dialog';
@@ -447,7 +447,7 @@
             });
         }
 
-        let request_review_btn = $('#request_review_btn');
+        var request_review_btn = $('#request_review_btn');
         if(request_review_btn){
             request_review_btn.on('click', function(){
                 submit_form_url = '/tasks/request_review/dialog';
@@ -457,12 +457,12 @@
 
         function submit_action(){
 
-            let event_dialog = $('#dialog_template');
-            let selected_task_ids = jQuery('#grid-table').jqGrid('getGridParam','selarrrow');
+            var event_dialog = $('#dialog_template');
+            var selected_task_ids = jQuery('#grid-table').jqGrid('getGridParam','selarrrow');
 
-            let _query = '?entity_id={{ entity.id }}';
+            var _query = '?entity_id={{ entity.id }}';
 
-            for (let i=0; i<selected_task_ids.length; i++){
+            for (var i=0; i<selected_task_ids.length; i++){
                _query +='&task_ids='+selected_task_ids[i];
             }
 

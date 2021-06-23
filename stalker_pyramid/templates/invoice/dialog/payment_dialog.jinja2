@@ -62,7 +62,7 @@
 
         console.debug('starting to initialize invoice dialog!!!');
 
-        let dialog_label = $('#dialog_template_label');
+        var dialog_label = $('#dialog_template_label');
         dialog_label.find('span').remove();
         dialog_label.append('<span>{{mode}} Payment</span>');
 
@@ -70,15 +70,15 @@
 
         {# ***************************************************************** #}
         {# Submit Button #}
-        let submit_button = $('#dialog_template_submit_button');
+        var submit_button = $('#dialog_template_submit_button');
         submit_button.on('click', function (e) {
             e.stopPropagation();
             e.preventDefault();
 
             submit_button.button('loading');
-            let payment_form = $('#payment_form');
+            var payment_form = $('#payment_form');
 
-            let url = '/payments/create';
+            var url = '/payments/create';
             {% if mode=='Update' %}
                 url='/payments/{{ invoice.id }}/update';
             {% endif %}

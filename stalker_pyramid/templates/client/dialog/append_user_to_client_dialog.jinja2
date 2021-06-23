@@ -111,15 +111,15 @@
     function init_dialog() {
         console.debug('starting to initialize append_class_to_entity dialog!!!555555');
 
-        let dialog_template_label = $('#dialog_template_label');
+        var dialog_template_label = $('#dialog_template_label');
         dialog_template_label.find('span').remove();
         dialog_template_label.append('<span>Append User</span>');
 
         {# ***************************************************************** #}
         {# CLIENT #}
-        let client_user = $('#client_user');
+        var client_user = $('#client_user');
         {% raw %}
-            let client_user_option_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
+            var client_user_option_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
         {% endraw %}
         $.getJSON('/clients/{{ client.id }}/user/out_stack/').then(function (u_data) {
             chosen_searchable_field_creator_by_data(client_user, client_user_option_template, u_data);
@@ -127,14 +127,14 @@
 
         {# ***************************************************************** #}
         {# ROLE #}
-        let role = $('#role');
+        var role = $('#role');
         {% raw %}
-            let role_option_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
+            var role_option_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
         {% endraw %}
         $.getJSON('/roles/').then(function(available_roles){
             // map available types to an array
-            let available_roles_as_list = [];
-            for (let i=0; i < available_roles.length; i++){
+            var available_roles_as_list = [];
+            for (var i=0; i < available_roles.length; i++){
                 available_roles_as_list.push(available_roles[i].name);
             }
 
@@ -149,14 +149,14 @@
 
         {# ***************************************************************** #}
         {# SUBMIT #}
-        let submit_button = $('#dialog_template_submit_button');
+        var submit_button = $('#dialog_template_submit_button');
         submit_button.on('click', function (e) {
 
             e.stopPropagation();
             e.preventDefault();
             submit_button.button('loading');
 
-            let append_form = $("#append_form");
+            var append_form = $("#append_form");
 
             $.post('/clients/{{ client.id }}/user/append', append_form.serialize() ).done(function (response_text) {
                 window.location.reload();

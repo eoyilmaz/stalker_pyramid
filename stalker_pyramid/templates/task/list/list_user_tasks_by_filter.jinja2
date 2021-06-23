@@ -138,16 +138,16 @@
 <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/dataTable_num-html_sort.js") }}'></script>
 
 <script>
-    let oTable1 = null;
+    var oTable1 = null;
     $(document).ready(function () {
-        let project_id = localStorage.getItem("project_id");
-        let status_code = '';
+        var project_id = localStorage.getItem("project_id");
+        var status_code = '';
 
         {% raw %}
-            let option_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
+            var option_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
         {% endraw %}
 
-        let project_cb = $('#project_cb');
+        var project_cb = $('#project_cb');
         project_cb.chosen({
             search_contains: true,
             enable_split_word_search: true
@@ -157,9 +157,9 @@
 
             project_cb.find('option').remove();
 
-            let data_count = data.length;
+            var data_count = data.length;
 
-            for (let i=0; i < data_count; i++){
+            for (var i=0; i < data_count; i++){
                 project_cb.append(option_template(data[i]));
             }
 
@@ -191,7 +191,7 @@
 
 
     function getTableSelectedIds(){
-        let ids = [];
+        var ids = [];
         $('table td:first-child input:checkbox').each(function () {
 
             if(this.checked){
@@ -202,9 +202,9 @@
     }
 
     function generateQuery(){
-        let _query = '?entity_id={{ entity.id }}';
-        let ids = getTableSelectedIds();
-        for (let i=0; i<ids.length; i++){
+        var _query = '?entity_id={{ entity.id }}';
+        var ids = getTableSelectedIds();
+        for (var i=0; i<ids.length; i++){
                _query +='&task_ids='+ids[i];
             }
         return _query;
@@ -212,9 +212,9 @@
 
     function submit_action(url, modal){
 
-        let _query = generateQuery();
+        var _query = generateQuery();
         if(modal === 'true'){
-            let event_dialog = $('#dialog_template');
+            var event_dialog = $('#dialog_template');
             event_dialog.modal({
                 'remote': url+_query
             });
@@ -229,7 +229,7 @@
     }
 
     function get_task_notes(id, name){
-        let event_dialog = $('#html_template');
+        var event_dialog = $('#html_template');
         event_dialog.attr('title', name);
 {#        console.log('get_task_notes ' + name);#}
         event_dialog.modal({
@@ -245,20 +245,20 @@
     }
 
     function initInfoLink(address){
-        let tasks_status_tabs_container = $('#tasks_status_tabs_container');
+        var tasks_status_tabs_container = $('#tasks_status_tabs_container');
         tasks_status_tabs_container.find("ul").remove();
         tasks_status_tabs_container.append('<ul class="nav nav-tabs" id="tasks_status_tabs"></ul>');
-        let tasks_status_tabs = $('#tasks_status_tabs');
-        let link_template = doT.template($('#tmpl_taskStatusLink').html());
+        var tasks_status_tabs = $('#tasks_status_tabs');
+        var link_template = doT.template($('#tmpl_taskStatusLink').html());
 
         $.getJSON(address).then(function (data) {
-            let sorting_path = ['WFD','RTS','WIP', 'PREV','HREV', 'DREV', 'CMPL', 'OH','STOP'];
-            let sorted_data = [];
-            let first_status = '';
-            let first_status_name = '';
-            let index = -1;
+            var sorting_path = ['WFD','RTS','WIP', 'PREV','HREV', 'DREV', 'CMPL', 'OH','STOP'];
+            var sorted_data = [];
+            var first_status = '';
+            var first_status_name = '';
+            var index = -1;
 
-            for (let i = 0; i < data.length; i++) {
+            for (var i = 0; i < data.length; i++) {
 
                 if(data[i].status_icon === ''){
                    data[i].status_icon = get_icon(data[i].status_code);
@@ -271,10 +271,10 @@
                 data[i].status_code_lc = (data[i].status_code).toLowerCase();
             }
 
-            for (let k = 0; k < sorted_data.length; k++) {
+            for (var k = 0; k < sorted_data.length; k++) {
                 if(sorted_data[k]){
-                    let status_code = localStorage.getItem("status_code");
-                    let status_name = localStorage.getItem("status_name");
+                    var status_code = localStorage.getItem("status_code");
+                    var status_name = localStorage.getItem("status_name");
 
                     if (first_status === ''){
                         first_status = sorted_data[k].status_code;
@@ -292,11 +292,11 @@
 
                     tasks_status_tabs.append(link_template(sorted_data[k]));
 
-                    let link = $('#link_'+sorted_data[k].status_code);
+                    var link = $('#link_'+sorted_data[k].status_code);
                     link.attr("status_name", sorted_data[k].status_name );
 
                     link.on('click', function(){
-                        let status_code = $(this).attr('id').split('_')[1];
+                        var status_code = $(this).attr('id').split('_')[1];
                         localStorage.setItem("status_code", status_code);
                         localStorage.setItem("status_name", $(this).attr('status_name'));
                         init_table_data(status_code, $(this).attr('status_name'), $('#project_cb').val());
@@ -304,7 +304,7 @@
                 }
             }
             if (first_status !== ''){
-                let tab = $('#tab_' + first_status);
+                var tab = $('#tab_' + first_status);
                 tab.attr('class','active');
                 init_table_data(first_status, first_status_name, $('#project_cb').val());
             }
@@ -322,11 +322,11 @@
 {#        if(oTable1){#}
 {#            oTable1.dataTable();#}
 {#        }#}
-        let tasks_table = $('#items_table_wrapper');
+        var tasks_table = $('#items_table_wrapper');
         tasks_table.find('thead').remove();
         tasks_table.find('tbody').remove();
 
-        let table_container = $('#table_container');
+        var table_container = $('#table_container');
         table_container.find(".dataTables_wrapper").remove();
     }
 
@@ -336,11 +336,11 @@
 
         console.debug('starting to initialize init_table_data dialog!!!');
 
-        let button_list = $('#button_list');
+        var button_list = $('#button_list');
         button_list.find('button').remove();
 
-        let btn_template = doT.template($('#tmpl_btn').html());
-        let remove_task_btn_info = {
+        var btn_template = doT.template($('#tmpl_btn').html());
+        var remove_task_btn_info = {
             'id':'remove_resource_btn',
             'title':'Remove Task',
             'icon':'icon-trash',
@@ -348,7 +348,7 @@
             'modal':true
         };
 
-        let enter_timelog_btn_info = {
+        var enter_timelog_btn_info = {
             'id':'timelog_btn',
             'title':'Enter Timelog',
             'icon':'icon-calendar',
@@ -356,7 +356,7 @@
             'modal':true
         };
 
-        let force_complete_btn_info = {
+        var force_complete_btn_info = {
             'id':'force_complete_btn',
             'title':'Force Complete',
             'icon':'icon-ok',
@@ -364,7 +364,7 @@
             'modal':true
         };
 
-        let request_revisions_btn_info = {
+        var request_revisions_btn_info = {
             'id':'request_revisions_btn',
             'title':'Request Revisions',
             'icon':'icon-comment-alt',
@@ -372,7 +372,7 @@
             'modal':true
         };
 
-        let request_review_btn_info = {
+        var request_review_btn_info = {
             'id':'request_review_btn',
             'title':'Request Review',
             'icon':'icon-comment',
@@ -380,7 +380,7 @@
             'modal':true
         };
 
-        let set_start_end_date_btn_info = {
+        var set_start_end_date_btn_info = {
             'id':'set_start_end_date_btn',
             'title':'Set Start End Date',
             'icon':'icon-edit',
@@ -388,7 +388,7 @@
             'modal':true
         };
 
-        let fix_btn_info = {
+        var fix_btn_info = {
             'id':'fix_task_btn',
             'title':'Fix Tasks',
             'icon':'icon-cogs',
@@ -439,34 +439,34 @@
             submit_action($(this).attr("url"), $(this).attr("modal"));
         });
 
-        let items_header = $('#items_header');
+        var items_header = $('#items_header');
         items_header.text(status_name);
 
         $('#html_template_header').attr('class', 'widget-header widget-header-small header-color-status_'+status_code.toLowerCase());
         $('#tasks_list').show();
 
-        let table_container = $('#table_container');
+        var table_container = $('#table_container');
         table_container.append('<table id="items_table" class="table table-striped table-bordered table-hover"><thead></thead><tbody></tbody></table>');
-        let table = $('#items_table');
+        var table = $('#items_table');
 
-        let table_head = table.find('thead');
-        let thead_template = doT.template($('#tmpl_itemThead').html());
+        var table_head = table.find('thead');
+        var thead_template = doT.template($('#tmpl_itemThead').html());
         table_head.append(thead_template({}));
 
-        let table_body = table.find('tbody');
-        let row_template = doT.template($('#tmpl_itemRow').html());
+        var table_body = table.find('tbody');
+        var row_template = doT.template($('#tmpl_itemRow').html());
 
-        let query_str = 'status_code=' + status_code + '&project_id=' + project_id;
-        let tableDataAddress = '/users/{{ entity.id }}/tasks/simple/?' + query_str;
+        var query_str = 'status_code=' + status_code + '&project_id=' + project_id;
+        var tableDataAddress = '/users/{{ entity.id }}/tasks/simple/?' + query_str;
 
 
         $.getJSON(tableDataAddress).then(function (data) {
             $('#loading_spinner').hide();
             console.log("tableDataAddress is loaded");
-            let total_remain_st_seconds = 0;
-            let total_remain_bid_seconds = 0;
+            var total_remain_st_seconds = 0;
+            var total_remain_bid_seconds = 0;
 
-            for (let i = 0; i < data.length; i++) {
+            for (var i = 0; i < data.length; i++) {
 
                 data[i].start = new Date(data[i].start).format('yyyy-mm-dd');
 
@@ -480,7 +480,7 @@
                     }
                 }
 
-                let bid_seconds = to_seconds(
+                var bid_seconds = to_seconds(
                     data[i].bid_timing,
                     data[i].bid_unit
                 );
@@ -492,7 +492,7 @@
                     data[i].total_logged_seconds
                 );
 
-                let st_seconds = to_seconds(
+                var st_seconds = to_seconds(
                     data[i].schedule_timing,
                     data[i].schedule_unit
                 );
@@ -539,7 +539,7 @@
             $('#total_st').text(meaningful_time(total_remain_st_seconds));
 
             $('table th input:checkbox').on('click', function () {
-                    let that = this;
+                    var that = this;
                     $(this).closest('table').find('tr > td:first-child input:checkbox')
                         .each(function () {
                             this.checked = that.checked;

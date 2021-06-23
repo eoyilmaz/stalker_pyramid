@@ -44,8 +44,8 @@
 <script type="text/javascript">
 
     function submitForm() {
-        let search_input = $("#nav-search-input");
-        let search_str = search_input.val();
+        var search_input = $("#nav-search-input");
+        var search_str = search_input.val();
 
         $.getJSON('/submit_search', {str: search_str, id:'{{entity.id}}'}).then(function (data) {
             window.location.assign(data.url);
@@ -53,21 +53,21 @@
     }
 
     $(function () {
-        let search_input = $("#nav-search-input");
+        var search_input = $("#nav-search-input");
         search_input.typeahead({source: [], updater: function (b) {
             search_input.focus();
             return b;
         }});
 
         search_input.on('keyup', function () {
-            let search_str = search_input.val();
+            var search_str = search_input.val();
 
             if (search_str.length > 3) {
                 $.getJSON('/search', {str: search_str}).then(function (data) {
 
-                    let input_source = [];
-                    let result_count = data.length;
-                    for (let i = 0; i < Math.min(result_count, 10); i++) {
+                    var input_source = [];
+                    var result_count = data.length;
+                    for (var i = 0; i < Math.min(result_count, 10); i++) {
                         input_source.push(data[i].name);
                     }
 

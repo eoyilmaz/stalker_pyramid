@@ -48,7 +48,7 @@
 
         console.debug('starting to initialize project dialog!!!');
 
-        let dialog_label = $('#dialog_template_label');
+        var dialog_label = $('#dialog_template_label');
         dialog_label.find('span').remove();
         dialog_label.append('<span>Change Project Status</span>');
 
@@ -66,15 +66,15 @@
 
         {# ***************************************************************** #}
         {# Submit Button #}
-        let submit_button = $('#dialog_template_submit_button');
+        var submit_button = $('#dialog_template_submit_button');
         submit_button.on('click', function (e) {
             e.stopPropagation();
             e.preventDefault();
 
             submit_button.button('loading');
-            let project_form = $('#project_form');
+            var project_form = $('#project_form');
 
-            let url = '/projects/{{ project.id }}/status/{{ status_code }}';
+            var url = '/projects/{{ project.id }}/status/{{ status_code }}';
             console.log("url: "+url);
 
             $.post(

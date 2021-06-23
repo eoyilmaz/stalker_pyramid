@@ -15,7 +15,7 @@
     function init_dialog() {
         console.debug('starting to initialize user dialog!!!');
 
-        let dialog_template_label = $('#dialog_template_label');
+        var dialog_template_label = $('#dialog_template_label');
         dialog_template_label.find('span').remove();
         dialog_template_label.append('<span>New User</span>');
 
@@ -24,14 +24,14 @@
 
         // {# ***************************************************************** #}
         // {# Submit Button #}
-        let submit_button = $('#dialog_template_submit_button');
+        var submit_button = $('#dialog_template_submit_button');
         submit_button.on('click', function (e) {
             e.stopPropagation();
             e.preventDefault();
 
             setTimeout(function(){submit_button.button('loading')}, 0)
 
-            let user_form = $('#user_form');
+            var user_form = $('#user_form');
             if (user_form.validate().errorList.length === 0) {
                 $.post(
                     user_form.attr('action'),

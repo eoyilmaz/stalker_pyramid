@@ -202,7 +202,7 @@
                         </a>
 
                     <div class="no-padding">
-                        {{ for(let j=0;j<it.resource_ids.length;j++){ }}<a href='/users/{{=it.resource_ids[j]}}/view'>{{=it.resource_names[j] }}</a><br/>{{ } }}
+                        {{ for(var j=0;j<it.resource_ids.length;j++){ }}<a href='/users/{{=it.resource_ids[j]}}/view'>{{=it.resource_names[j] }}</a><br/>{{ } }}
                         <!--<span>{{= it.num_of_task}}</span>-->
                     </div>
 
@@ -224,21 +224,21 @@
 
     <script>
 
-        let all_tasks_list = [];
+        var all_tasks_list = [];
 
         $(document).ready(function () {
 
-            let icon_name = get_icon('shot');
+            var icon_name = get_icon('shot');
             $('#items_header').append('<i class=' + icon_name + '></i>');
 
-            let types = [];
-            let column_template = doT.template($('#tmpl_sceneColumn').html());
+            var types = [];
+            var column_template = doT.template($('#tmpl_sceneColumn').html());
 
             $(function () {
                 $.getJSON('/shots/children/task_type/?entity_id={{ entity.id }}').then(function (data){
                     types = data;
-                    let k;
-                    let table_column = $('#scenes_table_column');
+                    var k;
+                    var table_column = $('#scenes_table_column');
                     for (k = 0; k < types.length; k++) {
                         table_column.append(column_template(types[k]));
                     }
@@ -246,14 +246,14 @@
 
                     $.getJSON('/entities/{{ entity.id }}/scenes/').then(function (data) {
 
-                    let scenes = data;
-                    let scene_template = doT.template($('#tmpl_sceneRow').html());
+                    var scenes = data;
+                    var scene_template = doT.template($('#tmpl_sceneRow').html());
 
                     $(function () {
-                        let i;
-                        let table_body = $('#scenes_table>tbody');
-                        let total_seconds = 0;
-                        let total_shots = 0;
+                        var i;
+                        var table_body = $('#scenes_table>tbody');
+                        var total_seconds = 0;
+                        var total_shots = 0;
                         for (i = 0; i < data.length; i++) {
 
                             total_seconds += data[i].total_seconds;
@@ -262,15 +262,15 @@
                             // append it to the table
                             table_body.append(scene_template(data[i]));
 
-                            let cell_template = doT.template($('#tmpl_taskCell').html());
-                            let empty_cell_template = doT.template($('#tmpl_taskCell_empty').html());
-                            let shot_task_cell_template = doT.template($('#tmpl_taskCell_shot_task').html());
+                            var cell_template = doT.template($('#tmpl_taskCell').html());
+                            var empty_cell_template = doT.template($('#tmpl_taskCell_empty').html());
+                            var shot_task_cell_template = doT.template($('#tmpl_taskCell_shot_task').html());
 
-                            let scene_row = $('#scene_row_' + data[i].id);
+                            var scene_row = $('#scene_row_' + data[i].id);
 
                             total_shots += data[i].num_of_shots;
-                            for (let j = 0; j < types.length; j++) {
-                                let task = data[i][types[j].name];
+                            for (var j = 0; j < types.length; j++) {
+                                var task = data[i][types[j].name];
 
                                 if (task) {
                                     task.status_color = 'status_'+task.status;
@@ -288,8 +288,8 @@
 
                         }
 
-                        let scenes_table = $('#scenes_table');
-                        let oTable1 = scenes_table.dataTable({
+                        var scenes_table = $('#scenes_table');
+                        var oTable1 = scenes_table.dataTable({
                             'aLengthMenu': [[-1, 10, 25, 50, 100, 200], ["All", 10, 25, 50, 100, 200]],
                             "iDisplayLength": -1,
                         });

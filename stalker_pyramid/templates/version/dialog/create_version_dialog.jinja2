@@ -62,7 +62,7 @@
         // init dialog
         console.debug('init dialog from create_version_dialog.jinja2 running!');
 
-        let task_id = {{ task.id }};
+        var task_id = {{ task.id }};
         
         $('.modal-header>h3').text('Create Version');
 
@@ -78,9 +78,9 @@
         });
 
 
-        let bind_to_originals = $('#bind_to_originals');
-        let export_alembics = $('#export_alembics');
-        let do_playblast = $('#do_playblast');
+        var bind_to_originals = $('#bind_to_originals');
+        var export_alembics = $('#export_alembics');
+        var do_playblast = $('#do_playblast');
 
         export_alembics.attr('disabled', true);
         do_playblast.attr('disabled', true);
@@ -97,7 +97,7 @@
             }
         });
 
-        let submit_button = $('#dialog_template_submit_button');
+        var submit_button = $('#dialog_template_submit_button');
 
         // register submit event
         submit_button.on('click', function(e){
@@ -111,9 +111,9 @@
             );
 
             // prepare data
-            let form_data = new FormData();
+            var form_data = new FormData();
 
-            let file_info = $('#input_version').data('ace_input_files');
+            var file_info = $('#input_version').data('ace_input_files');
 
             form_data.append('file_object', file_info[0]);
             form_data.append('task_id', task_id);
@@ -133,11 +133,11 @@
                 enctype: 'multipart/form-data',
                 data: form_data,
                 xhr: function() {
-                    let xhr = new window.XMLHttpRequest();
+                    var xhr = new window.XMLHttpRequest();
                     //Upload progress
                     xhr.upload.addEventListener("progress", function(evt){
                         if (evt.lengthComputable) {
-                            let percentComplete = evt.loaded / evt.total;
+                            var percentComplete = evt.loaded / evt.total;
                             //Do something with upload progress
                             //console.log(percentComplete);
                             $('#upload_progress_control').attr('data-percent', (percentComplete * 100).toFixed(1) + '%');
@@ -148,7 +148,7 @@
 {#                    //Download progress#}
 {#                    xhr.addEventListener("progress", function(evt){#}
 {#                        if (evt.lengthComputable) {#}
-{#                            let percentComplete = evt.loaded / evt.total;#}
+{#                            var percentComplete = evt.loaded / evt.total;#}
 {#                            //Do something with download progress#}
 {#                            console.log(percentComplete);#}
 {#                        }#}

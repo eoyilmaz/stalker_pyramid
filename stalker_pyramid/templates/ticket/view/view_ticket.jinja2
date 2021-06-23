@@ -217,7 +217,7 @@
 <script type="text/javascript">
 
     function showErrorAlert(reason, detail) {
-        let msg = '';
+        var msg = '';
         if (reason === 'unsupported-file-type') {
             msg = "Unsupported format " + detail;
         } else if (reason === 'big-file-size') {
@@ -273,7 +273,7 @@
         //another option would be opening a dialog for user to enter dimensions.
         if (typeof jQuery.ui !== 'undefined' && /applewebkit/.test(navigator.userAgent.toLowerCase())) {
 
-            let lastResizableImg = null;
+            var lastResizableImg = null;
 
             function destroyResizable() {
                 if (lastResizableImg == null) return;
@@ -282,9 +282,9 @@
                 lastResizableImg = null;
             }
 
-            let enableImageResize = function () {
+            var enableImageResize = function () {
                 $('.wysiwyg-editor').on('mousedown', function (e) {
-                    let target = $(e.target);
+                    var target = $(e.target);
                     if (e.target instanceof HTMLImageElement) {
                         if (!target.data('resizable')) {
                             target.resizable({
@@ -333,7 +333,7 @@
 
         // convert all dates to moment
         $('.date').each(function(){
-            let date = moment($(this).text());
+            var date = moment($(this).text());
             $(this).text(date.fromNow());
         });
 
@@ -345,18 +345,18 @@ $(function(){
     {# radio buttons #}
 
     {# fill ticket resolutions #}
-    let ticket_resolutions = $("#ticket_resolutions");
+    var ticket_resolutions = $("#ticket_resolutions");
     $.getJSON('/tickets/resolutions/', function(data) {
         // remove all previous options
         ticket_resolutions.find('option').remove();
         
         {% raw %}
-        let option_template = doT.template(
+        var option_template = doT.template(
             "<option value={{= it }}>{{= it }}</option>"
         );
         {% endraw %}
 
-        for (let i = 0; i < data.length; i += 1) {
+        for (var i = 0; i < data.length; i += 1) {
             ticket_resolutions.append($($.parseHTML(option_template(data[i]))));
         }
         $('#ticket_set_resolution').val('resolve_as:' + data[0]);
@@ -368,7 +368,7 @@ $(function(){
     });
 
     {# fill users #}
-    let project_users = $('#project_users');
+    var project_users = $('#project_users');
 
     // also set value of the radio button
     project_users.on('change', function() {
@@ -378,7 +378,7 @@ $(function(){
     });
 
     {% raw %}
-    let project_users_template = doT.template('<option value="{{= it.id }}">{{= it.name }}</option>');
+    var project_users_template = doT.template('<option value="{{= it.id }}">{{= it.name }}</option>');
     {% endraw %}
     chosen_field_creator(
         project_users,
@@ -395,11 +395,11 @@ $(function(){
     $('#ticket_del_resolution').parent().hide();
 
     $.getJSON('/tickets/workflow/', function(data) {
-        let ticket_action;
-        let action;
-        let current_ticket_status = "{{ ticket.status.name.title() }}";
+        var ticket_action;
+        var action;
+        var current_ticket_status = "{{ ticket.status.name.title() }}";
 
-        for (let i in data) {
+        for (var i in data) {
             ticket_action = data[i];
             if (ticket_action[current_ticket_status] != undefined){
                 action = ticket_action[current_ticket_status].action
@@ -423,19 +423,19 @@ $(function(){
         e.stopPropagation();
     });
 
-    let submit_button = $("#submit-button");
+    var submit_button = $("#submit-button");
     submit_button.on("click", function(e) {
         e.preventDefault();
         e.stopPropagation();
         // change button state
         submit_button.button('loading');
         // submit changes
-        let wysiwyg_editor = $('.wysiwyg-editor');
-        let comment = wysiwyg_editor.cleanHtml();
-        let comment_as_text = wysiwyg_editor.text();
-        let action = $('input[name="action_radio"]:checked').val();
-        let url = '/tickets/{{ ticket.id }}/update';
-        let params = $.param({
+        var wysiwyg_editor = $('.wysiwyg-editor');
+        var comment = wysiwyg_editor.cleanHtml();
+        var comment_as_text = wysiwyg_editor.text();
+        var action = $('input[name="action_radio"]:checked').val();
+        var url = '/tickets/{{ ticket.id }}/update';
+        var params = $.param({
             comment: comment,
             comment_as_text: comment_as_text,
             action: action

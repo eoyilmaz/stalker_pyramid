@@ -3,16 +3,16 @@
 <!--inline scripts related to this page-->
 <script>
     function drawCalendar(cid, events) {
-        let update_event_action = function (eType, eId) {
-            let event_dialog = $('#dialog_template');
+        var update_event_action = function (eType, eId) {
+            var event_dialog = $('#dialog_template');
 
             event_dialog.modal({
                 'remote': "/" + eType + "/" + eId + "/update/dialog?came_from={{ request.current_route_path() }}"
             });
         };
 
-        let create_event_action = function (start, end, allDay, eId, eType) {
-            let event_dialog = $('#dialog_template');
+        var create_event_action = function (start, end, allDay, eId, eType) {
+            var event_dialog = $('#dialog_template');
 
             event_dialog.attr('start', start);
             event_dialog.attr('end', end);
@@ -25,17 +25,17 @@
 
         /* initialize the calendar
         -----------------------------------------------------------------*/
-        let calendar = $('#' + cid).fullCalendar({
+        var calendar = $('#' + cid).fullCalendar({
             {% if event_type %}
                 {% if has_permission('Create_' + event_type) %}
                     select: function (start, end, allDay) {
                         {% if  event_type=='TimeLog' %}
-                            let now = new Date();
-                            if(now>end){
+                            var now = new Date();
+                            if(now > end){
                                 create_event_action(start, end, allDay, '{{ entity.id }}', '{{ event_type.lower() }}')
                             }
                         {% else %}
-                            create_event_action(start, end, allDay, '{{ entity.id }}', '{{ event_type.lower() }}')
+                                create_event_action(start, end, allDay, '{{ entity.id }}', '{{ event_type.lower() }}')
                         {% endif %}
                         calendar.fullCalendar('unselect');
                     },
@@ -46,9 +46,9 @@
                 jsEvent.preventDefault();
                 jsEvent.stopPropagation();
 
-                if (calEvent.entity_type == 'vacations') {
+                if (calEvent.entity_type === 'vacations') {
                     {% if has_permission('Update_Vacation') %}
-                        if (calEvent.title == 'StudioWide') {
+                        if (calEvent.title === 'StudioWide') {
                             {% if has_permission('Update_Studio') %}
                                 update_event_action(calEvent.entity_type, calEvent.eId);
                             {% endif %}
@@ -56,14 +56,14 @@
                             update_event_action(calEvent.entity_type, calEvent.eId);
                         }
                     {% endif %}
-                } else if (calEvent.entity_type == 'timelogs') {
+                } else if (calEvent.entity_type === 'timelogs') {
                     {% if has_permission('Update_TimeLog') %}
                         update_event_action(calEvent.entity_type, calEvent.eId);
                     {% endif %}
-                } else if (calEvent.entity_type == 'tasks') {
-                    if(jsEvent.button == 0) {
+                } else if (calEvent.entity_type === 'tasks') {
+                    if(jsEvent.button === 0) {
                         window.location.assign("/tasks/" + calEvent.eId + "/view");
-                    } else if (jsEvent.button == 1) {
+                    } else if (jsEvent.button === 1) {
                         window.open("/tasks/" + calEvent.eId + "/view", '_blank');
                     }
                 }
@@ -73,7 +73,7 @@
                 // add title attribute to each event
                 setTimeout(function(){
                     $(jsEvent.target).find('.fc-event-title').each(function(){
-                        let self = $(this);
+                        var self = $(this);
                         self.attr('title', self.text());
                     });
                 }, 0);

@@ -126,11 +126,11 @@ require({
 ], function (Cache, Memory, Rest, Resource, DiscreetDataGrid){
 
     // The Memory
-    let target = '{{ request.route_url('get_resource', id=entity.id) }}';
+    var target = '{{ request.route_url('get_resource', id=entity.id) }}';
 
-    let resources_memory_store = new Memory();
+    var resources_memory_store = new Memory();
 
-    let resources_jsonRest_store = new Rest({
+    var resources_jsonRest_store = new Rest({
         target: target,
         rangeStartParam: 'offset',
         rangeCountParam: 'limit',
@@ -144,19 +144,19 @@ require({
             return parent.hasChildren;
         }
     });
-    let tasks_cache_store = new Cache(resources_jsonRest_store, resources_memory_store);
+    var tasks_cache_store = new Cache(resources_jsonRest_store, resources_memory_store);
 
-    let ddgrid_dom_id = '{{ entity.entity_type }}_{{ entity.id }}_ddgrid';
-    let ddgrid_dgrid_id = '{{ entity.entity_type }}_{{ entity.id }}_ddgrid';
+    var ddgrid_dom_id = '{{ entity.entity_type }}_{{ entity.id }}_ddgrid';
+    var ddgrid_dgrid_id = '{{ entity.entity_type }}_{{ entity.id }}_ddgrid';
 
     // allow the ddgrid to resize with the window
     jQuery(window).on('resize', function(){
-        let ddgrid_height = jQuery(window).height() - 230;
+        var ddgrid_height = jQuery(window).height() - 230;
         jQuery('#' + ddgrid_dom_id).css({height: ddgrid_height});
     });
     jQuery(window).trigger('resize');
 
-    let ddgrid = new DiscreetDataGrid({
+    var ddgrid = new DiscreetDataGrid({
         id: ddgrid_dgrid_id,
         width: '100%',
         autoHeight: true,
@@ -172,11 +172,11 @@ require({
         data_wrapper: Resource,
         scale: 'w',
         start: function () {
-            let today = moment();
+            var today = moment();
             return today.subtract(1, 'month').startOf('isoweek');
         },
         end: function () {
-            let today = moment();
+            var today = moment();
             return today.add(11, 'month').endOf('isoweek');
         }
     }, ddgrid_dom_id);
@@ -194,23 +194,23 @@ require({
     );
 
     // get the resource column
-    let resource_column = ddgrid.columnSets[1][0][0];
+    var resource_column = ddgrid.columnSets[1][0][0];
 
     // Update Button
     jQuery("#resource_update_zoom_level_button").on('click', function(e){
         // update date values
-        let start_and_end_dates_as_string = jQuery('#start_end_date_range_picker').val();
-        let dates = start_and_end_dates_as_string.split(' - ');
-        let start_date = moment(dates[0], 'DD/MM/YYYY').startOf('day')._d;
-        let end_date = moment(dates[1], 'DD/MM/YYYY').endOf('day')._d;
+        var start_and_end_dates_as_string = jQuery('#start_end_date_range_picker').val();
+        var dates = start_and_end_dates_as_string.split(' - ');
+        var start_date = moment(dates[0], 'DD/MM/YYYY').startOf('day')._d;
+        var end_date = moment(dates[1], 'DD/MM/YYYY').endOf('day')._d;
 
         // get zoom level
-        let zoom_level = jQuery('#zoom_level').val();
+        var zoom_level = jQuery('#zoom_level').val();
 
         // get the total amount of element going to be rendered
-        let element_count = resource_column.guess_element_count(+start_date, +end_date, zoom_level);
+        var element_count = resource_column.guess_element_count(+start_date, +end_date, zoom_level);
 
-        let do_update = function(){
+        var do_update = function(){
             resource_column.start = +start_date;
             resource_column.end   = +end_date;
             resource_column.scale = zoom_level; 
@@ -256,14 +256,14 @@ require({
     jQuery("#resource_scroll_to_button").on('click', function(e){
         e.preventDefault();
         e.stopPropagation();
-        let start = jQuery(this).attr('start');
+        var start = jQuery(this).attr('start');
         resourse_column.scrollToDate(start);
     });
 
     // Schedule
     {% if has_permission('Update_Task') %}
         jQuery('#resourse_schedule_tasks_button').on('click', function(){
-            let dialog = jQuery( "#schedule-dialog-message" ).dialog({
+            var dialog = jQuery( "#schedule-dialog-message" ).dialog({
                 modal: true,
                 title: "Scheduling Tasks...",
                 title_html: true,
@@ -274,11 +274,11 @@ require({
             jQuery.post(
                 '{{ request.route_url("auto_schedule_tasks") }}'
             ).done(function(data){
-                let message = '<div>' + data + '</div>';
+                var message = '<div>' + data + '</div>';
                 bootbox.alert(message);
                 jQuery('.bootbox').prepend('<div class="modal-header alert-success"><strong>Success</strong></div>');
             }).fail(function(jqXHR){
-                let message = '<div>' + jqXHR.responseText + '</div>';
+                var message = '<div>' + jqXHR.responseText + '</div>';
                 bootbox.alert(message);
                 jQuery('.bootbox').prepend('<div class="modal-header alert-danger"><strong>Fail</strong></div>');
             }).always(function(){
@@ -299,8 +299,8 @@ require({
         // change button state
         jQuery('#resource_zoom_selection').find('button').button('loading');
 
-        let dragDetector = jQuery(jQuery.parseHTML('<div class="dragDetector"></div>'));
-        let zoomBox = jQuery(jQuery.parseHTML('<div class="zoomBox"></div>'));
+        var dragDetector = jQuery(jQuery.parseHTML('<div class="dragDetector"></div>'));
+        var zoomBox = jQuery(jQuery.parseHTML('<div class="zoomBox"></div>'));
         jQuery('#' + ddgrid_dom_id).append(zoomBox).append(dragDetector);
 
         jQuery('.dragDetector').mousedown(function(e){
@@ -312,10 +312,10 @@ require({
             e.stopPropagation();
             e.preventDefault();
             if (this.start_resizing) {
-                let x1 = this.start_pos;
-                let x2 = e.offsetX;
-                let left = Math.min(x1, x2);
-                let width = Math.abs(x1 - x2);
+                var x1 = this.start_pos;
+                var x2 = e.offsetX;
+                var left = Math.min(x1, x2);
+                var width = Math.abs(x1 - x2);
                 zoomBox.css({
                     left: left,
                     width: width
@@ -324,10 +324,10 @@ require({
         }).mouseup(function(e){
             this.start_resizing = false;
             // get the left and width of the zoomBox
-            let start_x = jQuery('.dgrid-column-set-cell.dgrid-column-set-1').offset().left;
-            let scroll_left = jQuery('.dgrid-column-set-cell.dgrid-column-set-1>div').scrollLeft();
-            let left = zoomBox.offset().left - start_x + scroll_left;
-            let width = zoomBox.width();
+            var start_x = jQuery('.dgrid-column-set-cell.dgrid-column-set-1').offset().left;
+            var scroll_left = jQuery('.dgrid-column-set-cell.dgrid-column-set-1>div').scrollLeft();
+            var left = zoomBox.offset().left - start_x + scroll_left;
+            var width = zoomBox.width();
 
             // unbind events
             jQuery('.dragDetector').unbind();
@@ -336,14 +336,14 @@ require({
             zoomBox.remove();
             dragDetector.remove();
 
-            let zoomed_dates = resource_column.convert_pixel_to_millies(left, left + width);
+            var zoomed_dates = resource_column.convert_pixel_to_millies(left, left + width);
             // get the zoom level
-            let zoom_level = resource_column.guess_zoom_level(zoomed_dates.start, zoomed_dates.end);
+            var zoom_level = resource_column.guess_zoom_level(zoomed_dates.start, zoomed_dates.end);
             
             // update interface elements
-            let formatted_start_date = moment(zoomed_dates.start).format('DD/MM/YYYY');
-            let formatted_end_date = moment(zoomed_dates.end).format('DD/MM/YYYY');
-            let start_end_date_range_picker = jQuery('#start_end_date_range_picker');
+            var formatted_start_date = moment(zoomed_dates.start).format('DD/MM/YYYY');
+            var formatted_end_date = moment(zoomed_dates.end).format('DD/MM/YYYY');
+            var start_end_date_range_picker = jQuery('#start_end_date_range_picker');
             start_end_date_range_picker.val(formatted_start_date + ' - ' + formatted_end_date);
             start_end_date_range_picker.data().daterangepicker.updateFromControl();
             jQuery('#zoom_level').val(zoom_level);
@@ -373,7 +373,7 @@ require({
 
     jQuery(function () {
         // initialize date picker
-        let start_end_date_range_picker = jQuery('#start_end_date_range_picker').daterangepicker({
+        var start_end_date_range_picker = jQuery('#start_end_date_range_picker').daterangepicker({
             locale: {
                 format: 'DD/MM/YYYY'
             }
@@ -387,8 +387,8 @@ require({
         // fix z-index of the container
         // start_end_date_range_picker.data().daterangepicker.container.css({'z-index': 1060});
 
-        let start_date = moment().subtract(1, 'month').startOf('day');
-        let end_date = moment().add(11, 'month').endOf('day');
+        var start_date = moment().subtract(1, 'month').startOf('day');
+        var end_date = moment().add(11, 'month').endOf('day');
         start_end_date_range_picker.val(
             start_date.format('DD/MM/YYYY') + ' - ' + end_date.format('DD/MM/YYYY')
         );
@@ -409,7 +409,7 @@ require({
     jQuery(function(){
         jQuery('body').on('click', function(event){
             // register a click function to hide any popover that is still shown
-            let target = jQuery(event.target);
+            var target = jQuery(event.target);
             if (!target.hasClass('data_value')){
                 jQuery('[data-rel=popover]').popover('hide');
             }

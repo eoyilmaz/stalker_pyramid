@@ -50,7 +50,7 @@
 <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/jquery.jqGrid.min.js") }}'></script>
 <script>
     function updatePagerIcons(table) {
-        let replacement =
+        var replacement =
         {
             'ui-icon-seek-first' : 'icon-double-angle-left bigger-140',
             'ui-icon-seek-prev' : 'icon-angle-left bigger-140',
@@ -58,8 +58,8 @@
             'ui-icon-seek-end' : 'icon-double-angle-right bigger-140'
         };
         $('.ui-pg-table:not(.navtable) > tbody > tr > .ui-pg-button > .ui-icon').each(function(){
-            let icon = $(this);
-            let $class = $.trim(icon.attr('class').replace('ui-icon', ''));
+            var icon = $(this);
+            var $class = $.trim(icon.attr('class').replace('ui-icon', ''));
 
             if($class in replacement) icon.attr('class', 'ui-icon '+replacement[$class]);
         })
@@ -67,20 +67,20 @@
 
     function loadSeachedTaskData(q_str){
         console.log("loadSeachedTaskData:" + q_str);
-        let result_table = $('#result_table');
+        var result_table = $('#result_table');
         result_table.find("#table_container").remove();
         result_table.find("#grid-pager").remove();
 
         $.getJSON('/tasks/?leaf_only=1&project_id={{ entity.id }}&' + q_str).then(function (data) {
                 $('#submit_task_query').button('reset');
 
-                let bid_seconds = 0;
-                let schedule_timing_seconds = 0;
-                let total_logged_seconds = 0;
-                let total_task = data.length;
+                var bid_seconds = 0;
+                var schedule_timing_seconds = 0;
+                var total_logged_seconds = 0;
+                var total_task = data.length;
                 console.log(' tasks are loaded ');
 
-                for(let j=0; j<total_task; j++){
+                for(var j=0; j<total_task; j++){
                     console.log('loaded: '+ data[j].type_names);
 
                     data[j].name_str = "<a href='/tasks/"+data[j].id+"/view'>"+data[j].full_path+"</a><br/>";
@@ -97,20 +97,20 @@
                     if (data[j].resources !=null){
 
                         data[j].resources_str = "";
-                        for (let k=0; k<data[j].resources.length;k++){
-                            let r_id = data[j].resources[k].id;
+                        for (var k=0; k<data[j].resources.length;k++){
+                            var r_id = data[j].resources[k].id;
                             data[j].resources_str += "<a href='/users/"+r_id+"/view'>"+get_user_name(r_id)+"</a><br/>";
 
                         }
                     }
                 }
 
-                let bid = convert_seconds_to_time_range(bid_seconds);
-                let bid_lmt = meaningful_time(bid_seconds);
-                let schedule_timing = convert_seconds_to_time_range(schedule_timing_seconds);
-                let schedule_timing_lmt = meaningful_time(schedule_timing_seconds);
-                let total_logged = convert_seconds_to_time_range(total_logged_seconds);
-                let total_logged_lmt = meaningful_time(total_logged_seconds);
+                var bid = convert_seconds_to_time_range(bid_seconds);
+                var bid_lmt = meaningful_time(bid_seconds);
+                var schedule_timing = convert_seconds_to_time_range(schedule_timing_seconds);
+                var schedule_timing_lmt = meaningful_time(schedule_timing_seconds);
+                var total_logged = convert_seconds_to_time_range(total_logged_seconds);
+                var total_logged_lmt = meaningful_time(total_logged_seconds);
 
                 $('#total_task').text(total_task);
                 $('#bid').text(bid + ' (' + bid_lmt + ')');
@@ -120,8 +120,8 @@
                 result_table.append('<div id="table_container"><table id="grid-table"></table></div><div id="grid-pager"></div>');
 
                 jQuery(function($) {
-                    let grid_selector = "#grid-table";
-                    let pager_selector = "#grid-pager";
+                    var grid_selector = "#grid-table";
+                    var pager_selector = "#grid-pager";
 
                     jQuery(grid_selector).jqGrid({
                         data: data,
@@ -147,7 +147,7 @@
 
                         loadComplete : function() {
 
-                            let table = this;
+                            var table = this;
                             setTimeout(function(){
                                  updatePagerIcons(table);
                                 $('#lui_grid-table').hide();
@@ -159,21 +159,21 @@
             });
     }
     $(function () {
-        let submit_button = $('#submit_task_query');
-        let task_query = $('#task_query');
+        var submit_button = $('#submit_task_query');
+        var task_query = $('#task_query');
         submit_button.on('click', function(e){
             e.stopPropagation();
             e.preventDefault();
 
             submit_button.button('loading');
 
-            let parameters = (task_query.val()).split('; ');
+            var parameters = (task_query.val()).split('; ');
 
-            let query_str = "";
+            var query_str = "";
 
-            for(let i=0; i<parameters.length; i++){
-                let param = parameters[i].split(':')[0];
-                let param_value = parameters[i].split(':')[1];
+            for(var i=0; i<parameters.length; i++){
+                var param = parameters[i].split(':')[0];
+                var param_value = parameters[i].split(':')[1];
                 console.log("param: " + param +"  param_value: " + param_value);
                 if (param_value){
                         query_str += param+'='+param_value+'&'
@@ -189,8 +189,8 @@
 {#                $.getJSON('/entities/{{ entity.id }}/assets/?' + asset_type_query_str).then(function (assets_data) {#}
 {##}
 {#                    console.log(assets_data.length);#}
-{#                    let total_asset = assets_data.length;#}
-{#                    for(let j=0; j<total_asset; j++){#}
+{#                    var total_asset = assets_data.length;#}
+{#                    for(var j=0; j<total_asset; j++){#}
 {#                        query_str += 'path='+assets_data[j].id+'&';#}
 {#                    }#}
 {#                    query_str = query_str.substring(0, query_str.length-1);#}

@@ -206,14 +206,14 @@
 
 <script type="text/javascript">
     {# Chosen Field Updater #}
-    let chosen_field_creator = function (field, url, data_template) {
+    var chosen_field_creator = function (field, url, data_template) {
         // fill image format with new json data
         return $.getJSON(url).then(function (data) {
             // remove current data
             field.empty();
 
             // append new options to the select
-            for (let i = 0; i < data.length; i++) {
+            for (var i = 0; i < data.length; i++) {
                 field.append(data_template(data[i]));
             }
 
@@ -222,8 +222,8 @@
         });
     };
 
-    let init_time_picker =  function(name,time_value){
-        let time_picker = $('#' + name);
+    var init_time_picker =  function(name,time_value){
+        var time_picker = $('#' + name);
         time_picker.val(time_value.format('HH:MM'));
         time_picker.timepicker({
             minuteStep: 1,
@@ -235,11 +235,11 @@
     {# ***************************************************************** #}
     {# User #}
     $(document).ready(function () {
-        let start_time_value = new Date();
+        var start_time_value = new Date();
         start_time_value.setHours(10);
         start_time_value.setMinutes(0);
 
-        let end_time_value = new Date();
+        var end_time_value = new Date();
         end_time_value.setHours(19);
         end_time_value.setMinutes(0);
 
@@ -259,17 +259,17 @@
         init_time_picker('sun_end', end_time_value)
 
         {% raw %}
-        let user_option_template = doT.template(
+        var user_option_template = doT.template(
             '<option value={{=it.id}}>{{=it.name}}</option>'
         );
         {% endraw %}
 
-        let lead_user = $('#studio_lead');
+        var lead_user = $('#studio_lead');
 
         $.getJSON('/users/').then(function (data) {
             // append new ones
-            let data_count = data.length;
-            for (let i = 0; i < data_count; i++) {
+            var data_count = data.length;
+            for (var i = 0; i < data_count; i++) {
                 lead_user.append(user_option_template(data[i]));
             }
         });

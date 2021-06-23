@@ -134,23 +134,23 @@
     $.getJSON('/tasks/{{ entity.id }}/reviewers/').then(function (reviewers_data) {
         // wait until document is ready
         $(function () {
-            let reviewers = reviewers_data;
-            let column_template = doT.template($('#tmpl_reviewColumn').html());
-            let k;
-            let table_column = $('#reviews_table_column');
+            var reviewers = reviewers_data;
+            var column_template = doT.template($('#tmpl_reviewColumn').html());
+            var k;
+            var table_column = $('#reviews_table_column');
             for (k = 0; k < reviewers.length; k++) {
                 // append it to the table
                 table_column.append(column_template(reviewers[k]));
             }
 
             $.getJSON('/tasks/{{ entity.id }}/reviews/').then(function (data) {
-                let reviews = data;
-                let review_row_template = doT.template($('#tmpl_reviewRow').html());
-                let reviews_by_numbers = [];
+                var reviews = data;
+                var review_row_template = doT.template($('#tmpl_reviewRow').html());
+                var reviews_by_numbers = [];
 
-                let table_body = $('#reviews_table>tbody');
-                let review, review_number, review_row, cell_template;
-                for (let i =0; i < reviews.length; i++) {
+                var table_body = $('#reviews_table>tbody');
+                var review, review_number, review_row, cell_template;
+                for (var i =0; i < reviews.length; i++) {
                     review = reviews[i];
                     review_number = parseInt(review.review_number)-1;
                     if (!reviews_by_numbers[review_number]){
@@ -160,11 +160,11 @@
                     reviews_by_numbers[review_number][reviews[i].reviewer_id] = reviews[i]
                 }
 
-                for (let j = reviews_by_numbers.length-1 ; j >= 0; j--) {
+                for (var j = reviews_by_numbers.length-1 ; j >= 0; j--) {
                     review_row = $('#review_row_' + (j+1));
                     cell_template = doT.template($('#tmpl_reviewCell').html());
 
-                    for (let m = 0; m < reviewers.length; m++) {
+                    for (var m = 0; m < reviewers.length; m++) {
                         review = reviews_by_numbers[j][reviewers[m].reviewer_id];
                         if(review){
                             review_row.append(cell_template(review));
@@ -182,7 +182,7 @@
                     }
                 }
 
-                let oTable1 = $('#reviews_table').dataTable({
+                var oTable1 = $('#reviews_table').dataTable({
                     'aLengthMenu': [[-1, 10, 25, 50, 100, 200], ["All", 10, 25, 50, 100, 200]],
                     "iDisplayLength": -1,
                 });

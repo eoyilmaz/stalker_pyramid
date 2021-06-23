@@ -45,7 +45,7 @@
 
 
 <script>
-    let counter = 0;
+    var counter = 0;
     function init_dialog(){
         if (counter>0){
             return;
@@ -58,9 +58,9 @@
         // update dialog header
         $('.modal-header>h3').text('Update References');
 
-        let submit_button = $('#dialog_template_submit_button');
+        var submit_button = $('#dialog_template_submit_button');
 
-        let field_update_mode_checker = function(){
+        var field_update_mode_checker = function(){
             // checks if the important fields are still updating
             // check if any of the fields are still in updating mode
             if ($('#reference_tags').attr('is_updating') === 'true' ||
@@ -76,10 +76,10 @@
 
         // tags
         // set the fields to updating mode
-        let tag_input = $('#reference_tags_input');
+        var tag_input = $('#reference_tags_input');
         tag_input.attr('is_updating', true);
         field_update_mode_checker();
-        let fill_tags = function(){
+        var fill_tags = function(){
             $.getJSON('/tags/?as_list=1').then(function(data){
                 tag_input.tag({
                     placeholder: tag_input.attr('placeholder'),
@@ -107,8 +107,8 @@
                 submit_button.button('loading')}, 0
             );
 
-            let tags_list = $('#reference_tags_input').val().split(', ');
-            let description_val = $('#description').val();
+            var tags_list = $('#reference_tags_input').val().split(', ');
+            var description_val = $('#description').val();
             console.log("$('#description').val(): " + description_val);
 
             $.post('{{ request.route_url('update_reference', id=reference.id) }}', {

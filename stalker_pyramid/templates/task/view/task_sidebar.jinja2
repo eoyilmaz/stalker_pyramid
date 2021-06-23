@@ -249,14 +249,14 @@
                     'created for those tasks are going to be deleted.<br><br>' +
                     'Are you sure?', function (result) {
                 if (result) {
-                    let id, parent_id;
+                    var id, parent_id;
                     // TODO: users will probably select parent and child items
                     // together and server will not be able to find the child tasks
                     // after the parent has deleted, so consider that in server
                     // side.
 
                     id = '{{ task.id }}';
-                    let new_url;
+                    var new_url;
                     {% if task.parent %}
                         new_url = '/tasks/{{ task.parent.id }}/view';
                     {% else %}

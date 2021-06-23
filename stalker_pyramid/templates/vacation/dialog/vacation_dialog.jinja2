@@ -120,22 +120,22 @@
 function init_dialog() {
     console.debug('starting to initialize vacation dialog!!!');
 
-    let dialog_template_label = $('#dialog_template_label');
+    var dialog_template_label = $('#dialog_template_label');
     dialog_template_label.find('span').remove();
     dialog_template_label.append('<span>Vacation</span>')
 
     $('#dialog_template_body').attr('style', "height: 300px");
-    let dialog_template_delete_button = $('#dialog_template_delete_button');
+    var dialog_template_delete_button = $('#dialog_template_delete_button');
     dialog_template_delete_button.hide()
 
     {# ***************************************************************** #}
-    let event_dialog = $('#dialog_template')
+    var event_dialog = $('#dialog_template')
 
-    let start_date_value = new Date(event_dialog.attr('start'));
-    let end_date_value = new Date(event_dialog.attr('end'));
+    var start_date_value = new Date(event_dialog.attr('start'));
+    var end_date_value = new Date(event_dialog.attr('end'));
 
-    let start_time_value = start_date_value;
-    let end_time_value = end_date_value;
+    var start_time_value = start_date_value;
+    var end_time_value = end_date_value;
 
 
     if (event_dialog.attr('allDay') == 'true') {
@@ -147,13 +147,13 @@ function init_dialog() {
     //*********************************************************
     //Type
 
-    let vacation_type = $('#vacation_type');
+    var vacation_type = $('#vacation_type');
     // set the field to updating mode
 
 
     $.getJSON('/types/?target_entity_type=Vacation').then(function (available_types) {
-        let available_types_as_list = [];
-        for (let i=0; i < available_types.length; i++){
+        var available_types_as_list = [];
+        for (var i=0; i < available_types.length; i++){
             available_types_as_list.push(available_types[i].name);
         }
         
@@ -171,10 +171,10 @@ function init_dialog() {
 
     {% endif %}
 
-    {#    let vacation_type = $('#vacation_type');#}
+    {#    var vacation_type = $('#vacation_type');#}
     {##}
     {#    {% raw %}#}
-    {#    let type_option_template = doT.template(#}
+    {#    var type_option_template = doT.template(#}
     {#            '<option value={{=it.id}} {{=it.selected}}>{{=it.name}}</option>'#}
     {#    );#}
     {#    {% endraw %}#}
@@ -183,7 +183,7 @@ function init_dialog() {
     {##}
     {#    {% for type in types %}#}
     {##}
-    {#        let selected = '';#}
+    {#        var selected = '';#}
     {##}
     {#        {% if mode == 'update' %}#}
     {##}
@@ -195,15 +195,15 @@ function init_dialog() {
     {#        {% endif %}#}
     {##}
     {##}
-    {#        let data = {id: '{{ type.name }}', name: '{{ type.name }}', selected: selected};#}
+    {#        var data = {id: '{{ type.name }}', name: '{{ type.name }}', selected: selected};#}
     {#        vacation_type.append(type_option_template(data));#}
     {##}
     {#    {% endfor %}#}
 
 
 
-    let vacation_user = $('#vacation_user');
-    let vacation_form = $("#vacation_form");
+    var vacation_user = $('#vacation_user');
+    var vacation_form = $("#vacation_form");
     {% if mode == 'create' %}
         //*********************************************************
         //Action
@@ -240,10 +240,10 @@ function init_dialog() {
                 e.preventDefault();
 
                 // disable the submit_button
-                let delete_button = $(this);
+                var delete_button = $(this);
                 delete_button.button('loading');
 
-                let confirm_message =
+                var confirm_message =
                     '<h3 class="header red"><i class="icon-warning-sign">' +
                     '</i> Warning</h3>' +
                     '<div id="message" class="alert alert-info bigger-110">' +
@@ -284,18 +284,18 @@ function init_dialog() {
     {# ***************************************************************** #}
     {# Get Start End  #}
 
-    let get_start_end = function () {
+    var get_start_end = function () {
 
 
-        let date_range = $('#start_end_date_range_picker').daterangepicker().val().split(' - ');
-        let start_date_string = date_range[0].split('/');
-        let end_date_string = date_range[1].split('/');
-        let start_time_string = $('#start_time').val().split(':');
-        let end_time_string = $('#end_time').val().split(':');
+        var date_range = $('#start_end_date_range_picker').daterangepicker().val().split(' - ');
+        var start_date_string = date_range[0].split('/');
+        var end_date_string = date_range[1].split('/');
+        var start_time_string = $('#start_time').val().split(':');
+        var end_time_string = $('#end_time').val().split(':');
 
 
-        let start = new Date(parseInt(start_date_string[2]), parseInt(start_date_string[1]) - 1, parseInt(start_date_string[0]), parseInt(start_time_string[0]), parseInt(start_time_string[1]), 0, 0);
-        let end = new Date(parseInt(end_date_string[2]), parseInt(end_date_string[1]) - 1, parseInt(end_date_string[0]), parseInt(end_time_string[0]), parseInt(end_time_string[1]), 0, 0);
+        var start = new Date(parseInt(start_date_string[2]), parseInt(start_date_string[1]) - 1, parseInt(start_date_string[0]), parseInt(start_time_string[0]), parseInt(start_time_string[1]), 0, 0);
+        var end = new Date(parseInt(end_date_string[2]), parseInt(end_date_string[1]) - 1, parseInt(end_date_string[0]), parseInt(end_time_string[0]), parseInt(end_time_string[1]), 0, 0);
 
         return [start, end];
 
@@ -312,7 +312,7 @@ function init_dialog() {
 
     $(document).ready(function () {
         // initialize date picker
-        let start_end_date_range_picker = $('#start_end_date_range_picker').daterangepicker();
+        var start_end_date_range_picker = $('#start_end_date_range_picker').daterangepicker();
 
         // also update the icon
         start_end_date_range_picker.next().on(ace.click_event, function () {
@@ -342,7 +342,7 @@ function init_dialog() {
 
     $(document).ready(function () {
 
-        let start_time = $('#start_time');
+        var start_time = $('#start_time');
         start_time.val(start_time_value.format('HH:MM'));
         start_time.timepicker({
             minuteStep: 10,
@@ -356,7 +356,7 @@ function init_dialog() {
 
     $(document).ready(function () {
 
-        let end_time = $('#end_time');
+        var end_time = $('#end_time');
         end_time.val(end_time_value.format('HH:MM'));
         end_time.timepicker({
             minuteStep: 10,
@@ -368,13 +368,13 @@ function init_dialog() {
     {# ***************************************************************** #}
     {# Submit Button #}
 
-    let submit_button = $('#dialog_template_submit_button');
+    var submit_button = $('#dialog_template_submit_button');
     submit_button.on('click', function (e) {
         e.stopPropagation();
         e.preventDefault();
 
         submit_button.button('loading');
-        let vacation_form = $('#vacation_form');
+        var vacation_form = $('#vacation_form');
         {% if entity.entity_type != 'Studio' %}
             if (vacation_type.val() == 'StudioWide') {
 
@@ -390,9 +390,9 @@ function init_dialog() {
 
             vacation_type.attr('disabled', false)
 
-            let start_end = get_start_end();
-            let start = start_end[0];
-            let end = start_end[1];
+            var start_end = get_start_end();
+            var start = start_end[0];
+            var end = start_end[1];
 
             $.post(
                 vacation_form.attr('action'),
@@ -445,7 +445,7 @@ function init_dialog() {
 
         errorPlacement: function (error, element) {
             if (element.is(':checkbox') || element.is(':radio')) {
-                let controls = element.closest('.controls');
+                var controls = element.closest('.controls');
                 if (controls.find(':checkbox,:radio').length > 1) controls.append(error);
                 else error.insertAfter(element.nextAll('.lbl:eq(0)').eq(0));
             }

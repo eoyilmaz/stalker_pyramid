@@ -13,7 +13,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 
-    {# special case for doT it needs to be the very first script to let Gantt Chart view #}
+    {# special case for doT it needs to be the very first script to var Gantt Chart view #}
     <script src='{{ request.static_url("stalker_pyramid:static/doT/doT.min.js") }}'></script>
 
     {# PRE-HEADER #}
@@ -265,11 +265,11 @@
 
 
 <script>
-    let menu_of = function (title, state, address, icon, count) {
-        let sidebar_list = $('#sidebar_list');
-        let link_template = doT.template($('#tmpl_sidebar_link').html());
+    var menu_of = function (title, state, address, icon, count) {
+        var sidebar_list = $('#sidebar_list');
+        var link_template = doT.template($('#tmpl_sidebar_link').html());
 
-        let options = {
+        var options = {
             'title': title,
             'state': state,
             'link': address,
@@ -277,10 +277,10 @@
             'count': count
         };
 
-        let rendered_template = $($.parseHTML(link_template(options)));
+        var rendered_template = $($.parseHTML(link_template(options)));
         sidebar_list.append(rendered_template);
 
-        let badge = rendered_template.find('.badge');
+        var badge = rendered_template.find('.badge');
 
         // update the badge
         if ( typeof(count) === 'string' && count !== 'no_badge') {
@@ -298,12 +298,12 @@
 </script>
 
 <script>
-    let submenu_of = function (id, treeItemType) {
+    var submenu_of = function (id, treeItemType) {
         $.getJSON('/entities/' + id + '/' + treeItemType.toLowerCase() + 's/').then(function (data) {
             $(function () {
-                let sidebar_list = $('#sidebar_list');
-                let tree_link_template = doT.template($('#tmpl_sidebar_tree_link').html());
-                let data_counts = data.length;
+                var sidebar_list = $('#sidebar_list');
+                var tree_link_template = doT.template($('#tmpl_sidebar_tree_link').html());
+                var data_counts = data.length;
 
                 if (data_counts > 0) {
                     sidebar_list.append(tree_link_template({
@@ -312,10 +312,10 @@
                     }));
                 }
 
-                let item_sublink = $('#' + treeItemType + 's_sublink');
-                let tree_sublink_template = doT.template($('#tmpl_sidebar_tree_sublink').html());
+                var item_sublink = $('#' + treeItemType + 's_sublink');
+                var tree_sublink_template = doT.template($('#tmpl_sidebar_tree_sublink').html());
 
-                for (let i = 0; i < data_counts; i++) {
+                for (var i = 0; i < data_counts; i++) {
                     data[i].link = '/' + treeItemType.toLowerCase() + 's/' + data[i].id + '/view';
                     item_sublink.append(tree_sublink_template(data[i]));
                 }
@@ -325,11 +325,11 @@
 </script>
 
 <script>
-    let menus_under_title = function (title, icon, menuItems) {
+    var menus_under_title = function (title, icon, menuItems) {
         $(function () {
-            let sidebar_list = $('#sidebar_list');
-            let tree_link_template = doT.template($('#tmpl_sidebar_tree_link').html());
-            let data_counts = menuItems.length;
+            var sidebar_list = $('#sidebar_list');
+            var tree_link_template = doT.template($('#tmpl_sidebar_tree_link').html());
+            var data_counts = menuItems.length;
 
             if (data_counts > 0) {
                 sidebar_list.append(tree_link_template({
@@ -338,10 +338,10 @@
                 }));
             }
 
-            let item_sublink = $('#' + title + '_sublink');
-            let tree_sublink_template = doT.template($('#tmpl_sidebar_tree_sublink').html());
+            var item_sublink = $('#' + title + '_sublink');
+            var tree_sublink_template = doT.template($('#tmpl_sidebar_tree_sublink').html());
 
-            for (let i = 0; i < data_counts; i++) {
+            for (var i = 0; i < data_counts; i++) {
                 item_sublink.append(tree_sublink_template(menuItems[i]));
             }
         });
@@ -350,8 +350,8 @@
 
 <script>
     // cache user ids and names
-    let all_users = [];
-    let all_projects = [];
+    var all_users = [];
+    var all_projects = [];
 
     $.getJSON('/users/').then(function (data) {
         all_users = data;
@@ -361,8 +361,8 @@
         all_projects = data;
     });
 
-    let get_entity_name = function(id, entity_list){
-        let user = objectFindByKey(entity_list, 'id', id);
+    var get_entity_name = function(id, entity_list){
+        var user = objectFindByKey(entity_list, 'id', id);
         if(user != null){
             return user.name;
         }
@@ -370,7 +370,7 @@
     };
 
     function objectFindByKey(array, key, value) {
-        for (let i = 0; i < array.length; i++) {
+        for (var i = 0; i < array.length; i++) {
             if (array[i][key] == value){
                 return array[i];
             }
@@ -378,11 +378,11 @@
         return null;
     }
 
-    let get_user_name = function(id){
+    var get_user_name = function(id){
         return get_entity_name(id, all_users);
     };
 
-    let get_project_name = function(id){
+    var get_project_name = function(id){
         return get_entity_name(id, all_projects);
     };
 </script>
@@ -453,20 +453,20 @@
     <script type="text/javascript">
         // choose default skin
         $(function () {
-            let skin_class = 'skin-1';
-            let body = $(document.body);
+            var skin_class = 'skin-1';
+            var body = $(document.body);
             body.removeClass('skin-1 skin-2 skin-3');
             body.addClass(skin_class);
             $('.ace-nav > li.grey').addClass('dark');
         });
         
         // if it is smaller resize the page content to the window height
-        let resize_page_content = function () {
-            let page_content = $('.page-content');
-            let page_content_height = page_content.height();
-            let window_height = $(window).height() - 118;
+        var resize_page_content = function () {
+            var page_content = $('.page-content');
+            var page_content_height = page_content.height();
+            var window_height = $(window).height() - 118;
             {# 230 #}
-            let new_height = Math.max(window_height, page_content_height);
+            var new_height = Math.max(window_height, page_content_height);
             if (page_content_height < window_height) {
                 page_content.css({'min-height': window_height});
             }
@@ -495,36 +495,36 @@
 
     {# copyToClipboard #}
     <script type="text/javascript">
-        let copyToClipboard = function (text) {
+        var copyToClipboard = function (text) {
             window.prompt("Copy to clipboard: Ctrl+C, Enter", text);
         };
     </script>
 
     <script type="text/javascript">
-        let do_playblast = function (version_id) {
-            let result = window.confirm("Do Playblast?:" + version_id);
+        var do_playblast = function (version_id) {
+            var result = window.confirm("Do Playblast?:" + version_id);
             if (result === true){
                 $.post("/versions/" + version_id + "/do_playblast").done(function(){
-                    let message = '<div>Job created! Check Afanasy</div>';
+                    var message = '<div>Job created! Check Afanasy</div>';
                     bootbox.alert(message);
                     $('.bootbox').prepend('<div class="modal-header alert-success"><strong>Success</strong></div>');
                 }).fail(function(jqXHR){
-                    let message = '<div>' + jqXHR.responseText + '</div>';
+                    var message = '<div>' + jqXHR.responseText + '</div>';
                     bootbox.alert(message);
                     $('.bootbox').prepend('<div class="modal-header alert-danger"><strong>Fail</strong></div>');
                 });
             }
         };
 
-        let export_alembics = function (version_id) {
-            let result = window.confirm("Export Alembics?" + version_id);
+        var export_alembics = function (version_id) {
+            var result = window.confirm("Export Alembics?" + version_id);
             if (result === true){
                 $.post("/versions/" + version_id + "/export_alembics").done(function(){
-                    let message = '<div>Job created! Check Afanasy</div>';
+                    var message = '<div>Job created! Check Afanasy</div>';
                     bootbox.alert(message);
                     $('.bootbox').prepend('<div class="modal-header alert-success"><strong>Success</strong></div>');
                 }).fail(function(jqXHR){
-                    let message = '<div>' + jqXHR.responseText + '</div>';
+                    var message = '<div>' + jqXHR.responseText + '</div>';
                     bootbox.alert(message);
                     $('.bootbox').prepend('<div class="modal-header alert-danger"><strong>Fail</strong></div>');
                 });
@@ -534,7 +534,7 @@
 
     {# Pop Flash Messages #}
     <script type='text/javascript'>
-        let flash_message = function (settings) {
+        var flash_message = function (settings) {
             settings.container = settings.container || 'body';
             settings.title = settings.title || '';
             settings.message = settings.message || '';
@@ -550,9 +550,9 @@
         // flash all session messages as gritter
         $(function () {
 
-            let item, title, type, message;
-            let all_messages = $.parseHTML($('#tmpl_flash_message').text());
-            for (let i=0; i < all_messages.length; i++){
+            var item, title, type, message;
+            var all_messages = $.parseHTML($('#tmpl_flash_message').text());
+            for (var i=0; i < all_messages.length; i++){
                 item = $(all_messages[i]);
                 title = item.attr('title');
                 type = item.attr('type');
@@ -572,7 +572,7 @@
     <script type='text/javascript'>
         $(function () {
             $('a.dialog').each(function (i) {
-                let href = this.getAttribute('href');
+                var href = this.getAttribute('href');
                 if (href != '#') {
                     this.setAttribute('href', href + '?came_from={{ request.path }}')
                 }
@@ -582,7 +582,7 @@
 
     {# Gantt Chart Scroll #}
     <script type="text/javascript">
-        let scrollToTaskItem = function (start) {
+        var scrollToTaskItem = function (start) {
             $("#gantt_scroll_to_button").attr('start', start).trigger('click');
         };
     </script>
@@ -590,9 +590,9 @@
     {# Event Dialog Initialize #}
     <script type="text/javascript">
         $(function () {
-            let event_dialog = $('#dialog_template');
+            var event_dialog = $('#dialog_template');
 
-            let init_them_all = function(){
+            var init_them_all = function(){
                 if (event_dialog.find('script.dialog_loaded')[0] !== undefined){
                     try {
                         setTimeout(function(){
@@ -632,7 +632,7 @@
     {# HTML Dialog Initialize #}
     <script type="text/javascript">
         $(function () {
-            let html_dialog = $('#html_template');
+            var html_dialog = $('#html_template');
             html_dialog.on('shown', function (e) {
                 e.stopPropagation();
                 e.preventDefault();

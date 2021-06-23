@@ -104,14 +104,14 @@
     <script type="text/javascript">
         $(document).ready(function () {
 
-            let total_cost = parseInt({{ entity.get_generic_text_attr('total_cost') }});
-            let total_price = parseInt({{ entity.get_generic_text_attr('total_price') }});
-            let approved_total_price = parseInt({{ entity.get_generic_text_attr('approved_total_price') }});
+            var total_cost = parseInt({{ entity.get_generic_text_attr('total_cost') }});
+            var total_price = parseInt({{ entity.get_generic_text_attr('total_price') }});
+            var approved_total_price = parseInt({{ entity.get_generic_text_attr('approved_total_price') }});
 
             $.jqplot._noToImageButton = true;
             $.jqplot.config.enablePlugins = true;
 
-            let line1 = [
+            var line1 = [
                 ['Total Cost', total_cost],
                 ['Total Price', total_price],
                 ['Approved Total Price', approved_total_price]

@@ -78,24 +78,24 @@
 
     {# Form #}
     $(document).ready(function () {
-        let dialog_label = $('#dialog_template_label');
+        var dialog_label = $('#dialog_template_label');
         dialog_label.find('span').remove();
 
         dialog_label.append('<span>Teklif</span>');
 
-        let duration = 0;
+        var duration = 0;
 
         {#Type ----------------------------------------------------------------#}
         {% raw %}
-            let budget_type_option_template = doT.template(
+            var budget_type_option_template = doT.template(
                 '<option value={{=it.id}}>{{=it.name}}</option>'
             );
         {% endraw %}
 
         $.getJSON('/types/?target_entity_type=Budget').then(function (data) {
-            let budget_type = $('#budget_type');
+            var budget_type = $('#budget_type');
 
-            for (let i = 0; i < data.length; i++) {
+            for (var i = 0; i < data.length; i++) {
                 budget_type.append(budget_type_option_template(data[i]));
             }
 
@@ -113,7 +113,7 @@
 
         {#Start Date ----------------------------------------------------------#}
         {% if mode == 'Update' %}
-            let start_date_picker = $('#start_date_picker').datepicker();
+            var start_date_picker = $('#start_date_picker').datepicker();
 
             $('.date-picker').datepicker().next().on(ace.click_event, function(){
                         $(this).prev().focus();
@@ -126,11 +126,11 @@
                 e.stopPropagation();
             });
 
-            let start_date = moment({{ budget.get_generic_text_attr('start_date') }});
-            let end_date = moment({{ budget.get_generic_text_attr('end_date') }});
+            var start_date = moment({{ budget.get_generic_text_attr('start_date') }});
+            var end_date = moment({{ budget.get_generic_text_attr('end_date') }});
             duration = end_date.diff(start_date, 'days');
 
-            let duration_tag = $('#duration');
+            var duration_tag = $('#duration');
             duration_tag.text(duration+ " Days");
             duration_tag.attr("duration",duration);
             start_date_picker.val(start_date.format('DD/MM/YYYY'));

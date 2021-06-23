@@ -168,39 +168,39 @@
 
         console.debug('starting to initialize budgetentry dialog!!! {{  mode  }}');
 
-        let dialog_label = $('#dialog_template_label');
+        var dialog_label = $('#dialog_template_label');
         dialog_label.find('span').remove();
         dialog_label.append('<span>DIGER KALEMLER</span>');
 
-        let budgetentry_amount = $('#budgetentry_amount');
-        let budgetentry_second_amount = $('#budgetentry_second_amount');
-        let budgetentry_msrp = $('#budgetentry_msrp');
-        let budgetentry_cost = $('#budgetentry_cost');
-        let budgetentry_price = $('#budgetentry_price');
-        let filtered_goods= [];
-        let price_lists = [];
-        let msrp = 0;
+        var budgetentry_amount = $('#budgetentry_amount');
+        var budgetentry_second_amount = $('#budgetentry_second_amount');
+        var budgetentry_msrp = $('#budgetentry_msrp');
+        var budgetentry_cost = $('#budgetentry_cost');
+        var budgetentry_price = $('#budgetentry_price');
+        var filtered_goods= [];
+        var price_lists = [];
+        var msrp = 0;
 
         {# Good ******************************************************* #}
         {% raw %}
-            let pl_option_template = doT.template(
+            var pl_option_template = doT.template(
                     '<option value={{=it.id}}>{{=it.name}}</option>'
             );
         {% endraw %}
         {% raw %}
-            let good_option_template = doT.template(
+            var good_option_template = doT.template(
                     '<option value={{=it.id}}_{{=it.unit }}>{{=it.name}}</option>'
             );
         {% endraw %}
 
-        let budgetentry_good = $('#budgetentry_good');
-        let good_pricelist = $('#good_pricelist');
+        var budgetentry_good = $('#budgetentry_good');
+        var good_pricelist = $('#good_pricelist');
         $.getJSON('/goods/').then(function (g_data) {
             filtered_goods= [];
             price_lists = [];
-            for (let i=0;i<g_data.length;i++){
+            for (var i=0;i<g_data.length;i++){
                 if(g_data[i].type_name == "Custom"){
-                    let index = findArrayElement(price_lists,'id', g_data[i].price_list_id);
+                    var index = findArrayElement(price_lists,'id', g_data[i].price_list_id);
                     if(index ==-1){
                        price_lists.push({
                                             'name':g_data[i].price_list_name,
@@ -216,10 +216,10 @@
             good_pricelist.trigger('liszt:updated');
 
             {% if mode=='update' %}
-                let pricelist_id = '{{ budgetentry.good.price_lists[0].id }}';
+                var pricelist_id = '{{ budgetentry.good.price_lists[0].id }}';
                 good_pricelist.val(pricelist_id);
-                let new_good_list = [];
-                for (let i=0;i<filtered_goods.length;i++){
+                var new_good_list = [];
+                for (var i=0;i<filtered_goods.length;i++){
                     if(filtered_goods[i].price_list_id == pricelist_id){
                         new_good_list.push(filtered_goods[i]);
                     }
@@ -233,8 +233,8 @@
             budgetentry_good.trigger('liszt:updated');
 
             good_pricelist.on('change', function(){
-                let new_good_list = [];
-                for (let i=0;i<filtered_goods.length;i++){
+                var new_good_list = [];
+                for (var i=0;i<filtered_goods.length;i++){
                     if(filtered_goods[i].price_list_id == $(this).val()){
                         new_good_list.push(filtered_goods[i]);
                     }
@@ -267,8 +267,8 @@
         {# Unit ******************************************************* #}
 
         {% if mode=='update' %}
-            let amount = '{{ budgetentry.get_generic_text_attr("secondaryFactor")[0].amount}}';
-            let second_amount = '{{ budgetentry.get_generic_text_attr("secondaryFactor")[0].second_amount}}';
+            var amount = '{{ budgetentry.get_generic_text_attr("secondaryFactor")[0].amount}}';
+            var second_amount = '{{ budgetentry.get_generic_text_attr("secondaryFactor")[0].second_amount}}';
             msrp = '{{ budgetentry.msrp}}';
 
             budgetentry_amount.val(amount);
@@ -278,8 +278,8 @@
         {% endif %}
 
         budgetentry_good.on('change', function(){
-            let good_id = $(this).val().split('_')[0];
-            let unit = $(this).val().split('_')[1];
+            var good_id = $(this).val().split('_')[0];
+            var unit = $(this).val().split('_')[1];
 
             $('#good_unit_birim').text(unit.split('*')[0]);
             budgetentry_amount.val(1);
@@ -287,7 +287,7 @@
             $('#good_unit_x').text(unit.split('*')[1]);
             budgetentry_second_amount.val(1);
 
-            let index = findArrayElement(filtered_goods,'id', good_id);
+            var index = findArrayElement(filtered_goods,'id', good_id);
             msrp = filtered_goods[index].msrp;
             budgetentry_msrp.val(msrp);
             budgetentry_cost.val(filtered_goods[index].cost);
@@ -314,34 +314,34 @@
 
 
         function calculate_birim_msrp(){
-            let maliyet = parseFloat(budgetentry_msrp.val());
-            let amount = parseFloat(budgetentry_amount.val());
-            let second_amount = parseFloat(budgetentry_second_amount.val());
+            var maliyet = parseFloat(budgetentry_msrp.val());
+            var amount = parseFloat(budgetentry_amount.val());
+            var second_amount = parseFloat(budgetentry_second_amount.val());
 
             return maliyet / (amount*second_amount);
         }
 
         function calculate_msrp_price(){
-            let birim_fiyat = parseFloat(budgetentry_cost.val());
-            let amount = parseFloat(budgetentry_amount.val());
-            let second_amount = parseFloat(budgetentry_second_amount.val());
+            var birim_fiyat = parseFloat(budgetentry_cost.val());
+            var amount = parseFloat(budgetentry_amount.val());
+            var second_amount = parseFloat(budgetentry_second_amount.val());
 
-            let price = birim_fiyat*amount*second_amount;
+            var price = birim_fiyat*amount*second_amount;
             budgetentry_price.val(price);
             budgetentry_msrp.val(msrp*amount*second_amount);
         }
 
         {# ***************************************************************** #}
         {# Submit Button #}
-        let submit_button = $('#dialog_template_submit_button');
+        var submit_button = $('#dialog_template_submit_button');
         submit_button.on('click', function (e) {
             e.stopPropagation();
             e.preventDefault();
 
             submit_button.button('loading');
-            let budgetentry_form = $('#budgetentry_form');
+            var budgetentry_form = $('#budgetentry_form');
 
-            let url = '{{ action }}';
+            var url = '{{ action }}';
             $.post(
                 url,
                 budgetentry_form.serialize() + '&' +

@@ -56,7 +56,7 @@
 
 
 <script>
-    let counter = 0;
+    var counter = 0;
     function init_dialog(){
         if (counter>0){
             return;
@@ -69,14 +69,14 @@
         // update dialog header
         $('.modal-header>h3').text('Upload Outputs');
 
-        let submit_button = $('#dialog_template_submit_button');
+        var submit_button = $('#dialog_template_submit_button');
         //This is for holding info about the uploaded link ids
-        let entity_id = {{ entity.id }};
-        let files = [];
+        var entity_id = {{ entity.id }};
+        var files = [];
 
-        let uploading_file_counter = 0;
+        var uploading_file_counter = 0;
 
-        let dzone = new Dropzone($(".dropzone")[0], {
+        var dzone = new Dropzone($(".dropzone")[0], {
             init: function(){
                 this.on("addedfile", function(file){
                     // set the submit button to loading state
@@ -118,13 +118,13 @@
 
         {# Daily #}
         {% raw %}
-            let daily_option_template = doT.template(
+            var daily_option_template = doT.template(
                 '<option value={{=it.id}}>{{=it.name}}</option>'
             );
         {% endraw %}
 
 
-         let daily = $('#daily');
+         var daily = $('#daily');
 
         $('#add_to_daily').on('click', function () {
             if(this.checked){
@@ -138,7 +138,7 @@
 {#                    $.getJSON('{{ request.route_path('get_project_dailies', id=entity.task.project.id, _query={'status_code':'OPEN'}) }}').then(function (data) {#}
             {#            // append an empty one first#}
             {#            daily.append('<option value="-1">&nbsp;</option>');#}
-{#                        for (let i = 0; i < data.length; i++) {#}
+{#                        for (var i = 0; i < data.length; i++) {#}
 {#                            daily.append(daily_option_template(data[i]));#}
 {#                        }#}
 {##}
@@ -156,7 +156,7 @@
                 $.getJSON('{{ request.route_path('get_project_dailies', id=entity.task.project.id, _query={'status_code':'OPEN'}) }}').then(function (data) {
         {#            // append an empty one first#}
         {#            daily.append('<option value="-1">&nbsp;</option>');#}
-                    for (let i = 0; i < data.length; i++) {
+                    for (var i = 0; i < data.length; i++) {
                         daily.append(daily_option_template(data[i]));
                     }
 
@@ -187,12 +187,12 @@
             );
 
             // prepare data
-            let file_info = [];
-            let full_paths = [];
-            let original_filenames = [];
-            let accepted_files = dzone.getAcceptedFiles();
-            let f;
-            for (let i=0; i < accepted_files.length; i++){
+            var file_info = [];
+            var full_paths = [];
+            var original_filenames = [];
+            var accepted_files = dzone.getAcceptedFiles();
+            var f;
+            for (var i=0; i < accepted_files.length; i++){
                 f = accepted_files[i];
                 full_paths.push(f.full_path);
                 original_filenames.push(f.original_filename);
@@ -201,7 +201,7 @@
                     'original_filename': f.original_filename
                 })
             }
-            let daily_id = -1;
+            var daily_id = -1;
 {#            {% if entity.task.status.code in ['WIP', 'DREV', 'PREV', 'CMPL'] %}#}
 {#                if($('#add_to_daily').prop('checked')){#}
 {#                    daily_id = daily.val()#}

@@ -126,22 +126,22 @@
         $(document).ready(function () {
 
             $('#add_project_entries_to_budget_button').hide();
-            let total_cost = 0;
-            let total_msrp = 0;
-            let total_price = 0;
-            let grid_data;
-            let good_grid_data = [];
-            let lastSelection;
-            let lastSelectionZero;
+            var total_cost = 0;
+            var total_msrp = 0;
+            var total_price = 0;
+            var grid_data;
+            var good_grid_data = [];
+            var lastSelection;
+            var lastSelectionZero;
 
-            let grid_selector = "#grid-table";
-            let grid = jQuery(grid_selector);
+            var grid_selector = "#grid-table";
+            var grid = jQuery(grid_selector);
 
-            let grid_selector_zero = "#grid-table-zero";
-            let grid_zero = jQuery(grid_selector_zero);
+            var grid_selector_zero = "#grid-table-zero";
+            var grid_zero = jQuery(grid_selector_zero);
 
             $("#custom_entry_button").on('click', function (e) {
-                 let event_dialog = $('#dialog_template');
+                 var event_dialog = $('#dialog_template');
 
                 event_dialog.modal({
                     'remote': '{{request.route_path('create_budgetentry_dialog', _query={'mode': "Create", 'budget_id':entity.id }) }}'
@@ -150,12 +150,12 @@
 
             function editRow(id) {
                 if(id){
-                    let is_good = findArrayElement(good_grid_data,'id', id);
+                    var is_good = findArrayElement(good_grid_data,'id', id);
                     console.log('is_good: '+ is_good);
                     if (is_good!=-1){
                         if (id !== lastSelectionZero) {
                             grid_zero.restoreRow(lastSelectionZero);
-                            let editParameters = {
+                            var editParameters = {
                                     keys: true,
                                     successfunc: editSuccessfulGood,
                                     errorfunc: editFailed,
@@ -167,12 +167,12 @@
 
                     }
                     else{
-                        let is_budgetentry = findArrayElement(grid_data,'id', id);
+                        var is_budgetentry = findArrayElement(grid_data,'id', id);
                         console.log('is_budgetentry: '+ is_budgetentry);
                         if(is_budgetentry!=-1){
                             if (id !== lastSelection) {
                                 grid.restoreRow(lastSelection);
-                                let editParameters = {
+                                var editParameters = {
                                     keys: true,
                                     successfunc: editSuccessfulBudgetEntry,
                                     errorfunc: editFailed,
@@ -192,13 +192,13 @@
 
             function editSuccessfulBudgetEntry(data, stat) {
 
-                let overtime = parseFloat(getCellValue(lastSelection, 'overtime'));
-                let amount = parseFloat(getCellValue(lastSelection, 'amount'));
-                let second_amount = parseFloat(getCellValue(lastSelection, 'second_amount'));
-                let stoppage_add = parseInt(getCellValue(lastSelection, 'stoppage_add'));
-                let price = parseFloat(getCellValue(lastSelection, 'price'));
+                var overtime = parseFloat(getCellValue(lastSelection, 'overtime'));
+                var amount = parseFloat(getCellValue(lastSelection, 'amount'));
+                var second_amount = parseFloat(getCellValue(lastSelection, 'second_amount'));
+                var stoppage_add = parseInt(getCellValue(lastSelection, 'stoppage_add'));
+                var price = parseFloat(getCellValue(lastSelection, 'price'));
 
-                let selected_data = recalculateGridData(grid_data, lastSelection, amount, second_amount, overtime, stoppage_add, price);
+                var selected_data = recalculateGridData(grid_data, lastSelection, amount, second_amount, overtime, stoppage_add, price);
 
                 grid.jqGrid('setGridParam',
                                     {
@@ -233,13 +233,13 @@
             }
 
             function unitFmatter (cellvalue, options, rowObject){
-                let index = findArrayElement(grid_data,'id', options.rowId);
+                var index = findArrayElement(grid_data,'id', options.rowId);
 
                 return grid_data[index].amount+" "+ grid_data[index].unit;
             }
 
             function  unformatUnit (cellvalue, options, rowObject){
-                let index = findArrayElement(grid_data,'id', options.rowId);
+                var index = findArrayElement(grid_data,'id', options.rowId);
                 return grid_data[index].amount;
             }
 
@@ -250,32 +250,32 @@
             }
 
             function secondUnitFmatter (cellvalue, options, rowObject){
-                let index = findArrayElement(grid_data,'id', options.rowId);
+                var index = findArrayElement(grid_data,'id', options.rowId);
                 return grid_data[index].second_amount+" "+ grid_data[index].second_unit;
             }
 
             function  secondUnformatUnit (cellvalue, options, rowObject){
-                let index = findArrayElement(grid_data,'id', options.rowId);
+                var index = findArrayElement(grid_data,'id', options.rowId);
                 return grid_data[index].second_amount;
             }
 
             function unitFmatterZero (cellvalue, options, rowObject){
-                let index = findArrayElement(good_grid_data,'id', options.rowId);
+                var index = findArrayElement(good_grid_data,'id', options.rowId);
                 return good_grid_data[index].amount+" "+ good_grid_data[index].unit;
             }
 
             function  unformatUnitZero (cellvalue, options, rowObject){
-                let index = findArrayElement(good_grid_data,'id', options.rowId);
+                var index = findArrayElement(good_grid_data,'id', options.rowId);
                 return good_grid_data[index].amount;
             }
 
             function secondUnitFmatterZero (cellvalue, options, rowObject){
-                let index = findArrayElement(good_grid_data,'id', options.rowId);
+                var index = findArrayElement(good_grid_data,'id', options.rowId);
                 return good_grid_data[index].second_amount+" "+ good_grid_data[index].second_unit;
             }
 
             function  secondUnformatUnitZero (cellvalue, options, rowObject){
-                let index = findArrayElement(good_grid_data,'id', options.rowId);
+                var index = findArrayElement(good_grid_data,'id', options.rowId);
                 return good_grid_data[index].second_amount;
             }
 
@@ -287,14 +287,14 @@
             }
 
             function getCellValue(rowId, cellId) {
-                let cell = jQuery('#' + rowId + '_' + cellId);
+                var cell = jQuery('#' + rowId + '_' + cellId);
                 return cell.val();
             }
 
             function recalculateGridData(array, id, amount_value, second_amount_value, overtime_value, stoppage_add_value, price_value){
-                let index = findArrayElement(array, 'id', id);
+                var index = findArrayElement(array, 'id', id);
 
-                let selected_data = array[index];
+                var selected_data = array[index];
                 if (selected_data.addition_type != "Calendar"){
                     selected_data.addition_type = "Producer";
                     selected_data.amount = amount_value;
@@ -326,7 +326,7 @@
                 total_msrp = 0;
                 total_price = 0;
 
-                for(let t=0; t<grid_data.length; t++ ){
+                for(var t=0; t<grid_data.length; t++ ){
 
                     if(grid_data[t].total_cost>grid_data[t].price){
                         grid.jqGrid('setCell', grid_data[t].id, 'price', grid_data[t].price, {color:'red'});
@@ -355,7 +355,7 @@
                 });
 
                 $('#total_cost_top').text(accounting.formatMoney(total_cost, { symbol: "TL",  format: "%v %s" }));
-                let total_price_top = $('#total_price_top');
+                var total_price_top = $('#total_price_top');
                 total_price_top.text(accounting.formatMoney(total_price, { symbol: "TL",  format: "%v %s" }));
                 $('#approved_total_price').text(accounting.formatMoney({{ approved_total_price }}, { symbol: "TL",  format: "%v %s" }));
                 if (total_cost <= total_price){
@@ -385,14 +385,14 @@
 
                 grid_data = entry_data;
 
-                for(let j=0; j<grid_data.length; j++ ){
+                for(var j=0; j<grid_data.length; j++ ){
 {#                    grid_data[j].id = "budgetentry_" + grid_data[j].id;#}
                     grid_data[j].delete_action = "<a data-target='#dialog_template' data-toggle='modal' data-keyboard=false href='/budgetentries/"+grid_data[j].id+"/delete/dialog'> <i class='icon-trash'></i></a>"
                     grid_data[j].addition_type = grid_data[j].generic_data.dataSource;
 
                     grid_data[j].unit = grid_data[j].unit.split('*')[0];
 
-                    let secondaryFactor = grid_data[j].generic_data.secondaryFactor;
+                    var secondaryFactor = grid_data[j].generic_data.secondaryFactor;
                     if (secondaryFactor.unit){
                         grid_data[j].second_unit = secondaryFactor.unit;
                         grid_data[j].second_amount = secondaryFactor.second_amount;
@@ -401,7 +401,7 @@
                         grid_data[j].second_unit = secondaryFactor[0].unit;
                         grid_data[j].second_amount = 0;
 
-                        for(let t=0; t < secondaryFactor.length; t++){
+                        for(var t=0; t < secondaryFactor.length; t++){
                             grid_data[j].second_amount += parseInt(secondaryFactor[t].second_amount)
                         }
                     }
@@ -495,10 +495,10 @@
 
                     $.getJSON('/studios/{{ entity.id }}/goods/').then(function (good_data) {
 
-                        for(let k=0; k<good_data.length; k++ ){
+                        for(var k=0; k<good_data.length; k++ ){
 
-                            let add_grid_data = true;
-                            for(let m=0; m<grid_data.length; m++ ){
+                            var add_grid_data = true;
+                            for(var m=0; m<grid_data.length; m++ ){
                                 if(good_data[k].name == grid_data[m].name || good_data[k].type_name == 'Custom'){
                                     add_grid_data = false;
                                 }

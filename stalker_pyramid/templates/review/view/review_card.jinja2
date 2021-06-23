@@ -89,20 +89,20 @@
 
 <script type="text/javascript">
     $(function () {
-        let icon_name = get_icon('resource');
+        var icon_name = get_icon('resource');
         $('#responsible_items_header').append('<i class=' + icon_name + '></i>Responsible');
 
         $.getJSON('/tasks/{{ entity.id }}/last_reviews/').then(function (data) {
 
-            let review_box = $('#review_box');
-            let reviewer_template = doT.template($('#tmpl_reviewer_card').html());
+            var review_box = $('#review_box');
+            var reviewer_template = doT.template($('#tmpl_reviewer_card').html());
 
-            for (let i = 0; i < data.length; i++) {
+            for (var i = 0; i < data.length; i++) {
 
                 data[i].project_id = '{% if entity.entity_type != "Project" %}{{ entity.project.id }}{% else %}{{ entity.id }}{% endif %}';
-                if (data[i].review_status_code == 'new') {
+                if (data[i].review_status_code === 'new') {
                     data[i].review_status_name = 'Pending';
-                    if (data[i].reviewer_id == '{{ logged_in_user.id }}') {
+                    if (data[i].reviewer_id === '{{ logged_in_user.id }}') {
                         $(function () {
                             flash_message({
                                 container: 'body',
@@ -118,12 +118,12 @@
                         data[i].review_status_link = '/tasks/{{ entity.id }}/review/dialog?came_from={{ request.current_route_path() }}';
                     }
                 } else {
-                    let force_review_button = $('#force_review_button');
+                    var force_review_button = $('#force_review_button');
                     if(force_review_button){
                         force_review_button.hide()
                     }
 
-                    let cleanup_button = $('#cleanup_button');
+                    var cleanup_button = $('#cleanup_button');
                     if(cleanup_button){
                         cleanup_button.show()
                     }
@@ -155,16 +155,16 @@
             //show the user info on right or left depending on its position
             $('.memberdiv').on('mouseenter', function () {
 
-                let self = $(this);
-                let parent = self.closest('.row-fluid');
+                var self = $(this);
+                var parent = self.closest('.row-fluid');
 
-                let off1 = parent.offset();
-                let w1 = parent.width();
+                var off1 = parent.offset();
+                var w1 = parent.width();
 
-                let off2 = self.offset();
-                let w2 = self.width();
+                var off2 = self.offset();
+                var w2 = self.width();
 
-                let place = 'left';
+                var place = 'left';
                 if (parseInt(off2.left) < parseInt(off1.left) + parseInt(w1 / 2)) place = 'right';
 
                 self.find('.popover').removeClass('right left').addClass(place);

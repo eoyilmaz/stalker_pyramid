@@ -87,9 +87,9 @@
 
     <script>
 
-        let tableParameters = {};
-        let sortingParameters = [[0, 'asc']];
-        let tableDataAddress;
+        var tableParameters = {};
+        var sortingParameters = [[0, 'asc']];
+        var tableDataAddress;
         {% if entity %}
             tableDataAddress = '{{request.route_path('get_entity_groups', id=entity.id) }}';
         {% else %}

@@ -30,8 +30,8 @@
     function init_dialog() {
         console.debug('starting to initialize add_task_dependencies_dialog dialog!!!');
 
-        let timeout_buffer; // it is used in delaying AJAX calls see task_depends_to
-        let task_depends_to = $('#task_depends_to');
+        var timeout_buffer; // it is used in delaying AJAX calls see task_depends_to
+        var task_depends_to = $('#task_depends_to');
 
         task_depends_to.tag({
             placeholder: task_depends_to.data('placeholder'),
@@ -64,20 +64,20 @@
         // fix input width
         task_depends_to.parent().addClass('input-block-level span12');
 
-        let form = $('#change_form');
-        let submit_button = $('#dialog_template_submit_button');
+        var form = $('#change_form');
+        var submit_button = $('#dialog_template_submit_button');
         submit_button.on('click', function(e) {
             e.stopPropagation();
             e.preventDefault();
 
-            let fd = {
+            var fd = {
                 task_ids: [],
                 dependent_ids: []
             };
 
             fd.task_ids = [{% for task_id in task_ids %}{{ task_id }}, {% endfor %}];
 
-            let raw_dependent_ids = form.serializeArray()[0].value;
+            var raw_dependent_ids = form.serializeArray()[0].value;
 
             console.log(raw_dependent_ids)
             fd.dependent_ids = $.map(raw_dependent_ids.split(','), function (value) {

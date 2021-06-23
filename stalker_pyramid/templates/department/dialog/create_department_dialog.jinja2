@@ -15,23 +15,23 @@
     function init_dialog() {
         console.debug('starting to initialize department dialog!!!');
 
-        let dialog_template_label = $('#dialog_template_label');
+        var dialog_template_label = $('#dialog_template_label');
 
         dialog_template_label.find('span').remove();
         dialog_template_label.append('<span>New Department</span>');
 
-        let dialog_template_body = $('#dialog_template_body');
+        var dialog_template_body = $('#dialog_template_body');
         dialog_template_body.attr('style', "height: 350px");
         
         {# ***************************************************************** #}
         {# Submit Button #}
-        let submit_button = $('#dialog_template_submit_button');
+        var submit_button = $('#dialog_template_submit_button');
         submit_button.on('click', function (e) {
             e.stopPropagation();
             e.preventDefault();
 
             submit_button.button('loading');
-            let department_form = $('#department_form');
+            var department_form = $('#department_form');
 
             $.post(department_form.attr('action'),
                 department_form.serialize()

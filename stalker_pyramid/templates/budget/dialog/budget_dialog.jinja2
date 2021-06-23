@@ -82,24 +82,24 @@
 
         console.debug('starting to initialize budget dialog!!!');
 
-        let dialog_label = $('#dialog_template_label');
+        var dialog_label = $('#dialog_template_label');
         dialog_label.find('span').remove();
 
         dialog_label.append('<span>Teklif</span>');
 
-        let duration = 0;
+        var duration = 0;
 
         {#Type ----------------------------------------------------------------#}
         {% raw %}
-            let budget_type_option_template = doT.template(
+            var budget_type_option_template = doT.template(
                 '<option value={{=it.id}}>{{=it.name}}</option>'
             );
         {% endraw %}
 
         $.getJSON('/types/?target_entity_type=Budget').then(function (data) {
-            let budget_type = $('#budget_type');
+            var budget_type = $('#budget_type');
 
-            for (let i = 0; i < data.length; i++) {
+            for (var i = 0; i < data.length; i++) {
                 budget_type.append(budget_type_option_template(data[i]));
             }
 
@@ -117,7 +117,7 @@
 
         {#Start Date ----------------------------------------------------------#}
         {% if mode == 'Update' %}
-            let start_date_picker = $('#start_date_picker').datepicker();
+            var start_date_picker = $('#start_date_picker').datepicker();
 
             $('.date-picker').datepicker().next().on(ace.click_event, function(){
                         $(this).prev().focus();
@@ -130,8 +130,8 @@
                 e.stopPropagation();
             });
 
-            let start_date = moment({{ budget.get_generic_text_attr('start_date') }});
-            let end_date = moment({{ budget.get_generic_text_attr('end_date') }});
+            var start_date = moment({{ budget.get_generic_text_attr('start_date') }});
+            var end_date = moment({{ budget.get_generic_text_attr('end_date') }});
             duration = end_date.diff(start_date, 'days');
 
             $('#duration').text(duration+ " Days");
@@ -141,22 +141,22 @@
 
         {# ***************************************************************** #}
         {# Submit Button #}
-        let submit_button = $('#dialog_template_submit_button');
+        var submit_button = $('#dialog_template_submit_button');
         submit_button.on('click', function (e) {
             e.stopPropagation();
             e.preventDefault();
 
             submit_button.button('loading');
-            let budget_form = $('#budget_form');
+            var budget_form = $('#budget_form');
 
-            let url = '/budgets/create';
-            let params = null;
+            var url = '/budgets/create';
+            var params = null;
             {% if mode=='Update' %}
                 url='/budgets/{{ budget.id }}/update';
 
-                let start_date = get_date_picker('start_date_picker');
+                var start_date = get_date_picker('start_date_picker');
                 start_date.setDate(start_date.getDate() + 1);
-                let end_date = new Date(start_date);
+                var end_date = new Date(start_date);
                 end_date.setDate(end_date.getDate() + duration);
 
                 params = {

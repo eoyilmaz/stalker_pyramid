@@ -97,7 +97,7 @@
         console.log('initialize ticket dialog start');
 
         // generate default values;
-        let project = {
+        var project = {
             id: {{ project.id }},
             name: "{{ project.name }}"
         };
@@ -105,9 +105,9 @@
         // update dialog header
         $('#dialog_template_label').text('Create Ticket Dialog');
 
-        let submit_button = $('#dialog_template_submit_button');
+        var submit_button = $('#dialog_template_submit_button');
 
-        let field_update_mode_checker = function(){
+        var field_update_mode_checker = function(){
             // checks if the important fields are still updating
             // check if any of the fields are still in updating mode
             if ($('#ticket_owner').attr('is_updating') === 'true') {
@@ -122,7 +122,7 @@
 
         {# ***************************************************************** #}
         {# Owner #}
-        let ticket_owner = $('#ticket_owner');
+        var ticket_owner = $('#ticket_owner');
 
         ticket_owner.chosen({
             search_contains: true,
@@ -130,7 +130,7 @@
         });
 
         {% raw %}
-        let owner_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
+        var owner_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
         {% endraw %}
 
         //
@@ -146,10 +146,10 @@
             ticket_owner.find('option').remove();
 
             // append new ones
-            let data_count = data.length;
+            var data_count = data.length;
             // append a single empty option to the owner field
             ticket_owner.append('<option value=""></option>');
-            for (let i=0; i < data_count; i++){
+            for (var i=0; i < data_count; i++){
                 ticket_owner.append(owner_template(data[i]));
             }
 
@@ -166,8 +166,8 @@
         {# ***************************************************************** #}
         {# Links #}
 
-        let timeout_buffer; // it is used in delaying AJAX calls see task_depends_to
-        let ticket_links = $('#ticket_links');
+        var timeout_buffer; // it is used in delaying AJAX calls see task_depends_to
+        var ticket_links = $('#ticket_links');
 
         ticket_links.tag({
             placeholder: ticket_links.data('placeholder'),
@@ -201,7 +201,7 @@
         {# ***************************************************************** #}
         {# Submit Button #}
 
-        let submit_form_url = '{{ request.route_url("create_ticket") }}';
+        var submit_form_url = '{{ request.route_url("create_ticket") }}';
         submit_button.on('click', function(e){
             e.stopPropagation();
             e.preventDefault();
@@ -209,18 +209,18 @@
             // disable submit button
             submit_button.button('loading');
 
-            let form = $('#ticket_form');
-            let form_data = form.serialize();
+            var form = $('#ticket_form');
+            var form_data = form.serialize();
 
-            let link_ids;
+            var link_ids;
 
 
 
-            let raw_link_ids = form.serializeArray()[5].value;
+            var raw_link_ids = form.serializeArray()[5].value;
 
 
             link_ids = $.map(raw_link_ids.split(','), function (value) {
-                let values = value.match(/\(([0-9]+)\)/);
+                var values = value.match(/\(([0-9]+)\)/);
                 if( values !== null && values !== undefined ){
                     return values[1];
                 }

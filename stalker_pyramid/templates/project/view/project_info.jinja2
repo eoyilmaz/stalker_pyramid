@@ -33,7 +33,7 @@
     $(document).ready(function () {
         function set_field_value(role_name, url){
             console.log("set_field_value");
-            let project_role_list = $("#project_role_list");
+            var project_role_list = $("#project_role_list");
             $.getJSON(url).then(function (data) {
                 console.log("loaded: " +data);
 {#                if(data.name != ""){#}
