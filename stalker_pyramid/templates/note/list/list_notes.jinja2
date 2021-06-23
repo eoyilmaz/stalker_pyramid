@@ -157,7 +157,6 @@
             html_template_label.text(event_dialog.attr('title'));
 
             for (var i = 0; i < n_data.length; i++) {
-
                 n_data[i].created_date = new Date(parseInt(n_data[i].created_date));
 
                 if (n_data[i].created_by_thumbnail == null) {
@@ -173,27 +172,22 @@
 
                 {% endif %}
 
-                if (n_data[i].note_type_name == 'Simple Text' || !n_data[i].note_type_name) {
+                if (n_data[i].note_type_name === 'Simple Text' || !n_data[i].note_type_name) {
 
                     notes.append(note_simple_template(n_data[i]));
                 }
-                else if (n_data[i].note_type_name == 'Daily_Note') {
-
+                else if (n_data[i].note_type_name === 'Daily_Note') {
                         notes.append(note_daily_template(n_data[i]));
                 }
                 else {
-
                     notes.append(note_activity_template(n_data[i]));
                 }
             }
 
             $('.date').each(function () {
-                console.debug("$(this).text(): ", $(this).text());
                 var date = moment($(this).text());
                 $(this).text(date.fromNow());
             });
-
-
         });
     });
 

@@ -69,19 +69,16 @@
                     var start_date = new Date(parseInt(data[i].start));
                     var end_date = new Date(parseInt(data[i].end));
 
-                    if(data[i].entity_type == 'timelogs'){
+                    var title = data[i].title;
+                    if(data[i].entity_type === 'timelogs'){
     {#                    var now = new Date();#}
     {#                    if(now>end_date){#}
     {#                        console.log(data[i].title +' : '+ end_date)#}
     {#                    }#}
-                        var timelog_hours = (end_date-start_date)/1000/60/60;
+                        var timelog_hours = (end_date - start_date) / 3600000;
                         total_timelogs += timelog_hours;
 
-                    }
-
-                    var title = data[i].title;
-                    if(data[i].entity_type == 'timelogs'){
-                        title =  end_date.format('HH:MM') +' '+ data[i].title;
+                        title = data[i].title;
                     }
 
                     var event = {

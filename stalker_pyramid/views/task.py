@@ -5168,7 +5168,7 @@ def request_review_action(request, task, logged_in_user, desc, send_email, mode)
         }
 
     if send_email:
-        #*******************************************************************
+        # *******************************************************************
         # info message for responsible
         recipients = []
 

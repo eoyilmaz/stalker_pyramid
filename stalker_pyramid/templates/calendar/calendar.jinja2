@@ -19,7 +19,7 @@
             event_dialog.attr('allDay', allDay);
 
             event_dialog.modal({
-                'remote': "/entities/"+eId+"/"+eType+"s/create/dialog?came_from={{ request.current_route_path() }}"
+                'remote': "/entities/" + eId + "/" + eType +"s/create/dialog?came_from={{ request.current_route_path() }}"
             });
         };
 
@@ -95,7 +95,9 @@
 
             selectable: true,
             selectHelper: true,
-            firstDay: 1
+            firstDay: 1,
+
+            timeFormat: "H:mm {- H:mm}"
         });
     }
 </script>
