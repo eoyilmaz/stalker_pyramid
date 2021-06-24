@@ -550,10 +550,10 @@ def get_entity_entities_out_stack(request):
     for entity_s in list_of_container_objects:
         # logger.debug('entity_s %s' % entity_s.name)
         out_stack.append({
-             'id': entity_s.id,
-            'name':entity_s.name,
-            'thumnail_path':entity_s.thumbnail.full_path if entity_s.thumbnail else None,
-            'description':entity_s.description if entity_s.description else None
+            'id': entity_s.id,
+            'name': entity_s.name,
+            'thumbnail_path': entity_s.thumbnail.full_path if entity_s.thumbnail else None,
+            'description': entity_s.description if entity_s.description else None
         })
 
     return out_stack

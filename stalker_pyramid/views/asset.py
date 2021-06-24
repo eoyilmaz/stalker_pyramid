@@ -293,7 +293,7 @@ def get_assets(request):
             "Assets".id as asset_id,
             assets.full_path as asset_name,
             "Asset_SimpleEntities".description as asset_description,
-            "Links".full_path as asset_full_path,
+            "Links".full_path as thumbnail_full_path,
             "Distinct_Asset_Statuses".asset_status_code as asset_status_code,
             "Distinct_Asset_Statuses".asset_status_html_class as asset_status_html_class,
             array_agg("Distinct_Asset_Task_Types".type_name) as type_name,
@@ -418,24 +418,22 @@ def get_assets(request):
 
     for r in result.fetchall():
         r_data = {
-            'id': r[0],
-            'name': r[1],
-            'description': r[2],
-            'thumbnail_full_path': r[3] if r[3] else None,
-            'status': r[4],
-            'status_color': r[5],
-            'update_asset_action': '/tasks/%s/update/dialog' % r[0]
-                if update_asset_permission else None,
-            'delete_asset_action': '/tasks/%s/delete/dialog' % r[0]
-                if delete_asset_permission else None
+            'id': r["asset_id"],
+            'name': r["asset_name"],
+            'description': r["asset_description"],
+            'thumbnail_full_path': r["thumbnail_full_path"] if r["thumbnail_full_path"] else None,
+            'status': r["asset_status_code"],
+            'status_color': r["asset_status_html_class"],
+            'update_asset_action': '/tasks/%s/update/dialog' % r["asset_id"] if update_asset_permission else None,
+            'delete_asset_action': '/tasks/%s/delete/dialog' % r["asset_id"] if delete_asset_permission else None
         }
-        task_types_names = r[6]
-        task_ids = r[7]
-        task_names = r[8]
-        task_statuses = r[9]
-        task_percent_complete = r[11]
-        task_resource_name = r[13]
-        task_resource_id = r[14]
+        task_types_names = r["type_name"]
+        task_ids = r["task_id"]
+        task_names = r["task_name"]
+        task_statuses = r["status_code"]
+        task_percent_complete = r["percent_complete"]
+        task_resource_name = r["resources_name"]
+        task_resource_id = r["resources_id"]
 
         # logger.debug('task_types_names %s ' % task_types_names)
         r_data['nulls'] = []

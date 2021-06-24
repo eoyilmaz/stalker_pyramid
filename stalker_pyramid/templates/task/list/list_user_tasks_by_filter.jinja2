@@ -6,7 +6,7 @@
             title="{{=it.title}}"
             url="{{=it.url}}"
             modal="{{=it.modal}}"
-            >
+    >
         <i class="{{=it.icon}}"></i>
     </button>
 </script>
@@ -32,6 +32,7 @@
                 <span class="lbl"></span>
             </label>
         </th>
+        <th>Thumbnail</th>
         <th>Start</th>
         <th>End</th>
         <th>Name</th>
@@ -54,9 +55,11 @@
                 <span class="lbl"></span>
             </label>
         </td>
+        <td style="width:160px;">
+            <img style="height:auto;" class="img-thumbnail" src="/{{=it.thumbnail_full_path }}">
+        </td>
         <td>{{=it.start}}</td>
         <td>{{=it.end}}</td>
-        </td>
         <td><a href='/tasks/{{=it.id}}/view'>{{=it.full_path}}</a></td>
         <td>{{=it.hour_based_on_bid}}</td>
         <td>{{=it.hour_to_complete}}</td>
@@ -69,6 +72,7 @@
 <script id="tmpl_itemFooterRow" type="text/x-dot-template">
     <tr>
         <td>TOTAL</td>
+        <td></td>
         <td></td>
         <td></td>
         <td></td>
@@ -211,7 +215,6 @@
     }
 
     function submit_action(url, modal){
-
         var _query = generateQuery();
         if(modal === 'true'){
             var event_dialog = $('#dialog_template');
@@ -312,7 +315,6 @@
     }
 
     function clear_html_modal(){
-
         console.log("clear_html_modal");
 
         $('#tasks_list').hide();
@@ -434,15 +436,13 @@
         $('.btn-mini').on('click', function(e){
             e.preventDefault();
             e.stopPropagation();
-
-
             submit_action($(this).attr("url"), $(this).attr("modal"));
         });
 
         var items_header = $('#items_header');
         items_header.text(status_name);
 
-        $('#html_template_header').attr('class', 'widget-header widget-header-small header-color-status_'+status_code.toLowerCase());
+        $('#html_template_header').attr('class', 'widget-header widget-header-small header-color-status_' + status_code.toLowerCase());
         $('#tasks_list').show();
 
         var table_container = $('#table_container');
@@ -524,6 +524,7 @@
             oTable1 = table.dataTable({
                 "aoColumns": [
                     { "bSortable": false },
+                    null,
                     null,
                     null,
                     null,

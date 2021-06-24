@@ -75,10 +75,12 @@ def generate_recursive_task_query(ordered=True):
             task.parent_id,
             (parent.path || '|' || task.parent_id::text) as path,
             (parent.path_names || ' | ' || "Parent_SimpleEntities".name) as path_names,
-            (coalesce(
-                        (parent.type_names || ' | ' || "Type_SimpleEntities".name),
-                        (parent.type_names || ' | None' )
-                    ) || ' | ')  as type_names,
+            (
+                coalesce(
+                    (parent.type_names || ' | ' || "Type_SimpleEntities".name),
+                    (parent.type_names || ' | None' )
+                ) || ' | '
+            )  as type_names,
             coalesce(
                 (
                     select
@@ -2685,6 +2687,8 @@ def get_user_tasks_simple(request):
         tasks.name,
         tasks.full_path,
 
+        tasks.thumbnail_full_path,
+
         "Tasks".project_id,
         "Tasks".parent_id,
         "Tasks".priority as priority,
@@ -2709,23 +2713,31 @@ def get_user_tasks_simple(request):
     with recursive recursive_task(id, path_names) as (
         select
             task.id,
-            ("Projects".code || '') as path_names
+            ("Projects".code || '') as path_names,
+            "Task_Thumbnail".full_path as thumbnail_full_path
         from "Tasks" as task
+        join "SimpleEntities" as "Task_SimpleEntities" on task.id = "Task_SimpleEntities".id
+        left outer join "Links" as "Task_Thumbnail" on "Task_SimpleEntities".thumbnail_id = "Task_Thumbnail".id 
         join "Projects" on task.project_id = "Projects".id
         where task.parent_id is NULL
     union all
         select
             task.id,
-            (parent.path_names || ' | ' || "Parent_SimpleEntities".name) as path_names
-
+            (parent.path_names || ' | ' || "Parent_SimpleEntities".name) as path_names,
+            coalesce(
+                thumbnail_full_path,
+                "Parent_Task_Thumbnail".full_path
+            ) as thumbnail_full_path
         from "Tasks" as task
         join recursive_task as parent on task.parent_id = parent.id
         join "SimpleEntities" as "Parent_SimpleEntities" on parent.id = "Parent_SimpleEntities".id
+        left outer join "Links" as "Parent_Task_Thumbnail" on "Parent_SimpleEntities".thumbnail_id = "Parent_Task_Thumbnail".id
     ) select
         recursive_task.id,
         "SimpleEntities".name as name,
         recursive_task.path_names,
-        "SimpleEntities".name || ' (' || recursive_task.path_names || ')(' || recursive_task.id || ')' as full_path
+        "SimpleEntities".name || ' (' || recursive_task.path_names || ')(' || recursive_task.id || ')' as full_path,
+        recursive_task.thumbnail_full_path as thumbnail_full_path
     from recursive_task
     join "SimpleEntities" on recursive_task.id = "SimpleEntities".id
 
@@ -2779,7 +2791,7 @@ def get_user_tasks_simple(request):
         'user_id': user.id
     }
 
-    #logger.debug("sql_query %s" % sql_query)
+    # logger.debug("sql_query %s" % sql_query)
 
     start = time.time()
     from sqlalchemy import text
@@ -2787,20 +2799,21 @@ def get_user_tasks_simple(request):
 
     return_data = [
         {
-            'id': r[0],
-            'name': r[1],
-            'full_path': r[2],
-            'project_id': r[3],
-            'parent_id': r[4],
-            'priority': r[5],
-            'bid_timing': r[6],
-            'bid_unit': r[7],
-            'schedule_timing': r[8],
-            'schedule_unit': r[9],
-            'schedule_model': r[10],
-            'total_logged_seconds': r[11],
-            'start': milliseconds_since_epoch(r[12]),
-            'end': milliseconds_since_epoch(r[13])
+            'id': r['id'],
+            'name': r['name'],
+            'full_path': r["full_path"],
+            'thumbnail_full_path': r["thumbnail_full_path"],
+            'project_id': r["project_id"],
+            'parent_id': r["parent_id"],
+            'priority': r["priority"],
+            'bid_timing': r["bid_timing"],
+            'bid_unit': r["bid_unit"],
+            'schedule_timing': r["schedule_timing"],
+            'schedule_unit': r["schedule_unit"],
+            'schedule_model': r["schedule_model"],
+            'total_logged_seconds': r["total_logged_seconds"],
+            'start': milliseconds_since_epoch(r["start"]),
+            'end': milliseconds_since_epoch(r["end"])
         }
         for r in result.fetchall()
     ]

@@ -322,7 +322,7 @@
                         }
                     }
 
-                    if (data[i].status === 'wip' && data[i].completed == 100) {
+                    if (data[i].status === 'wip' && data[i].completed === 100) {
                         resources = data[i].resources;
                         for (r = 0; r < resources.length; r++) {
                             if (resources[r].id === {{ logged_in_user.id }}) {
@@ -334,14 +334,14 @@
                     data[i].came_from = '{{ request.current_route_path() }}';
 
                     {% if has_permission('Create_Review') %}
-                        if(data[i].hour_to_complete == 0){
+                        if(data[i].hour_to_complete === 0){
                              data[i].poke_user = true;
                         }
                     {% endif %}
 
                     // append it to the table
                     {% if is_warning_list %}
-                        if(data[i].hour_to_complete == 0){
+                        if(data[i].hour_to_complete === 0){
                             table_body.append(row_template(data[i]));
                         }
                     {% else %}
