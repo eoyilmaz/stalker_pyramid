@@ -56,7 +56,7 @@
             </label>
         </td>
         <td style="width:160px;">
-            <img style="height:auto;" class="img-thumbnail" src="/{{=it.thumbnail_full_path }}">
+            <img style="height:auto;" class="img-thumbnail" src="{{=it.thumbnail_full_path }}">
         </td>
         <td>{{=it.start}}</td>
         <td>{{=it.end}}</td>
@@ -467,6 +467,11 @@
             var total_remain_bid_seconds = 0;
 
             for (var i = 0; i < data.length; i++) {
+                if (data[i].thumbnail_full_path == null) {
+                    data[i].thumbnail_full_path = '{{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}';
+                } else {
+                    data[i].thumbnail_full_path = '/' + data[i].thumbnail_full_path
+                }
 
                 data[i].start = new Date(data[i].start).format('yyyy-mm-dd');
 
