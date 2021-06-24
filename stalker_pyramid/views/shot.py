@@ -206,7 +206,35 @@ def get_shots_count(request):
 
     where_condition = ''
 
-    if entity.entity_type == 'Sequence':
+    if entity.entity_type == 'Task':
+        # get recursive child leaf count
+        sql_query = """
+            select
+                count(1)
+            from ( -- recursive query
+                with recursive recursive_shots(id) as (
+                    select
+                        task.id,
+                        "Task_SimpleEntities".entity_type as entity_type
+                    from "Tasks" as task
+                    join "SimpleEntities" as "Task_SimpleEntities" on task.id = "Task_SimpleEntities".id
+                    where task.parent_id = %s
+                union all
+                    select
+                        task.id,
+                        "Parent_Task_SimpleEntities".entity_type as entity_type
+                    from "Tasks" as task
+                    join recursive_shots as parent on task.parent_id = parent.id
+                    join "SimpleEntities" as "Parent_Task_SimpleEntities" on task.id = "Parent_Task_SimpleEntities".id
+                ) select
+                    recursive_shots.id
+                from recursive_shots
+                where recursive_shots.entity_type = 'Shot'
+            ) as shots
+        """ % entity_id
+        where_condition = ""
+
+    elif entity.entity_type == 'Sequence':
         where_condition = """left join "Shot_Sequences" on "Shot_Sequences".shot_id = "Shots".id
                           where "Shot_Sequences".sequence_id = %s""" % entity_id
     elif entity.entity_type == 'Project':
