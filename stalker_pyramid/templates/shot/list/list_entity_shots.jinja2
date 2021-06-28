@@ -142,12 +142,13 @@
 
     {% raw %}
     <script id="tmpl_taskCell" type="text/x-dot-template">
-        <td class="no-padding" style="width:125px;">
+        <td class="no-padding" style="width:125px; height: fit-content;">
             <div class="status_{{=it.status_color}}"
-                 style="padding:5px; height: 65px"">
+                 style="padding:5px; height: fit-content;">
                 <span>
-                    <strong><a class="white" href="/tasks/{{=it.id }}/view">{{=it.name}}</a></strong>
-                    {{ if (it.update_shot_action) { }}
+                    <span style="font-weight: bolder;">
+                        <a class="white" href="/tasks/{{=it.id }}/view">{{=it.name}}</a>
+                        {{ if (it.update_shot_action) { }}
 
                         <a class="white pull-right"
                            data-target="#dialog_template"
@@ -156,21 +157,24 @@
                            href="/tasks/change/properties/dialog?task_ids={{=it.id }}">
                            <i class="icon-edit bigger-130"></i>
                         </a>
-
+                    </span>
                     <br/>
                     {{ } }}
                     <div class="no-padding">
-                        <!--{{ if(it.bid_timing){ }}-->
-                            <!--<strong>Bid: </strong>-->
-                            <!--<span id='bid_timing_{{=it.id}}'>{{=it.bid_timing}}</span>-->
-                            <!--<span id='bid_unit_{{=it.id}}'>{{=it.bid_unit }}</span>-->
-                            <!--<br/>-->
-                            <!--<strong>S_T: </strong>-->
-                            <!--<span id='schedule_timing_{{=it.id}}'>{{=it.schedule_timing}}</span>-->
-                            <!--<span id='schedule_unit_{{=it.id}}'>{{=it.schedule_unit }}</span>-->
-                        <!--{{ } }}-->
-                        <!--<br/>-->
-                        <span><a href='/users/{{=it.resource_id}}/view'>{{=it.resource_name}}</a></span>
+                        <span style="font-weight: bolder;">
+                            <a href='/users/{{=it.resource_id}}/view'>{{=it.resource_name}}</a>
+                        </span>
+                        {{ if(it.bid_timing){ }}
+                            <br/>
+                            <span style="font-weight: bold;">BT: </span>
+                            <span id='bid_timing_{{=it.id}}' style="font-weight: lighter;">{{=it.bid_timing}}</span>
+                            <span id='bid_unit_{{=it.id}}' style="font-weight: lighter;">{{=it.bid_unit }}</span>
+                            <span>&ndash;</span>
+                            <span style="font-weight: bold;">ST: </span>
+                            <span id='schedule_timing_{{=it.id}}' style="font-weight: lighter;">{{=it.schedule_timing}}</span>
+                            <span id='schedule_unit_{{=it.id}}' style="font-weight: lighter;">{{=it.schedule_unit }}</span>
+                        {{ } }}
+                        <br/>
                     </div>
 
                     {{ if (it.percent_complete !== '') { }}

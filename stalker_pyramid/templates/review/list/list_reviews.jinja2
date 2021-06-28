@@ -151,7 +151,10 @@
     {% endraw %}
 
     <script>
-        var tableParameters = {};
+        var tableParameters = {
+            "aLengthMenu": [[-1, 10, 25, 50, 100, 200], ["All", 10, 25, 50, 100, 200]],
+            "iDisplayLength": -1,
+        };
         var sortingParameters = [[0, 'desc']];
         var tableDataAddress = '{{ request.route_path('get_%s_reviews' % entity.entity_type.lower(), id=entity.id, _query={'status': 'NEW'}) }}';
     </script>
