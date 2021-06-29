@@ -210,7 +210,8 @@
         var task_schedule_timing = $('#task_schedule_timing');
         $('#task_schedule_model').val(schedule_model);
 
-
+        // set the default values
+        task_schedule_unit.val("h");
 
         {# ***************************************************************** #}
         {# Priority Spinner #}
@@ -252,7 +253,7 @@
 
 
             // prevent multiple sends
-            if (task_form.attr('is_sending') == 'true') {
+            if (task_form.attr('is_sending') === 'true') {
                 return;
             } else {
                 task_form.attr('is_sending', true);
