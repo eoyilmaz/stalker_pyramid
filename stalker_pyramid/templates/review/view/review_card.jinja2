@@ -102,7 +102,7 @@
                 data[i].project_id = '{% if entity.entity_type != "Project" %}{{ entity.project.id }}{% else %}{{ entity.id }}{% endif %}';
                 if (data[i].review_status_code === 'new') {
                     data[i].review_status_name = 'Pending';
-                    if (data[i].reviewer_id === '{{ logged_in_user.id }}') {
+                    if (data[i].reviewer_id === {{ logged_in_user.id }} ) {
                         $(function () {
                             flash_message({
                                 container: 'body',
