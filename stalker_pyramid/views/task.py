@@ -4318,27 +4318,29 @@ def approve_task(request):
         return Response('There is no review', 500)
 
     if review.type and review.type.name == 'Extra Time':
-
-        note = create_simple_note(description,
-                                  'Rejected Extra Time Request',
-                                  'red',
-                                  'rejected',
-                                  logged_in_user,
-                                  utc_now)
+        note = create_simple_note(
+            description,
+            'Rejected Extra Time Request',
+            'red',
+            'rejected',
+            logged_in_user,
+            utc_now
+        )
 
     else:
-        note = create_simple_note(description,
-                                  'Approved',
-                                  'green',
-                                  'approved',
-                                  logged_in_user,
-                                  utc_now)
+        note = create_simple_note(
+            description,
+            'Approved',
+            'green',
+            'approved',
+            logged_in_user,
+            utc_now
+        )
 
     logger.debug('review %s' % review)
 
     try:
         review.approve()
-
         review.description = \
             '%(resource_note)s <br/> <b>%(reviewer_name)s</b>: ' \
             '%(reviewer_note)s' % {
@@ -4352,13 +4354,19 @@ def approve_task(request):
         task.notes.append(note)
     except StatusError as e:
         return Response('StatusError: %s' % e, 500)
+    finally:
+        # fix task status
+        task.update_status_with_dependent_statuses()
+        task.update_status_with_children_statuses()
+        task.update_schedule_info()
+        check_task_status_by_schedule_model(task)
+        fix_task_computed_time(task)
 
     task.updated_by = logged_in_user
     task.date_updated = utc_now
 
     if send_email:
          # send email to resources of the task
-
         mailer = get_mailer(request)
 
         recipients = []
