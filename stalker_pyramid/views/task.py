@@ -794,8 +794,7 @@ def convert_to_dgrid_gantt_project_format(projects):
         r = DBSession.connection().execute(sql_query).fetchone()[0]
         end_inner = time.time()
 
-        logger.debug('hasChildren took: %s seconds' %
-                     (end_inner - start_inner))
+        logger.debug('hasChildren took: %s seconds' % (end_inner - start_inner))
         return bool(r)
 
     return_data = [
@@ -845,7 +844,7 @@ def convert_to_dgrid_gantt_task_format(tasks):
         {
             'bid_timing': task.bid_timing,
             'bid_unit': task.bid_unit,
-            'completed': task.total_logged_seconds / task.schedule_seconds,
+            'completed': task.percent_complete / 100,
             'dependencies': [
                 {
                     'id': dep.id,
@@ -2887,7 +2886,7 @@ def get_gantt_tasks(request):
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
 
-    #logger.debug('entity : %s' % entity)
+    # logger.debug('entity : %s' % entity)
 
     tasks = []
     if entity:
@@ -2895,8 +2894,7 @@ def get_gantt_tasks(request):
             # return both the project and the root tasks of its
             project = entity
             dgrid_data = convert_to_dgrid_gantt_project_format([project])
-            dgrid_data.extend(
-                convert_to_dgrid_gantt_task_format(project.root_tasks))
+            dgrid_data.extend(convert_to_dgrid_gantt_task_format(project.root_tasks))
             return dgrid_data
         elif isinstance(entity, User):
             user = entity
@@ -2904,8 +2902,7 @@ def get_gantt_tasks(request):
             if user is not None:
                 # TODO: just return root tasks to make it fast
                 # get the user projects and then tasks of the user
-                dgrid_data = convert_to_dgrid_gantt_project_format(
-                    user.projects)
+                dgrid_data = convert_to_dgrid_gantt_project_format(user.projects)
 
                 user_tasks_with_parents = []
                 for task in user.tasks:

@@ -58,14 +58,12 @@
         <tr>
             <td>{{=it.date_created}}</td>
             <td>{{=it.review_number }}</td>
-            <td><a href='/tasks/{{=it.task_id }}/view'>{{=it.task_name}}</a>
-            </td>
-            <td><a href='/users/{{=it.reviewer_id }}/view'>{{=it.reviewer_name}}</a>
-            </td>
-            <td>{{ if (it.review_status_name == 'New') { }}
+            <td><a href='/tasks/{{=it.task_id }}/view'>{{=it.task_name}}</a></td>
+            <td><a href='/users/{{=it.reviewer_id }}/view'>{{=it.reviewer_name}}</a></td>
+            <td>{{ if (it.review_status_name == 'New'){ }}
                 <span class="label label-status_prev">Pending</span>
 
-                {{ if(it.is_reviewer=='1'){ }}
+                {{ if (it.is_reviewer == '1'){ }}
                 <div class="inline position-relative">
                     <button class="btn btn-minier bigger btn-info dropdown-toggle" data-toggle="dropdown">
                         <i class="icon-angle-down icon-only bigger-120"></i>
@@ -136,14 +134,30 @@
                 {{ } }}
 
                 {{ } else{ }}
-
-                <span class="label label-{{=it.review_status_color }}">{{=it.review_status_name }}</span>
+                    <span class="label label-{{=it.review_status_color }}">{{=it.review_status_name }}</span>
                 {{ } }}
+
+                <!-- Display Other reviews -->
+                {{ if (it.other_reviews_statuses[0] !== null) { }}
+                    <div>
+                        <span class="label">Other Reviewers Decision</span>
+                        {{~ it.other_reviews_statuses :t:i }}
+                            {{ if (t=="New"){ }}
+                                <span class="label label-status_prev">Prev</span>
+                            {{ } }}
+                            {{ if (t=="Approved"){ }}
+                                <span class="label label-status_cmpl">Approved</span>
+                            {{ } }}
+                            {{ if (t=="Requested Revision"){ }}
+                                <span class="label label-status_rrev">Requested Revision</span>
+                            {{ } }}
+                        {{~}}
+                    </div>
+                {{ } }}
+
                 {{ if (it.review_description) { }}
-                <br/>
                     {{=it.review_description }}
                 {{ } }}
-
 
             </td>
         </tr>

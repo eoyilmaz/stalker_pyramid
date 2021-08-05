@@ -78,7 +78,6 @@ def get_active_budget(self):
     """patch Simple entity to add new functionality
     """
     import json
-    data = {}
     active_budget = None
     if self.generic_text:
         data = json.loads(self.generic_text)
@@ -635,13 +634,13 @@ def main(global_config, **settings):
     config.add_route('get_user_tasks',        'users/{id}/tasks/')  # json
     config.add_route('get_user_tasks_simple', 'users/{id}/tasks/simple/')  # json
     config.add_route('get_user_tasks_count',  'users/{id}/tasks/count/')  # json
-    config.add_route('get_user_tasks_responsible_of_count', 'users/{id}/tasks/responsible_of/count') # html
+    config.add_route('get_user_tasks_responsible_of_count', 'users/{id}/tasks/responsible_of/count')  # html
     config.add_route('get_user_vacations',    'users/{id}/vacations/')  # json
     config.add_route('get_user_vacations_count', 'users/{id}/vacations/count/')  # json
     config.add_route('get_user_tickets',      'users/{id}/tickets/')  # json
     config.add_route('get_user_open_tickets', 'users/{id}/open_tickets/')  # json
-    config.add_route('get_user_reviews',      'users/{id}/reviews/') #json
-    config.add_route('get_user_reviews_count',      'users/{id}/reviews/count/') #json
+    config.add_route('get_user_reviews',      'users/{id}/reviews/')  # json
+    config.add_route('get_user_reviews_count',      'users/{id}/reviews/count/')  # json
     config.add_route('get_user_events',       'users/{id}/events/')  # json
     # config.add_route('get_user_worked_hours', 'users/{id}/{frequency}/worked_hours/')  # json
     config.add_route('get_resources',         'resources')
@@ -657,8 +656,8 @@ def main(global_config, **settings):
     config.add_route('list_user_projects',    'users/{id}/projects/list')  # html
     config.add_route('list_user_timelogs',   'users/{id}/timelogs/list')  # html
     config.add_route('list_user_tickets',     'users/{id}/tickets/list')  # html
-    config.add_route('list_user_tasks_responsible_of',       'users/{id}/tasks/list/responsible_of') # html
-    config.add_route('list_user_tasks_watching',       'users/{id}/tasks/list/watching') # html
+    config.add_route('list_user_tasks_responsible_of',       'users/{id}/tasks/list/responsible_of')  # html
+    config.add_route('list_user_tasks_watching',       'users/{id}/tasks/list/watching')  # html
     config.add_route('list_user_reviews',              'users/{id}/reviews/list')  # html
     config.add_route('list_resource_rates',    'resources/{id}/rates/list')  # html
     config.add_route('list_user_versions',       'users/{id}/versions/list')  # html

@@ -11,8 +11,6 @@ from stalker import (User, Task, Project)
 from stalker_pyramid.views import get_logged_in_user
 from stalker_pyramid.views.task import generate_recursive_task_query
 
-#logger = logging.getLogger(__name__)
-#logger.setLevel(logging.DEBUG)
 from stalker_pyramid import logger_name
 logger = logging.getLogger(logger_name)
 
@@ -185,11 +183,11 @@ def get_user_reviews(request):
 
     if review_status:
         where_conditions = \
-        """where "Reviews".reviewer_id = %(reviewer_id)s and 
-        "Reviews_Statuses".code = '%(status)s' """ % {
-            'reviewer_id': reviewer_id,
-            'status': review_status
-        }
+            """where "Reviews".reviewer_id = %(reviewer_id)s and 
+            "Reviews_Statuses".code = '%(status)s' """ % {
+                'reviewer_id': reviewer_id,
+                'status': review_status
+            }
     else:
         where_conditions = """where "Reviews".reviewer_id = %(reviewer_id)s""" % {
             'reviewer_id': reviewer_id
@@ -292,8 +290,9 @@ def get_reviews(request, where_conditions):
         "Reviewers_SimpleEntities_Links".full_path as reviewer_thumbnail_path,
         array_agg("Reviewer_Departments_SimpleEntities".name) as reviewer_departments,
         extract(epoch from"Reviews_Simple_Entities".date_created) * 1000 as date_created,
-        "Reviews_Simple_Entities".description,
-        "Review_Types".name as type_name
+        "Reviews_Simple_Entities".description as review_description,
+        "Review_Types".name as review_type,
+        array_agg("Other_Reviews_Statuses".name) as other_reviews_statuses
 
     from "Reviews"
         join "SimpleEntities" as "Reviews_Simple_Entities" on "Reviews_Simple_Entities".id = "Reviews".id
@@ -307,6 +306,11 @@ def get_reviews(request, where_conditions):
         left join (%(recursive_task_query)s) as "ParentTasks" on "Review_Tasks".id = "ParentTasks".id
 
         left outer join "Links" as "Reviewers_SimpleEntities_Links" on "Reviewers_SimpleEntities_Links".id = "Reviewers_SimpleEntities".thumbnail_id
+
+        left outer join "Reviews" as "Other_Reviews" on (
+            "Reviews".task_id = "Other_Reviews".task_id and "Reviews".review_number = "Other_Reviews".review_number and "Reviews".reviewer_id != "Other_Reviews".reviewer_id
+        )
+        left outer join "SimpleEntities" as "Other_Reviews_Statuses" on "Other_Reviews".status_id = "Other_Reviews_Statuses".id
 
     %(where_conditions)s
 
@@ -330,8 +334,6 @@ def get_reviews(request, where_conditions):
     order by "Reviews_Simple_Entities".date_created desc
     """
 
-    # logger.debug('where_conditions: %s ' % where_conditions)
-
     sql_query = sql_query % {
         'where_conditions': where_conditions,
         'recursive_task_query': generate_recursive_task_query()
@@ -341,22 +343,23 @@ def get_reviews(request, where_conditions):
 
     return_data = [
         {
-            'review_number': r[0],
-            'review_id': r[1],
-            'review_status_code': r[2].lower(),
-            'review_status_name': r[3],
-            'review_status_color': r[4],
-            'task_id': r[5],
-            'task_name': r[6],
-            'task_review_number': r[7],
-            'reviewer_id': r[8],
-            'reviewer_name': r[9],
-            'reviewer_thumbnail_full_path':r[10],
-            'reviewer_department':r[11],
-            'date_created':r[12],
-            'is_reviewer':'1' if logged_in_user.id == r[8] else None,
-            'review_description': r[13],
-            'review_type': r[14] if r[14] else ''
+            'review_number': r['review_number'],
+            'review_id': r['review_id'],
+            'review_status_code': r['review_status_code'].lower(),
+            'review_status_name': r['review_status_name'],
+            'review_status_color': r['review_status_color'],
+            'task_id': r['task_id'],
+            'task_name': r['task_name'],
+            'task_review_number': r['task_review_number'],
+            'reviewer_id': r['reviewer_id'],
+            'reviewer_name': r['reviewer_name'],
+            'reviewer_thumbnail_full_path':r['reviewer_thumbnail_path'],
+            'reviewer_department':r['reviewer_departments'],
+            'date_created':r['date_created'],
+            'is_reviewer':'1' if logged_in_user.id == r['reviewer_id'] else None,
+            'review_description': r['review_description'],
+            'review_type': r['review_type'] if r['review_type'] else '',
+            'other_reviews_statuses': r['other_reviews_statuses']
         }
         for r in result.fetchall()
     ]
