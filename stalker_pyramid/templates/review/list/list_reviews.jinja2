@@ -42,6 +42,7 @@
     {% raw %}
     <script id="tmpl_itemThead" type="text/x-dot-template">
         <tr>
+            <th>Thumbnail</th>
             <th>Date</th>
             <th>Review Set #</th>
             <th>Task</th>
@@ -56,6 +57,7 @@
     {% raw %}
     <script id="tmpl_itemRow" type="text/x-dot-template">
         <tr>
+            <td><img alt="150x150" src="/{{=it.task_thumbnail_full_path}}" style="height: 80px; width: auto" /></td>
             <td>{{=it.date_created}}</td>
             <td>{{=it.review_number }}</td>
             <td><a href='/tasks/{{=it.task_id }}/view'>{{=it.task_name}}</a></td>

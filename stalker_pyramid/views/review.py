@@ -76,7 +76,7 @@ def get_task_reviews(request):
     logger.debug('get_task_reviews is running')
 
     task_id = request.matchdict.get('id', -1)
-    #task = Task.query.filter(Task.id == task_id).first()
+    # task = Task.query.filter(Task.id == task_id).first()
 
     # if not task:
     #     transaction.abort()
@@ -284,6 +284,7 @@ def get_reviews(request, where_conditions):
         "Statuses_Simple_Entities".html_class as review_status_color,
         "Reviews".task_id as task_id,
         "ParentTasks".full_path as task_name,
+        "ParentTasks".thumbnail_full_path as task_thumbnail_full_path,
         "Review_Tasks".review_number as task_review_number,
         "Reviews".reviewer_id as reviewer_id,
         "Reviewers_SimpleEntities".name as reviewer_name,
@@ -324,6 +325,7 @@ def get_reviews(request, where_conditions):
         "Statuses_Simple_Entities".html_class,
         "Reviews".task_id,
         "ParentTasks".full_path,
+        "ParentTasks".thumbnail_full_path,
         "Review_Tasks".review_number,
         "Reviews".reviewer_id,
         "Reviewers_SimpleEntities".name,
@@ -351,6 +353,7 @@ def get_reviews(request, where_conditions):
             'task_id': r['task_id'],
             'task_name': r['task_name'],
             'task_review_number': r['task_review_number'],
+            'task_thumbnail_full_path': r['task_thumbnail_full_path'],
             'reviewer_id': r['reviewer_id'],
             'reviewer_name': r['reviewer_name'],
             'reviewer_thumbnail_full_path':r['reviewer_thumbnail_path'],

@@ -65,8 +65,13 @@ def generate_recursive_task_query(ordered=True):
                 from "Task_Responsible"
                 where "Task_Responsible".task_id = task.id
                 group by task_id
-            ) as responsible_id
+            ) as responsible_id,
+            "Task_Thumbnail".full_path as thumbnail_full_path
         from "Tasks" as task
+
+        join "SimpleEntities" as "Task_SimpleEntities" on task.id = "Task_SimpleEntities".id
+        left outer join "Links" as "Task_Thumbnail" on "Task_SimpleEntities".thumbnail_id = "Task_Thumbnail".id 
+
         join "Projects" on task.project_id = "Projects".id
         where task.parent_id is NULL
     union all
@@ -90,10 +95,15 @@ def generate_recursive_task_query(ordered=True):
                     group by task_id
                 ),
                 parent.responsible_id
-            ) as responsible_id
+            ) as responsible_id,
+            coalesce(
+                thumbnail_full_path,
+                "Parent_Task_Thumbnail".full_path
+            ) as thumbnail_full_path
         from "Tasks" as task
         join recursive_task as parent on task.parent_id = parent.id
         join "SimpleEntities" as "Parent_SimpleEntities" on parent.id = "Parent_SimpleEntities".id
+        left outer join "Links" as "Parent_Task_Thumbnail" on "Parent_SimpleEntities".thumbnail_id = "Parent_Task_Thumbnail".id
         left outer join "Types" as "Parent_Types" on "Parent_SimpleEntities".type_id = "Parent_Types".id
         left outer join "SimpleEntities" as "Type_SimpleEntities" on "Parent_Types".id = "Type_SimpleEntities".id
     ) select
@@ -106,7 +116,8 @@ def generate_recursive_task_query(ordered=True):
         "SimpleEntities".entity_type,
         recursive_task.responsible_id,
         task_watchers.watcher_id,
-        recursive_task.type_names
+        recursive_task.type_names,
+        recursive_task.thumbnail_full_path as thumbnail_full_path
     from recursive_task
     join "SimpleEntities" on recursive_task.id = "SimpleEntities".id
     left join (
@@ -1828,6 +1839,7 @@ def cached_query_tasks(limit, offset, order_by_params, where_clause, task_id):
             tasks.name as name,
             tasks.path as path,
             tasks.full_path as full_path,
+            tasks.thumbnail_full_path,
             "Tasks".project_id as project_id,
             "Tasks".parent_id as parent_id,
             "Task_SimpleEntities".description as description,
@@ -2098,6 +2110,7 @@ def cached_query_tasks(limit, offset, order_by_params, where_clause, task_id):
             'name': r['name'],
             'path': r['path'],
             'full_path': r['full_path'],
+            'thumbnail_full_path': r['thumbnail_full_path'],
             'project_id': r['project_id'],
             'parent_id': r['parent_id'],
             'description': r['description'],
@@ -4339,7 +4352,7 @@ def approve_task(request):
     try:
         review.approve()
         review.description = \
-            '%(resource_note)s <br/> <b>%(reviewer_name)s</b>: ' \
+            '%(resource_note)s<br/> <b>%(reviewer_name)s</b>: ' \
             '%(reviewer_note)s' % {
                 'resource_note': review.description,
                 'reviewer_name': logged_in_user.name,
