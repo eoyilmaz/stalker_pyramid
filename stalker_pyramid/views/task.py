@@ -2001,6 +2001,8 @@ def cached_query_tasks(limit, offset, order_by_params, where_clause, task_id):
             "Project_SimpleEntities".name as name,
             "Projects".id as path,
             "Project_SimpleEntities".name as full_path,
+            coalesce("Project_Thumbnail".full_path) as thumbnail_full_path,
+
             NULL as project_id,
             NULL as parent_id,
             "Project_SimpleEntities".description as description,
@@ -2049,6 +2051,7 @@ def cached_query_tasks(limit, offset, order_by_params, where_clause, task_id):
 
         from "Projects"
         join "SimpleEntities" as "Project_SimpleEntities" on "Projects".id = "Project_SimpleEntities".id
+        left outer join "Links" as "Project_Thumbnail" on "Project_SimpleEntities".thumbnail_id = "Project_Thumbnail".id
         join "Statuses" on "Projects".status_id = "Statuses".id
         join "SimpleEntities" as "Status_SimpleEntities" on "Statuses".id = "Status_SimpleEntities".id
         join (
