@@ -225,37 +225,72 @@ def get_entity_notes(request):
         transaction.abort()
         return Response('There is no entity with id: %s' % entity_id, 500)
 
-    sql_query = """
-        select  "User_SimpleEntities".id as user_id,
-                "User_SimpleEntities".name as name,
-                "Users_Thumbnail_Links".full_path as full_path,
-                "Notes_SimpleEntities".id as note_id,
-                "Notes_SimpleEntities".description as description,
-                "Notes_SimpleEntities".date_created as date_created,
-                "Notes_Types_SimpleEntities".id as note_type_id,
-                "Notes_Types_SimpleEntities".name as note_type_name,
-                "Notes_Types_SimpleEntities".html_class as html_class,
-                dailies.name as daily_name,
-                dailies.id as daily_id
+    if entity.entity_type != "User":
+        sql_query = """
+        select
+            "User_SimpleEntities".id as user_id,
+            "User_SimpleEntities".name as name,
+            "Users_Thumbnail_Links".full_path as full_path,
+            "Notes_SimpleEntities".id as note_id,
+            "Notes_SimpleEntities".description as description,
+            "Notes_SimpleEntities".date_created as date_created,
+            "Notes_Types_SimpleEntities".id as note_type_id,
+            "Notes_Types_SimpleEntities".name as note_type_name,
+            "Notes_Types_SimpleEntities".html_class as html_class,
+            dailies.name as daily_name,
+            dailies.id as daily_id,
+            "Entity_Notes".entity_id as entity_id,
+            "Entities_SimpleEntities".name as entity_name
 
         from "Notes"
         join "SimpleEntities" as "Notes_SimpleEntities" on "Notes_SimpleEntities".id = "Notes".id
         left outer join "SimpleEntities" as "Notes_Types_SimpleEntities" on "Notes_Types_SimpleEntities".id = "Notes_SimpleEntities".type_id
         join "SimpleEntities" as "User_SimpleEntities" on "Notes_SimpleEntities".created_by_id = "User_SimpleEntities".id
         left outer join "Links" as "Users_Thumbnail_Links" on "Users_Thumbnail_Links".id = "User_SimpleEntities".thumbnail_id
-        join "Entity_Notes" as "Search_Entity_Notes" on "Notes".id = "Search_Entity_Notes".note_id
+        join "Entity_Notes" on "Notes".id = "Entity_Notes".note_id
         left outer join (
-        select
-               "Daily_SimpleEntities".name,
-               "Daily_SimpleEntities".id,
-               "Daily_Notes".note_id
+            select
+                "Daily_SimpleEntities".name,
+                "Daily_SimpleEntities".id,
+                "Daily_Notes".note_id
 
             from "Dailies"
             join "SimpleEntities" as "Daily_SimpleEntities" on "Daily_SimpleEntities".id = "Dailies".id
             join "Entity_Notes" as "Daily_Notes" on "Daily_Notes".entity_id = "Dailies".id
-         ) as dailies on dailies.note_id = "Search_Entity_Notes".note_id
-        where "Search_Entity_Notes".entity_id = %(entity_id)s
+        ) as dailies on dailies.note_id = "Entity_Notes".note_id
+        join "SimpleEntities" as "Entities_SimpleEntities" on "Entity_Notes".entity_id = "Entities_SimpleEntities".id
+        where "Entity_Notes".entity_id = %(entity_id)s
         order by "Notes_SimpleEntities".date_created desc
+        """
+    else:
+        sql_query = """
+                select
+            "User_SimpleEntities".id as user_id,
+            "User_SimpleEntities".name as name,
+            "Users_Thumbnail_Links".full_path as full_path,
+            "Notes_SimpleEntities".id as note_id,
+            "Notes_SimpleEntities".description as description,
+            "Notes_SimpleEntities".date_created as date_created,
+            "Notes_Types_SimpleEntities".id as note_type_id,
+            "Notes_Types_SimpleEntities".name as note_type_name,
+            "Notes_Types_SimpleEntities".html_class as html_class,
+            '' as daily_name,
+            -1 as daily_id,
+            "Entity_Notes".entity_id as entity_id,
+            "Entities_SimpleEntities".name as entity_name
+
+        from "Notes"
+        join "SimpleEntities" as "Notes_SimpleEntities" on "Notes_SimpleEntities".id = "Notes".id
+        left outer join "SimpleEntities" as "Notes_Types_SimpleEntities" on "Notes_Types_SimpleEntities".id = "Notes_SimpleEntities".type_id
+        join "SimpleEntities" as "User_SimpleEntities" on "Notes_SimpleEntities".created_by_id = "User_SimpleEntities".id
+        left outer join "Links" as "Users_Thumbnail_Links" on "Users_Thumbnail_Links".id = "User_SimpleEntities".thumbnail_id
+        join "Entity_Notes" on "Notes".id = "Entity_Notes".note_id
+        join "Tasks" on "Entity_Notes".entity_id = "Tasks".id
+        join "Task_Resources" on "Task_Resources".task_id = "Tasks".id
+        join "SimpleEntities" as "Entities_SimpleEntities" on "Entity_Notes".entity_id = "Entities_SimpleEntities".id
+        where "Task_Resources".resource_id = %(entity_id)s
+        order by "Notes_SimpleEntities".date_updated desc
+        limit 50
         """
 
     sql_query = sql_query % {'entity_id': entity_id}
@@ -274,7 +309,10 @@ def get_entity_notes(request):
             'note_type_name': r["note_type_name"],
             'note_type_color': r["html_class"],
             'daily_name': r["daily_name"],
-            'daily_id': r["daily_id"]
+            'daily_id': r["daily_id"],
+            'entity_id': r["entity_id"],
+            'entity_name': r["entity_name"],
+            'related_entity_id': entity_id,
         }
         for r in result.fetchall()
     ]
