@@ -62,48 +62,45 @@
     <script type="text/javascript">
         $(function () {
         {% if has_permission('Update_Entity')%}
-        $('#editable_entity_description').editable({
-                        mode: 'inline',
-                        type: 'wysiwyg',
-                        name: 'editable_entity_description',
-                        toggle:'manual',
+            $('#editable_entity_description').editable({
+                mode: 'inline',
+                type: 'wysiwyg',
+                name: 'editable_entity_description',
+                toggle:'manual',
 
-                        wysiwyg: {
-                            maxFileSize: 2000000,
-                            fileUploadError: showErrorAlert
-                        },
+                wysiwyg: {
+                    maxFileSize: 2000000,
+                    fileUploadError: showErrorAlert
+                },
 
-                        success: function (response, newValue) {
-                            $('#description_loading').show();
+                success: function (response, newValue) {
+                    $('#description_loading').show();
 
-                            var params = $.param({
-                                attr_name: 'description',
-                                attr_value: newValue
-                            });
+                    var params = $.param({
+                        attr_name: 'description',
+                        attr_value: newValue
+                    });
 
-                            $.post('{{request.route_url('inline_update_entity', id=entity.id) }}', params).done(function () {
-
-                                $.getJSON('{{request.route_url('get_entity', id=entity.id) }}').then(
-                                    function (data) {
-                                        $('#editable_entity_description').val(data.description);
-                                        $('#description_loading').hide();
-                                    }
-                                );
-
-                            }).fail(function (jqXHR) {
-                                bootbox.alert('<div id="message" class="alert alert-danger bigger-110">' + jqXHR.responseText + '</div>');
+                    $.post('{{request.route_url('inline_update_entity', id=entity.id) }}', params).done(function () {
+                        $.getJSON('{{request.route_url('get_entity', id=entity.id) }}').then(
+                            function (data) {
+                                $('#editable_entity_description').val(data.description);
                                 $('#description_loading').hide();
-
-                            });
-                        }
+                            }
+                        );
+                    }).fail(function (jqXHR) {
+                        bootbox.alert('<div id="message" class="alert alert-danger bigger-110">' + jqXHR.responseText + '</div>');
+                        $('#description_loading').hide();
                     });
+                }
+            });
 
-                    $('#entity_description_edit_trigger').on('click', function(e){
-                        e.stopPropagation();
-                        $('#editable_entity_description').editable('toggle');
-                    });
+            $('#entity_description_edit_trigger').on('click', function(e){
+                e.stopPropagation();
+                $('#editable_entity_description').editable('toggle');
+            });
 
-                {% endif %}
+        {% endif %}
         });
     </script>
 {% endblock extrascripts %}

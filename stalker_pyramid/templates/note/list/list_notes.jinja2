@@ -37,6 +37,12 @@
             </div>
 
             <div class="widget-body">
+                {{ if (it.entity_id != it.related_entity_id) { }}
+                <span>
+                    <a href="/tasks/{{=it.entity_id}}/view">{{=it.entity_name}}</a>
+                </span>
+                {{ } }}
+
                 <div class="widget-main">
                     {{=it.content.replace(/[\n]/g, '<br\>')}}
                 </div>
@@ -159,27 +165,21 @@
             for (var i = 0; i < n_data.length; i++) {
                 n_data[i].created_date = new Date(parseInt(n_data[i].created_date));
 
-                if (n_data[i].created_by_thumbnail == null) {
+                if (n_data[i].created_by_thumbnail === null) {
                     n_data[i].created_by_thumbnail = '{{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_0.png") }}';
-                }
-                else {
+                } else {
                     n_data[i].created_by_thumbnail = '/' + n_data[i].created_by_thumbnail;
                 }
 
                 {% if has_permission('Delete_Note') %}
-
-                   n_data[i].delete_note_action = "/notes/"+n_data[i].note_id+"/delete/dialog?came_from="+n_data[i].came_from;
-
+                   n_data[i].delete_note_action = "/notes/" + n_data[i].note_id + "/delete/dialog?came_from=" + n_data[i].came_from;
                 {% endif %}
 
                 if (n_data[i].note_type_name === 'Simple Text' || !n_data[i].note_type_name) {
-
                     notes.append(note_simple_template(n_data[i]));
-                }
-                else if (n_data[i].note_type_name === 'Daily_Note') {
-                        notes.append(note_daily_template(n_data[i]));
-                }
-                else {
+                } else if (n_data[i].note_type_name === 'Daily_Note') {
+                    notes.append(note_daily_template(n_data[i]));
+                } else {
                     notes.append(note_activity_template(n_data[i]));
                 }
             }
