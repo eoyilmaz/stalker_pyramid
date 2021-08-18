@@ -157,9 +157,10 @@ define([
                 tasks_title_buffer.push('task_ids=' + task.id);
             }
 
-            tasks_title = '<a class="pull-right" data-target="#dialog_template" data-toggle="modal" data-keyboard="false" href="/tasks/change/properties/dialog?' + tasks_title_buffer.join("&") + '"> <i class="icon-edit bigger-130"></i> </a>';
-            if (tasks_title === '') {
+            if (tasks_title_buffer.length === 0) {
                 tasks_title = "<span>-- No Tasks --</span>";
+            } else {
+                tasks_title = '<a class="pull-right" data-target="#dialog_template" data-toggle="modal" data-keyboard="false" href="/tasks/change/properties/dialog?' + tasks_title_buffer.join("&") + '"> <i class="icon-edit bigger-130"></i> </a>';
             }
             return tasks_title;
         },
