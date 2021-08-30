@@ -277,7 +277,7 @@ def get_entity_notes(request):
             '' as daily_name,
             -1 as daily_id,
             "Entity_Notes".entity_id as entity_id,
-            "Entities_SimpleEntities".name as entity_name
+            "ParentTasks".path_names as entity_name
 
         from "Notes"
             join "SimpleEntities" as "Notes_SimpleEntities" on "Notes_SimpleEntities".id = "Notes".id
@@ -285,15 +285,18 @@ def get_entity_notes(request):
             join "SimpleEntities" as "User_SimpleEntities" on "Notes_SimpleEntities".created_by_id = "User_SimpleEntities".id
             left outer join "Links" as "Users_Thumbnail_Links" on "Users_Thumbnail_Links".id = "User_SimpleEntities".thumbnail_id
             join "Entity_Notes" on "Notes".id = "Entity_Notes".note_id
-            join "Tasks" on "Entity_Notes".entity_id = "Tasks".id
-            join "Task_Resources" on "Task_Resources".task_id = "Tasks".id
-            join "SimpleEntities" as "Entities_SimpleEntities" on "Entity_Notes".entity_id = "Entities_SimpleEntities".id
+            join (%(recursive_task_query)s) as "ParentTasks" on "Entity_Notes".entity_id = "ParentTasks".id
+            join "Task_Resources" on "Task_Resources".task_id = "ParentTasks".id
         where "Task_Resources".resource_id = %(entity_id)s and "Notes_Types_SimpleEntities".name != 'Auto Extended Time'
         order by "Notes_SimpleEntities".date_updated desc
         limit 50
         """
 
-    sql_query = sql_query % {'entity_id': entity_id}
+    from stalker_pyramid.views.task import generate_recursive_task_query
+    sql_query = sql_query % {
+        'entity_id': entity_id,
+        'recursive_task_query': generate_recursive_task_query()
+    }
 
     result = DBSession.connection().execute(sql_query)
 
