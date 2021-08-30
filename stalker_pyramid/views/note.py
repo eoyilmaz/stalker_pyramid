@@ -264,7 +264,7 @@ def get_entity_notes(request):
         """
     else:
         sql_query = """
-                select
+        select
             "User_SimpleEntities".id as user_id,
             "User_SimpleEntities".name as name,
             "Users_Thumbnail_Links".full_path as full_path,
@@ -280,15 +280,15 @@ def get_entity_notes(request):
             "Entities_SimpleEntities".name as entity_name
 
         from "Notes"
-        join "SimpleEntities" as "Notes_SimpleEntities" on "Notes_SimpleEntities".id = "Notes".id
-        left outer join "SimpleEntities" as "Notes_Types_SimpleEntities" on "Notes_Types_SimpleEntities".id = "Notes_SimpleEntities".type_id
-        join "SimpleEntities" as "User_SimpleEntities" on "Notes_SimpleEntities".created_by_id = "User_SimpleEntities".id
-        left outer join "Links" as "Users_Thumbnail_Links" on "Users_Thumbnail_Links".id = "User_SimpleEntities".thumbnail_id
-        join "Entity_Notes" on "Notes".id = "Entity_Notes".note_id
-        join "Tasks" on "Entity_Notes".entity_id = "Tasks".id
-        join "Task_Resources" on "Task_Resources".task_id = "Tasks".id
-        join "SimpleEntities" as "Entities_SimpleEntities" on "Entity_Notes".entity_id = "Entities_SimpleEntities".id
-        where "Task_Resources".resource_id = %(entity_id)s
+            join "SimpleEntities" as "Notes_SimpleEntities" on "Notes_SimpleEntities".id = "Notes".id
+            left outer join "SimpleEntities" as "Notes_Types_SimpleEntities" on "Notes_Types_SimpleEntities".id = "Notes_SimpleEntities".type_id
+            join "SimpleEntities" as "User_SimpleEntities" on "Notes_SimpleEntities".created_by_id = "User_SimpleEntities".id
+            left outer join "Links" as "Users_Thumbnail_Links" on "Users_Thumbnail_Links".id = "User_SimpleEntities".thumbnail_id
+            join "Entity_Notes" on "Notes".id = "Entity_Notes".note_id
+            join "Tasks" on "Entity_Notes".entity_id = "Tasks".id
+            join "Task_Resources" on "Task_Resources".task_id = "Tasks".id
+            join "SimpleEntities" as "Entities_SimpleEntities" on "Entity_Notes".entity_id = "Entities_SimpleEntities".id
+        where "Task_Resources".resource_id = %(entity_id)s and "Notes_Types_SimpleEntities".name != 'Auto Extended Time'
         order by "Notes_SimpleEntities".date_updated desc
         limit 50
         """

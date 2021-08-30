@@ -206,8 +206,9 @@ def get_user_reviews_count(request):
     logger.debug('get_user_reviews_count is running')
 
     reviewer_id = request.matchdict.get('id', -1)
-    reviewer = User.query.filter(User.id == reviewer_id).first()
 
+    # TODO: This can be done faster, check if there is an id with that value
+    reviewer = User.query.filter(User.id == reviewer_id).first()
     if not reviewer:
         transaction.abort()
         return Response('There is no user with id: %s' % reviewer_id, 500)
