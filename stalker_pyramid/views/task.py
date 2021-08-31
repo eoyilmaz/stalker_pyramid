@@ -6602,10 +6602,14 @@ def change_tasks_properties_dialog(request):
     logger.debug('tasks : %s' % tasks)
 
     came_from = request.params.get('came_from', '/')
+    default_action = request.params.get("default_action", None)
+    reviewer_id = request.params.get("reviewer_id", None)
 
     return {
         'tasks': tasks,
-        'came_from': came_from
+        'came_from': came_from,
+        'default_action': default_action,
+        'reviewer_id': reviewer_id
     }
 
 
@@ -6820,12 +6824,12 @@ def change_task_users(request):
 def change_tasks_users(request):
     """changes task users with the given users
     """
+    from stalker import User
     logged_in_user = get_logged_in_user(request)
     utc_now = datetime.datetime.now(pytz.utc)
 
     selected_list = get_multi_integer(request, 'user_ids')
-    users = User.query\
-        .filter(User.id.in_(selected_list)).all()
+    users = User.query.filter(User.id.in_(selected_list)).all()
 
     if not users:
         transaction.abort()
@@ -6860,6 +6864,26 @@ def change_tasks_users(request):
             task.responsible = users
             task.updated_by = logged_in_user
             task.date_updated = utc_now
+    elif user_type == 'reviewer_responsible':
+        original_reviewer_id = request.params.get("original_reviewer_id")
+        if original_reviewer_id:
+            from stalker import Review, Status
+            original_reviewer = User.query.get(original_reviewer_id)
+            new_status = Status.query.filter(Status.code == 'NEW').first()
+
+            for task in tasks:
+                reviews = Review.query\
+                    .filter(Review.task == task)\
+                    .filter(Review.status == new_status)\
+                    .filter(Review.reviewer == original_reviewer)\
+                    .all()
+                # update reviewer
+                for review in reviews:
+                    review.reviewer = users[0]
+            # update the responsible
+            for task in tasks:
+                task.responsible.remove(original_reviewer)
+                task.responsible.append(users[0])
 
     # invalidate all caches
     invalidate_all_caches()

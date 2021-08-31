@@ -3,25 +3,25 @@
 <div class="row-fluid">
     <div class="row-fluid" >
         <form id='change_properties_task_form'
-          class='form-horizontal'
-          role='form'
-          method='post' >
+              class='form-horizontal'
+              role='form'
+              method='post' >
 
             <div class="control-group">
-                    <label class="span3 control-label" for="task_action">Choose an action</label>
-                    <div class="span9">
-                        <select id='task_action'
-                                class='input-block-level'>
-                                <option value="change_resources">Change Resource</option>
-                                <option value="change_responsible">Change Responsible</option>
-                                <option value="change_resources_responsible">Change Resources & Responsible</option>
-                                <option value="force_status">Force Complete</option>
-                                <option value="request_revisions">Request Revision</option>
-                                <option value="set_start_end_date">Set Start End Date</option>
-                                <option value="fix_task">Fix Task</option>
-                                <option value="watch_task">Watch Task</option>
-                        </select>
-                    </div>
+                <label class="span3 control-label" for="task_action">Choose an action</label>
+                <div class="span9">
+                    <select id='task_action' class='input-block-level'>
+                        <option value="change_resources">Change Resource</option>
+                        <option value="change_responsible">Change Responsible</option>
+                        <option value="change_resources_responsible">Change Resources & Responsible</option>
+                        <option value="change_reviewer_responsible">Change Reviewer & Responsible</option>
+                        <option value="force_status">Force Complete</option>
+                        <option value="request_revisions">Request Revision</option>
+                        <option value="set_start_end_date">Set Start End Date</option>
+                        <option value="fix_task">Fix Task</option>
+                        <option value="watch_task">Watch Task</option>
+                    </select>
+                </div>
             </div>
             {# Add to Watch List#}
 
@@ -44,7 +44,7 @@
                             multiple=''
                             class='input-block-level tag-input-style'
                             name='user_ids'
-                            data-placeholder='Resources'
+                            data-placeholder='Resources or Responsible or Reviewer'
                             is_updating=false></select>
                 </div>
             </div>
@@ -224,8 +224,8 @@
             var start_end_date_control =  $('#start_end_date_control');
             start_end_date_control.show();
 
-            task_action.on('change', function () {
-
+            task_action.on('change', function (e) {
+                console.log("task_action.on(change):", e);
                 var action = $(this).val();
                 switch (action){
                     case 'change_resources':
@@ -248,6 +248,13 @@
 {#                        submit_form_url =  '/tasks/change/resources_responsible';#}
                         submit_url_list = ['/tasks/change/resources_responsible']; //, '/tasks/set_start_end_date'];
 
+                        change_users_control.show();
+                        force_status_control.hide();
+                        request_revision_control.hide();
+                        start_end_date_control.show();
+                        break;
+                    case 'change_reviewer_responsible':
+                        submit_url_list = ['/tasks/change/reviewer_responsible']; //, '/tasks/set_start_end_date'];
                         change_users_control.show();
                         force_status_control.hide();
                         request_revision_control.hide();
@@ -295,21 +302,19 @@
                 }
             });
 
+            {# set default action if available #}
+            {% if default_action %}
+                task_action.val("{{ default_action }}");
+                task_action.trigger("change");
+            {% endif %}
+
             $('#watch_list_cb').on('click', function () {
                 var indexOn = submit_url_list.indexOf('/tasks/watch');
-{#                var indexOff = submit_url_list.indexOf('/tasks/unwatch');#}
                 if(this.checked){
                     if(indexOn === -1){
                         submit_url_list.push('/tasks/watch');
                     }
-{#                    if (indexOff > -1) {#}
-{#                        submit_url_list.splice(indexOff, 1);#}
-{#                    }#}
-                }
-                else{
-{#                    if(indexOff == -1){#}
-{#                        submit_url_list.push('/tasks/unwatch');#}
-{#                    }#}
+                } else {
                     if (indexOn > -1) {
                         submit_url_list.splice(indexOn, 1);
                     }
@@ -336,7 +341,6 @@
                 task_users.trigger('liszt:updated');
              });
 
-
             var submit_button = $('#dialog_template_submit_button');
             submit_button.on('click', function (e) {
 
@@ -349,6 +353,10 @@
                 for (var i=0; i < task_ids.length; i++){
                     _query += "&task_ids=" + task_ids[i];
                 }
+
+                {% if reviewer_id %}
+                    _query += "&original_reviewer_id={{ reviewer_id }}";
+                {% endif %}
 
                 {#console.log("_query: " + _query);#}
                 {#console.log("submit_url_list[0]: " + submit_url_list);#}
@@ -373,18 +381,19 @@
             function post_actions(_q){
                 var change_properties_task_form = $("#change_properties_task_form");
                 console.log("submit_url_list[0]: " + submit_url_list);
+                console.log("_q: " + _q);
                 $.post(
-                    submit_url_list[0]+_q,
+                    submit_url_list[0] + _q,
                     change_properties_task_form.serialize()
                 ).done(function (response_text) {
                     submit_button.button('reset');
                     $('#dialog_template').modal('hide');
                     // reload page
                     submit_url_list.shift();
-                    console.log("submit_url_list.shift(): "+ submit_url_list);
+                    console.log("submit_url_list.shift(): " + submit_url_list);
 
                     setTimeout(function () { // wait for hide event to finish
-                        if(submit_url_list.length>0){
+                        if(submit_url_list.length > 0){
                         // wait for hide event to finish
                             post_actions(_q);
                         }else {
@@ -401,7 +410,6 @@
             function taskThumbnailFormatter(cellvalue, options, rowObject){
                 return '<img style="width:auto; height: auto; max-height: 80px;" class="img-thumbnail" src="/' + cellvalue + '">';
             }
-
             function taskParentLabelFormatter(cellvalue, options, rowObject){
                 return '<a href="/tasks/' + rowObject.parent_id + '/view">' + cellvalue + '</a>';
             }
@@ -411,7 +419,6 @@
             function statusLabelFormatter(cellvalue, options, rowObject){
                 return '<span class="label label-large label-status_' + cellvalue.toLowerCase() + '">' + cellvalue + '</span>';
             }
-
         });
         console.debug('finished initializing the add_task_user_dialog dialog!')
     }
