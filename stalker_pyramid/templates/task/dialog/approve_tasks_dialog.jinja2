@@ -1,0 +1,83 @@
+<script class="dialog_loaded"></script>
+
+<div class="row-fluid" >
+    <div class="row-fluid" >
+        <form id='approve_tasks_form'
+          class='form-horizontal'
+          role='form'
+          method='post' >
+            <div class='control-group'>
+                <label class='span3 control-label'
+                       for='approve_tasks_note'>Note:</label>
+
+                <div class='span9'>
+                    <textarea id="approve_tasks_note"
+                              name="description"
+                              class="autosize-transition span12"
+                              style="overflow: hidden;
+                                     word-wrap: break-word;
+                                     resize: horizontal;
+                                     height: 150px;"
+                            ></textarea>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/i18n/grid.locale-en.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/jquery.jqGrid.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/accounting.min.js") }}'></script>
+
+
+<script type="text/javascript">
+    function init_dialog() {
+        console.debug('starting to initialize approve_tasks_dialog dialog!!!');
+
+        $(function () {
+            var label = $('#dialog_template_label');
+            label.find('span').remove();
+            label.append('<span>Approve Tasks</span>');
+            $('#dialog_template_body').attr('style', "height: auto");
+
+            var url = '{{ action | safe }}';
+            if(url === ''){
+                $('#dialog_template').modal('hide');
+            }
+
+            console.debug("url: ", url);
+
+            var submit_button = $('#dialog_template_submit_button');
+            submit_button.on('click', function (e) {
+
+                e.stopPropagation();
+                e.preventDefault();
+                submit_button.button('loading');
+
+                var approve_tasks_form = $("#approve_tasks_form");
+
+                $.post(
+                    url,
+                    approve_tasks_form.serialize()
+                ).done(function (response_text) {
+                    submit_button.button('reset');
+                    $('#dialog_template').modal('hide');
+
+                    setTimeout(function () { // wait for hide event to finish
+                        window.location.reload();
+                    }, 0);
+                }).fail(function (jqXHR) {
+                    bootbox.alert(jqXHR.responseText);
+                    submit_button.button('reset');
+                });
+            });
+        });
+        console.debug('finished initializing the approve_tasks_dialog dialog!')
+    }
+</script>
+
+<script type="text/javascript">
+    function destruct_dialog() {
+        $('#dialog_template_submit_button').unbind();
+        $('#dialog_template').data('modal', null);
+    }
+</script>

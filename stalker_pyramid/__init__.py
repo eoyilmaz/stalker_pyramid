@@ -841,9 +841,11 @@ def main(global_config, **settings):
     config.add_route('request_review_task_dialog',  'tasks/{id}/request_review/dialog')
 
     config.add_route('approve_task',               'tasks/{id}/approve')
+    config.add_route('approve_tasks',              'tasks/approve')
+    config.add_route('approve_tasks_dialog',       'tasks/approve/dialog')
     config.add_route('request_revision',           'tasks/{id}/request_revision')
-    config.add_route('request_revisions_dialog',   'tasks/request_revisions/dialog')
     config.add_route('request_revisions',          'tasks/request_revisions')
+    config.add_route('request_revisions_dialog',   'tasks/request_revisions/dialog')
 
     # config.add_route('auto_extend_time', 'tasks/{id}/auto_extend_time')
 

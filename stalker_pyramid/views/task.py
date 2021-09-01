@@ -4290,16 +4290,44 @@ def forced_review(reviewer, task):
     route_name='approve_task'
 )
 def approve_task(request):
-    """ TODO: add doc string
+    """approves the given task
+
+    :param request:
+    :return:
     """
-    logged_in_user = get_logged_in_user(request)
 
     task_id = request.matchdict.get('id', -1)
     task = Task.query.filter(Task.id == task_id).first()
 
-    if not task:
-        transaction.abort()
-        return Response('There is no task with id: %s' % task_id, 500)
+    return approve_tasks(request, [task])
+
+
+@view_config(
+    route_name='approve_tasks'
+)
+def approve_tasks_view(request):
+    """approves the given tasks
+
+    :param request:
+    :return:
+    """
+    from stalker import Task
+    task_ids = get_multi_integer(request, 'task_ids', 'GET')
+    logger.debug("approve tasks_ids: %s" % task_ids)
+    tasks = Task.query.filter(Task.id.in_(task_ids)).all()
+    return approve_tasks(request, tasks)
+
+
+def approve_tasks(request, tasks):
+    """approves the given tasks
+
+    :param request: Request instance
+    :param tasks: A list of Stalker tasks
+    """
+    logged_in_user = get_logged_in_user(request)
+
+    task_ids = list(map(lambda x: x.id, tasks))
+    logger.debug("inside approve_tasks task_ids: %s" % task_ids)
 
     send_email = request.params.get('send_email', 1)  # for testing purposes
     description = request.params.get('description', 1)
@@ -4308,171 +4336,179 @@ def approve_task(request):
     logger.debug('forced: %s' % forced)
 
     utc_now = datetime.datetime.now(pytz.utc)
+    status_new = Status.query.filter_by(code='NEW').first()
+
+    reviews = []
+    flash_messages = []
+    response_messages = []
 
     if forced:
         has_permission = PermissionChecker(request)
         if has_permission('Create_Review'):
-            review = forced_review(logged_in_user, task)
+            review = forced_review(logged_in_user, tasks[0])
             review.date_created = utc_now
         else:
             return Response('You dont have permission', 500)
     else:
-
-        status_new = Status.query.filter_by(code='NEW').first()
-
-        review = Review.query\
+        reviews = Review.query\
             .filter(Review.reviewer_id == logged_in_user.id)\
-            .filter(Review.task_id == task.id)\
+            .filter(Review.task_id.in_(task_ids))\
             .filter(Review.status == status_new)\
-            .first()
+            .all()
 
-    if not review:
+    logger.debug("reviews: %s" % reviews)
+
+    if not reviews:
         transaction.abort()
         return Response('There is no review', 500)
 
-    if review.type and review.type.name == 'Extra Time':
-        note = create_simple_note(
-            description,
-            'Rejected Extra Time Request',
-            'red',
-            'rejected',
-            logged_in_user,
-            utc_now
-        )
+    for review in reviews:
+        if review.type and review.type.name == 'Extra Time':
+            note = create_simple_note(
+                description,
+                'Rejected Extra Time Request',
+                'red',
+                'rejected',
+                logged_in_user,
+                utc_now
+            )
+        else:
+            note = create_simple_note(
+                description,
+                'Approved',
+                'green',
+                'approved',
+                logged_in_user,
+                utc_now
+            )
 
-    else:
-        note = create_simple_note(
-            description,
-            'Approved',
-            'green',
-            'approved',
-            logged_in_user,
-            utc_now
-        )
+        task = review.task
+        try:
+            review.approve()
+            review.description = \
+                '%(resource_note)s<br/> <b>%(reviewer_name)s</b>: ' \
+                '%(reviewer_note)s' % {
+                    'resource_note': review.description,
+                    'reviewer_name': logged_in_user.name,
+                    'reviewer_note': note.content
+                }
 
-    logger.debug('review %s' % review)
+            review.date_updated = utc_now
 
-    try:
-        review.approve()
-        review.description = \
-            '%(resource_note)s<br/> <b>%(reviewer_name)s</b>: ' \
-            '%(reviewer_note)s' % {
-                'resource_note': review.description,
-                'reviewer_name': logged_in_user.name,
-                'reviewer_note': note.content
-            }
+            task.notes.append(note)
+        except StatusError as e:
+            return Response('StatusError: %s' % e, 500)
+        finally:
+            # fix task status
+            task.update_status_with_dependent_statuses()
+            task.update_status_with_children_statuses()
+            task.update_schedule_info()
+            check_task_status_by_schedule_model(task)
+            fix_task_computed_time(task)
 
-        review.date_updated = utc_now
+        task.updated_by = logged_in_user
+        task.date_updated = utc_now
 
-        task.notes.append(note)
-    except StatusError as e:
-        return Response('StatusError: %s' % e, 500)
-    finally:
-        # fix task status
-        task.update_status_with_dependent_statuses()
-        task.update_status_with_children_statuses()
-        task.update_schedule_info()
-        check_task_status_by_schedule_model(task)
-        fix_task_computed_time(task)
+        if send_email:
+            # send email to resources of the task
+            mailer = get_mailer(request)
 
-    task.updated_by = logged_in_user
-    task.date_updated = utc_now
+            recipients = []
+            for resource in task.resources:
+                recipients.append(resource.email)
 
-    if send_email:
-         # send email to resources of the task
-        mailer = get_mailer(request)
+            for responsible in task.responsible:
+                recipients.append(responsible.email)
 
-        recipients = []
-        for resource in task.resources:
-            recipients.append(resource.email)
+            for watcher in task.watchers:
+                recipients.append(watcher.email)
 
-        for responsible in task.responsible:
-            recipients.append(responsible.email)
+            # also add other note owners to the list
+            for note in task.notes:
+                note_created_by = note.created_by
+                if note_created_by:
+                    recipients.append(note_created_by.email)
 
-        for watcher in task.watchers:
-            recipients.append(watcher.email)
+            # make the list unique
+            recipients = list(set(recipients))
 
-        # also add other note owners to the list
-        for note in task.notes:
-            note_created_by = note.created_by
-            if note_created_by:
-                recipients.append(note_created_by.email)
+            task_full_path = get_task_full_path(task.id)
 
-        # make the list unique
-        recipients = list(set(recipients))
+            if review.type and review.type.name == 'Extra Time':
+                subject = 'Request Rejected: "%s"' % task_full_path
 
-        task_full_path = get_task_full_path(task.id)
+                description_temp = \
+                    '%(user)s has rejected the Extra Time Request for' \
+                    '%(task_full_path)s with the following ' \
+                    'comment:%(spacing)s' \
+                    '%(note)s'
+
+            else:
+                subject = 'Task Approved: "%s"' % task_full_path
+
+                description_temp = \
+                    '%(user)s has approved ' \
+                    '%(task_full_path)s with the following ' \
+                    'comment:%(spacing)s' \
+                    '%(note)s'
+
+            message = Message(
+                subject=subject,
+                sender=dummy_email_address,
+                recipients=recipients,
+                body=get_description_text(
+                    description_temp,
+                    logged_in_user.name,
+                    task_full_path,
+                    note.content if note.content else '-- no notes --'
+                ),
+                html=get_description_html(
+                    description_temp,
+                    logged_in_user.name,
+                    get_task_external_link(task.id),
+                    note.content if note.content else '-- no notes --'
+                )
+            )
+
+            try:
+                mailer.send_to_queue(message)
+            except ValueError:
+                # no internet connection
+                # or not a maildir
+                pass
 
         if review.type and review.type.name == 'Extra Time':
-            subject = 'Request Rejected: "%s"' % task_full_path
-
-            description_temp = \
-                '%(user)s has rejected the Extra Time Request for' \
-                '%(task_full_path)s with the following ' \
-                'comment:%(spacing)s' \
-                '%(note)s'
-
+            flash_message = 'success:Rejected Extra Time Request!'
+            response_message = 'Successfully rejected extra time request'
         else:
-            subject = 'Task Approved: "%s"' % task_full_path
+            flash_message = 'success:Approved Task!'
+            response_message = 'Successfully approved task'
 
-            description_temp = \
-                '%(user)s has approved ' \
-                '%(task_full_path)s with the following ' \
-                'comment:%(spacing)s' \
-                '%(note)s'
-
-        message = Message(
-            subject=subject,
-            sender=dummy_email_address,
-            recipients=recipients,
-            body=get_description_text(
-                description_temp,
-                logged_in_user.name,
-                task_full_path,
-                note.content if note.content else '-- no notes --'
-            ),
-            html=get_description_html(
-                description_temp,
-                logged_in_user.name,
-                get_task_external_link(task.id),
-                note.content if note.content else '-- no notes --'
-            )
-        )
-
-        try:
-            mailer.send_to_queue(message)
-        except ValueError:
-            # no internet connection
-            # or not a maildir
-            pass
+        flash_messages.append(flash_message)
+        response_messages.append(response_message)
 
     # invalidate all caches
     invalidate_all_caches()
 
-    if review.type and review.type.name == 'Extra Time':
-        flash_message = 'success:Rejected Extra Time Request!'
-        response_message = 'Successfully rejected extra time request'
-    else:
-        flash_message = 'success:Approved Task!'
-        response_message = 'Successfully approved task'
+    request.session.flash('<br>'.join(flash_messages))
+    return Response('<br>'.join(response_messages))
 
-    request.session.flash(flash_message)
-    return Response(response_message)
 
 def add_note_to_dependent_of_tasks(task, description, logged_in_user, utc_now):
-
-    dependent_of_note = create_simple_note( 'The task got a Revision due to the revision given to '
-                                            '<a href="/tasks/%(task_id)s/view"><b>%(task_name)s</b></a>:<br/>'
-                                            '%(description)s' % {
-                                                'task_name': task.name,
-                                                'task_id': task.id,
-                                                'description': description
-                                            },
-                                            'Request Revision',
-                                            'purple',
-                                            'requested_revision',
-                                            logged_in_user,
-                                            utc_now)
+    dependent_of_note = create_simple_note(
+        'The task got a Revision due to the revision given to '
+        '<a href="/tasks/%(task_id)s/view"><b>%(task_name)s</b></a>:<br/>'
+        '%(description)s' % {
+            'task_name': task.name,
+            'task_id': task.id,
+            'description': description
+        },
+        'Request Revision',
+        'purple',
+        'requested_revision',
+        logged_in_user,
+        utc_now
+    )
 
     for tdep in walk_hierarchy(task, 'dependent_of'):
         logger.debug('tdep : %s' % tdep.name)
@@ -4525,18 +4561,20 @@ def request_revision(request):
             # review = forced_review(logged_in_user, task);
             # review.date_created = utc_now
 
-            note = create_simple_note('Expanded the timing of the task by <b>'
-                                        '%(schedule_timing)s %(schedule_unit)s</b>.<br/>'
-                                        '%(description)s' % {
-                                            'schedule_timing': schedule_timing,
-                                            'schedule_unit': schedule_unit,
-                                            'description': description
-                                        },
-                                      'Request Revision',
-                                      'purple',
-                                      'requested_revision',
-                                      logged_in_user,
-                                      utc_now)
+            note = create_simple_note(
+                'Expanded the timing of the task by <b>'
+                '%(schedule_timing)s %(schedule_unit)s</b>.<br/>'
+                '%(description)s' % {
+                    'schedule_timing': schedule_timing,
+                    'schedule_unit': schedule_unit,
+                    'description': description
+                },
+                'Request Revision',
+                'purple',
+                'requested_revision',
+                logged_in_user,
+                utc_now
+            )
 
             task.request_revision(
                 logged_in_user,
@@ -4567,26 +4605,30 @@ def request_revision(request):
             return Response('There is no review', 500)
 
         try:
-            content = 'Expanded the timing of the task by <b>%(schedule_timing)s %(schedule_unit)s</b>.<br/>%(description)s' % {
-                        'schedule_timing': schedule_timing,
-                        'schedule_unit': schedule_unit,
-                        'description': description
+            content = 'Expanded the timing of the task by ' \
+                '<b>%(schedule_timing)s %(schedule_unit)s</b>.<br/>%(description)s' % {
+                'schedule_timing': schedule_timing,
+                'schedule_unit': schedule_unit,
+                'description': description
             }
             if review.type and review.type.name == 'Extra Time':
-                note = create_simple_note(content,
-                                          'Accepted Extra Time Request',
-                                          'green',
-                                          'accepted',
-                                          logged_in_user,
-                                          utc_now)
-
+                note = create_simple_note(
+                    content,
+                    'Accepted Extra Time Request',
+                    'green',
+                    'accepted',
+                    logged_in_user,
+                    utc_now
+                )
             else:
-                note = create_simple_note(content,
-                                          'Request Revision',
-                                          'purple',
-                                          'requested_revision',
-                                          logged_in_user,
-                                          utc_now)
+                note = create_simple_note(
+                    content,
+                    'Request Revision',
+                    'purple',
+                    'requested_revision',
+                    logged_in_user,
+                    utc_now
+                )
 
             review.request_revision(
                 schedule_timing,
@@ -4606,7 +4648,7 @@ def request_revision(request):
                                            utc_now)
 
         except StatusError as e:
-                return Response('StatusError: %s' % e, 500)
+            return Response('StatusError: %s' % e, 500)
 
     task.notes.append(note)
     task.updated_by = logged_in_user
@@ -4695,6 +4737,35 @@ def request_revision(request):
     request.session.flash(flash_message)
 
     return Response(response_message)
+
+
+@view_config(
+    route_name='approve_tasks_dialog',
+    renderer='templates/task/dialog/approve_tasks_dialog.jinja2'
+)
+def approve_tasks_dialog(request):
+    """deletes the department with the given id
+    """
+    logger.debug('approve_tasks_dialog starts')
+
+    came_from = request.params.get('came_from', '/')
+
+    selected_task_list = get_multi_integer(request, 'task_ids', 'GET')
+    logger.debug('selected_task_list: %s' % selected_task_list)
+
+    _query_buffer = []
+    for task_id in selected_task_list:
+        _query_buffer.append("""task_ids=%s""" % task_id)
+    _query = '&'.join(_query_buffer)
+
+    action = '/tasks/approve?%s' % (_query)
+
+    logger.debug('action: %s' % action)
+
+    return {
+        'came_from': came_from,
+        'action': action
+    }
 
 
 @view_config(
