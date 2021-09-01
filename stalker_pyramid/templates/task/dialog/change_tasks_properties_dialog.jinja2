@@ -14,7 +14,11 @@
                         <option value="change_resources">Change Resource</option>
                         <option value="change_responsible">Change Responsible</option>
                         <option value="change_resources_responsible">Change Resources & Responsible</option>
+
+                        {% if reviewer_id %}
                         <option value="change_reviewer_responsible">Change Reviewer & Responsible</option>
+                        {% endif %}
+
                         <option value="force_status">Force Complete</option>
                         <option value="request_revisions">Request Revision</option>
                         <option value="set_start_end_date">Set Start End Date</option>
