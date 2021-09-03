@@ -180,6 +180,7 @@ def get_project_sequences(request):
             'id': sequence.id,
             'name': sequence.name,
             'status': sequence.status.name,
+            'status_code': sequence.status.code.lower(),
             'status_color': sequence.status.html_class if sequence.status.html_class else 'grey',
             'created_by_id': sequence.created_by.id if sequence.created_by else None,
             'created_by_name': sequence.created_by.name if sequence.created_by else None,

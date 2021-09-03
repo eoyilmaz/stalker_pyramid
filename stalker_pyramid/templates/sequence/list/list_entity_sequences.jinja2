@@ -64,7 +64,7 @@
                 </div>
             </td>
             <td>
-                <span class="label label-status_{{=it.status_color}}">{{=it.status}}</span>
+                <span class="label label-status_{{=it.status_code}}">{{=it.status}}</span>
             </td>
             <td><a href='/users/{{=it.created_by_id}}/view'>{{=it.created_by_name}}</a>
             </td>
@@ -73,16 +73,13 @@
     {% endraw %}
 
     <script>
-
-        var tableParameters = {}
-        var sortingParameters = [[0, 'asc']]
+        var tableParameters = {
+            'aLengthMenu': [[-1, 10, 25, 50, 100, 200], ["All", 10, 25, 50, 100, 200]],
+            "iDisplayLength": -1,
+        }
+        var sortingParameters = [[1, 'asc']]
         var tableDataAddress = '{{ request.route_path('get_project_sequences', id=entity.id) }}'
-
-{#     console.log('tableDataAddress' + tableDataAddress)#}
-
     </script>
-
-
 
 {% endblock extrascripts %}
 
