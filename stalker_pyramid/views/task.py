@@ -6953,7 +6953,8 @@ def change_tasks_users(request):
                     review.reviewer = users[0]
             # update the responsible
             for task in tasks:
-                task.responsible.remove(original_reviewer)
+                if original_reviewer in task.responsible:
+                    task.responsible.remove(original_reviewer)
                 task.responsible.append(users[0])
 
     # invalidate all caches
