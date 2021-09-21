@@ -56,49 +56,6 @@
             </button>
         {% endif %}
 
-{#        {% if (logged_in_user in task.resources or logged_in_user in task.responsible) and task.status.code == 'WIP' and task.is_leaf %}#}
-{#            <button id='task_request_review_button'#}
-{#                    class="btn btn-small btn-warning tooltip-success"#}
-{#                    data-rel="tooltip"#}
-{#                    data-placement="bottom"#}
-{#                    title="Request Review"#}
-{#                    data-target="#dialog_template"#}
-{#                    data-toggle="modal"#}
-{#                    data-keyboard="false"#}
-{#                    href='/tasks/{{ task.id }}/request_review/dialog?came_from={{ request.current_route_path() }}&request_review_mode=Final'#}
-{#                    >#}
-{#                <i class="icon-comment-alt"></i>#}
-{#            </button>#}
-{#        {% else %}#}
-{#            <button disabled="true"#}
-{#                    class="btn btn-small btn-warning tooltip-success"#}
-{#                    data-rel="tooltip" data-placement="bottom"#}
-{#                    title="Request Review">#}
-{#                <i class="icon-comment-alt"></i>#}
-{#            </button>#}
-{#        {% endif %}#}
-
-{#        {% if  (logged_in_user in task.responsible or has_permission('Create_Review')) and task.status.code == 'CMPL' and (entity.project in logged_in_user.projects)%}#}
-{#            <button id='task_review_button'#}
-{#                    class="btn btn-small btn-purple tooltip-success"#}
-{#                    data-rel="tooltip"#}
-{#                    data-placement="bottom"#}
-{#                    title="Request Revision Task"#}
-{#                    data-target="#dialog_template"#}
-{#                    data-toggle="modal"#}
-{#                    data-keyboard="false"#}
-{#                    href='/tasks/{{ task.id }}/review/dialog?came_from={{ request.current_route_path() }}&review_mode=request_revision&forced=1'#}
-{#                    >#}
-{#                <i class="icon-comments"></i>#}
-{#            </button>#}
-{#        {% else %}#}
-{#            <button disabled="true"#}
-{#                    class="btn btn-small btn-purple tooltip-success"#}
-{#                    data-rel="tooltip" data-placement="bottom"#}
-{#                    title="Review Task">#}
-{#                <i class="icon-comments"></i>#}
-{#            </button>#}
-{#        {% endif %}#}
         {% if has_permission('Delete_Task') and (entity.project in logged_in_user.projects)%}
             <button class="btn btn-small btn-danger tooltip-success"
                     id="delete_task_button"

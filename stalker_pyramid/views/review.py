@@ -132,15 +132,12 @@ def get_task_last_reviews(request):
     where_condition1 = """where "Review_Tasks".id = %(task_id)s""" % {
         'task_id': task_id
     }
-    where_condition2 = ''
 
     logger.debug("task.status.code : %s" % task.status.code)
     if task.status.code == 'PREV':
         where_condition2 = """ and "Review_Tasks".review_number +1 = "Reviews".review_number"""
         where_conditions = '%s %s' % (where_condition1, where_condition2)
-
         reviews = get_reviews(request, where_conditions)
-
     else:
         # where_condition2 =""" and "Review_Tasks".review_number = "Reviews".review_number"""
 

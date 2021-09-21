@@ -6653,8 +6653,7 @@ def remove_tasks_user(request):
     # invalidate all caches
     invalidate_all_caches()
 
-    return Response('Success: %s is removed from resources of the selected tasks' %
-                    (user.name))
+    return Response('Success: %s is removed from resources of the selected tasks' % (user.name))
 
 
 @view_config(
@@ -6664,7 +6663,7 @@ def remove_tasks_user(request):
 def change_tasks_properties_dialog(request):
     """changes task properties with the given users dialog
     """
-    logger.debug('change_tasks_properties_dialog is starts')
+    logger.debug('change_tasks_properties_dialog started')
 
     selected_task_list = get_multi_integer(request, 'task_ids', 'GET')
     logger.debug('selected_task_list : %s' % selected_task_list)
@@ -6675,6 +6674,8 @@ def change_tasks_properties_dialog(request):
     came_from = request.params.get('came_from', '/')
     default_action = request.params.get("default_action", None)
     reviewer_id = request.params.get("reviewer_id", None)
+
+    logger.debug('change_tasks_properties_dialog ended')
 
     return {
         'tasks': tasks,
@@ -6914,6 +6915,7 @@ def change_tasks_users(request):
         return Response('Can not find any Task', 500)
 
     user_type = request.matchdict.get('user_type')
+    logger.debug("user_type: %s" % user_type)
 
     if not user_type:
         transaction.abort()
@@ -6942,20 +6944,25 @@ def change_tasks_users(request):
             original_reviewer = User.query.get(original_reviewer_id)
             new_status = Status.query.filter(Status.code == 'NEW').first()
 
+            reviews = Review.query \
+                .filter(Review.task_id.in_(selected_task_list)) \
+                .filter(Review.status == new_status) \
+                .filter(Review.reviewer == original_reviewer) \
+                .all()
+            logger.debug("reviews: %s" % reviews)
+            # update reviewer
+            for review in reviews:
+                review.reviewer = users[0]
+
+            import copy
             for task in tasks:
-                reviews = Review.query\
-                    .filter(Review.task == task)\
-                    .filter(Review.status == new_status)\
-                    .filter(Review.reviewer == original_reviewer)\
-                    .all()
-                # update reviewer
-                for review in reviews:
-                    review.reviewer = users[0]
-            # update the responsible
-            for task in tasks:
-                if original_reviewer in task.responsible:
-                    task.responsible.remove(original_reviewer)
-                task.responsible.append(users[0])
+                # update the responsible
+                logger.debug("Removing reviewer from: %s (%s)" % (task.name, task.id))
+                task_responsible = copy.copy(task.responsible)
+                if original_reviewer in task_responsible:
+                    task_responsible.remove(original_reviewer)
+                task_responsible.append(users[0])
+                task.responsible = task_responsible
 
     # invalidate all caches
     invalidate_all_caches()

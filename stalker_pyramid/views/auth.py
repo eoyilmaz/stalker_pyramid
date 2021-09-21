@@ -447,11 +447,10 @@ def get_entity_users(request):
     """
     start = time.time()
 
-    logger.debug("get_entity_users is starts")
+    logger.debug("get_entity_users started")
 
     # if there is an id it is probably a project
     entity_id = request.matchdict.get('id')
-
     entity_type = None
 
     has_permission = PermissionChecker(request)
@@ -462,20 +461,18 @@ def get_entity_users(request):
     delete_user_action = '/users/%(id)s/delete/dialog'
 
     if entity_id:
-        sql_query = \
-            'select entity_type from "SimpleEntities" where id=%s' % entity_id
+        sql_query = 'select entity_type from "SimpleEntities" where id=%s' % entity_id
         data = DBSession.connection().execute(sql_query).fetchone()
         entity_type = data[0] if data else None
-        if entity_type in ['Project', 'Department', 'Group', 'Task', 'User', 'Client']:
-            delete_user_action ='/entities/%(entity_id)s/%(id)s/remove/dialog'
-
+        if entity_type in ['Project', 'Department', 'Group', 'Task', 'User', 'Client', 'Studio']:
+            delete_user_action = '/entities/%(entity_id)s/%(id)s/remove/dialog'
+        else:
+            # there is no entity_type for that entity
+            return []
 
     logger.debug('entity_id  : %s' % entity_id)
     logger.debug('entity_type: %s' % entity_type)
 
-    if entity_id and entity_type not in ['Project', 'Department', 'Group', 'Task', 'User', 'Client', 'Studio']:
-        # there is no entity_type for that entity
-        return []
 
     sql_query = """select
         "Users".id,
@@ -639,9 +636,8 @@ def get_entity_users(request):
 
     end = time.time()
 
-
-    logger.debug('get_entity_users took : %s seconds for %s rows' %
-                 ((end - start), len(data)))
+    logger.debug('get_entity_users took : %s seconds for %s rows' % ((end - start), len(data)))
+    logger.debug("get_entity_users ended")
     return data
 
 
