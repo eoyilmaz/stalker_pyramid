@@ -237,7 +237,7 @@ def submit_alembic_job(path, project_code=""):
         "mayapy",
         "-c",
         "\"import pymel.core as pm;"
-        "from anima.env.mayaEnv import afanasy_publisher;"
+        "from anima.dcc.mayaEnv import afanasy_publisher;"
         "afanasy_publisher.export_alembics('{path}');\"".format(path=path)
     ]
     submit_job(job_name, block_name, command)
@@ -255,7 +255,7 @@ def submit_playblast_job(path, project_code=''):
         "mayapy",
         "-c",
         "\"import pymel.core as pm;"
-        "from anima.env.mayaEnv import afanasy_publisher;"
+        "from anima.dcc.mayaEnv import afanasy_publisher;"
         "afanasy_publisher.export_playblast('{path}');\"".format(path=path)
     ]
     submit_job(job_name, block_name, command)

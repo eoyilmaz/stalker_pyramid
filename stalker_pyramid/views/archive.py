@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""This module is a direct copy&paste of anima.env.mayaEnv.archive thus the
+"""This module is a direct copy&paste of anima.dcc.mayaEnv.archive thus the
 copyright information in this file belongs to Anima Istanbul.
 """
 import logging
