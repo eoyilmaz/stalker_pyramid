@@ -136,7 +136,10 @@ def create_version(request):
             if bind_to_originals:
                 from stalker_pyramid.views import archive
                 arch = archive.Archiver()
-                unknown_references = arch.bind_to_original(v.absolute_full_path)
+                unknown_references = arch.bind_to_original(
+                    v.absolute_full_path,
+                    project=task.project
+                )
 
             if not unknown_references:
                 if export_alembics:
