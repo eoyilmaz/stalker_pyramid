@@ -113,6 +113,9 @@ def create_version(request):
 
     if task:
         extension = os.path.splitext(file_object.filename)[-1]
+        if extension == '.mb':
+            return Response('This is a MayaBinary file, please upload MayaAscii', 500)
+
         mm = MediaManager()
         v = mm.upload_version(
             task=task,
@@ -150,8 +153,6 @@ def create_version(request):
                 os.remove(v.absolute_full_path)
                 DBSession.rollback()
                 return Response('There are unknown references: <br>%s' % '<br>%s'.join(unknown_references), 500)
-        elif extension == '.mb':
-            return Response('This is a MayaBinary file, please upload MayaAscii', 500)
     else:
         return Response('No task with id: %s' % task_id, 500)
 
