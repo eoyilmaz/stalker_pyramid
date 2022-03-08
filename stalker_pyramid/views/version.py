@@ -186,7 +186,11 @@ def do_playblast(request):
         logger.debug("version_id: %s" % version_id)
         logger.debug("version   : %s" % version)
         if version:
-            submit_playblast_job(version.absolute_full_path, version.task.project.code)
+            submit_playblast_job(
+                version.absolute_full_path,
+                version.task.project.code,
+                host_mask=cgru_host_mask_playblast
+            )
         return Response('Playblast job created, check Afanasy!')
     else:
         return Response("This is not a Maya version!")
@@ -208,7 +212,11 @@ def export_alembics(request):
         logger.debug("version_id: %s" % version_id)
         logger.debug("version   : %s" % version)
         if version:
-            submit_alembic_job(version.absolute_full_path, version.task.project.code)
+            submit_alembic_job(
+                version.absolute_full_path,
+                version.task.project.code,
+                host_mask=cgru_host_mask_alembic
+            )
     else:
         return Response("This is not a Maya version!")
     return Response('Export Alembics job created, check Afanasy!')
