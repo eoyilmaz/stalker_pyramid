@@ -214,12 +214,13 @@ def export_alembics(request):
     return Response('Export Alembics job created, check Afanasy!')
 
 
-def submit_job(job_name, block_name, command):
+def submit_job(job_name, block_name, command, host_mask=""):
     """Submits an Afanasy job
 
     :param job_name:
     :param block_name:
     :param command:
+    :param str host_mask: The host mask.
     :return:
     """
     import af
@@ -232,6 +233,9 @@ def submit_job(job_name, block_name, command):
 
     job = af.Job(job_name)
     job.blocks = [block]
+    if host_mask != "":
+        host_mask.replace('"', "")
+        job.setHostsMask(host_mask)
     status, data = job.send()
 
     if not status:
@@ -243,6 +247,7 @@ def submit_alembic_job(path, project_code="", host_mask=""):
 
     :param str path: Path to a maya file
     :param project_code: Project.code
+    :param str host_mask: The host mask.
     """
     job_name = "%s:%s - Alembic Export" % (project_code, os.path.basename(path))
     block_name = job_name
@@ -251,12 +256,11 @@ def submit_alembic_job(path, project_code="", host_mask=""):
         "-c",
         "\"import pymel.core as pm;"
         "from anima.dcc.mayaEnv import afanasy_publisher;"
-        "afanasy_publisher.export_alembics('{path}', host_mask='{host_mask}');\"".format(
-            path=path,
-            host_mask=host_mask
+        "afanasy_publisher.export_alembics('{path}');\"".format(
+            path=path
         )
     ]
-    submit_job(job_name, block_name, command)
+    submit_job(job_name, block_name, command, host_mask=host_mask)
 
 
 def submit_playblast_job(path, project_code='', host_mask=''):
@@ -264,7 +268,7 @@ def submit_playblast_job(path, project_code='', host_mask=''):
 
     :param str path: Path to a maya file
     :param project_code: Project.code
-    :param str host_mask: Host mask to use.
+    :param str host_mask: The host mask.
     """
     job_name = "%s:%s - Playblast" % (project_code, os.path.basename(path))
     block_name = job_name
@@ -273,12 +277,11 @@ def submit_playblast_job(path, project_code='', host_mask=''):
         "-c",
         "\"import pymel.core as pm;"
         "from anima.dcc.mayaEnv import afanasy_publisher;"
-        "afanasy_publisher.export_playblast('{path}', host_mask='{host_mask}');\"".format(
+        "afanasy_publisher.export_playblast('{path}');\"".format(
             path=path,
-            host_mask=host_mask
         )
     ]
-    submit_job(job_name, block_name, command)
+    submit_job(job_name, block_name, command, host_mask=host_mask)
 
 
 @view_config(
