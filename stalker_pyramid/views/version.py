@@ -16,9 +16,14 @@ from stalker_pyramid.views import (get_logged_in_user, get_user_os,
 from stalker_pyramid.views.link import MediaManager
 from stalker_pyramid.views.task import generate_recursive_task_query
 
-#logger = logging.getLogger(__name__)
-#logger.setLevel(logging.DEBUG)
-from stalker_pyramid import logger_name
+# logger = logging.getLogger(__name__)
+# logger.setLevel(logging.DEBUG)
+from stalker_pyramid import (
+    cgru_host_mask_alembic,
+    cgru_host_mask_playblast,
+    logger_name,
+)
+
 logger = logging.getLogger(logger_name)
 
 
@@ -143,10 +148,12 @@ def create_version(request):
 
             if not unknown_references:
                 if export_alembics:
-                    submit_alembic_job(v.absolute_full_path, v.task.project.code)
+                    submit_alembic_job(v.absolute_full_path, v.task.project.code,
+                                       host_mask=cgru_host_mask_alembic)
 
                 if do_playblast:
-                    submit_playblast_job(v.absolute_full_path, v.task.project.code)
+                    submit_playblast_job(v.absolute_full_path, v.task.project.code,
+                                         host_mask=cgru_host_mask_playblast)
 
                 DBSession.add(v)
                 logger.debug('version added to: %s' % v.absolute_full_path)
@@ -231,7 +238,7 @@ def submit_job(job_name, block_name, command):
         RuntimeError('Something went wrong!')
 
 
-def submit_alembic_job(path, project_code=""):
+def submit_alembic_job(path, project_code="", host_mask=""):
     """creates a afanasy job that exports the alembics on a given scene
 
     :param str path: Path to a maya file
@@ -244,16 +251,20 @@ def submit_alembic_job(path, project_code=""):
         "-c",
         "\"import pymel.core as pm;"
         "from anima.dcc.mayaEnv import afanasy_publisher;"
-        "afanasy_publisher.export_alembics('{path}');\"".format(path=path)
+        "afanasy_publisher.export_alembics('{path}', host_mask='{host_mask}');\"".format(
+            path=path,
+            host_mask=host_mask
+        )
     ]
     submit_job(job_name, block_name, command)
 
 
-def submit_playblast_job(path, project_code=''):
+def submit_playblast_job(path, project_code='', host_mask=''):
     """creates a afanasy job that exports the alembics on a given scene
 
     :param str path: Path to a maya file
     :param project_code: Project.code
+    :param str host_mask: Host mask to use.
     """
     job_name = "%s:%s - Playblast" % (project_code, os.path.basename(path))
     block_name = job_name
@@ -262,7 +273,10 @@ def submit_playblast_job(path, project_code=''):
         "-c",
         "\"import pymel.core as pm;"
         "from anima.dcc.mayaEnv import afanasy_publisher;"
-        "afanasy_publisher.export_playblast('{path}');\"".format(path=path)
+        "afanasy_publisher.export_playblast('{path}', host_mask='{host_mask}');\"".format(
+            path=path,
+            host_mask=host_mask
+        )
     ]
     submit_job(job_name, block_name, command)
 

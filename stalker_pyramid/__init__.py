@@ -38,7 +38,11 @@ logger = logging.getLogger(logger_name)
 
 stalker_server_external_url = None
 stalker_server_internal_url = None
+cgru_location = None
 cgru_working_directory = None
+cgru_host_mask_alembic = ""
+cgru_host_mask_playblast = ""
+
 
 
 __string_types__ = []
@@ -122,9 +126,14 @@ def main(global_config, **settings):
     stalker_server_internal_url = settings.get('stalker.internal_url')
 
     # setup CGRU
+    global cgru_location
     global cgru_working_directory
+    global cgru_host_mask_alembic
+    global cgru_host_mask_playblast
     cgru_location = settings.get('cgru.location')
     cgru_working_directory = settings.get('cgru.working_directory')
+    cgru_host_mask_alembic = settings.get('cgru.host_mask_alembic', "")
+    cgru_host_mask_playblast = settings.get('cgru.host_mask_playblast', "")
     os.environ["CGRU_LOCATION"] = cgru_location
 
     logger.debug('cgru_location: %s' % cgru_location)
