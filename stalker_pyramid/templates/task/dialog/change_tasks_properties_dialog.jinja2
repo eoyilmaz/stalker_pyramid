@@ -129,8 +129,8 @@
         <table id="grid-table"></table>
     </div>
 </div>
-<script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/i18n/grid.locale-en.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/jquery.jqGrid.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/i18n/grid.locale-en.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/jquery.jqGrid.min.js") }}'></script>
 <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/accounting.min.js") }}'></script>
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.inputlimiter.1.3.1.min.js") }}'></script>
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/daterangepicker.min.js") }}'></script>
@@ -188,11 +188,9 @@
                         //direction: "rtl",
                         data: grid_data,
                         datatype: "local",
-                        {#colNames:['Id', 'Thumbnail', 'Name', 'Status', 'Resources', 'Responsible'],#}
                         colNames:['Thumbnail', 'Parent Name', 'Name', 'Status', 'Resources', 'Responsible'],
                         colModel:[
 
-                            {#{name:'id', index:'id', width:50, editable: false},#}
                             {name:'thumbnail',   index:'thumbnail',   width:160, editable: false, formatter:taskThumbnailFormatter},
                             {name:'parent_name', index:'parent_name', width:160, editable: false, formatter:taskParentLabelFormatter},
                             {name:'name',        index:'name',        width: 80, editable: false, formatter:taskLabelFormatter},
@@ -219,7 +217,7 @@
                 });
             });
 
-            var submit_url_list = ['/tasks/change/resources']; //, '/tasks/set_start_end_date'];
+            var submit_url_list = ['/tasks/change/resources'];
             var task_action = $('#task_action');
 
             var change_users_control =  $('#change_users_control');
@@ -233,24 +231,21 @@
                 var action = $(this).val();
                 switch (action){
                     case 'change_resources':
-                        submit_url_list = ['/tasks/change/resources']; //,'/tasks/set_start_end_date'];
-{#                        submit_form_url =  '/tasks/change/resources';#}
+                        submit_url_list = ['/tasks/change/resources'];
                         change_users_control.show();
                         force_status_control.hide();
                         request_revision_control.hide();
                         start_end_date_control.show();
                         break;
                     case 'change_responsible':
-{#                        submit_form_url =  '/tasks/change/responsible';#}
-                        submit_url_list = ['/tasks/change/responsible']; //, '/tasks/set_start_end_date'];
+                        submit_url_list = ['/tasks/change/responsible'];
                         change_users_control.show();
                         force_status_control.hide();
                         request_revision_control.hide();
                         start_end_date_control.show();
                         break;
                     case 'change_resources_responsible':
-{#                        submit_form_url =  '/tasks/change/resources_responsible';#}
-                        submit_url_list = ['/tasks/change/resources_responsible']; //, '/tasks/set_start_end_date'];
+                        submit_url_list = ['/tasks/change/resources_responsible'];
 
                         change_users_control.show();
                         force_status_control.hide();
@@ -258,14 +253,13 @@
                         start_end_date_control.show();
                         break;
                     case 'change_reviewer_responsible':
-                        submit_url_list = ['/tasks/change/reviewer_responsible']; //, '/tasks/set_start_end_date'];
+                        submit_url_list = ['/tasks/change/reviewer_responsible'];
                         change_users_control.show();
                         force_status_control.hide();
                         request_revision_control.hide();
                         start_end_date_control.show();
                         break;
                     case 'force_status':
-{#                        submit_form_url =  '/tasks/force_status/CMPL';#}
                         submit_url_list = ['/tasks/force_status/CMPL', '/tasks/fix/statuses/'];
                         change_users_control.hide();
                         force_status_control.show();
@@ -273,15 +267,13 @@
                         start_end_date_control.hide();
                         break;
                     case 'request_revisions':
-{#                        submit_form_url =  '/tasks/request_revisions';#}
-                        submit_url_list = ['/tasks/request_revisions']; //, '/tasks/set_start_end_date'];
+                        submit_url_list = ['/tasks/request_revisions'];
                         change_users_control.hide();
                         force_status_control.show();
                         request_revision_control.show();
                         start_end_date_control.show();
                         break;
                     case 'fix_task':
-{#                        submit_form_url =  '/tasks/fix/statuses/';#}
                         submit_url_list = ['/tasks/fix/statuses/'];
                         change_users_control.hide();
                         force_status_control.hide();
@@ -289,7 +281,6 @@
                         start_end_date_control.hide();
                         break;
                     case 'watch_task':
-{#                        submit_form_url =  '/tasks/watch';#}
                         submit_url_list = ['/tasks/watch'];
                         change_users_control.hide();
                         force_status_control.hide();
@@ -362,23 +353,6 @@
                     _query += "&original_reviewer_id={{ reviewer_id }}";
                 {% endif %}
 
-                {#console.log("_query: " + _query);#}
-                {#console.log("submit_url_list[0]: " + submit_url_list);#}
-
-                {# if (submit_url_list.indexOf('/tasks/set_start_end_date') > -1) { #}
-                {#     var start_end = get_date_range('start_end_date_range_picker'); #}
-                {#     var start = start_end[0]; #}
-                {#     var end = start_end[1]; #}
-                {#     if (start && end){ #}
-                {#         _query += "&start="+start.toUTCString()+"&end="+end.toUTCString(); #}
-                {#     } #}
-                {#     else{ #}
-                {#         bootbox.alert("Hooop ! Start End Date girmedin!"); #}
-                {#         submit_button.button('reset'); #}
-                {#         return; #}
-                {#     } #}
-                {# } #}
-
                 post_actions(_query);
             });
 
@@ -401,7 +375,6 @@
                         // wait for hide event to finish
                             post_actions(_q);
                         }else {
-                            //window.location.reload();
                             submit_button.button('reset');
                             $('#dialog_template').modal('hide');
                         }

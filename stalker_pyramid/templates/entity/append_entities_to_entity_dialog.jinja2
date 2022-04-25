@@ -57,7 +57,7 @@
         dialog_template_label.append('<span>Append {{ entities_name }}</span>')
 
         {# ***************************************************************** #}
-        $(document).ready(function () {
+        window.$(document).ready(function () {
             $.getJSON('/entities/{{ entity.id }}/{{ entities_name }}/out_stack/').then(function (data) {
 
                 var item_template = doT.template($('#tmpl_append_item').html());
@@ -109,7 +109,7 @@
             });
         });
 
-        $(document).ready(function () {
+        window.$(document).ready(function () {
             var submit_button = $('#dialog_template_submit_button');
             submit_button.on('click', function (e) {
 

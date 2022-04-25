@@ -148,11 +148,6 @@
                         <span class="lbl" > Not Finished Yet </span>
                     </label>
 
-{#                    <label>#}
-{#                        <input name="final_action" type="radio" class="ace" value="force_complete"/>#}
-{#                        <span class="lbl" > Set As Completed </span>#}
-{#                    </label>#}
-
                     <label>
                         <input name="final_action" type="radio" class="ace" value="request_final_review"/>
                         <span class="lbl" > Submit For Final Review </span>
@@ -630,9 +625,6 @@ function init_dialog() {
         var final_action = $('input[name="final_action"]:checked', '.controls').val();
 
         switch(final_action){
-            {#case 'force_complete':#}
-            {#    submit_finalize_form_url = '/tasks/' + task_id + '/force_status/CMPL';#}
-            {#    break;#}
             case 'request_final_review':
                 submit_finalize_form_url = '/tasks/' + task_id + '/request_review?request_review_mode=Final';
                 break;
@@ -653,7 +645,6 @@ function init_dialog() {
         }).fail(function (jqXHR) {
             bootbox.alert('<div id="message" class="alert alert-danger bigger-110">' + jqXHR.responseText + '</div>');
             refresh_page();
-{#            submit_button.button('reset');#}
         });
     };
 
@@ -697,7 +688,6 @@ function init_dialog() {
                 $.param({
                     'start': start.toUTCString(),
                     'end': end.toUTCString(),
-                    {#'revision_type': $('#revision_type').val()#}
                 })
             ).done(function (response_text) {
                 if (submit_finalize_form_url){

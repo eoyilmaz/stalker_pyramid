@@ -80,32 +80,32 @@
 </div>
 
 <script class="include" type="text/javascript"
-            src='{{ request.static_url("stalker_pyramid:static/jqPlot/jquery.jqplot.min.js") }}'></script>
+            src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/jquery.jqplot.min.js") }}'></script>
 <!-- End Don't touch this! -->
 
 <!-- Additional plugins go here -->
 
 <script class="include" type="text/javascript"
-        src='{{ request.static_url("stalker_pyramid:static/jqPlot/plugins/jqplot.categoryAxisRenderer.min.js") }}'></script>
+        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.categoryAxisRenderer.min.js") }}'></script>
 <script class="include" type="text/javascript"
-        src='{{ request.static_url("stalker_pyramid:static/jqPlot/plugins/jqplot.barRenderer.min.js") }}'></script>
+        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.barRenderer.min.js") }}'></script>
 <script class="include" type="text/javascript"
-        src='{{ request.static_url("stalker_pyramid:static/jqPlot/plugins/jqplot.dateAxisRenderer.min.js") }}'></script>
+        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.dateAxisRenderer.min.js") }}'></script>
 <script class="include" type="text/javascript"
-        src='{{ request.static_url("stalker_pyramid:static/jqPlot/plugins/jqplot.logAxisRenderer.min.js") }}'></script>
+        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.logAxisRenderer.min.js") }}'></script>
 <script class="include" type="text/javascript"
-        src='{{ request.static_url("stalker_pyramid:static/jqPlot/plugins/jqplot.canvasAxisTickRenderer.min.js") }}'></script>
+        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.canvasAxisTickRenderer.min.js") }}'></script>
 <script class="include" type="text/javascript"
-        src='{{ request.static_url("stalker_pyramid:static/jqPlot/plugins/jqplot.canvasTextRenderer.min.js") }}'></script>
+        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.canvasTextRenderer.min.js") }}'></script>
 <script class="include" type="text/javascript"
-        src='{{ request.static_url("stalker_pyramid:static/jqPlot/plugins/jqplot.pointLabels.min.js") }}'></script>
+        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.pointLabels.min.js") }}'></script>
 <script class="include" type="text/javascript"
-        src='{{ request.static_url("stalker_pyramid:static/jqPlot/plugins/jqplot.highlighter.min.js") }}'></script>
+        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.highlighter.min.js") }}'></script>
 <script class="include" type="text/javascript"
-        src='{{ request.static_url("stalker_pyramid:static/jqPlot/plugins/jqplot.cursor.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/i18n/grid.locale-en.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/jquery.jqGrid.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/moment/moment.min.js") }}'></script>
+        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.cursor.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/i18n/grid.locale-en.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/jquery.jqGrid.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/node_modules/moment/min/moment.min.js") }}'></script>
 
 
 
@@ -183,7 +183,7 @@
 
                     var graph1_val = s_data['total_seconds'];
                     var graph2_val = s_data['approved_seconds'];
-                    if(t_type!='Animation'){
+                    if(t_type !== 'Animation'){
                         graph1_val = s_data['total_shots'];
                         graph2_val = s_data['approved_shots'];
                         graph_val_type = "Shots";
@@ -380,7 +380,7 @@
 
                         var total = total_minutes +' m';
                         var approved_total = approved_minutes +' m';
-                        if(t_type!='Animation'){
+                        if(t_type !== 'Animation'){
                             total = sum_of_total_shots.toFixed(1) +' shots';
                             approved_total = sum_of_approved_shots.toFixed(1) +' shots';
                         }
@@ -442,7 +442,7 @@
             if($class in replacement) icon.attr('class', 'ui-icon '+replacement[$class]);
         })
     }
-    $(document).ready(function () {
+    window.$(document).ready(function () {
         $.jqplot._noToImageButton = true;
         $.jqplot.config.enablePlugins = true;
         var task_type = $('#task_type');

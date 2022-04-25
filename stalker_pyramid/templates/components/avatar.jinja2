@@ -79,7 +79,7 @@
 //so we return just here to prevent problems
                     var entity_avatar = $('#entity_avatar');
                     var value = entity_avatar.next().find('input[type=hidden]:eq(0)').val();
-                    if (!value || value.length == 0) {
+                    if (!value || value.length === 0) {
                         deferred = new $.Deferred;
                         deferred.resolve();
                         return deferred.promise();

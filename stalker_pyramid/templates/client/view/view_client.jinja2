@@ -114,9 +114,9 @@
                 }
 
                 var entity_projects = $('#entity_projects_' + data[i].status_code);
-                if (entity_projects.length==0){
+                if (entity_projects.length === 0){
                     status_lists.append(status_template(data[i]));
-                    entity_projects = $('#entity_projects_'+data[i].status_code);
+                    entity_projects = $('#entity_projects_' + data[i].status_code);
                 }
                 entity_projects.append(project_card_template(data[i]));
             }

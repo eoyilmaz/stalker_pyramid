@@ -221,7 +221,7 @@
 
 
 <script type="text/javascript">
-    $.getJSON('/users/{{ logged_in_user.id }}/open_tickets/').then(function (data) {
+    window.$.getJSON('/users/{{ logged_in_user.id }}/open_tickets/').then(function (data) {
         $(function () {
             var notifications = $('#notifications');
             var total_tickets = data.length;

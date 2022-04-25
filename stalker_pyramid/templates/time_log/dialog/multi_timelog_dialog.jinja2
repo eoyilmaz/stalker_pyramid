@@ -308,9 +308,8 @@ function init_dialog() {
     start_end_date_range_picker.datepicker('setDate', start_date_value);
 
     date_picker.datepicker().next().on(ace.click_event, function(){
-                $(this).prev().focus();
-            });
-{#    $( "#start_end_date_range_picker" ).datepicker({maxDate: "+1M +10D" });#}
+        $(this).prev().focus();
+    });
 
     start_end_date_range_picker.on('shown', function (e) {
         e.stopPropagation();

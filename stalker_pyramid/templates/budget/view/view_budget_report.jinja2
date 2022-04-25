@@ -64,18 +64,18 @@
     <script type="text/javascript">
         if("ontouchend" in document) document.write("<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.mobile.custom.min.js") }}'>"+"<"+"/script>");
     </script>
-    <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/i18n/grid.locale-en.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/jquery.jqGrid.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/i18n/grid.locale-en.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/jquery.jqGrid.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/accounting.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/codebase/dhtmlxgantt.js") }}'></script>
-    <link src='{{ request.static_url("stalker_pyramid:static/jqGrid/css/ui.jqgrid-bootstrap.css") }}'/>
+    <link src='{{ request.static_url("stalker_pyramid:static/jqgrid/ui.jqgrid-bootstrap.css") }}'/>
     <script>
         $.jgrid.defaults.width = 780;
         $.jgrid.defaults.responsive = true;
         $.jgrid.defaults.styleUI = 'Bootstrap';
     </script>
     <script type="text/javascript">
-        $(document).ready(function () {
+        window.$(document).ready(function () {
 
             $('#add_project_entries_to_budget_button').hide();
             var total_cost = 0;

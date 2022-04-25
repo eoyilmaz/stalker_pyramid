@@ -165,36 +165,6 @@ function init_dialog() {
         vacation_type.attr('disabled', true)
     {% endif %}
 
-    {#    var vacation_type = $('#vacation_type');#}
-    {##}
-    {#    {% raw %}#}
-    {#    var type_option_template = doT.template(#}
-    {#            '<option value={{=it.id}} {{=it.selected}}>{{=it.name}}</option>'#}
-    {#    );#}
-    {#    {% endraw %}#}
-    {##}
-    {##}
-    {##}
-    {#    {% for type in types %}#}
-    {##}
-    {#        var selected = '';#}
-    {##}
-    {#        {% if mode == 'update' %}#}
-    {##}
-    {#            {% if vacation.type.id == type.id %}#}
-    {##}
-    {#                selected = 'selected';#}
-    {##}
-    {#            {% endif %}#}
-    {#        {% endif %}#}
-    {##}
-    {##}
-    {#        var data = {id: '{{ type.name }}', name: '{{ type.name }}', selected: selected};#}
-    {#        vacation_type.append(type_option_template(data));#}
-    {##}
-    {#    {% endfor %}#}
-
-
     var vacation_user = $('#vacation_user');
     var vacation_form = $("#vacation_form");
     {% if mode == 'create' %}
@@ -299,7 +269,7 @@ function init_dialog() {
     {# ***************************************************************** #}
     {# Start & End Date Picker #}
 
-    $(document).ready(function () {
+    window.$(document).ready(function () {
         // initialize date picker
         var start_end_date_range_picker = $('#start_end_date_range_picker').daterangepicker();
 
@@ -325,7 +295,7 @@ function init_dialog() {
     {# ***************************************************************** #}
     {# Start Time #}
 
-    $(document).ready(function () {
+    window.$(document).ready(function () {
         var start_time = $('#start_time');
         start_time.val(start_time_value.format('HH:MM'));
         start_time.timepicker({
@@ -338,7 +308,7 @@ function init_dialog() {
     {# ***************************************************************** #}
     {# End Time #}
 
-    $(document).ready(function () {
+    window.$(document).ready(function () {
         var end_time = $('#end_time');
         end_time.val(end_time_value.format('HH:MM'));
         end_time.timepicker({

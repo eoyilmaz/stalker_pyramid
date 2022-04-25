@@ -49,10 +49,10 @@
 {% endblock page_content %}
 
 {% block extrascripts %}
-    <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/i18n/grid.locale-en.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/jquery.jqGrid.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/jquery.jqGrid.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/plugins/ui.multiselect.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/i18n/grid.locale-en.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/jquery.jqGrid.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/jquery.jqGrid.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/plugins/ui.multiselect.js") }}'></script>
 
     <script>
 
@@ -72,7 +72,7 @@
                 return -1;
             }
 
-        $(document).ready(function () {
+        window.$(document).ready(function () {
 
             console.debug('starting to initialize init_html_modal dialog!!!');
 

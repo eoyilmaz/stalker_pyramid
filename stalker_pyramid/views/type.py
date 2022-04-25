@@ -7,8 +7,8 @@ from stalker.db.session import DBSession
 from stalker import Type
 
 import logging
-#logger = logging.getLogger(__name__)
-#logger.setLevel(logging.DEBUG)
+# logger = logging.getLogger(__name__)
+# logger.setLevel(logging.DEBUG)
 from stalker_pyramid import logger_name
 logger = logging.getLogger(logger_name)
 

@@ -18,8 +18,8 @@ from stalker_pyramid.views import (log_param, get_logged_in_user,
 import logging
 from stalker_pyramid.views.type import query_type
 
-#logger = logging.getLogger(__name__)
-#logger.setLevel(logging.DEBUG)
+# logger = logging.getLogger(__name__)
+# logger.setLevel(logging.DEBUG)
 from stalker_pyramid import logger_name
 logger = logging.getLogger(logger_name)
 

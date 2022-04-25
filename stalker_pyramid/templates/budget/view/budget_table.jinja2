@@ -68,10 +68,10 @@
 <script type="text/javascript">
         if("ontouchend" in document) document.write("<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.mobile.custom.min.js") }}'>"+"<"+"/script>");
     </script>
-    <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/i18n/grid.locale-en.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/jquery.jqGrid.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/i18n/grid.locale-en.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/jquery.jqGrid.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/accounting.min.js") }}'></script>
-    <link src='{{ request.static_url("stalker_pyramid:static/jqGrid/css/ui.jqgrid-bootstrap.css") }}'/>
+    <link src='{{ request.static_url("stalker_pyramid:static/jqgrid/ui.jqgrid-bootstrap.css") }}'/>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.slimscroll.min.js") }}'></script>
 
     <script>
@@ -92,7 +92,7 @@
     </style>
     <script type="text/javascript">
 
-        $(document).ready(function () {
+        window.$(document).ready(function () {
 
             $('.slim-scroll').each(function () {
                 var $this = $(this);

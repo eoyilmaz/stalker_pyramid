@@ -28,14 +28,14 @@
 </div>
 
 <script class="include" type="text/javascript"
-            src='{{ request.static_url("stalker_pyramid:static/jqPlot/jquery.jqplot.min.js") }}'></script>
+            src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/jquery.jqplot.min.js") }}'></script>
 <!-- End Don't touch this! -->
 
 <!-- Additional plugins go here -->
 
-<script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/i18n/grid.locale-en.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/jquery.jqGrid.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/moment/moment.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/i18n/grid.locale-en.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/jquery.jqGrid.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/node_modules/moment/min/moment.min.js") }}'></script>
 <STYLE>
     .columnClass {
         background-color: #808080;
@@ -423,8 +423,7 @@
             if($class in replacement) icon.attr('class', 'ui-icon '+replacement[$class]);
         })
     }
-
-    $(document).ready(function () {
+    window.$(document).ready(function () {
         var project_cb = $('#project_cb');
         var project_id = localStorage.getItem("result_project_id");
         console.log("project_id: " + project_id);

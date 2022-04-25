@@ -111,8 +111,6 @@ def main(global_config, **settings):
 
     # use the ZopeTransactionExtension for session
     db.setup(settings)
-    # DBSession.remove()
-    # DBSession.configure(extension=ZopeTransactionExtension())
     register(DBSession)
 
     import os
@@ -861,7 +859,7 @@ def main(global_config, **settings):
     config.add_route('request_extra_time', 'tasks/{id}/request_extra_time')
     config.add_route('request_extra_time_dialog', 'tasks/{id}/request_extra_time/dialog')
 
-    config.add_route('get_task_resources',        'tasks/{id}/resources/') # json
+    config.add_route('get_task_resources',        'tasks/{id}/resources/')  # json
     config.add_route('remove_task_user_dialog',   'tasks/{id}/remove/{user_type}/{user_id}/dialog')
     config.add_route('remove_task_user',          'tasks/{id}/remove/{user_type}/{user_id}')
     config.add_route('remove_tasks_user_dialog',   'tasks/remove/{user_type}/{user_id}/dialog')

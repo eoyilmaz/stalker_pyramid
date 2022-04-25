@@ -103,7 +103,7 @@
 
     }
 
-    $(document).ready(function () {
+    window.$(document).ready(function () {
         {% if budget %}
             var total_msrp = parseInt({{ budget.get_generic_text_attr('total_msrp') }});
             var total_cost = parseInt({{ budget.get_generic_text_attr('total_cost') }});

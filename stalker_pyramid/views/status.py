@@ -17,12 +17,6 @@ from stalker_pyramid import logger_name
 logger = logging.getLogger(logger_name)
 
 
-# *******************
-#
-# Status Dialogs
-#
-# *******************
-
 @view_config(
     route_name='dialog_create_status',
     renderer='templates/status/dialog_create_status.jinja2'
@@ -103,10 +97,6 @@ def update_status(request):
     return HTTPOk()
 
 
-# *******************
-# Status List Dialogs
-# *******************
-
 @view_config(
     route_name='dialog_create_status_list',
     renderer='templates/status/dialog_create_status_list.jinja2'
@@ -146,12 +136,6 @@ def dialog_update_status_list(request):
         'status_list': status_list,
     }
 
-
-# *******************
-#
-# Status List Actions
-#
-# *******************
 
 @view_config(
     route_name='create_status_list'

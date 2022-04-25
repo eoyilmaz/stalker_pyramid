@@ -136,13 +136,13 @@
     <script type="text/javascript">
         if("ontouchend" in document) document.write("<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.mobile.custom.min.js") }}'>"+"<"+"/script>");
     </script>
-    <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/i18n/grid.locale-en.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/i18n/grid.locale-en.js") }}'></script>
 
-    <script src='{{ request.static_url("stalker_pyramid:static/dhtmlx/dhtmlxSuite/dhtmlx.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/dhtmlx/dhtmlxgantt.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/dhtmlx-suite/codebase/dhtmlx.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/dhtmlx-gantt/codebase/dhtmlxgantt.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/dhtmlx/ext/dhtmlxgantt_marker.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/dhtmlx/api.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/moment/moment.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/moment/min/moment.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/dhtmlx/ext/dhtmlxgantt_multiselect.js") }}' type='text/javascript' charset='utf-8'></script>
 {#    <script src="http://export.dhtmlx.com/gantt/api.js"></script>#}
     <script type="text/javascript">
@@ -157,7 +157,7 @@
 
 
 
-        $(document).ready(function () {
+        window.$(document).ready(function () {
 
             doOnLoad();
             $('#back_button').on('click', function (e) {

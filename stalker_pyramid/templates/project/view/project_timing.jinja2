@@ -92,7 +92,7 @@
 
 <script class="code" type="text/javascript">
     $.getJSON('/schedule_info').then(function (data) {
-        $(document).ready(function () {
+        window.$(document).ready(function () {
             $('#project_last_schedule_by').append(data.last_scheduled_by);
             $('#project_last_schedule_at').append(new Date(data.last_scheduled_at).format('yyyy-mm-dd HH:MM'));
             $('#project_last_schedule_took').append(parseInt(data.last_scheduling_took/60) +' minutes');

@@ -10,6 +10,8 @@ docs/source/generated/*
 docs/source/static_pyramid/stalker_design*.vue
 docs/source/static_pyramid/design
 data/*
+frontend/node_modules/
+frontend/ace/node_modules/
 .coverage
 .DS_Store
 dist/*
@@ -21,7 +23,6 @@ include/*
 local
 *.swp
 stalker_pyramid.db*
-.git/
 pyramid.log
 pyramid.pid
 anima.ini
@@ -30,3 +31,7 @@ home.ini
 imaj.ini
 local_production.ini
 local_production2.ini
+package-lock.json
+frontend/dist/
+stalker_pyramid/static/js/*
+stalker_pyramid/static/css/*

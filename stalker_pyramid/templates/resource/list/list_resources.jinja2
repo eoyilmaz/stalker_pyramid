@@ -86,15 +86,9 @@
 </div>
 
 
-<script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/i18n/grid.locale-en.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/jquery.jqGrid.js") }}'></script>
-{#<script src='{{ request.static_url("stalker_pyramid:static/codebase/dhtmlxgantt.js") }}'></script>#}
-<link src='{{ request.static_url("stalker_pyramid:static/jqGrid/css/ui.jqgrid-bootstrap.css") }}'/>
-
-
 <script type='text/javascript'
         data-dojo-config="async: true, parseOnLoad: true"
-        src='{{ request.static_url("stalker_pyramid:static/dojo/dojo.js") }}'>
+        src='{{ request.static_url("stalker_pyramid:static/node_modules/dojo/dojo.js") }}'>
 </script>
 
 <script type='text/javascript'
@@ -110,8 +104,8 @@ require({
     packages: [
         { 
             name: 'jquery',
-             location: '{{ request.static_url("stalker_pyramid:static/jquery") }}', 
-             main: 'jquery-2.1.1.min'
+             location: '{{ request.static_url("stalker_pyramid:static/node_modules/jquery/dist") }}',
+             main: 'jquery.min'
          }
      ]},
     [

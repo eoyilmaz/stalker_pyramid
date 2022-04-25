@@ -24,7 +24,7 @@
 
 <script type="text/javascript">
 
-    $(document).ready(function () {
+    window.$(document).ready(function () {
         {% if budget %}
             $('#start_date').text(moment({{ budget.get_generic_text_attr('start_date') }}).format('DD/MM/YYYY'));
             $('#end_date').text(moment({{ budget.get_generic_text_attr('end_date') }}).format('DD/MM/YYYY'));

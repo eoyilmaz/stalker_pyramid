@@ -13,8 +13,8 @@ import logging
 from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
                                    get_multi_integer)
 
-#logger = logging.getLogger(__name__)
-#logger.setLevel(logging.WARNING)
+# logger = logging.getLogger(__name__)
+# logger.setLevel(logging.WARNING)
 from stalker_pyramid import logger_name
 logger = logging.getLogger(logger_name)
 

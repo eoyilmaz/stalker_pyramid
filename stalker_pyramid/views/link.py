@@ -1660,10 +1660,6 @@ class MediaManager(object):
         # generate thumbnail for the image and save it to a tmp folder
         suffix = self.thumbnail_format
 
-        import sys
-        # if sys.version_info[0] < 3:
-        #     img = Image.open(file_full_path)
-        # else:
         img = Image.open(file_full_path)
         # do a double scale
         img.thumbnail((2 * self.thumbnail_width, 2 * self.thumbnail_height))
@@ -1734,7 +1730,6 @@ class MediaManager(object):
         #       images
         media_info = self.get_video_info(file_full_path)
         video_info = media_info['video_info']
-        # print('video_info: %s' % video_info)
 
         # get the correct stream
         video_stream = None
@@ -1950,7 +1945,6 @@ class MediaManager(object):
         :returns: str
         """
         logger.debug('link_path: %s' % link_path)
-        # if not isinstance(link_path, (str, unicode)):
         import stalker_pyramid
         if not isinstance(link_path, stalker_pyramid.__string_types__):
             raise TypeError(
@@ -1993,7 +1987,6 @@ class MediaManager(object):
           (ex: /home/stalker/Stalker_Storage/b0/e6/b0e64b16c6bd4857a91be47fb2517b53.jpg)
         :returns: str
         """
-        # if not isinstance(full_path, (str, unicode)):
         import stalker_pyramid
         if not isinstance(full_path, stalker_pyramid.__string_types__):
             raise TypeError(
@@ -2117,12 +2110,6 @@ class MediaManager(object):
 
             # overwrite output
 
-        # # use all cpus
-        # import multiprocessing
-        # num_of_threads = multiprocessing.cpu_count()
-        # args.append('-threads')
-        # args.append('%s' % num_of_threads)
-
         # overwrite any file
         args.append('-y')
 
@@ -2144,10 +2131,6 @@ class MediaManager(object):
 
             if stderr != b'':
                 stderr_buffer.append(stderr)
-
-        # if process.returncode:
-        #     # there is an error
-        #     raise RuntimeError(stderr_buffer)
 
         logger.debug(stderr_buffer)
         logger.debug('process completed!')

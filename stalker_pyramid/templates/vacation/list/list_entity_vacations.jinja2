@@ -85,7 +85,7 @@
     {% include 'components/tree.jinja2' %}
 
     <script type="text/javascript">
-        $(document).ready(function () {
+        window.$(document).ready(function () {
 
             $.getJSON('/entities/{{ entity.id }}/events/?keys=vacation').then(function (data) {
                 var events = [];

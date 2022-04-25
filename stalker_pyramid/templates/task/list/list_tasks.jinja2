@@ -102,7 +102,6 @@
                   {{?}}">&nbsp</i>
         <a href="/tasks/{{=it.id}}/view"
            id="{{=it.id}}"
-           name="{{=it.id}}"
            type="{{=it.entity_type}}">{{=it.name}}</a>
     </div>
 </script>
@@ -527,7 +526,7 @@
 
 <script type='text/javascript'
         data-dojo-config="async: true, parseOnLoad: true"
-        src='{{ request.static_url("stalker_pyramid:static/dojo/dojo.js") }}'>
+        src='{{ request.static_url("stalker_pyramid:static/node_modules/dojo/dojo.js") }}'>
 </script>
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/daterangepicker.min.js") }}'></script>
 
@@ -548,9 +547,9 @@ require([
     'dojo/json',
     'dojo/query',
 
-    'dstore/Cache',
-    'dstore/Memory',
-    'dstore/Rest',
+    'dojo-dstore/Cache',
+    'dojo-dstore/Memory',
+    'dojo-dstore/Rest',
 
     'dojo/request/xhr',
     'dojo/_base/lang',

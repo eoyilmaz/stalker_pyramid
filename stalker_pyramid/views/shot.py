@@ -14,8 +14,8 @@ import transaction
 from webob import Response
 from stalker_pyramid.views import get_logged_in_user, PermissionChecker 
 
-#logger = logging.getLogger(__name__)
-#logger.setLevel(logging.DEBUG)
+# logger = logging.getLogger(__name__)
+# logger.setLevel(logging.DEBUG)
 from stalker_pyramid import logger_name
 logger = logging.getLogger(logger_name)
 

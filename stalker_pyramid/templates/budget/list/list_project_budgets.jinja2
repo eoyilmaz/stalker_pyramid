@@ -227,15 +227,15 @@
 {#        </script>#}
 {#    {% endraw %}#}
 
-    <script src='{{ request.static_url("stalker_pyramid:static/dhtmlx/dhtmlxSuite/dhtmlx.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/dhtmlx/dhtmlxgantt.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/dhtmlx-suite/codebase/dhtmlx.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/dhtmlx-gantt/codebase/dhtmlxgantt.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/dhtmlx/api.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/moment/moment.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/moment/min/moment.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/dhtmlx/ext/dhtmlxgantt_multiselect.js") }}' type='text/javascript' charset='utf-8'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/accounting.min.js") }}'></script>
     <script type="text/javascript">
 
-        $(document).ready(function () {
+        window.$(document).ready(function () {
             var budget_template = doT.template($('#tmpl_budget').html());
             $.getJSON('{{ request.route_path('get_project_budgets', id=entity.id) }}').then(function (b_data) {
                 for(var i=0; i<b_data.length; i++ ){

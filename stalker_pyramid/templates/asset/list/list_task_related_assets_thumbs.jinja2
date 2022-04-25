@@ -70,7 +70,7 @@
 
 
 <script type="text/javascript">
-    $(document).ready(function () {
+    window.$(document).ready(function () {
         var related_asset_template = doT.template($('#tmpl_related_asset_item').html());
         var related_assets_list = $('#related_assets_list');
         $.getJSON('/tasks/{{ entity.id }}/related/Asset/depends/').then(function (data) {

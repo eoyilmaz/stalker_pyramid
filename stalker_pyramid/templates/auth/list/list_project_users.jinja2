@@ -81,11 +81,11 @@
     <script type="text/javascript">
         if("ontouchend" in document) document.write("<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.mobile.custom.min.js") }}'>"+"<"+"/script>");
     </script>
-    <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/i18n/grid.locale-en.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/jquery.jqGrid.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/jquery.jqGrid.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/plugins/ui.multiselect.js") }}'></script>
-{#    <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/plugins/ui.multiselect.css") }}'></script>#}
+    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/i18n/grid.locale-en.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/jquery.jqGrid.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/jquery.jqGrid.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/plugins/ui.multiselect.js") }}'></script>
+{#    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/plugins/ui.multiselect.css") }}'></script>#}
     <script>
         $.jgrid.defaults.autowidth = true;
         $.jgrid.defaults.responsive = true;
@@ -103,7 +103,7 @@
     {% endraw %}
 
     <script type="text/javascript">
-        $(document).ready(function () {
+        window.$(document).ready(function () {
             var lastSelection;
             var grid_selector = "#grid-table";
             var grid = jQuery(grid_selector);

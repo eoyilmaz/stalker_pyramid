@@ -17,15 +17,14 @@ from stalker_pyramid.views import (get_logged_in_user,
                                    milliseconds_since_epoch,
                                    StdErrToHTMLConverter,
                                    get_multi_integer, dummy_email_address)
-from stalker_pyramid.views.link import replace_img_data_with_links, \
-    MediaManager
+from stalker_pyramid.views.link import replace_img_data_with_links, MediaManager
 # from stalker_pyramid.views.task import get_task_full_path, \
 #     get_task_external_link
 from stalker_pyramid.views.type import query_type
 
 
-#logger = logging.getLogger(__name__)
-#logger.setLevel(logging.DEBUG)
+# logger = logging.getLogger(__name__)
+# logger.setLevel(logging.DEBUG)
 from stalker_pyramid import logger_name
 logger = logging.getLogger(logger_name)
 

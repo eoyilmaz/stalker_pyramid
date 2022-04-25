@@ -27,10 +27,8 @@
 
 <div class="hr hr8 hr-double hr-dotted"></div>
 
-
 <script type="text/javascript">
-
-    $(document).ready(function () {
+    window.$(document).ready(function () {
         function set_field_value(role_name, url){
             console.log("set_field_value");
             var project_role_list = $("#project_role_list");
@@ -44,13 +42,10 @@
             });
         }
 
-        set_field_value("Yaratici Yonetmen", '/entities/{{ project.id }}/role_user/?role_name=Yaratici%20Yonetmen');
-        set_field_value("Musteri Direktoru", '/entities/{{ project.id }}/role_user/?role_name=Musteri%20Direktoru');
-        set_field_value("Ajans Yapimcisi", '/entities/{{ project.id }}/role_user/?role_name=Ajans%20Yapimcisi');
-        set_field_value("Yonetmen", '/entities/{{ project.id }}/role_user/?role_name=Yonetmen');
-        set_field_value( "Yapimci", '/entities/{{ project.id }}/role_user/?role_name=Yapimci');
-
+        set_field_value("Creative Director", '/entities/{{ project.id }}/role_user/?role_name=Creative%20Director');
+        set_field_value("Client Director", '/entities/{{ project.id }}/role_user/?role_name=Client%20Director');
+        set_field_value("Agency Producer", '/entities/{{ project.id }}/role_user/?role_name=Agency%20Producer');
+        set_field_value("Director", '/entities/{{ project.id }}/role_user/?role_name=Director');
+        set_field_value("Producer", '/entities/{{ project.id }}/role_user/?role_name=Producer');
     });
-
-
 </script>

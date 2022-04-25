@@ -148,8 +148,6 @@
                     var task_schedule_unit = $('#task_schedule_unit');
                     $('#schedule_unit_{{ entity.id }}').text(task_schedule_unit.val())
 
-{#                    console.log($('#task_update_bid').prop('checked'))#}
-
                     if($('#task_update_bid').prop('checked')){
                         $('#bid_timing_{{ entity.id }}').text(task_schedule_timing.val())
                         $('#bid_unit_{{ entity.id }}').text(task_schedule_unit.val())
