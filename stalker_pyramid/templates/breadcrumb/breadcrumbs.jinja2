@@ -39,21 +39,21 @@
     <!--#nav-search-->
 </div>
 
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/chosen.jquery.min.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/chosen.window.jQuery.min.js") }}'></script>#}
 
 <script type="text/javascript">
 
     function submitForm() {
-        var search_input = $("#nav-search-input");
+        var search_input = window.jQuery("#nav-search-input");
         var search_str = search_input.val();
 
-        $.getJSON('/submit_search', {str: search_str, id:'{{entity.id}}'}).then(function (data) {
+        window.jQuery.getJSON('/submit_search', {str: search_str, id:'{{entity.id}}'}).then(function (data) {
             window.location.assign(data.url);
         });
     }
 
-    $(function () {
-        var search_input = $("#nav-search-input");
+    window.jQuery(function () {
+        var search_input = window.jQuery("#nav-search-input");
         search_input.typeahead({source: [], updater: function (b) {
             search_input.focus();
             return b;
@@ -63,7 +63,7 @@
             var search_str = search_input.val();
 
             if (search_str.length > 3) {
-                $.getJSON('/search', {str: search_str}).then(function (data) {
+                window.jQuery.getJSON('/search', {str: search_str}).then(function (data) {
 
                     var input_source = [];
                     var result_count = data.length;

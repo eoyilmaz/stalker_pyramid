@@ -129,22 +129,22 @@
         <table id="grid-table"></table>
     </div>
 </div>
-<script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/i18n/grid.locale-en.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/jquery.jqGrid.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/accounting.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.inputlimiter.1.3.1.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/daterangepicker.min.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/i18n/grid.locale-en.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/window.jQuery.jqGrid.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/accounting.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.inputlimiter.1.3.1.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/daterangepicker.min.js") }}'></script>#}
 
 <script type="text/javascript">
 
     function init_dialog() {
         console.debug('starting to initialize add_task_user_dialog dialog!!!');
 
-        $(function () {
-            var label = $('#dialog_template_label');
+        window.jQuery(function () {
+            var label = window.jQuery('#dialog_template_label');
             label.find('span').remove();
             label.append('<span>{{ tasks[0].type.name }}</span>');
-            $('#dialog_template_body').attr('style', "height: auto");
+            window.jQuery('#dialog_template_body').attr('style', "height: auto");
 
             var tasks_names = [
                 {% for task in tasks %}
@@ -162,11 +162,11 @@
             ];
             {# Start & End Date Picker #}
             // initialize date picker
-            var start_end_date_range_picker = $('#start_end_date_range_picker').daterangepicker();
+            var start_end_date_range_picker = window.jQuery('#start_end_date_range_picker').daterangepicker();
 
             // also update the icon
             start_end_date_range_picker.next().on('click', function () {
-                $(this).prev().focus();
+                window.jQuery(this).prev().focus();
             });
 
             start_end_date_range_picker.data().daterangepicker.updateFromControl();
@@ -181,10 +181,10 @@
 
             var grid_data = tasks_names;
 
-            jQuery(function($) {
+            window.jQuery(function(window.jQuery) {
                 var grid_selector = "#grid-table";
 
-                     jQuery(grid_selector).jqGrid({
+                     window.jQuery(grid_selector).jqGrid({
                         //direction: "rtl",
                         data: grid_data,
                         datatype: "local",
@@ -218,17 +218,17 @@
             });
 
             var submit_url_list = ['/tasks/change/resources'];
-            var task_action = $('#task_action');
+            var task_action = window.jQuery('#task_action');
 
-            var change_users_control =  $('#change_users_control');
-            var force_status_control =  $('#force_status_control');
-            var request_revision_control =  $('#request_revision_control');
-            var start_end_date_control =  $('#start_end_date_control');
+            var change_users_control =  window.jQuery('#change_users_control');
+            var force_status_control =  window.jQuery('#force_status_control');
+            var request_revision_control =  window.jQuery('#request_revision_control');
+            var start_end_date_control =  window.jQuery('#start_end_date_control');
             start_end_date_control.show();
 
             task_action.on('change', function (e) {
                 console.log("task_action.on(change):", e);
-                var action = $(this).val();
+                var action = window.jQuery(this).val();
                 switch (action){
                     case 'change_resources':
                         submit_url_list = ['/tasks/change/resources'];
@@ -303,7 +303,7 @@
                 task_action.trigger("change");
             {% endif %}
 
-            $('#watch_list_cb').on('click', function () {
+            window.jQuery('#watch_list_cb').on('click', function () {
                 var indexOn = submit_url_list.indexOf('/tasks/watch');
                 if(this.checked){
                     if(indexOn === -1){
@@ -316,7 +316,7 @@
                 }
             });
 
-            var task_users = $('#task_users');
+            var task_users = window.jQuery('#task_users');
             task_users.chosen({
                 search_contains: true,
                 enable_split_word_search: true
@@ -326,7 +326,7 @@
                 var user_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
             {% endraw %}
 
-            $.getJSON('/projects/{{ tasks[0].project.id }}/users/?simple=1').then(function(data){
+            window.jQuery.getJSON('/projects/{{ tasks[0].project.id }}/users/?simple=1').then(function(data){
                 task_users.find('option').remove();
 
                 var data_count = data.length;
@@ -336,14 +336,14 @@
                 task_users.trigger('liszt:updated');
              });
 
-            var submit_button = $('#dialog_template_submit_button');
+            var submit_button = window.jQuery('#dialog_template_submit_button');
             submit_button.on('click', function (e) {
 
                 e.stopPropagation();
                 e.preventDefault();
                 submit_button.button('loading');
 
-                var task_ids = jQuery('#grid-table').jqGrid('getGridParam', 'selarrrow');
+                var task_ids = window.jQuery('#grid-table').jqGrid('getGridParam', 'selarrrow');
                 var _query = "?project_id={{ tasks[0].project.id }}";
                 for (var i=0; i < task_ids.length; i++){
                     _query += "&task_ids=" + task_ids[i];
@@ -357,15 +357,15 @@
             });
 
             function post_actions(_q){
-                var change_properties_task_form = $("#change_properties_task_form");
+                var change_properties_task_form = window.jQuery("#change_properties_task_form");
                 console.log("submit_url_list[0]: " + submit_url_list);
                 console.log("_q: " + _q);
-                $.post(
+                window.jQuery.post(
                     submit_url_list[0] + _q,
                     change_properties_task_form.serialize()
                 ).done(function (response_text) {
                     submit_button.button('reset');
-                    $('#dialog_template').modal('hide');
+                    window.jQuery('#dialog_template').modal('hide');
                     // reload page
                     submit_url_list.shift();
                     console.log("submit_url_list.shift(): " + submit_url_list);
@@ -376,7 +376,7 @@
                             post_actions(_q);
                         }else {
                             submit_button.button('reset');
-                            $('#dialog_template').modal('hide');
+                            window.jQuery('#dialog_template').modal('hide');
                         }
                     }, 0);
                 }).fail(function (jqXHR) {
@@ -403,8 +403,8 @@
 
 <script type="text/javascript">
     function destruct_dialog() {
-        $('#dialog_template_submit_button').unbind();
-        $('#grid-table').unbind();
-        $('#dialog_template').data('modal', null);
+        window.jQuery('#dialog_template_submit_button').unbind();
+        window.jQuery('#grid-table').unbind();
+        window.jQuery('#dialog_template').data('modal', null);
     }
 </script>

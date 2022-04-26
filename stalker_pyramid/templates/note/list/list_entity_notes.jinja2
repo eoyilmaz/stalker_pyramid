@@ -60,9 +60,9 @@
 {% block extrascripts %}
 
     <script type="text/javascript">
-        $(function () {
+        window.jQuery(function () {
         {% if has_permission('Update_Entity')%}
-            $('#editable_entity_description').editable({
+            window.jQuery('#editable_entity_description').editable({
                 mode: 'inline',
                 type: 'wysiwyg',
                 name: 'editable_entity_description',
@@ -74,30 +74,30 @@
                 },
 
                 success: function (response, newValue) {
-                    $('#description_loading').show();
+                    window.jQuery('#description_loading').show();
 
-                    var params = $.param({
+                    var params = window.jQuery.param({
                         attr_name: 'description',
                         attr_value: newValue
                     });
 
-                    $.post('{{request.route_url('inline_update_entity', id=entity.id) }}', params).done(function () {
-                        $.getJSON('{{request.route_url('get_entity', id=entity.id) }}').then(
+                    window.jQuery.post('{{request.route_url('inline_update_entity', id=entity.id) }}', params).done(function () {
+                        window.jQuery.getJSON('{{request.route_url('get_entity', id=entity.id) }}').then(
                             function (data) {
-                                $('#editable_entity_description').val(data.description);
-                                $('#description_loading').hide();
+                                window.jQuery('#editable_entity_description').val(data.description);
+                                window.jQuery('#description_loading').hide();
                             }
                         );
                     }).fail(function (jqXHR) {
                         bootbox.alert('<div id="message" class="alert alert-danger bigger-110">' + jqXHR.responseText + '</div>');
-                        $('#description_loading').hide();
+                        window.jQuery('#description_loading').hide();
                     });
                 }
             });
 
-            $('#entity_description_edit_trigger').on('click', function(e){
+            window.jQuery('#entity_description_edit_trigger').on('click', function(e){
                 e.stopPropagation();
-                $('#editable_entity_description').editable('toggle');
+                window.jQuery('#editable_entity_description').editable('toggle');
             });
 
         {% endif %}

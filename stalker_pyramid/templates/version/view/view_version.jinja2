@@ -16,10 +16,10 @@
 
 {#PRE-HEADER #}
 {% block pre_header %}
-    <link rel="stylesheet"
-          href='{{ request.static_url("stalker_pyramid:static/ace/css/dropzone.css") }}'/>
-    <link rel="stylesheet"
-          href='{{ request.static_url("stalker_pyramid:static/stalker/css/Paginator.css") }}'/>
+{#    <link rel="stylesheet"#}
+{#          href='{{ request.static_url("stalker_pyramid:static/ace/css/dropzone.css") }}'/>#}
+{#    <link rel="stylesheet"#}
+{#          href='{{ request.static_url("stalker_pyramid:static/stalker/css/Paginator.css") }}'/>#}
 
 {% endblock pre_header %}
 
@@ -154,16 +154,16 @@
 {% endblock page_content %}
 
 {% block extrascripts %}
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery-ui-1.10.3.custom.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.ui.touch-punch.min.js") }}'></script>
+{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery-ui-1.10.3.custom.min.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.ui.touch-punch.min.js") }}'></script>#}
     <script type="text/javascript">
-        $(function () {
+        window.jQuery(function () {
             var icon_name = get_icon('version');
-            $('#version_header').append('<i class="' + icon_name + ' bigger-125"></i>{{ version.take_name }} | {{ "%03i"|format(version.version_number) }}');
+            window.jQuery('#version_header').append('<i class="' + icon_name + ' bigger-125"></i>{{ version.take_name }} | {{ "%03i"|format(version.version_number) }}');
 
-            $('.date').each(function () {
-                var date = moment($(this).text());
-                $(this).text(date.fromNow());
+            window.jQuery('.date').each(function () {
+                var date = moment(window.jQuery(this).text());
+                window.jQuery(this).text(date.fromNow());
             });
 
             var pack_version_url = "{{ request.route_url('pack_version', id=version.id) }}";
@@ -173,9 +173,9 @@
             console.debug('do_playblast_url:', do_playblast_url);
             console.debug('export_alembics_url:', export_alembics_url);
 
-            var download_as_zip_button = $('#download_as_zip_button');
+            var download_as_zip_button = window.jQuery('#download_as_zip_button');
             download_as_zip_button.on('click', function () {
-                var dialog = $("#download-as-zip-dialog-message").dialog({
+                var dialog = window.jQuery("#download-as-zip-dialog-message").dialog({
                     modal: true,
                     title: "Preparing ZIP File",
                     title_html: true,
@@ -188,11 +188,11 @@
                 var timer = 0;
                 // var last_scheduled_at = moment(data.last_scheduled_at);
                 var last_scheduling_took = 120;
-                var zip_progress = $('#zip-progress');
+                var zip_progress = window.jQuery('#zip-progress');
                 var zip_progress_bar = zip_progress.find('.bar');
 
                 // start timer
-                var current_scheduling_time = $('#current_scheduling_time');
+                var current_scheduling_time = window.jQuery('#current_scheduling_time');
                 function myTimer() {
                     timer += 1;
                     current_scheduling_time.html(timer);
@@ -209,7 +209,7 @@
                 timer_function = setInterval(function(){myTimer()}, 1000);
 
                 // set the system on scheduling
-                $.post(pack_version_url).done(function(){
+                window.jQuery.post(pack_version_url).done(function(){
                     // destroy the dialog
                     dialog.dialog('destroy');
 
@@ -227,34 +227,34 @@
 
                     var message = '<div>' + jqXHR.responseText + '</div>';
                     bootbox.alert(message);
-                    $('.bootbox').prepend('<div class="modal-header alert-danger"><strong>Fail</strong></div>');
+                    window.jQuery('.bootbox').prepend('<div class="modal-header alert-danger"><strong>Fail</strong></div>');
                 });
             });
 
 
-            var do_playblast_button = $('#do_playblast_button');
+            var do_playblast_button = window.jQuery('#do_playblast_button');
             do_playblast_button.on('click', function () {
-                $.post(do_playblast_url).done(function(){
+                window.jQuery.post(do_playblast_url).done(function(){
                     var message = '<div>Job created! Check Afanasy</div>';
                     bootbox.alert(message);
-                    $('.bootbox').prepend('<div class="modal-header alert-success"><strong>Success</strong></div>');
+                    window.jQuery('.bootbox').prepend('<div class="modal-header alert-success"><strong>Success</strong></div>');
                 }).fail(function(jqXHR){
                     var message = '<div>' + jqXHR.responseText + '</div>';
                     bootbox.alert(message);
-                    $('.bootbox').prepend('<div class="modal-header alert-danger"><strong>Fail</strong></div>');
+                    window.jQuery('.bootbox').prepend('<div class="modal-header alert-danger"><strong>Fail</strong></div>');
                 });
             });
 
-            var export_alembics_button = $('#export_alembics_button');
+            var export_alembics_button = window.jQuery('#export_alembics_button');
             export_alembics_button.on('click', function(){
-                $.post(export_alembics_url).done(function(){
+                window.jQuery.post(export_alembics_url).done(function(){
                     var message = '<div>Job created! Check Afanasy</div>';
                     bootbox.alert(message);
-                    $('.bootbox').prepend('<div class="modal-header alert-success"><strong>Success</strong></div>');
+                    window.jQuery('.bootbox').prepend('<div class="modal-header alert-success"><strong>Success</strong></div>');
                 }).fail(function(jqXHR){
                     var message = '<div>' + jqXHR.responseText + '</div>';
                     bootbox.alert(message);
-                    $('.bootbox').prepend('<div class="modal-header alert-danger"><strong>Fail</strong></div>');
+                    window.jQuery('.bootbox').prepend('<div class="modal-header alert-danger"><strong>Fail</strong></div>');
                 });
             });
 

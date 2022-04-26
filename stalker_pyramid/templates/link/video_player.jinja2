@@ -87,17 +87,17 @@
             </iframe>
         </div>
         <script>
-            $(function(){
-                var video = $('#video');
+            window.jQuery(function(){
+                var video = window.jQuery('#video');
 
                 // Buttons
-                var playButton = $("#play-pause");
-                var muteButton = $("#mute");
-                var fullScreenButton = $("#full-screen");
+                var playButton = window.jQuery("#play-pause");
+                var muteButton = window.jQuery("#mute");
+                var fullScreenButton = window.jQuery("#full-screen");
 
                 // Sliders
-                var seekBar = $("#seek-bar");
-                var volumeBar = $("#volume-bar");
+                var seekBar = window.jQuery("#seek-bar");
+                var volumeBar = window.jQuery("#volume-bar");
 
                 var pause_video = function(){
                     // Pause the video
@@ -152,10 +152,10 @@
                 var set_current_time_info_display = function(){
                     var seconds = video[0].currentTime;
                     var timecode = get_timecode(seconds);
-                    $('#video_current_time_info').text(timecode);
+                    window.jQuery('#video_current_time_info').text(timecode);
 
                     var duration_as_timecode = get_timecode(video[0].duration);
-                    $('#video_duration_info').text(duration_as_timecode);
+                    window.jQuery('#video_duration_info').text(duration_as_timecode);
                 };
 
                 // Event listener for the play/pause button
@@ -219,7 +219,7 @@
 {#                    var buffered = video[0].buffered.end(0);#}
 {#                    console.debug('buffered: ', buffered);#}
 
-{#                    $('buffer').css({#}
+{#                    window.jQuery('buffer').css({#}
 {#                        width: buffered / duration + '%'#}
 {#                    });#}
 
@@ -240,35 +240,35 @@
                     video[0].volume = volumeBar[0].value;
                 });
 
-                $('#step_backward').on('click', function(){
+                window.jQuery('#step_backward').on('click', function(){
                     video[0].currentTime -= 1/24;
                 });
 
-                $('#step_forward').on('click', function(){
+                window.jQuery('#step_forward').on('click', function(){
                     video[0].currentTime += 1/24;
                 });
 
-                $('#step_backward_10').on('click', function(){
+                window.jQuery('#step_backward_10').on('click', function(){
                     video[0].currentTime -= 10/24;
                 });
 
-                $('#step_forward_10').on('click', function(){
+                window.jQuery('#step_forward_10').on('click', function(){
                     video[0].currentTime += 10/24;
                 });
 
                 var center_video = function(){
                     video.css({
-                        'margin-left': ($(window).width() - video.width()) * 0.5 + 'px'
+                        'margin-left': (window.jQuery(window).width() - video.width()) * 0.5 + 'px'
                     });
                 };
 
                 var resize_seek_bar = function(){
                     seekBar.css({
-                        'width': $(window).width() - 470 + 'px'
+                        'width': window.jQuery(window).width() - 470 + 'px'
                     });
                 };
 
-                $('#center_video').on('click', function(){
+                window.jQuery('#center_video').on('click', function(){
                     center_video();
                 });
 
@@ -278,7 +278,7 @@
                     resize_seek_bar();
                 });
 
-                $(window).on('keypress', function(e){
+                window.jQuery(window).on('keypress', function(e){
                     if (e.keyCode == 49){
                         console.debug('1 is clicked!');
                         video[0].currentTime -= 1/24;
@@ -290,8 +290,8 @@
 
                 // this player should not know that it has been called from a
                 // colorbox object, but this is good enough for now
-                $(document).bind('cbox_closed', function(){
-                    $(window).unbind('keypress');
+                window.jQuery(document).bind('cbox_closed', function(){
+                    window.jQuery(window).unbind('keypress');
                 });
 
                 var init_video = function(){

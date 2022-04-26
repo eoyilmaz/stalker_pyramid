@@ -55,30 +55,30 @@
 
         console.debug('starting to initialize budget dialog!!!');
 
-        var dialog_label = $('#dialog_template_label');
+        var dialog_label = window.jQuery('#dialog_template_label');
         dialog_label.find('span').remove();
         dialog_label.append('<span>{{ type_name}} BUDGET</span>');
 
         {# ***************************************************************** #}
         {# Submit Button #}
-        var submit_button = $('#dialog_template_submit_button');
+        var submit_button = window.jQuery('#dialog_template_submit_button');
         submit_button.on('click', function (e) {
             e.stopPropagation();
             e.preventDefault();
 
             submit_button.button('loading');
-            var budget_form = $('#budget_form');
+            var budget_form = window.jQuery('#budget_form');
 
             var url = '/budgets/{{ budget.id }}/type/{{ type_name }}';
 
-            $.post(
+            window.jQuery.post(
                 url,
                 budget_form.serialize()+ '&' +
-                $.param({
+                window.jQuery.param({
                     'total_price': {{ budget_total_price }}
                 })
             ).done(function (jqXHR) {
-                //$('#new_outputs_storage').text(JSON.stringify(jqXHR));
+                //window.jQuery('#new_outputs_storage').text(JSON.stringify(jqXHR));
                 window.location.reload();
             }).fail(function (jqXHR) {
                 bootbox.alert(jqXHR.responseText);
@@ -92,11 +92,11 @@
 
 <script type="text/javascript">
     function destruct_dialog() {
-        $('#budget_name').unbind();
-        $('#budget_description').unbind();
-        $('#dialog_template_submit_button').unbind();
+        window.jQuery('#budget_name').unbind();
+        window.jQuery('#budget_description').unbind();
+        window.jQuery('#dialog_template_submit_button').unbind();
 
-        $('#dialog_template').data('modal', null);
+        window.jQuery('#dialog_template').data('modal', null);
     }
 </script>
 

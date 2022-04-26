@@ -1,6 +1,6 @@
 
 <script type="text/javascript" class="code">
-$(document).ready(function(){
+window.jQuery(document).ready(function(){
     goog = [["6/22/2013",425.32], ["6/8/2013",424.84], ["5/26/2013",417.23], ["5/11/2013",390],
     ["4/27/2013",393.69], ["4/13/2013",392.24], ["3/30/2013",369.78], ["3/16/2013",330.16], ["3/2/2013",308.57],
     ["2/17/2013",346.45], ["2/2/2013",371.28], ["1/20/2013",324.7], ["1/5/2013",315.07], ["12/22/2012",300.36],
@@ -12,7 +12,7 @@ $(document).ready(function(){
     ["12/31/2011",657], ["12/17/2011",696.69], ["12/3/2011",714.87], ["11/19/2011",676.7], ["11/5/2011",663.97],
     ["10/22/2011",674.6], ["10/8/2011",637.39], ["9/24/2011",567.27], ["9/10/2011",528.75], ["8/27/2011",515.25]];
 
-    var plot1 = $.jqplot('zoom_chart', [goog], {
+    var plot1 = window.jQuery.jqplot('zoom_chart', [goog], {
         title: '',
         series: [{
             label: 'Google, Inc.',
@@ -20,14 +20,14 @@ $(document).ready(function(){
         }],
         axes: {
             xaxis: {
-                renderer:$.jqplot.DateAxisRenderer,
-                tickRenderer: $.jqplot.CanvasAxisTickRenderer,
+                renderer:window.jQuery.jqplot.DateAxisRenderer,
+                tickRenderer: window.jQuery.jqplot.CanvasAxisTickRenderer,
                 tickOptions: {
                   angle: -30
                 }
             },
             yaxis: {
-                renderer: $.jqplot.LogAxisRenderer,
+                renderer: window.jQuery.jqplot.LogAxisRenderer,
                 tickOptions:{ suffix: ' h',
                 fontSize: '20'}
             }
@@ -43,14 +43,14 @@ $(document).ready(function(){
 
 <!-- Additional plugins go here -->
 
-<script class="include" language="javascript" type="text/javascript"
-        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.cursor.min.js") }}'></script>
-<script class="include" language="javascript" type="text/javascript"
-        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.dateAxisRenderer.min.js") }}'></script>
-<script class="include" language="javascript" type="text/javascript"
-        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.logAxisRenderer.min.js") }}'></script>
-<script class="include" language="javascript" type="text/javascript"
-        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.canvasTextRenderer.min.js") }}'></script>
-<script class="include" language="javascript" type="text/javascript"
-        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.canvasAxisTickRenderer.min.js") }}'></script>
+{#<script class="include" language="javascript" type="text/javascript"#}
+{#        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.cursor.min.js") }}'></script>#}
+{#<script class="include" language="javascript" type="text/javascript"#}
+{#        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.dateAxisRenderer.min.js") }}'></script>#}
+{#<script class="include" language="javascript" type="text/javascript"#}
+{#        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.logAxisRenderer.min.js") }}'></script>#}
+{#<script class="include" language="javascript" type="text/javascript"#}
+{#        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.canvasTextRenderer.min.js") }}'></script>#}
+{#<script class="include" language="javascript" type="text/javascript"#}
+{#        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.canvasAxisTickRenderer.min.js") }}'></script>#}
 

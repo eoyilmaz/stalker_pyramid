@@ -3,18 +3,18 @@
 {# PRE-HEADER #}
 {% block pre_header %}
 
-    <link rel="stylesheet"
-          href='{{ request.static_url("stalker_pyramid:static/ace/css/chosen.min.css") }}'/>
-    <link rel="stylesheet"
-          href='{{ request.static_url("stalker_pyramid:static/ace/css/datepicker.css") }}'/>
-    <link rel="stylesheet"
-          href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap-timepicker.css") }}'/>
-    <link rel="stylesheet"
-          href='{{ request.static_url("stalker_pyramid:static/ace/css/daterangepicker.css") }}'/>
-    <link rel="stylesheet"
-          href='{{ request.static_url("stalker_pyramid:static/ace/css/colorpicker.css") }}'/>
-    <link rel="stylesheet"
-          href='{{ request.static_url("stalker_pyramid:static/ace/css/jquery-ui-1.10.3.custom.min.css") }}'/>
+{#    <link rel="stylesheet"#}
+{#          href='{{ request.static_url("stalker_pyramid:static/ace/css/chosen.min.css") }}'/>#}
+{#    <link rel="stylesheet"#}
+{#          href='{{ request.static_url("stalker_pyramid:static/ace/css/datepicker.css") }}'/>#}
+{#    <link rel="stylesheet"#}
+{#          href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap-timepicker.css") }}'/>#}
+{#    <link rel="stylesheet"#}
+{#          href='{{ request.static_url("stalker_pyramid:static/ace/css/daterangepicker.css") }}'/>#}
+{#    <link rel="stylesheet"#}
+{#          href='{{ request.static_url("stalker_pyramid:static/ace/css/colorpicker.css") }}'/>#}
+{#    <link rel="stylesheet"#}
+{#          href='{{ request.static_url("stalker_pyramid:static/ace/css/window.jQuery-ui-1.10.3.custom.min.css") }}'/>#}
 {#    <link rel="stylesheet"#}
 {#          href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap-editable.css") }}'/>#}
 
@@ -135,14 +135,12 @@
 {# EXTRA-SCRIPTS #}
 {% block extrascripts %}
 
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery-ui-1.10.3.custom.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.inputlimiter.1.3.1.min.js") }}'></script>
-
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/additional-methods.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.validate.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.gritter.min.js") }}'></script>
-
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.ui.touch-punch.min.js") }}'></script>
+{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery-ui-1.10.3.custom.min.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.inputlimiter.1.3.1.min.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/additional-methods.min.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.validate.min.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.gritter.min.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.ui.touch-punch.min.js") }}'></script>#}
 {#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/x-editable/bootstrap-editable.min.js") }}'></script>#}
 {#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/x-editable/ace-editable.min.js") }}'></script>#}
 
@@ -152,15 +150,15 @@
     var permissions_loaded = function () {
     }
 
-    window.$(document).ready(function () {
-        var submit_button = $('#permissions_submit_button');
+    window.jQuery(document).ready(function () {
+        var submit_button = window.jQuery('#permissions_submit_button');
         submit_button.on('click', function (e) {
 
             e.stopPropagation();
             e.preventDefault();
             submit_button.button('loading');
 
-            var group_update_form = $("#group_update_form");
+            var group_update_form = window.jQuery("#group_update_form");
 
             bootbox.confirm(
                     '<div class="alert alert-info bigger-110">This will update the permission settings of {{ entity.name }}' +
@@ -169,8 +167,8 @@
                         if (result) {
                             // get the ids and send it to the server
 
-                            $.post('/groups/{{ entity.id}}/update', group_update_form.serialize() + '&' +
-                                            $.param({ 'group_id': '{{ entity.id }}'})
+                            window.jQuery.post('/groups/{{ entity.id}}/update', group_update_form.serialize() + '&' +
+                                            window.jQuery.param({ 'group_id': '{{ entity.id }}'})
                                     ).done(function (response_text) {
                                         bootbox.alert(response_text);
                                         window.location.assign('{{ came_from }}');

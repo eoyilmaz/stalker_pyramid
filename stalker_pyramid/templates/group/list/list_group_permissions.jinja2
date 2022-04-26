@@ -77,26 +77,26 @@
 {% endraw %}
 
 <script type="text/javascript">
-    window.$(document).ready(function () {
+    window.jQuery(document).ready(function () {
         var label_data;
         var checkedAll = function (isChecked, type) {
             var mode = '{{ mode }}';
             var checked = isChecked?'checked':'';
             var mode_type_label_data;
             for (var k = 0; k < label_data.length; k++) {
-                mode_type_label_data = $('#' + mode + '_' + type + '_' + label_data[k].label);
+                mode_type_label_data = window.jQuery('#' + mode + '_' + type + '_' + label_data[k].label);
                 mode_type_label_data.prop('checked', isChecked);
                 mode_type_label_data.attr('value', isChecked ? 'Allow' : '');
             }
         }
 
-        $.getJSON('{{ address }}').then(function (data) {
+        window.jQuery.getJSON('{{ address }}').then(function (data) {
 
             label_data = data;
-            var permission_template = doT.template($('#tmpl_permission').html());
+            var permission_template = doT.template(window.jQuery('#tmpl_permission').html());
 
             var table_id = '{{mode }}_permission';
-            var table_body = $('#' + table_id + '>tbody');
+            var table_body = window.jQuery('#' + table_id + '>tbody');
 
             table_body.append(permission_template({'label': 'All', 'mode': '{{mode}}', 'Create': '', 'Read': '', 'Update': '', 'Delete': '', 'List': ''}));
 
@@ -106,14 +106,14 @@
 
                 table_body.append(permission_template(data[i]));
 
-                $('#' + data[i].mode + '_Create_' + data[i].label).val(data[i].Create == 'checked' ? 'Allow' : '');
-                $('#' + data[i].mode + '_Read_' + data[i].label).val(data[i].Read == 'checked' ? 'Allow' : '');
-                $('#' + data[i].mode + '_Update_' + data[i].label).val(data[i].Update == 'checked' ? 'Allow' : '');
-                $('#' + data[i].mode + '_Delete_' + data[i].label).val(data[i].Delete == 'checked' ? 'Allow' : '');
-                $('#' + data[i].mode + '_List_' + data[i].label).val(data[i].List == 'checked' ? 'Allow' : '');
+                window.jQuery('#' + data[i].mode + '_Create_' + data[i].label).val(data[i].Create == 'checked' ? 'Allow' : '');
+                window.jQuery('#' + data[i].mode + '_Read_' + data[i].label).val(data[i].Read == 'checked' ? 'Allow' : '');
+                window.jQuery('#' + data[i].mode + '_Update_' + data[i].label).val(data[i].Update == 'checked' ? 'Allow' : '');
+                window.jQuery('#' + data[i].mode + '_Delete_' + data[i].label).val(data[i].Delete == 'checked' ? 'Allow' : '');
+                window.jQuery('#' + data[i].mode + '_List_' + data[i].label).val(data[i].List == 'checked' ? 'Allow' : '');
             }
 
-            $('.ace-checkbox-2').on('click', function () {
+            window.jQuery('.ace-checkbox-2').on('click', function () {
 
 {#                console.log(this.id + ' ' + this.checked)#}
                 if (!this.checked) {
@@ -126,19 +126,19 @@
             var mode = '{{ mode }}';
 
 
-            $('#' + mode + '_Create_All').on('click', function () {
+            window.jQuery('#' + mode + '_Create_All').on('click', function () {
                 checkedAll(this.checked, 'Create');
             });
-            $('#' + mode + '_Read_All').on('click', function () {
+            window.jQuery('#' + mode + '_Read_All').on('click', function () {
                 checkedAll(this.checked, 'Read');
             });
-            $('#' + mode + '_Update_All').on('click', function () {
+            window.jQuery('#' + mode + '_Update_All').on('click', function () {
                 checkedAll(this.checked, 'Update');
             });
-            $('#' + mode + '_Delete_All').on('click', function () {
+            window.jQuery('#' + mode + '_Delete_All').on('click', function () {
                 checkedAll(this.checked, 'Delete');
             });
-            $('#' + mode + '_List_All').on('click', function () {
+            window.jQuery('#' + mode + '_List_All').on('click', function () {
                 checkedAll(this.checked, 'List');
             });
 

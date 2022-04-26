@@ -160,7 +160,7 @@
         </div>
     </form>
 </div>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.spinner.min.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.spinner.min.js") }}'></script>#}
 
 <script type="text/javascript">
 
@@ -168,15 +168,15 @@
 
         console.debug('starting to initialize budgetentry dialog!!! {{  mode  }}');
 
-        var dialog_label = $('#dialog_template_label');
+        var dialog_label = window.jQuery('#dialog_template_label');
         dialog_label.find('span').remove();
         dialog_label.append('<span>DIGER KALEMLER</span>');
 
-        var budgetentry_amount = $('#budgetentry_amount');
-        var budgetentry_second_amount = $('#budgetentry_second_amount');
-        var budgetentry_msrp = $('#budgetentry_msrp');
-        var budgetentry_cost = $('#budgetentry_cost');
-        var budgetentry_price = $('#budgetentry_price');
+        var budgetentry_amount = window.jQuery('#budgetentry_amount');
+        var budgetentry_second_amount = window.jQuery('#budgetentry_second_amount');
+        var budgetentry_msrp = window.jQuery('#budgetentry_msrp');
+        var budgetentry_cost = window.jQuery('#budgetentry_cost');
+        var budgetentry_price = window.jQuery('#budgetentry_price');
         var filtered_goods= [];
         var price_lists = [];
         var msrp = 0;
@@ -193,9 +193,9 @@
             );
         {% endraw %}
 
-        var budgetentry_good = $('#budgetentry_good');
-        var good_pricelist = $('#good_pricelist');
-        $.getJSON('/goods/').then(function (g_data) {
+        var budgetentry_good = window.jQuery('#budgetentry_good');
+        var good_pricelist = window.jQuery('#good_pricelist');
+        window.jQuery.getJSON('/goods/').then(function (g_data) {
             filtered_goods= [];
             price_lists = [];
             for (var i=0;i<g_data.length;i++){
@@ -235,7 +235,7 @@
             good_pricelist.on('change', function(){
                 var new_good_list = [];
                 for (var i=0;i<filtered_goods.length;i++){
-                    if(filtered_goods[i].price_list_id == $(this).val()){
+                    if(filtered_goods[i].price_list_id == window.jQuery(this).val()){
                         new_good_list.push(filtered_goods[i]);
                     }
                 }
@@ -278,13 +278,13 @@
         {% endif %}
 
         budgetentry_good.on('change', function(){
-            var good_id = $(this).val().split('_')[0];
-            var unit = $(this).val().split('_')[1];
+            var good_id = window.jQuery(this).val().split('_')[0];
+            var unit = window.jQuery(this).val().split('_')[1];
 
-            $('#good_unit_birim').text(unit.split('*')[0]);
+            window.jQuery('#good_unit_birim').text(unit.split('*')[0]);
             budgetentry_amount.val(1);
 
-            $('#good_unit_x').text(unit.split('*')[1]);
+            window.jQuery('#good_unit_x').text(unit.split('*')[1]);
             budgetentry_second_amount.val(1);
 
             var index = findArrayElement(filtered_goods,'id', good_id);
@@ -333,25 +333,25 @@
 
         {# ***************************************************************** #}
         {# Submit Button #}
-        var submit_button = $('#dialog_template_submit_button');
+        var submit_button = window.jQuery('#dialog_template_submit_button');
         submit_button.on('click', function (e) {
             e.stopPropagation();
             e.preventDefault();
 
             submit_button.button('loading');
-            var budgetentry_form = $('#budgetentry_form');
+            var budgetentry_form = window.jQuery('#budgetentry_form');
 
             var url = '{{ action }}';
-            $.post(
+            window.jQuery.post(
                 url,
                 budgetentry_form.serialize() + '&' +
-                $.param({
+                window.jQuery.param({
                     'budget_id': {{ budget.id }},
                     'good_id':budgetentry_good.val().split('_')[0],
                     'msrp':calculate_birim_msrp()
                 })
             ).done(function (jqXHR) {
-                //$('#new_outputs_storage').text(JSON.stringify(jqXHR));
+                //window.jQuery('#new_outputs_storage').text(JSON.stringify(jqXHR));
                 window.location.reload();
             }).fail(function (jqXHR) {
                 bootbox.alert(jqXHR.responseText);
@@ -365,11 +365,11 @@
 
 <script type="text/javascript">
     function destruct_dialog() {
-        $('#budgetentry_name').unbind();
-        $('#budgetentry_description').unbind();
-        $('#dialog_template_submit_button').unbind();
+        window.jQuery('#budgetentry_name').unbind();
+        window.jQuery('#budgetentry_description').unbind();
+        window.jQuery('#dialog_template_submit_button').unbind();
 
-        $('#dialog_template').data('modal', null);
+        window.jQuery('#dialog_template').data('modal', null);
     }
 </script>
 

@@ -14,34 +14,34 @@
 
     {% include 'note/list/list_notes.jinja2' %}
 </div>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery-ui-1.10.3.custom.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.ui.touch-punch.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.gritter.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.slimscroll.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.hotkeys.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/select2.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.maskedinput.min.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery-ui-1.10.3.custom.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.ui.touch-punch.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.gritter.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.slimscroll.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.hotkeys.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/select2.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.maskedinput.min.js") }}'></script>#}
 
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/markdown/markdown.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/markdown/bootstrap-markdown.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/bootstrap-wysiwyg.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/markdown/markdown.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/markdown/bootstrap-markdown.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/bootstrap-wysiwyg.js") }}'></script>#}
 <script type="text/javascript">
-        window.$(document).ready(function () {
-            $('#add_note_button').on('click', function (e) {
+        window.jQuery(document).ready(function () {
+            window.jQuery('#add_note_button').on('click', function (e) {
             e.stopPropagation();
             e.preventDefault();
 
             // disable the submit_button
-            var submit_button = $(this);
+            var submit_button = window.jQuery(this);
             submit_button.button('loading');
 
-            var editor = $('.wysiwyg-editor');
+            var editor = window.jQuery('.wysiwyg-editor');
             var content = editor.cleanHtml();
             var content_as_text = editor.text();
 
-            $.post(
+            window.jQuery.post(
                 "/note/create",
-                $.param({
+                window.jQuery.param({
                     content: content,
                     content_as_text: content_as_text,
                     type: '{{ note_type }}',  {# TODO: it is not simple text anymore, update it. #}
@@ -50,7 +50,7 @@
                 ).done(function () {
                     window.location.assign('{{ came_from }}');
     {#                // just append the note to the top#}
-    {#                var note_simple_template = doT.template($('#tmpl_note_simple_text').html());#}
+    {#                var note_simple_template = doT.template(window.jQuery('#tmpl_note_simple_text').html());#}
                 }).fail(function (jqXHR) {
                     bootbox.alert('<div id="message" class="alert alert-danger bigger-110">' + jqXHR.responseText + '</div>');
                     submit_button.button('reset');
@@ -69,12 +69,12 @@
         } else {
             console.log("error uploading file", reason, detail);
         }
-        $('<div class="alert"> <button type="button" class="close" data-dismiss="alert">&times;</button>' +
+        window.jQuery('<div class="alert"> <button type="button" class="close" data-dismiss="alert">&times;</button>' +
                 '<strong>File upload error</strong> ' + msg + ' </div>').prependTo('#alerts');
     }
 
-    $(function(){
-        $('#note_editor').ace_wysiwyg({
+    window.jQuery(function(){
+        window.jQuery('#note_editor').ace_wysiwyg({
             toolbar: [
                 'font',
                 null,
@@ -113,9 +113,9 @@
 
         //Add Image Resize Functionality to Chrome and Safari
         //webkit browsers don't have image resize functionality when content is editable
-        //so let's add something using jQuery UI resizable
+        //so let's add something using window.jQuery UI resizable
         //another option would be opening a dialog for user to enter dimensions.
-        if (typeof jQuery.ui !== 'undefined' && /applewebkit/.test(navigator.userAgent.toLowerCase())) {
+        if (typeof window.jQuery.ui !== 'undefined' && /applewebkit/.test(navigator.userAgent.toLowerCase())) {
 
             var lastResizableImg = null;
 
@@ -127,8 +127,8 @@
             }
 
             var enableImageResize = function () {
-                $('.wysiwyg-editor').on('mousedown', function (e) {
-                    var target = $(e.target);
+                window.jQuery('.wysiwyg-editor').on('mousedown', function (e) {
+                    var target = window.jQuery(e.target);
                     if (e.target instanceof HTMLImageElement) {
                         if (!target.data('resizable')) {
                             target.resizable({
@@ -157,7 +157,7 @@
         }
 
         // remove speech input
-        $('.wysiwyg-speech-input').remove();
+        window.jQuery('.wysiwyg-speech-input').remove();
 
     });
 </script>

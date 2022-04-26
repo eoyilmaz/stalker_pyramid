@@ -27,15 +27,15 @@
     </div>
 </div>
 
-<script class="include" type="text/javascript"
-            src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/jquery.jqplot.min.js") }}'></script>
+{#<script class="include" type="text/javascript"#}
+{#            src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/window.jQuery.jqplot.min.js") }}'></script>#}
 <!-- End Don't touch this! -->
 
 <!-- Additional plugins go here -->
 
-<script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/i18n/grid.locale-en.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/jquery.jqGrid.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/node_modules/moment/min/moment.min.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/i18n/grid.locale-en.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/window.jQuery.jqGrid.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/node_modules/moment/min/moment.min.js") }}'></script>#}
 <STYLE>
     .columnClass {
         background-color: #808080;
@@ -43,9 +43,9 @@
     }
 </STYLE>
 <script>
-    $.jgrid.defaults.autowidth = true;
-    $.jgrid.defaults.responsive = true;
-    $.jgrid.defaults.styleUI = 'Bootstrap';
+    window.jQuery.jgrid.defaults.autowidth = true;
+    window.jQuery.jgrid.defaults.responsive = true;
+    window.jQuery.jgrid.defaults.styleUI = 'Bootstrap';
 </script>
 
 
@@ -93,7 +93,7 @@
     }
 
     function initiate_cb(field_name, data_array, op_template, func){
-        var current_cb = $(field_name);
+        var current_cb = window.jQuery(field_name);
         current_cb.chosen({
             search_contains: true,
             enable_split_word_search: true
@@ -109,9 +109,9 @@
     }
 
     function setSequenceFilter(){
-        var index = $(this).val();
+        var index = window.jQuery(this).val();
         if(index === -1){
-            jQuery(grid_selector).jqGrid('filterInput', "");
+            window.jQuery(grid_selector).jqGrid('filterInput', "");
             setFooterInitialValue();
         }
         else{
@@ -148,8 +148,8 @@
                 sum_of_total_shots_str = '<span class="green"><b>'+sum_of_total_shots+' s </b><i class="icon-ok"></i></span>'
             }
 
-            jQuery(grid_selector).jqGrid('filterInput', cb_data['filter_name']);
-            jQuery(grid_selector).jqGrid("footerData", "set", {
+            window.jQuery(grid_selector).jqGrid('filterInput', cb_data['filter_name']);
+            window.jQuery(grid_selector).jqGrid("footerData", "set", {
                     resource_names: 'TOTAL',
                     approved_seconds: sum_of_approved_seconds_str,
                     total_seconds: sum_of_total_seconds_str,
@@ -163,9 +163,9 @@
     }
 
     function setStartDateFilter(){
-        var index = $(this).val();
+        var index = window.jQuery(this).val();
         if(index === -1){
-            jQuery(grid_selector).jqGrid('filterInput', "");
+            window.jQuery(grid_selector).jqGrid('filterInput', "");
             setFooterInitialValue();
         }
         else{
@@ -173,8 +173,8 @@
             index = select_resource_cb_data.length-index;
             var cb_data = select_resource_cb_data[index];
 
-            jQuery(grid_selector).jqGrid('filterInput', cb_data['filter_name']);
-            jQuery(grid_selector).jqGrid("footerData", "set",
+            window.jQuery(grid_selector).jqGrid('filterInput', cb_data['filter_name']);
+            window.jQuery(grid_selector).jqGrid("footerData", "set",
                 {
                     resource_names: 'TOTAL',
                     approved_seconds: (cb_data.sum_of_approved_seconds).toFixed(1)+' s ',
@@ -201,11 +201,11 @@
         shot_data = [];
         seq_list = [];
 
-        var result_table = $('#result_table');
+        var result_table = window.jQuery('#result_table');
         result_table.find("#table_container").remove();
         result_table.find("#grid-pager").remove();
 
-        $.getJSON('/entities/{{ entity.id }}/'+t_type+'/result?project_id='+p_id).then(function (data) {
+        window.jQuery.getJSON('/entities/{{ entity.id }}/'+t_type+'/result?project_id='+p_id).then(function (data) {
 
             if (data.length>0){
 
@@ -280,7 +280,7 @@
                     setSequenceFilter
                 );
 
-                $.getJSON('/entities/{{ entity.id }}/' + t_type + '/assigned?project_id='+p_id).then(function (s_data) {
+                window.jQuery.getJSON('/entities/{{ entity.id }}/' + t_type + '/assigned?project_id='+p_id).then(function (s_data) {
                     if (s_data.length>0){
                         seq_list = [];
                         for (var i=0; i < s_data.length; i+=1){
@@ -306,7 +306,7 @@
 
                     result_table.append('<div id="table_container"><table id="grid-table"></table></div><div id="grid-pager"></div>');
 
-                    jQuery(grid_selector).jqGrid({
+                    window.jQuery(grid_selector).jqGrid({
                         data: shot_data,
                         datatype: "local",
                         colModel: [
@@ -337,19 +337,19 @@
                         userDataOnFooter: true,
                         grouping: false,
                         loadComplete : function() {
-                            // var $self = $(this);
+                            // var $self = window.jQuery(this);
                             // var total_seconds= $self.jqGrid('getCol', 'total_seconds', false, 'sum');
                             setFooterInitialValue();
                             setTimeout(function(){
                                 updatePagerIcons(grid_selector);
-                                $('#lui_grid-table').hide();
+                                window.jQuery('#lui_grid-table').hide();
 
                             }, 0);
 
                         }
                     });
                     //navButtons
-                    jQuery(grid_selector).jqGrid('navGrid',pager_selector,
+                    window.jQuery(grid_selector).jqGrid('navGrid',pager_selector,
                         { 	//navbar options
                             edit: false,
                             editicon : 'icon-pencil blue',
@@ -384,7 +384,7 @@
         var approved_minutes = (sum_of_approved_seconds/60).toFixed(1);
         var total_minutes = (sum_of_total_seconds/60).toFixed(1);
         var average_seconds = (sum_of_total_seconds/shot_data.length).toFixed(1);
-        jQuery(grid_selector).jqGrid(
+        window.jQuery(grid_selector).jqGrid(
             "footerData", "set", {
                 resource_names: 'TOTAL',
                 approved_seconds: sum_of_approved_seconds.toFixed(1)+'s = '+approved_minutes+' m',
@@ -404,9 +404,9 @@
         //     approved_total = sum_of_approved_shots.toFixed(1) +' shots';
         // }
 
-        // $('#total').text(total);
-        // $('#approved_total').text(approved_total);
-        // $('#info_box').show();
+        // window.jQuery('#total').text(total);
+        // window.jQuery('#approved_total').text(approved_total);
+        // window.jQuery('#info_box').show();
     }
     function updatePagerIcons(table) {
         var replacement =
@@ -416,19 +416,19 @@
             'ui-icon-seek-next' : 'icon-angle-right bigger-140',
             'ui-icon-seek-end' : 'icon-double-angle-right bigger-140'
         };
-        $('.ui-pg-table:not(.navtable) > tbody > tr > .ui-pg-button > .ui-icon').each(function(){
-            var icon = $(this);
-            var $class = $.trim(icon.attr('class').replace('ui-icon', ''));
+        window.jQuery('.ui-pg-table:not(.navtable) > tbody > tr > .ui-pg-button > .ui-icon').each(function(){
+            var icon = window.jQuery(this);
+            var $class = window.jQuery.trim(icon.attr('class').replace('ui-icon', ''));
 
             if($class in replacement) icon.attr('class', 'ui-icon '+replacement[$class]);
         })
     }
-    window.$(document).ready(function () {
-        var project_cb = $('#project_cb');
+    window.jQuery(document).ready(function () {
+        var project_cb = window.jQuery('#project_cb');
         var project_id = localStorage.getItem("result_project_id");
         console.log("project_id: " + project_id);
 
-        var task_type = $('#task_type');
+        var task_type = window.jQuery('#task_type');
         var task_type_str = localStorage.getItem("result_task_type");
         if (task_type_str){
             task_type.val(task_type_str)
@@ -451,7 +451,7 @@
                 projects_url = '/entities/{{ entity.id }}/projects/';
             {% endif %}
 
-            $.getJSON(projects_url).then(function(data){
+            window.jQuery.getJSON(projects_url).then(function(data){
                 project_cb.find('option').remove();
                 var data_count = data.length;
                 for (var i=0; i < data_count; i++){
@@ -469,7 +469,7 @@
                 loadShotTaskData(task_type_str, project_id);
                 project_cb.on('change', function () {
                     // task_type_str = task_type.val();
-                    project_id = $(this).val();
+                    project_id = window.jQuery(this).val();
                     localStorage.setItem("result_project_id", project_id);
                     loadShotTaskData(task_type_str, project_id);
                 });
@@ -481,7 +481,7 @@
         {% endif %}
 
         task_type.on('change', function () {
-            task_type_str = $(this).val();
+            task_type_str = window.jQuery(this).val();
             localStorage.setItem("result_task_type", task_type_str);
             loadShotTaskData(task_type_str, project_id);
         });

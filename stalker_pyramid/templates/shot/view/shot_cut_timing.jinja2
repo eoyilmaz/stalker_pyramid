@@ -56,16 +56,16 @@
 {#    </div>#}
 {#</div>#}
 
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.spinner.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/x-editable/bootstrap-editable.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/x-editable/ace-editable.min.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.spinner.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/x-editable/bootstrap-editable.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/x-editable/ace-editable.min.js") }}'></script>#}
 
 
 <script type="text/javascript">
-     $(function () {
+     window.jQuery(function () {
           {% if has_permission('Update_Task') and (entity.project in logged_in_user.projects) %}
                 var inline_update_url = '/tasks/{{ entity.id }}/update/inline';
-                $('#shot_view_cut_in').editable({
+                window.jQuery('#shot_view_cut_in').editable({
                     type: 'spinner',
                     name: 'cut_in',
                     spinner : {
@@ -73,12 +73,12 @@
                     },
                     success: function (response, newValue) {
 
-                        var params = $.param({
+                        var params = window.jQuery.param({
                             attr_name: 'cut_in',
                             attr_value: parseInt(newValue)
                         });
 
-                        $.post(
+                        window.jQuery.post(
                             inline_update_url, params
                         ).done(function () {
                             console.log('done');
@@ -88,19 +88,19 @@
                     }
                 });
 
-                $('#shot_view_cut_out').editable({
+                window.jQuery('#shot_view_cut_out').editable({
                     type: 'spinner',
                     name: 'cut_out',
                     spinner : {
                                 min : 0, max:99, step:15
                             },
                     success: function (response, newValue) {
-                        var params = $.param({
+                        var params = window.jQuery.param({
                             attr_name: 'cut_out',
                             attr_value: parseInt(newValue)
                         });
 
-                        $.post(
+                        window.jQuery.post(
                             inline_update_url, params
                         ).done(function () {
                             console.log('done');
@@ -110,19 +110,19 @@
                     }
                 });
 
-                $('#shot_view_fps').editable({
+                window.jQuery('#shot_view_fps').editable({
                     type: 'spinner',
                     name: 'fps',
                     spinner : {
                                 min : 0, max:30, step:1
                             },
                     success: function (response, newValue) {
-                        var params = $.param({
+                        var params = window.jQuery.param({
                             attr_name: 'fps',
                             attr_value: parseInt(newValue)
                         });
 
-                        $.post(
+                        window.jQuery.post(
                             inline_update_url, params
                         ).done(function () {
                             console.log('done');

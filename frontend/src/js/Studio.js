@@ -18,7 +18,7 @@
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
 try {
-    var moment = require('../../moment/moment.min');
+    var moment = require('../../node_modules/moment/dist/moment');
 } catch (e) {};
 
 

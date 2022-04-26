@@ -74,14 +74,14 @@
     </div>
 </div>
 
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.autosize-min.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.autosize-min.js") }}'></script>#}
 
 <script>
     function init_dialog() {
         console.log('initialize request extra time dialog start');
 
         // update dialog header
-        var dialog_template_label = $('#dialog_template_label');
+        var dialog_template_label = window.jQuery('#dialog_template_label');
         dialog_template_label.find('span').remove();
         dialog_template_label.append('<span class="green">Request Extra Time Dialog</span>');
 
@@ -92,13 +92,13 @@
         var schedule_unit = '{{ task.schedule_unit }}';
         var schedule_model = '{{ task.schedule_model }}';
 
-        var submit_button = $('#dialog_template_submit_button');
+        var submit_button = window.jQuery('#dialog_template_submit_button');
 
 
         {# ***************************************************************** #}
         {# Schedule Unit and Model #}
-        var task_schedule_unit = $('#task_schedule_unit');
-        var task_schedule_timing = $('#task_schedule_timing');
+        var task_schedule_unit = window.jQuery('#task_schedule_unit');
+        var task_schedule_timing = window.jQuery('#task_schedule_timing');
 
         var schedule_timing_setter = function(){
             // set minimum
@@ -116,7 +116,7 @@
         schedule_timing_setter();
     
         task_schedule_unit.on('change', function(e){
-            var value = $(this).val();
+            var value = window.jQuery(this).val();
             if(value === 'min'){
                 // set the minimum to 10min
                 // TODO: get studio minimum schedule unit
@@ -126,7 +126,7 @@
 
         task_schedule_unit.val(schedule_unit);
 
-        $('#task_schedule_model').val(schedule_model);
+        window.jQuery('#task_schedule_model').val(schedule_model);
 
         {# ***************************************************************** #}
         {# Submit Button #}
@@ -138,7 +138,7 @@
             // disable submit button
             submit_button.button('loading');
 
-            var task_form = $('#request_extra_time_form');
+            var task_form = window.jQuery('#request_extra_time_form');
             var form_data = task_form.serialize();
 
             // prevent multiple sends
@@ -147,11 +147,11 @@
             } else {
                 task_form.attr('is_sending', true);
             }
-            $.post(
+            window.jQuery.post(
                 submit_form_url,
                 form_data
             ).done(function () {
-                $('#dialog_template').modal('hide');
+                window.jQuery('#dialog_template').modal('hide');
                 // reload page
                 setTimeout(function () { // wait for hide event to finish
                     window.location.reload();
@@ -174,11 +174,11 @@
     function destruct_dialog() {
         console.log('destruct request extra time dialog start');
         // unbind events
-        $('#revision_controls').unbind();
-        $('#dialog_template_submit_button').unbind();
+        window.jQuery('#revision_controls').unbind();
+        window.jQuery('#dialog_template_submit_button').unbind();
 
         // remove dialog
-        $('#dialog_template').data('modal', null);
+        window.jQuery('#dialog_template').data('modal', null);
         console.log('destruct request extra time dialog end');
     }
 </script>

@@ -150,16 +150,16 @@
 {% endraw %}
 <script type="text/javascript">
 
-    $.getJSON('/entities/{{ entity.id }}/notes/').then(function (n_data) {
-        $(function () {
+    window.jQuery.getJSON('/entities/{{ entity.id }}/notes/').then(function (n_data) {
+        window.jQuery(function () {
             var logged_in_user_id = '{{ logged_in_user.id }}';
-            var notes = $('#notes');
-            var note_simple_template = doT.template($('#tmpl_note_simple_text').html());
-            var note_activity_template = doT.template($('#tmpl_note_activity').html());
-            var note_daily_template = doT.template($('#tmpl_note_daily').html());
+            var notes = window.jQuery('#notes');
+            var note_simple_template = doT.template(window.jQuery('#tmpl_note_simple_text').html());
+            var note_activity_template = doT.template(window.jQuery('#tmpl_note_activity').html());
+            var note_daily_template = doT.template(window.jQuery('#tmpl_note_daily').html());
 
-            var event_dialog = $('#html_template');
-            var html_template_label = $('#html_template_label');
+            var event_dialog = window.jQuery('#html_template');
+            var html_template_label = window.jQuery('#html_template_label');
             html_template_label.text(event_dialog.attr('title'));
 
             for (var i = 0; i < n_data.length; i++) {
@@ -184,9 +184,9 @@
                 }
             }
 
-            $('.date').each(function () {
-                var date = moment($(this).text());
-                $(this).text(date.fromNow());
+            window.jQuery('.date').each(function () {
+                var date = moment(window.jQuery(this).text());
+                window.jQuery(this).text(date.fromNow());
             });
         });
     });

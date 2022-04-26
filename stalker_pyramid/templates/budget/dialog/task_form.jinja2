@@ -98,7 +98,7 @@
     </div>
 </form>
 
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.spinner.min.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.spinner.min.js") }}'></script>#}
 
 
 <script type="text/javascript">
@@ -112,8 +112,8 @@
                     '<option value={{=it.id}}>{{=it.name}}</option>'
             );
         {% endraw %}
-        var calendar_task_good = $('#calendar_task_good');
-        $.getJSON('/goods/').then(function (g_data) {
+        var calendar_task_good = window.jQuery('#calendar_task_good');
+        window.jQuery.getJSON('/goods/').then(function (g_data) {
             var filtered_goods= [];
             for (var i=0;i<g_data.length;i++){
                 if(g_data[i].unit == "GUN*KISI"){
@@ -134,7 +134,7 @@
             calendar_task_duration = parseInt('{{ item.amount }}');
         {% endif %}
 
-        $('#calendar_task_duration').ace_spinner({
+        window.jQuery('#calendar_task_duration').ace_spinner({
             value: calendar_task_duration,
             min: 1,
             step: 1,
@@ -148,7 +148,7 @@
             calendar_task_num_of_resources = parseInt('{{ item.second_amount }}');
         {% endif %}
 
-        $('#calendar_task_num_of_resources').ace_spinner({
+        window.jQuery('#calendar_task_num_of_resources').ace_spinner({
             value: calendar_task_num_of_resources,
             min: 1,
             step: 1,
@@ -158,21 +158,21 @@
     }
 
     function destruct_dialog() {
-        $('#name').unbind();
-        $('#calendar_task_good').unbind();
-        $('#calendar_start_date').unbind();
-        $('#calendar_task_duration').unbind();
-        $('#calendar_task_num_of_resources').unbind();
-        $('#description').unbind();
+        window.jQuery('#name').unbind();
+        window.jQuery('#calendar_task_good').unbind();
+        window.jQuery('#calendar_start_date').unbind();
+        window.jQuery('#calendar_task_duration').unbind();
+        window.jQuery('#calendar_task_num_of_resources').unbind();
+        window.jQuery('#description').unbind();
 
-        var submit_btn = $('#dialog_template_submit_button');
+        var submit_btn = window.jQuery('#dialog_template_submit_button');
         submit_btn.button('reset');
         submit_btn.unbind();
 
-        var delete_btn = $('#dialog_template_delete_button');
+        var delete_btn = window.jQuery('#dialog_template_delete_button');
         delete_btn.button('reset');
         delete_btn.unbind();
 
-        $('#dialog_template').data('modal', null);
+        window.jQuery('#dialog_template').data('modal', null);
     }
 </script>

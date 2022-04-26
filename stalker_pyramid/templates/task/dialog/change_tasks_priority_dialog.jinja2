@@ -23,22 +23,22 @@
     </form>
 </div>
 
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.spinner.min.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.spinner.min.js") }}'></script>#}
 
 <script type="text/javascript">
 
     function init_dialog() {
         console.debug('starting to initialize add_task_user_dialog dialog!!!');
 
-        $(function () {
-            var label = $('#dialog_template_label');
+        window.jQuery(function () {
+            var label = window.jQuery('#dialog_template_label');
             label.find('span').remove();
             label.append('<span>Change Priority</span>');
-            $('#dialog_template_body').attr('style', "height: 300px");
+            window.jQuery('#dialog_template_body').attr('style', "height: 300px");
     
             {# ***************************************************************** #}
             {# Priority Spinner #}
-            $('#task_priority').ace_spinner({
+            window.jQuery('#task_priority').ace_spinner({
                 value: 500,
                 min: 1,
                 max: 1000,
@@ -47,20 +47,20 @@
                 btn_down_class: 'btn-info'
             }).on('change', function(){
                 // check if it is in the range
-                var curr_value = $(this).val();
-                $(this).val(curr_value <= 1000 ? curr_value >= 1 ? curr_value : 1 : 1000 );
+                var curr_value = window.jQuery(this).val();
+                window.jQuery(this).val(curr_value <= 1000 ? curr_value >= 1 ? curr_value : 1 : 1000 );
             });
     {#        console.log('entity.priority : ', priority);#}
 
 
-            var submit_button = $('#dialog_template_submit_button');
+            var submit_button = window.jQuery('#dialog_template_submit_button');
             submit_button.on('click', function (e) {
 
                 e.stopPropagation();
                 e.preventDefault();
                 submit_button.button('loading');
 
-                var priority_form = $("#priority_form");
+                var priority_form = window.jQuery("#priority_form");
 
                 var task_ids = [];
                 {% for task in tasks %}
@@ -70,12 +70,12 @@
                 console.log('task_ids: ' + task_ids);
 
 
-                $.post(
+                window.jQuery.post(
                     '/tasks/change_priority',
-                    priority_form.serialize() + '&' + $.param({'task_ids':task_ids, 'change_children_priority':$('#children_priority').prop('checked')})
+                    priority_form.serialize() + '&' + window.jQuery.param({'task_ids':task_ids, 'change_children_priority':window.jQuery('#children_priority').prop('checked')})
                 ).done(function (response_text) {
                     submit_button.button('reset');
-                    $('#dialog_template').modal('hide');
+                    window.jQuery('#dialog_template').modal('hide');
 {#                    setTimeout(function () { // wait for hide event to finish#}
 {#                        window.location.reload();#}
 {#                    }, 0);#}
@@ -92,7 +92,7 @@
 
 <script type="text/javascript">
     function destruct_dialog() {
-        $('#dialog_template_submit_button').unbind();
-        $('#dialog_template').data('modal', null);
+        window.jQuery('#dialog_template_submit_button').unbind();
+        window.jQuery('#dialog_template').data('modal', null);
     }
 </script>

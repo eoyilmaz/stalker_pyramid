@@ -106,7 +106,7 @@
 
 {% block extrascripts %}
     <script>
-        window.$(document).ready(function () {
+        window.jQuery(document).ready(function () {
             {% set budget = entity.get_active_budget() %}
             {% if budget %}
                 var total_msrp = {{ budget.get_generic_text_attr('total_msrp') }};

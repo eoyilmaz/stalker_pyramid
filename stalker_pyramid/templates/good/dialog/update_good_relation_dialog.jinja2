@@ -35,11 +35,11 @@
 
 </div>
 
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.spinner.min.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.spinner.min.js") }}'></script>#}
 <script type="text/javascript">
     function init_dialog() {
         console.debug('starting to initialize good dialog!!!');
-        var dialog_label = $('#dialog_template_label');
+        var dialog_label = window.jQuery('#dialog_template_label');
         dialog_label.find('span').remove();
         dialog_label.append('<span>{{ good.name }}</span>');
 
@@ -48,10 +48,10 @@
                 '<option value={{=it.id}}>{{=it.name}}</option>'
             );
         {% endraw %}
-        var related_good = $('#related_good');
+        var related_good = window.jQuery('#related_good');
 
-        $.getJSON('/goods/').then(function (all_goods) {
-            $.getJSON('/goods/{{ good.id }}/related_goods/').then(function (related_goods) {
+        window.jQuery.getJSON('/goods/').then(function (all_goods) {
+            window.jQuery.getJSON('/goods/{{ good.id }}/related_goods/').then(function (related_goods) {
                 console.log('data loaded')
                 // remove current data
                 related_good.empty();
@@ -74,7 +74,7 @@
             });
         });
 
-        $('#ratio').ace_spinner({
+        window.jQuery('#ratio').ace_spinner({
             value:1,
             min:0,
             max:100,
@@ -84,30 +84,30 @@
             btn_up_class:'btn-info',
             btn_down_class:'btn-info'}).on('change', function(){
             // check if it is in the range
-            var curr_value = $(this).val();
-{#            $(this).val(curr_value <= 1 ? 1 : curr_value);#}
+            var curr_value = window.jQuery(this).val();
+{#            window.jQuery(this).val(curr_value <= 1 ? 1 : curr_value);#}
         });
 
 
 
-        $('#dialog_template_footer').hide();
+        window.jQuery('#dialog_template_footer').hide();
         {# ***************************************************************** #}
         {# Submit Button #}
-        var submit_button = $('#dialog_template_submit_button');
+        var submit_button = window.jQuery('#dialog_template_submit_button');
         submit_button.on('click', function (e) {
             e.stopPropagation();
             e.preventDefault();
 
             submit_button.button('loading');
-            var related_good_form = $('#related_good_form');
+            var related_good_form = window.jQuery('#related_good_form');
 
             var url = '/goods/{{ good.id }}/update/relation';
 
-            $.post(
+            window.jQuery.post(
                 url,
                 related_good_form.serialize()
             ).done(function (jqXHR) {
-                //$('#new_outputs_storage').text(JSON.stringify(jqXHR));
+                //window.jQuery('#new_outputs_storage').text(JSON.stringify(jqXHR));
                 window.location.reload();
             }).fail(function (jqXHR) {
                 bootbox.alert(jqXHR.responseText);
@@ -121,11 +121,11 @@
 
 <script type="text/javascript">
     function destruct_dialog() {
-        $('#related_good').unbind();
-        $('#ratio').unbind();
-        $('#dialog_template_submit_button').unbind();
+        window.jQuery('#related_good').unbind();
+        window.jQuery('#ratio').unbind();
+        window.jQuery('#dialog_template_submit_button').unbind();
 
-        $('#dialog_template').data('modal', null);
+        window.jQuery('#dialog_template').data('modal', null);
     }
 </script>
 

@@ -102,18 +102,18 @@
 
     </form>
 </div>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.spinner.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.spinner.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>#}
 
 
 <script type="text/javascript">
 
     function init_dialog() {
 
-        var event_dialog = $('#dialog_template');
+        var event_dialog = window.jQuery('#dialog_template');
         console.debug('starting to initialize calendar_task dialog!!!');
 
-        var dialog_label = $('#dialog_template_label');
+        var dialog_label = window.jQuery('#dialog_template_label');
         dialog_label.find('span').remove();
         dialog_label.append('<span>{{mode}} Task</span>');
 
@@ -123,8 +123,8 @@
                     '<option value={{=it.id}}>{{=it.name}}</option>'
             );
         {% endraw %}
-        var calendar_task_good = $('#calendar_task_good');
-        $.getJSON('/goods/').then(function (g_data) {
+        var calendar_task_good = window.jQuery('#calendar_task_good');
+        window.jQuery.getJSON('/goods/').then(function (g_data) {
             var filtered_goods= [];
             for (var i=0;i<g_data.length;i++){
                 if(g_data[i].unit == "GUN*KISI"){
@@ -138,16 +138,16 @@
         });
 
         if(event_dialog.attr('task_name')){
-                $('#task_name').val(event_dialog.attr('task_name'));
+                window.jQuery('#task_name').val(event_dialog.attr('task_name'));
             }
 
 
         {# Start Date ******************************************************* #}
-        $('.date-picker').datepicker().next().on(ace.click_event, function(){
-            $(this).prev().focus();
+        window.jQuery('.date-picker').datepicker().next().on(ace.click_event, function(){
+            window.jQuery(this).prev().focus();
         });
 
-        var calendar_task_start_date = $("#calendar_task_start_date");
+        var calendar_task_start_date = window.jQuery("#calendar_task_start_date");
 
         var start_date_val = (new Date(event_dialog.attr('project_start_date'))).format("dd-mm-yyyy");
         if(event_dialog.attr('start_date')){
@@ -160,7 +160,7 @@
         if(event_dialog.attr('amount')){
             calendar_task_duration = parseInt(event_dialog.attr('amount'));
         }
-        $('#calendar_task_duration').ace_spinner({
+        window.jQuery('#calendar_task_duration').ace_spinner({
             value: calendar_task_duration,
             min: 1,
             step: 1,
@@ -173,7 +173,7 @@
         if(event_dialog.attr('second_amount')){
             calendar_task_num_of_resources = event_dialog.attr('second_amount');
         }
-        $('#calendar_task_num_of_resources').ace_spinner({
+        window.jQuery('#calendar_task_num_of_resources').ace_spinner({
             value: calendar_task_num_of_resources,
             min: 1,
             step: 1,
@@ -183,7 +183,7 @@
 
         {# ***************************************************************** #}
         {# Submit Button #}
-        var submit_button = $('#dialog_template_submit_button');
+        var submit_button = window.jQuery('#dialog_template_submit_button');
         submit_button.on('click', function (e) {
             e.stopPropagation();
             e.preventDefault();
@@ -202,7 +202,7 @@
             );
 
             var sdate = start.getTime();
-            var calendar_task_form = $('#calendar_task_form');
+            var calendar_task_form = window.jQuery('#calendar_task_form');
             var task_id = -1;
             if(event_dialog.attr('task_id')){
                 task_id = event_dialog.attr('task_id');
@@ -216,17 +216,17 @@
             console.log("folder_id: "+ folder_id);
 
             var url = '/budgets/{{ budget.id }}/calendar/task/action';
-            $.post(
+            window.jQuery.post(
                 url,
                 calendar_task_form.serialize()+"&"+
-                $.param({
+                window.jQuery.param({
                     'start_date': sdate,
                     'task_id': task_id,
                     'mode': '{{ mode }}',
                     'folder_id':folder_id
                 })
             ).done(function (jqXHR) {
-                //$('#new_outputs_storage').text(JSON.stringify(jqXHR));
+                //window.jQuery('#new_outputs_storage').text(JSON.stringify(jqXHR));
                 window.location.reload();
             }).fail(function (jqXHR) {
                 bootbox.alert(jqXHR.responseText);
@@ -236,14 +236,14 @@
         {# ***************************************************************** #}
         {# Delete Button #}
         if(event_dialog.attr('task_id')){
-            var dialog_template_delete_button = $('#dialog_template_delete_button');
+            var dialog_template_delete_button = window.jQuery('#dialog_template_delete_button');
             dialog_template_delete_button.show();
             dialog_template_delete_button.on('click', function (e) {
                 e.stopPropagation();
                 e.preventDefault();
 
                 // disable the submit_button
-                var delete_button = $(this);
+                var delete_button = window.jQuery(this);
                 delete_button.button('loading');
 
                 var confirm_message =
@@ -256,11 +256,11 @@
                 bootbox.confirm(confirm_message, function (result) {
                     if (result) {
                         var id = event_dialog.attr('task_id');
-                        $.post(
+                        window.jQuery.post(
                             '/budgetentries/'+id+'/delete?dataSource=Calendar'
                         ).done(function (jqXHR) {
                             gantt.deleteTask(id);
-                            $('#dialog_template').modal('hide');
+                            window.jQuery('#dialog_template').modal('hide');
                         }).fail(function (jqXHR) {
                             bootbox.alert(jqXHR.responseText);
                         });
@@ -277,14 +277,14 @@
 
 <script type="text/javascript">
     function destruct_dialog() {
-        $('#calendar_task_good').unbind();
-        $('#calendar_task_start_date').unbind();
-        $('#calendar_task_duration').unbind();
-        $('#calendar_task_num_of_resources').unbind();
-        $('#calendar_task_description').unbind();
-        $('#dialog_template_submit_button').unbind();
+        window.jQuery('#calendar_task_good').unbind();
+        window.jQuery('#calendar_task_start_date').unbind();
+        window.jQuery('#calendar_task_duration').unbind();
+        window.jQuery('#calendar_task_num_of_resources').unbind();
+        window.jQuery('#calendar_task_description').unbind();
+        window.jQuery('#dialog_template_submit_button').unbind();
 
-        $('#dialog_template').data('modal', null);
+        window.jQuery('#dialog_template').data('modal', null);
     }
 </script>
 

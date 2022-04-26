@@ -100,20 +100,18 @@
 {% endblock page_content %}
 
 {% block extrascripts %}
-    <script type="text/javascript">
-        if("ontouchend" in document) document.write("<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.mobile.custom.min.js") }}'>"+"<"+"/script>");
-    </script>
-    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/i18n/grid.locale-en.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/jquery.jqGrid.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/accounting.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/codebase/dhtmlxgantt.js") }}'></script>
-    <link src='{{ request.static_url("stalker_pyramid:static/jqgrid/ui.jqgrid-bootstrap.css") }}'/>
+{#    <script type="text/javascript">#}
+{#        if("ontouchend" in document) document.write("<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.mobile.custom.min.js") }}'>"+"<"+"/script>");#}
+{#    </script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/i18n/grid.locale-en.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/window.jQuery.jqGrid.min.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/accounting.min.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/codebase/dhtmlxgantt.js") }}'></script>#}
+{#    <link src='{{ request.static_url("stalker_pyramid:static/jqgrid/ui.jqgrid-bootstrap.css") }}'/>#}
     <script>
-        $.jgrid.defaults.autowidth = true;
-        $.jgrid.defaults.responsive = true;
-        $.jgrid.defaults.styleUI = 'Bootstrap';
-
-
+        window.jQuery.jgrid.defaults.autowidth = true;
+        window.jQuery.jgrid.defaults.responsive = true;
+        window.jQuery.jgrid.defaults.styleUI = 'Bootstrap';
     </script>
     <style>
     .ui-jqgrid .ui-jqgrid-labels th.ui-th-column {
@@ -123,9 +121,9 @@
     background-image: none
 }</style>
     <script type="text/javascript">
-        window.$(document).ready(function () {
+        window.jQuery(document).ready(function () {
 
-            $('#add_project_entries_to_budget_button').hide();
+            window.jQuery('#add_project_entries_to_budget_button').hide();
             var total_cost = 0;
             var total_msrp = 0;
             var total_price = 0;
@@ -135,13 +133,13 @@
             var lastSelectionZero;
 
             var grid_selector = "#grid-table";
-            var grid = jQuery(grid_selector);
+            var grid = window.jQuery(grid_selector);
 
             var grid_selector_zero = "#grid-table-zero";
-            var grid_zero = jQuery(grid_selector_zero);
+            var grid_zero = window.jQuery(grid_selector_zero);
 
-            $("#custom_entry_button").on('click', function (e) {
-                 var event_dialog = $('#dialog_template');
+            window.jQuery("#custom_entry_button").on('click', function (e) {
+                 var event_dialog = window.jQuery('#dialog_template');
 
                 event_dialog.modal({
                     'remote': '{{request.route_path('create_budgetentry_dialog', _query={'mode': "Create", 'budget_id':entity.id }) }}'
@@ -219,7 +217,7 @@
 
 
             function editFailed(rowID, response) {
-                $.jgrid.info_dialog($.jgrid.errors.errcap,'<div class="ui-state-error">RowID:'+rowID+ ' :  '+ response.responseJSON.error +'</div>', $.jgrid.edit.bClose,{buttonalign:'right'})
+                window.jQuery.jgrid.info_dialog(window.jQuery.jgrid.errors.errcap,'<div class="ui-state-error">RowID:'+rowID+ ' :  '+ response.responseJSON.error +'</div>', window.jQuery.jgrid.edit.bClose,{buttonalign:'right'})
                 alert(response.responseJSON.error);
             }
 
@@ -282,12 +280,12 @@
             function gridLoadComplete() {
                 calculateTotals();
                 setTimeout(function(){
-                    $('#lui_grid-table').hide();
+                    window.jQuery('#lui_grid-table').hide();
                 }, 0);
             }
 
             function getCellValue(rowId, cellId) {
-                var cell = jQuery('#' + rowId + '_' + cellId);
+                var cell = window.jQuery('#' + rowId + '_' + cellId);
                 return cell.val();
             }
 
@@ -354,19 +352,19 @@
                                                    unit:'TOTAL'
                 });
 
-                $('#total_cost_top').text(accounting.formatMoney(total_cost, { symbol: "TL",  format: "%v %s" }));
-                var total_price_top = $('#total_price_top');
+                window.jQuery('#total_cost_top').text(accounting.formatMoney(total_cost, { symbol: "TL",  format: "%v %s" }));
+                var total_price_top = window.jQuery('#total_price_top');
                 total_price_top.text(accounting.formatMoney(total_price, { symbol: "TL",  format: "%v %s" }));
-                $('#approved_total_price').text(accounting.formatMoney({{ approved_total_price }}, { symbol: "TL",  format: "%v %s" }));
+                window.jQuery('#approved_total_price').text(accounting.formatMoney({{ approved_total_price }}, { symbol: "TL",  format: "%v %s" }));
                 if (total_cost <= total_price){
                     total_price_top.attr('style', "color: green");
                 } else {
                     total_price_top.attr('style', "color: red");
                 }
 
-                $('#total_price_bottom').text(accounting.formatMoney(total_price, { symbol: "TL",  format: "%v %s" }));
+                window.jQuery('#total_price_bottom').text(accounting.formatMoney(total_price, { symbol: "TL",  format: "%v %s" }));
 
-                $.post(
+                window.jQuery.post(
                     '/budgets/{{ entity.id }}/set/totals?total_cost='+total_cost+'&total_price='+total_price
                 ).done(function (response_text) {
 
@@ -381,7 +379,7 @@
                 });
             }
 
-            $.getJSON('/budgets/{{ entity.id }}/entries/').then(function (entry_data) {
+            window.jQuery.getJSON('/budgets/{{ entity.id }}/entries/').then(function (entry_data) {
 
                 grid_data = entry_data;
 
@@ -432,11 +430,11 @@
 
                 }
 
-{#                $('#total_price').text(accounting.formatMoney(total_price, { symbol: "TL",  format: "%v %s" }));#}
+{#                window.jQuery('#total_price').text(accounting.formatMoney(total_price, { symbol: "TL",  format: "%v %s" }));#}
 
                 {% if entity.status.code == 'PLN'  %}
 
-                    jQuery(function($) {
+                    window.jQuery(function(window.jQuery) {
                         grid.jqGrid({
                             //direction: "rtl",
                             data: grid_data,
@@ -493,7 +491,7 @@
                         });
                     });
 
-                    $.getJSON('/studios/{{ entity.id }}/goods/').then(function (good_data) {
+                    window.jQuery.getJSON('/studios/{{ entity.id }}/goods/').then(function (good_data) {
 
                         for(var k=0; k<good_data.length; k++ ){
 
@@ -533,7 +531,7 @@
                             }
                         }
 
-                        jQuery(function($) {
+                        window.jQuery(function(window.jQuery) {
                             grid_zero.jqGrid({
                                 //direction: "rtl",
                                 data: good_grid_data,
@@ -592,11 +590,11 @@
                 {% else  %}
 
                     {% if entity.status.code == 'APP'  %}
-                         $('#approved_total_price').text(accounting.formatMoney('{{ approved_total_price }}', { symbol: "TL",  format: "%v %s" }));
+                         window.jQuery('#approved_total_price').text(accounting.formatMoney('{{ approved_total_price }}', { symbol: "TL",  format: "%v %s" }));
                     {% endif %}
-                    $('#send_button').hide();
+                    window.jQuery('#send_button').hide();
 
-                    jQuery(function($) {
+                    window.jQuery(function(window.jQuery) {
                         grid.jqGrid({
                             //direction: "rtl",
                             data: grid_data,

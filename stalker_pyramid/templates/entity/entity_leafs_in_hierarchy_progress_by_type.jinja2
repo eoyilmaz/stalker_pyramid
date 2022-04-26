@@ -53,10 +53,10 @@
 <script class="code" type="text/javascript">
 
 
-    $.getJSON('/tasks/{{ entity.id }}/leafs_in_hierarchy/').then(function (data) {
-        $(function () {
-            var entity_children = $('#entity_children');
-            var child_template = doT.template($('#tmpl_child').html());
+    window.jQuery.getJSON('/tasks/{{ entity.id }}/leafs_in_hierarchy/').then(function (data) {
+        window.jQuery(function () {
+            var entity_children = window.jQuery('#entity_children');
+            var child_template = doT.template(window.jQuery('#tmpl_child').html());
             var group_by_type_list = {};
 
             for (var i = 0; i < data.length; i++) {

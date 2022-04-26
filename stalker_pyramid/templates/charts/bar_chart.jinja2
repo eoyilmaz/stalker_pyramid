@@ -2,14 +2,14 @@
 
     function drawBarChart(placeholder, data, ticks, colors, labels) {
 
-        $.jqplot(placeholder, data, {
+        window.jQuery.jqplot(placeholder, data, {
             // Tell the plot to stack the bars
             fontSize: '50',
             stackSeries: true,
             captureRightClick: true,
             seriesColors: colors,
             seriesDefaults: {
-                renderer: $.jqplot.BarRenderer,
+                renderer: window.jQuery.jqplot.BarRenderer,
                 rendererOptions: {
                     // Put a 30 pixel margin between bars.
                     barMargin: 10,
@@ -31,7 +31,7 @@
             series: labels,
             axes: {
                 xaxis: {
-                    renderer: $.jqplot.CategoryAxisRenderer,
+                    renderer: window.jQuery.jqplot.CategoryAxisRenderer,
 
                     ticks: ticks,
                     tickOptions: {
@@ -85,10 +85,10 @@
 
     }
 
-    $(function () {
-        var bar_chart = $('#bar_chart');
+    window.jQuery(function () {
+        var bar_chart = window.jQuery('#bar_chart');
 
-        {#        $.getJSON(bar_chart.attr('address')).then(function (data) {#}
+        {#        window.jQuery.getJSON(bar_chart.attr('address')).then(function (data) {#}
         {##}
         {#            alert('loaded')#}
         {#            var series_data = [];#}
@@ -119,9 +119,9 @@
 
 <!-- Additional plugins go here -->
 
-<script class="include" language="javascript" type="text/javascript"
-        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.barRenderer.min.js") }}'></script>
-<script class="include" language="javascript" type="text/javascript"
-        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.categoryAxisRenderer.min.js") }}'></script>
-<script class="include" language="javascript" type="text/javascript"
-        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.pointLabels.min.js") }}'></script>
+{#<script class="include" language="javascript" type="text/javascript"#}
+{#        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.barRenderer.min.js") }}'></script>#}
+{#<script class="include" language="javascript" type="text/javascript"#}
+{#        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.categoryAxisRenderer.min.js") }}'></script>#}
+{#<script class="include" language="javascript" type="text/javascript"#}
+{#        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.pointLabels.min.js") }}'></script>#}

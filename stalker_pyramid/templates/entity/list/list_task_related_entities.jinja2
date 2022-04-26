@@ -57,15 +57,15 @@
 
 <script type="text/javascript">
     function loadEntityRelatedEntities(e_type, d_type) {
-        var related_entities_container = $('#related_entities_container');
+        var related_entities_container = window.jQuery('#related_entities_container');
         related_entities_container.find("#related_entities_list").remove();
         related_entities_container.append('<ul id="related_entities_list" class="ace-thumbnails"></ul>');
 
 
-        var related_entities_list = $('#related_entities_list');
-        var related_entity_template = doT.template($('#tmpl_related_entity_item').html());
+        var related_entities_list = window.jQuery('#related_entities_list');
+        var related_entity_template = doT.template(window.jQuery('#tmpl_related_entity_item').html());
 
-        $.getJSON('/tasks/{{ entity.id }}/related/'+e_type+'/'+d_type+'/').then(function (data) {
+        window.jQuery.getJSON('/tasks/{{ entity.id }}/related/'+e_type+'/'+d_type+'/').then(function (data) {
             console.log('loaded '+data.length);
              for (var i = 0; i < data.length; i++) {
 
@@ -80,16 +80,16 @@
                     data[i].remove_entity_action = '/entities/'+data[i].e_id+'/entities/'+data[i].id+'/remove/dialog';
                 {% endif %}
 
-                var related_entity_li = $('#related_entity_'+data[i].id);
+                var related_entity_li = window.jQuery('#related_entity_'+data[i].id);
                 if (related_entity_li.length==0){
                     related_entities_list.append(related_entity_template(data[i]));
                 }
              }
         })
     }
-    window.$(document).ready(function () {
-        var entity_type = $('#entity_type');
-        var dep_type = $('#dep_type');
+    window.jQuery(document).ready(function () {
+        var entity_type = window.jQuery('#entity_type');
+        var dep_type = window.jQuery('#dep_type');
 
         var entity_type_str = entity_type.val();
         var dep_type_str = dep_type.val();
@@ -97,13 +97,13 @@
 
         entity_type.on('change', function () {
 
-            entity_type_str = $(this).val();
+            entity_type_str = window.jQuery(this).val();
             loadEntityRelatedEntities(entity_type_str, dep_type_str);
         });
 
         dep_type.on('change', function () {
 
-            dep_type_str = $(this).val();
+            dep_type_str = window.jQuery(this).val();
             loadEntityRelatedEntities(entity_type_str,dep_type_str);
         });
     });

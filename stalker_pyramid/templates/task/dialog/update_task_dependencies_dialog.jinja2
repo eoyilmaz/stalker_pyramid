@@ -32,15 +32,15 @@
     </div>
 </div>
 
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/chosen.jquery.min.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/chosen.window.jQuery.min.js") }}'></script>#}
 
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.autosize-min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.inputlimiter.1.3.1.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.maskedinput.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/bootstrap-tag.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.validate.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/additional-methods.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.spinner.min.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.autosize-min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.inputlimiter.1.3.1.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.maskedinput.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/bootstrap-tag.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.validate.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/additional-methods.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.spinner.min.js") }}'></script>#}
 
 
 <script>
@@ -48,9 +48,9 @@
         console.log('initialize task dialog start');
 
         // update dialog header
-        $('#dialog_template_label').text('Update Task Dependencies Dialog');
+        window.jQuery('#dialog_template_label').text('Update Task Dependencies Dialog');
 
-        $('#dialog_template_body').attr('style', "height: 500px");
+        window.jQuery('#dialog_template_body').attr('style', "height: 500px");
 
 
         var depends_to = [];
@@ -65,11 +65,11 @@
         ];
 
 
-        var submit_button = $('#dialog_template_submit_button');
+        var submit_button = window.jQuery('#dialog_template_submit_button');
         setTimeout(function(){submit_button.button('reset')}, 0);
         {# ***************************************************************** #}
         {# Depends To#}
-        var task_depends_to_tag = $('#task_depends_to');
+        var task_depends_to_tag = window.jQuery('#task_depends_to');
         var task_depends_to = task_depends_to_tag.chosen({
             search_contains: true,
             enable_split_word_search: true
@@ -126,7 +126,7 @@
 
             // enable fields
 
-            var task_form = $('#task_form');
+            var task_form = window.jQuery('#task_form');
             var form_data = task_form.serialize();
 {#            console.log('form_data :', form_data);#}
 
@@ -137,11 +137,11 @@
                 } else {
                     task_form.attr('is_sending', true);
                 }
-                $.post(
+                window.jQuery.post(
                     submit_form_url,
                     form_data
                 ).done(function(){
-                    $('#dialog_template').modal('hide');
+                    window.jQuery('#dialog_template').modal('hide');
                 }).fail(function(jqXHR){
                     task_form.attr('is_sending', false);
                     bootbox.alert(jqXHR.responseText);
@@ -152,7 +152,7 @@
             }
         });
 
-        $('#task_form').validate({
+        window.jQuery('#task_form').validate({
             errorElement: 'span',
             errorClass: 'help-inline',
             focusInvalid: true,
@@ -186,16 +186,16 @@
             },
 
             invalidHandler: function (event, validator) { //display error alert on form submit
-                $('.alert-error', $('.login-form')).show();
+                window.jQuery('.alert-error', window.jQuery('.login-form')).show();
             },
 
             highlight: function (e) {
-                $(e).closest('.control-group').removeClass('info').addClass('error');
+                window.jQuery(e).closest('.control-group').removeClass('info').addClass('error');
             },
 
             success: function (e) {
-                $(e).closest('.control-group').removeClass('error').addClass('info');
-                $(e).remove();
+                window.jQuery(e).closest('.control-group').removeClass('error').addClass('info');
+                window.jQuery(e).remove();
             },
 
             errorPlacement: function (error, element) {
@@ -229,10 +229,10 @@
         console.log('destruct task dialog start');
         // unbind events
 
-        $('#dialog_template_submit_button').unbind();
+        window.jQuery('#dialog_template_submit_button').unbind();
 
         // remove dialog
-        $('#dialog_template').data('modal', null);
+        window.jQuery('#dialog_template').data('modal', null);
         console.log('destruct task dialog end');
     }
 </script>

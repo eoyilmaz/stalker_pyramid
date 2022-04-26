@@ -36,15 +36,15 @@
 
 <script>
 
-    $('.date').each(function () {
-        var date = moment($(this).text());
-        $(this).text(date.fromNow());
+    window.jQuery('.date').each(function () {
+        var date = moment(window.jQuery(this).text());
+        window.jQuery(this).text(date.fromNow());
     });
 
-    $.getJSON('/tasks/{{ task.id }}/outputs/count/').then(function (data) {
-        $(function () {
-            var badge = $('#output_count');
-            var alert = $('#outputs_alert');
+    window.jQuery.getJSON('/tasks/{{ task.id }}/outputs/count/').then(function (data) {
+        window.jQuery(function () {
+            var badge = window.jQuery('#output_count');
+            var alert = window.jQuery('#outputs_alert');
             if (data > 0){
                 badge.text(data);
                 alert.removeClass('alert-danger').addClass('alert-success');

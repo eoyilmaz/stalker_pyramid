@@ -83,9 +83,9 @@
 
 {# EXTRA-SCRIPTS #}
 {% block extrascripts %}
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.bootstrap.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/dataTable_num-html_sort.js") }}'></script>
+{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.dataTables.min.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.dataTables.bootstrap.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/dataTable_num-html_sort.js") }}'></script>#}
 
     {% raw %}
     <script id="tmpl_shotColumn" type="text/x-dot-template">
@@ -207,9 +207,9 @@
     {% endraw %}
 
     <script>
-        $(function(){
+        window.jQuery(function(){
             var icon_name = get_icon('shot');
-            $('#items_header').append('<i class=' + icon_name + '></i>');
+            window.jQuery('#items_header').append('<i class=' + icon_name + '></i>');
         });
     </script>
     
@@ -220,26 +220,26 @@
         // fill shots table with dynamic data
         // first get all the children task types
         // to define the columns
-        $.getJSON('/shots/children/task_type/?entity_id={{ entity.id }}').then(function (types_data) {
+        window.jQuery.getJSON('/shots/children/task_type/?entity_id={{ entity.id }}').then(function (types_data) {
 
             var types = types_data;
 
-            $(function () {
-                var column_template = doT.template($('#tmpl_shotColumn').html());
+            window.jQuery(function () {
+                var column_template = doT.template(window.jQuery('#tmpl_shotColumn').html());
                 var k;
-                var table_column = $('#shots_table_column');
+                var table_column = window.jQuery('#shots_table_column');
                 for (k = 0; k < types_data.length; k++) {
                     table_column.append(column_template(types[k]));
                 }
 
-                $.getJSON('/entities/{{ entity.id }}/shots/').then(function (data) {
+                window.jQuery.getJSON('/entities/{{ entity.id }}/shots/').then(function (data) {
 
                     var shots = data;
-                    var shot_template = doT.template($('#tmpl_shotRow').html());
+                    var shot_template = doT.template(window.jQuery('#tmpl_shotRow').html());
                     // wait until document is ready
-                    $(function () {
+                    window.jQuery(function () {
                         var i;
-                        var shots_table = $('#shots_table');
+                        var shots_table = window.jQuery('#shots_table');
                         var table_body = shots_table.find('tbody');
 
                         for (i = 0; i < data.length; i++) {
@@ -266,8 +266,8 @@
                             // append it to the table
                             table_body.append(shot_template(data[i]));
 
-                            var cell_template = doT.template($('#tmpl_taskCell').html());
-                            var shot_row = $('#shot_row_' + data[i].id);
+                            var cell_template = doT.template(window.jQuery('#tmpl_taskCell').html());
+                            var shot_row = window.jQuery('#shot_row_' + data[i].id);
 
                             for (var j = 0; j < types_data.length; j++) {
                                 var tasks = data[i][types_data[j].name];
@@ -305,8 +305,8 @@
                                 }
                             }
 
-                            var shot_summary_cell = $('#shot_summary_cell_' + data[i].id);
-                            var shot_summary_cell_template = doT.template($('#tmpl_shotSummaryCell').html());
+                            var shot_summary_cell = window.jQuery('#shot_summary_cell_' + data[i].id);
+                            var shot_summary_cell_template = doT.template(window.jQuery('#tmpl_shotSummaryCell').html());
 
                             for (var n = 0; n < data[i]['nulls'].length; n++) {
                                 var null_type_task = data[i]['nulls'][n];
@@ -319,8 +319,8 @@
                             "iDisplayLength": -1,
                         });
 
-                        $('#loading_spinner').hide();
-                        $('#content').show();
+                        window.jQuery('#loading_spinner').hide();
+                        window.jQuery('#content').show();
 
                     });
                 });
@@ -329,8 +329,8 @@
     </script>
     <script type="text/javascript">
         function destruct_html_modal() {
-            $('#items_table').unbind();
-            $('#html_template').data('modal', null);
+            window.jQuery('#items_table').unbind();
+            window.jQuery('#html_template').data('modal', null);
         }
     </script>
 

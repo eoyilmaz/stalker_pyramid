@@ -45,25 +45,25 @@
 
 {#EXTRA-SCRIPTS#}
 {% block extrascripts %}
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery-ui-1.10.3.custom.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.ui.touch-punch.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.gritter.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.slimscroll.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.hotkeys.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap-wysiwyg.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/select2.min.js") }}'></script>
+{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery-ui-1.10.3.custom.min.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.ui.touch-punch.min.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.gritter.min.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.slimscroll.min.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.hotkeys.min.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap-wysiwyg.min.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/select2.min.js") }}'></script>#}
 {#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>#}
 {#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.spinner.min.js") }}'></script>#}
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.maskedinput.min.js") }}'></script>
+{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.maskedinput.min.js") }}'></script>#}
 
 
 
     {% include 'components/tree.jinja2' %}
 
     <script type="text/javascript">
-        window.$(document).ready(function () {
+        window.jQuery(document).ready(function () {
 
-            $.getJSON('/entities/{{ entity.id }}/users/').then(function (data) {
+            window.jQuery.getJSON('/entities/{{ entity.id }}/users/').then(function (data) {
                 var resources = {};
 {#                console.log('loaded');#}
                 for (var i = 0; i < data.length; i++) {
@@ -83,7 +83,7 @@
                         resources[prop_id]['additionalParameters']['children'] = {};
                     }
 
-                    $.getJSON('/tasks/?has_resource=1&leaf_only=1&resource_id='+data[i].id+'&status=WIP').then(function (tdata) {
+                    window.jQuery.getJSON('/tasks/?has_resource=1&leaf_only=1&resource_id='+data[i].id+'&status=WIP').then(function (tdata) {
 {#                         console.log('loaded2'+tdata.length);#}
                         for (var k = 0; k < tdata.length; k++) {
 {#                             console.log(tdata[k].name);#}
@@ -94,7 +94,7 @@
                     });
 
                 }
-                $('#resources_box').show();
+                window.jQuery('#resources_box').show();
                 drawTree('resource_tree', resources);
 
             });

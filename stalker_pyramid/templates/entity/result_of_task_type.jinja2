@@ -79,33 +79,33 @@
     </div>
 </div>
 
-<script class="include" type="text/javascript"
-            src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/jquery.jqplot.min.js") }}'></script>
+{#<script class="include" type="text/javascript"#}
+{#            src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/window.jQuery.jqplot.min.js") }}'></script>#}
 <!-- End Don't touch this! -->
 
 <!-- Additional plugins go here -->
 
-<script class="include" type="text/javascript"
-        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.categoryAxisRenderer.min.js") }}'></script>
-<script class="include" type="text/javascript"
-        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.barRenderer.min.js") }}'></script>
-<script class="include" type="text/javascript"
-        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.dateAxisRenderer.min.js") }}'></script>
-<script class="include" type="text/javascript"
-        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.logAxisRenderer.min.js") }}'></script>
-<script class="include" type="text/javascript"
-        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.canvasAxisTickRenderer.min.js") }}'></script>
-<script class="include" type="text/javascript"
-        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.canvasTextRenderer.min.js") }}'></script>
-<script class="include" type="text/javascript"
-        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.pointLabels.min.js") }}'></script>
-<script class="include" type="text/javascript"
-        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.highlighter.min.js") }}'></script>
-<script class="include" type="text/javascript"
-        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.cursor.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/i18n/grid.locale-en.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/jquery.jqGrid.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/node_modules/moment/min/moment.min.js") }}'></script>
+{#<script class="include" type="text/javascript"#}
+{#        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.categoryAxisRenderer.min.js") }}'></script>#}
+{#<script class="include" type="text/javascript"#}
+{#        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.barRenderer.min.js") }}'></script>#}
+{#<script class="include" type="text/javascript"#}
+{#        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.dateAxisRenderer.min.js") }}'></script>#}
+{#<script class="include" type="text/javascript"#}
+{#        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.logAxisRenderer.min.js") }}'></script>#}
+{#<script class="include" type="text/javascript"#}
+{#        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.canvasAxisTickRenderer.min.js") }}'></script>#}
+{#<script class="include" type="text/javascript"#}
+{#        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.canvasTextRenderer.min.js") }}'></script>#}
+{#<script class="include" type="text/javascript"#}
+{#        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.pointLabels.min.js") }}'></script>#}
+{#<script class="include" type="text/javascript"#}
+{#        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.highlighter.min.js") }}'></script>#}
+{#<script class="include" type="text/javascript"#}
+{#        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.cursor.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/i18n/grid.locale-en.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/window.jQuery.jqGrid.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/node_modules/moment/min/moment.min.js") }}'></script>#}
 
 
 
@@ -119,22 +119,22 @@
         }
 
         var average_for_weeks = (total_for_last_six_week/working_weeks).toFixed(2);
-        $('#average_for_weeks').text(average_for_weeks)
+        window.jQuery('#average_for_weeks').text(average_for_weeks)
     }
 
 
     function loadShotTaskData(t_type, p_id){
         console.log('loadShotTaskData: '+t_type+' : ' +p_id);
 
-        var result_chart = $('#result_chart');
+        var result_chart = window.jQuery('#result_chart');
         result_chart.find("#chart_shot").remove();
 
-        var result_table = $('#result_table');
+        var result_table = window.jQuery('#result_table');
         result_table.find("#table_container").remove();
         result_table.find("#grid-pager").remove();
-        $('#info_box').hide();
+        window.jQuery('#info_box').hide();
 
-        $.getJSON('/entities/{{ entity.id }}/'+t_type+'/result?project_id='+p_id).then(function (data) {
+        window.jQuery.getJSON('/entities/{{ entity.id }}/'+t_type+'/result?project_id='+p_id).then(function (data) {
             console.log('loaded: '+t_type+' : ' +p_id);
             if (data.length>0){
                 var shot_data = [];
@@ -233,7 +233,7 @@
 
 
                 {% if entity.entity_type =='User' %}
-                    $.getJSON('/entities/{{ entity.id }}/events/?keys=vacation').then(function (vacations) {
+                    window.jQuery.getJSON('/entities/{{ entity.id }}/events/?keys=vacation').then(function (vacations) {
 
                         var av_start_date = new Date(weekly_shot_data[start_week][0]);
                         var av_end_date = new Date();
@@ -277,7 +277,7 @@
                     });
                 {% endif %}
 
-                $.jqplot('chart_shot', [weekly_shot_data, weekly_approved_shot_data], {
+                window.jQuery.jqplot('chart_shot', [weekly_shot_data, weekly_approved_shot_data], {
                             seriesColors: ["rgba(78, 135, 194, 0.7)", "#82af6f"],
                             title: {
                                 text:'Weekly '+t_type+' '+graph_val_type,
@@ -296,8 +296,8 @@
                             },
                             axes:{
                                xaxis: {
-                                    renderer: $.jqplot.DateAxisRenderer,
-                                    tickRenderer: $.jqplot.CanvasAxisTickRenderer,
+                                    renderer: window.jQuery.jqplot.DateAxisRenderer,
+                                    tickRenderer: window.jQuery.jqplot.CanvasAxisTickRenderer,
                                     tickOptions: {
                                         formatString: "%d %b",
                                         angle: -30,
@@ -308,7 +308,7 @@
                                     drawMajorGridlines: false
                                },
                                yaxis: {
-                                    renderer: $.jqplot.LinearAxisRenderer,
+                                    renderer: window.jQuery.jqplot.LinearAxisRenderer,
                                     pad: 0,
                                     rendererOptions: {
                                         minorTicks: 1
@@ -331,7 +331,7 @@
 
                 var grid_selector = "#grid-table";
                 var pager_selector = "#grid-pager";
-                jQuery(grid_selector).jqGrid({
+                window.jQuery(grid_selector).jqGrid({
                     data: shot_data,
                     datatype: "local",
                     colModel: [
@@ -358,7 +358,7 @@
                     userDataOnFooter: true,
                     grouping: false,
                     loadComplete : function() {
-                        var $self = $(this);
+                        var $self = window.jQuery(this);
 {#                        var total_seconds= $self.jqGrid('getCol', 'total_seconds', false, 'sum');#}
                         var approved_minutes = (sum_of_approved_seconds / 60).toFixed(1);
                         var total_minutes = (sum_of_total_seconds / 60).toFixed(1);
@@ -386,19 +386,19 @@
                         }
 
                         calculate_average(weekly_shot_data,total_weeks,start_week);
-                        $('#total').text(total);
-                        $('#approved_total').text(approved_total);
-                        $('#info_box').show();
+                        window.jQuery('#total').text(total);
+                        window.jQuery('#approved_total').text(approved_total);
+                        window.jQuery('#info_box').show();
 
                         setTimeout(function(){
                             updatePagerIcons(grid_selector);
-                            $('#lui_grid-table').hide();
+                            window.jQuery('#lui_grid-table').hide();
                         }, 0);
 
                     }
                 });
                 //navButtons
-                jQuery(grid_selector).jqGrid('navGrid',pager_selector,
+                window.jQuery(grid_selector).jqGrid('navGrid',pager_selector,
                     { 	//navbar options
                         edit: false,
                         editicon : 'icon-pencil blue',
@@ -435,18 +435,18 @@
             'ui-icon-seek-next' : 'icon-angle-right bigger-140',
             'ui-icon-seek-end' : 'icon-double-angle-right bigger-140'
         };
-        $('.ui-pg-table:not(.navtable) > tbody > tr > .ui-pg-button > .ui-icon').each(function(){
-            var icon = $(this);
-            var $class = $.trim(icon.attr('class').replace('ui-icon', ''));
+        window.jQuery('.ui-pg-table:not(.navtable) > tbody > tr > .ui-pg-button > .ui-icon').each(function(){
+            var icon = window.jQuery(this);
+            var $class = window.jQuery.trim(icon.attr('class').replace('ui-icon', ''));
 
             if($class in replacement) icon.attr('class', 'ui-icon '+replacement[$class]);
         })
     }
-    window.$(document).ready(function () {
-        $.jqplot._noToImageButton = true;
-        $.jqplot.config.enablePlugins = true;
-        var task_type = $('#task_type');
-        var project_cb = $('#project_cb');
+    window.jQuery(document).ready(function () {
+        window.jQuery.jqplot._noToImageButton = true;
+        window.jQuery.jqplot.config.enablePlugins = true;
+        var task_type = window.jQuery('#task_type');
+        var project_cb = window.jQuery('#project_cb');
         var project_id = project_cb.val();
         var task_type_str = task_type.val();
 
@@ -464,7 +464,7 @@
                 projects_url = '/entities/{{ entity.id }}/projects/';
             {% endif %}
 
-            $.getJSON(projects_url).then(function(data){
+            window.jQuery.getJSON(projects_url).then(function(data){
                 console.log('loaded '+data.length);
                 project_cb.find('option').remove();
 
@@ -482,7 +482,7 @@
                 loadShotTaskData(task_type_str, project_id);
                 project_cb.on('change', function () {
 {#                    task_type_str = task_type.val();#}
-                    project_id = $(this).val();
+                    project_id = window.jQuery(this).val();
                     loadShotTaskData(task_type_str, project_id);
                 });
             });
@@ -494,7 +494,7 @@
         {% endif %}
 
         task_type.on('change', function () {
-            task_type_str = $(this).val();
+            task_type_str = window.jQuery(this).val();
             loadShotTaskData(task_type_str, project_id);
         });
 

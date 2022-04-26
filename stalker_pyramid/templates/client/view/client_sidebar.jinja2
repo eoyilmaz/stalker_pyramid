@@ -5,7 +5,7 @@
 <ul id="sidebar_list" class='nav nav-list'></ul>
 
 <script>
-    $(function () {
+    window.jQuery(function () {
         page_of('{{ client.name }}',
                 '{{ client.login }}',
                 '{%- if client.thumbnail -%}/{{ client.thumbnail.full_path }}{%- else -%}{{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_0.png")}}{%- endif -%}',

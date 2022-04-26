@@ -53,14 +53,14 @@
     </div>
 </div>
 
-<script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/i18n/grid.locale-en.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/jquery.jqGrid.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/jquery.jqGrid.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/plugins/ui.multiselect.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/i18n/grid.locale-en.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/window.jQuery.jqGrid.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/window.jQuery.jqGrid.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/plugins/ui.multiselect.js") }}'></script>#}
 
 <script>
 
-    window.$(document).ready(function () {
+    window.jQuery(document).ready(function () {
         var project_id = localStorage.getItem("project_id");
         var status_code = '';
 
@@ -68,13 +68,13 @@
             var option_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
         {% endraw %}
 
-        var project_cb = $('#project_cb');
+        var project_cb = window.jQuery('#project_cb');
         project_cb.chosen({
             search_contains: true,
             enable_split_word_search: true
         });
 
-        $.getJSON('/entities/{{ entity.id }}/projects/').then(function(data){
+        window.jQuery.getJSON('/entities/{{ entity.id }}/projects/').then(function(data){
 
             project_cb.find('option').remove();
 
@@ -100,7 +100,7 @@
 
 
             project_cb.on('change', function () {
-                project_id = $(this).val();
+                project_id = window.jQuery(this).val();
                 localStorage.setItem("project_id", project_id);
                 localStorage.setItem("status_code", '');
 
@@ -112,19 +112,19 @@
 
     function get_task_absoulute_path(task_id){
 
-        $.getJSON('/tasks/' + task_id + '/absolute_full_path/').then(function (absolute_full_path) {
+        window.jQuery.getJSON('/tasks/' + task_id + '/absolute_full_path/').then(function (absolute_full_path) {
             window.prompt("Copy to clipboard: Ctrl+C, Enter", absolute_full_path);
         });
     }
 
     function initInfoLink(address){
-        var tasks_status_tabs = $('#tasks_status_tabs');
+        var tasks_status_tabs = window.jQuery('#tasks_status_tabs');
         console.log("address: " + address);
         tasks_status_tabs.find("li").remove();
-        var link_template = doT.template($('#tmpl_taskStatusLink').html());
+        var link_template = doT.template(window.jQuery('#tmpl_taskStatusLink').html());
 
 
-        $.getJSON(address).then(function (data) {
+        window.jQuery.getJSON(address).then(function (data) {
             var sorting_path = ['WFD','RTS','WIP', 'PREV','HREV', 'DREV', 'CMPL', 'OH','STOP'];
             var sorted_data = [];
             var first_status = '';
@@ -162,25 +162,25 @@
                     }
 
                     tasks_status_tabs.append(link_template(sorted_data[k]));
-                    var link = $('#link_'+sorted_data[k].status_code);
+                    var link = window.jQuery('#link_'+sorted_data[k].status_code);
                     link.on('click', function(){
-                        var status_code = $(this).attr('id').split('_')[1];
+                        var status_code = window.jQuery(this).attr('id').split('_')[1];
                         localStorage.setItem("status_code", status_code);
-                        init_html_modal(status_code, $('#project_cb').val());
+                        init_html_modal(status_code, window.jQuery('#project_cb').val());
                     });
                 }
             }
             if (first_status != ''){
-                var tab = $('#tab_'+first_status);
+                var tab = window.jQuery('#tab_'+first_status);
                 tab.attr('class','active');
-                init_html_modal(first_status, $('#project_cb').val());
+                init_html_modal(first_status, window.jQuery('#project_cb').val());
             }
         });
     }
 
     function clear_html_modal(){
-        $('#tasks_list').hide();
-        $('#button_list').find('button').remove();
+        window.jQuery('#tasks_list').hide();
+        window.jQuery('#button_list').find('button').remove();
         unloadTableData();
     }
 
@@ -190,16 +190,16 @@
 
         console.debug('starting to initialize init_html_modal dialog!!!');
 
-        var items_header = $('#items_header');
+        var items_header = window.jQuery('#items_header');
         items_header.text(status_code);
 
-        $('#html_template_header').attr('class', 'widget-header widget-header-small header-color-status_'+status_code);
-        $('#tasks_list').show();
+        window.jQuery('#html_template_header').attr('class', 'widget-header widget-header-small header-color-status_'+status_code);
+        window.jQuery('#tasks_list').show();
 
-        var button_list = $('#button_list');
+        var button_list = window.jQuery('#button_list');
         button_list.find('button').remove();
 
-        var btn_template = doT.template($('#tmpl_btn').html());
+        var btn_template = doT.template(window.jQuery('#tmpl_btn').html());
         var remove_task_btn_info = {
                                         'id':'remove_resource_btn',
                                         'title':'Remove Task',
@@ -318,10 +318,10 @@
                 ];
 
         var tableDataAddress = '/users/{{ entity.id }}/tasks/simple/?' + query_str;
-        $('#loading_spinner').show();
+        window.jQuery('#loading_spinner').show();
 
-        $.getJSON(tableDataAddress).then(function (data) {
-            $('#loading_spinner').hide();
+        window.jQuery.getJSON(tableDataAddress).then(function (data) {
+            window.jQuery('#loading_spinner').hide();
             console.log("tableDataAddress is loaded");
             var total_remain_st_seconds = 0;
             var total_remain_bid_seconds = 0;
@@ -386,7 +386,7 @@
                     footerData
                 );
 
-            $('[data-rel=popover]').popover({html:true});
+            window.jQuery('[data-rel=popover]').popover({html:true});
         });
 
         function endDateFormatter(cellvalue, options, rowObject){
@@ -407,7 +407,7 @@
         }
 
         var submit_form_url = '/tasks/force_status/CMPL/dialog';
-        var force_complete_btn = $('#force_complete_btn');
+        var force_complete_btn = window.jQuery('#force_complete_btn');
         if(force_complete_btn){
             force_complete_btn.on('click', function(){
                 submit_form_url = '/tasks/force_status/CMPL/dialog';
@@ -415,7 +415,7 @@
             });
         }
 
-        var request_revisions_btn = $('#request_revisions_btn');
+        var request_revisions_btn = window.jQuery('#request_revisions_btn');
         if(request_revisions_btn){
             request_revisions_btn.on('click', function(){
                 submit_form_url = '/tasks/request_revisions/dialog';
@@ -423,7 +423,7 @@
             });
         }
 
-        var remove_resource_btn = $('#remove_resource_btn');
+        var remove_resource_btn = window.jQuery('#remove_resource_btn');
         if(remove_resource_btn){
             remove_resource_btn.on('click', function(){
                 submit_form_url = '/tasks/remove/resources/{{ entity.id }}/dialog';
@@ -431,7 +431,7 @@
             });
         }
 
-        var timelog_btn = $('#timelog_btn');
+        var timelog_btn = window.jQuery('#timelog_btn');
         if(timelog_btn){
             timelog_btn.on('click', function(){
                 submit_form_url = '/users/{{ entity.id }}/multi_timelogs/create/dialog?';
@@ -439,7 +439,7 @@
             });
         }
 
-        var set_start_end_date_btn = $('#set_start_end_date_btn');
+        var set_start_end_date_btn = window.jQuery('#set_start_end_date_btn');
         if(set_start_end_date_btn){
             set_start_end_date_btn.on('click', function(){
                 submit_form_url = '/tasks/set_start_end_date/dialog';
@@ -447,7 +447,7 @@
             });
         }
 
-        var request_review_btn = $('#request_review_btn');
+        var request_review_btn = window.jQuery('#request_review_btn');
         if(request_review_btn){
             request_review_btn.on('click', function(){
                 submit_form_url = '/tasks/request_review/dialog';
@@ -457,8 +457,8 @@
 
         function submit_action(){
 
-            var event_dialog = $('#dialog_template');
-            var selected_task_ids = jQuery('#grid-table').jqGrid('getGridParam','selarrrow');
+            var event_dialog = window.jQuery('#dialog_template');
+            var selected_task_ids = window.jQuery('#grid-table').jqGrid('getGridParam','selarrrow');
 
             var _query = '?entity_id={{ entity.id }}';
 
@@ -476,7 +476,7 @@
 
 <script type="text/javascript">
     function destruct_html_modal() {
-        $('#items_table').unbind();
-        $('#html_template').data('modal', null);
+        window.jQuery('#items_table').unbind();
+        window.jQuery('#html_template').data('modal', null);
     }
 </script>

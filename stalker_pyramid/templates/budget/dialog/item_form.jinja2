@@ -57,18 +57,18 @@
 <script type="text/javascript">
     function init_item_form_objects() {}
     function destruct_dialog() {
-        $('#name').unbind();
-        $('#calendar_start_date').unbind();
-        $('#description').unbind();
+        window.jQuery('#name').unbind();
+        window.jQuery('#calendar_start_date').unbind();
+        window.jQuery('#description').unbind();
 
-        var submit_btn = $('#dialog_template_submit_button');
+        var submit_btn = window.jQuery('#dialog_template_submit_button');
         submit_btn.button('reset');
         submit_btn.unbind();
 
-        var delete_btn = $('#dialog_template_delete_button');
+        var delete_btn = window.jQuery('#dialog_template_delete_button');
         delete_btn.button('reset');
         delete_btn.unbind();
 
-        $('#dialog_template').data('modal', null);
+        window.jQuery('#dialog_template').data('modal', null);
     }
 </script>

@@ -5,15 +5,15 @@
 
     <meta name="description" content="3 styles with inline editable feature" />
 
-    <link rel="stylesheet"
-          href='{{ request.static_url("stalker_pyramid:static/ace/css/chosen.min.css") }}'/>
+{#    <link rel="stylesheet"#}
+{#          href='{{ request.static_url("stalker_pyramid:static/ace/css/chosen.min.css") }}'/>#}
 
-    <link rel="stylesheet"
-          href='{{ request.static_url("stalker_pyramid:static/ace/css/jquery-ui-1.10.3.custom.min.css") }}'/>
+{#    <link rel="stylesheet"#}
+{#          href='{{ request.static_url("stalker_pyramid:static/ace/css/window.jQuery-ui-1.10.3.custom.min.css") }}'/>#}
 {#    <link rel="stylesheet"#}
 {#          href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap-editable.css") }}'/>#}
-    <link rel="stylesheet"
-          href='{{ request.static_url("stalker_pyramid:static/ace/css/jquery.gritter.css") }}'/>
+{#    <link rel="stylesheet"#}
+{#          href='{{ request.static_url("stalker_pyramid:static/ace/css/window.jQuery.gritter.css") }}'/>#}
 {#    <link rel="stylesheet"#}
 {#          href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap-editable.css") }}'/>#}
 
@@ -87,18 +87,18 @@
 {# EXTRA-SCRIPTS #}
 {% block extrascripts %}
     <script type="text/javascript">
-        window.$(document).ready(function () {
-            var submit_button = $('#submit_button');
+        window.jQuery(document).ready(function () {
+            var submit_button = window.jQuery('#submit_button');
             submit_button.on('click', function (e) {
 
                 e.stopPropagation();
                 e.preventDefault();
                 submit_button.button('loading');
 
-                var studio_update_form = $("#studio_form");
+                var studio_update_form = window.jQuery("#studio_form");
                 var form_data = studio_update_form.serialize();
 
-                $.post('/studios/{{ entity.id }}/update', form_data)
+                window.jQuery.post('/studios/{{ entity.id }}/update', form_data)
                     .done(function (response_text) {
                         bootbox.alert(response_text);
                         window.location.assign('{{ came_from }}');

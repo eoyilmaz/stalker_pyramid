@@ -112,7 +112,7 @@
 </div>
 
 {#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/moment.min.js") }}'></script>#}
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.autosize-min.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.autosize-min.js") }}'></script>#}
 
 
 {% raw %}
@@ -151,12 +151,12 @@
         console.log('initialize review task dialog start');
 
         // update dialog header
-        var dialog_template_label = $('#dialog_template_label');
+        var dialog_template_label = window.jQuery('#dialog_template_label');
         dialog_template_label.find('span').remove();
         dialog_template_label.append('<span class="green">Review Task Dialog</span>');
 
         {% if not version %}
-            $('#version_message').append(
+            window.jQuery('#version_message').append(
                 "<div class='alert alert-error bigger-110'>" +
                 "<strong>{{ task.name }}</strong> is <strong>{{task.type.name }}</strong> type task." +
                 "For <strong>{{task.type.name }} </strong> type task no version is saved to server. Ask resource for details." +
@@ -175,15 +175,15 @@
         var schedule_unit = '{{ task.schedule_unit }}';
         var schedule_model = '{{ task.schedule_model }}';
 
-        var submit_button = $('#dialog_template_submit_button');
+        var submit_button = window.jQuery('#dialog_template_submit_button');
 
-        var task_review_mode = $('#task_review_mode');
+        var task_review_mode = window.jQuery('#task_review_mode');
     
         {% if review_mode %}
             task_review_mode.val('{{ review_mode }}');
 
             {% if review_mode == 'request_revision' %}
-                $('#revision_controls').show();
+                window.jQuery('#revision_controls').show();
             {% endif %}
 
             submit_form_url = '/tasks/{{ task.id }}/'+ task_review_mode.val();
@@ -196,9 +196,9 @@
         {% else %}
             task_review_mode.on('change', function () {
                 // disable or enable revision_controls
-                $('#revision_controls').toggle();
+                window.jQuery('#revision_controls').toggle();
 
-                submit_form_url = '/tasks/{{ task.id }}/' + $(this).val()
+                submit_form_url = '/tasks/{{ task.id }}/' + window.jQuery(this).val()
 
             });
 
@@ -206,9 +206,9 @@
 
         {# ***************************************************************** #}
         {# Schedule Unit and Model #}
-        var task_schedule_unit = $('#task_schedule_unit');
-        var task_schedule_timing = $('#task_schedule_timing');
-        $('#task_schedule_model').val(schedule_model);
+        var task_schedule_unit = window.jQuery('#task_schedule_unit');
+        var task_schedule_timing = window.jQuery('#task_schedule_timing');
+        window.jQuery('#task_schedule_model').val(schedule_model);
 
         // set the default values
         task_schedule_unit.val("h");
@@ -218,7 +218,7 @@
         var priority = 500;
         priority = {{ task.priority }};
 
-{#        $('#task_priority').ace_spinner({#}
+{#        window.jQuery('#task_priority').ace_spinner({#}
 {#            value: priority,#}
 {#            min: 1,#}
 {#            max: 1000,#}
@@ -227,8 +227,8 @@
 {#            btn_down_class: 'btn-info'#}
 {#        }).on('change', function () {#}
 {#                    // check if it is in the range#}
-{#                    var curr_value = $(this).val();#}
-{#                    $(this).val(curr_value <= 1000 ? curr_value >= 1 ? curr_value : 1 : 1000);#}
+{#                    var curr_value = window.jQuery(this).val();#}
+{#                    window.jQuery(this).val(curr_value <= 1000 ? curr_value >= 1 ? curr_value : 1 : 1000);#}
 {#                });#}
 
         {# ***************************************************************** #}
@@ -241,12 +241,12 @@
             // disable submit button
             submit_button.button('loading');
 
-            var task_form = $('#review_task_form');
+            var task_form = window.jQuery('#review_task_form');
             var form_data = task_form.serialize();
 
             {% if forced  %}
                form_data += '&' +
-                $.param({
+                window.jQuery.param({
                     'forced': 'forced'
                 });
             {% endif %}
@@ -264,7 +264,7 @@
             form_is_valid = true;
             error_messages = [];
 
-            if ($('#task_review_mode').val() === 'request_revision'){
+            if (window.jQuery('#task_review_mode').val() === 'request_revision'){
                 var schedule_unit_value = task_schedule_unit.val();
                 var current_timing_value = task_schedule_timing.val();
 
@@ -278,11 +278,11 @@
             }
 
             if (form_is_valid) {
-                $.post(
+                window.jQuery.post(
                     submit_form_url,
                     form_data
                 ).done(function () {
-                    $('#dialog_template').modal('hide');
+                    window.jQuery('#dialog_template').modal('hide');
                     // reload page
                     setTimeout(function () { // wait for hide event to finish
                         window.location.reload();
@@ -306,9 +306,9 @@
 
         });
 
-        $('.date').each(function () {
-            var date = moment($(this).text());
-            $(this).text(date.fromNow());
+        window.jQuery('.date').each(function () {
+            var date = moment(window.jQuery(this).text());
+            window.jQuery(this).text(date.fromNow());
         });
 
         console.log('initialize review task dialog end')
@@ -319,12 +319,12 @@
     function destruct_dialog() {
         console.log('destruct review task dialog start');
         // unbind events
-        $('#task_review_mode').unbind();
-{#        $('#task_priority').unbind();#}
-        $('#dialog_template_submit_button').unbind();
+        window.jQuery('#task_review_mode').unbind();
+{#        window.jQuery('#task_priority').unbind();#}
+        window.jQuery('#dialog_template_submit_button').unbind();
 
         // remove dialog
-        $('#dialog_template').data('modal', null);
+        window.jQuery('#dialog_template').data('modal', null);
         console.log('destruct review task dialog end');
     }
 </script>

@@ -56,7 +56,7 @@
     {# Chosen Field Updater #}
 {#    var chosen_field_creator = function (field, url, data_template) {#}
 {#        // fill image format with new json data#}
-{#        return $.getJSON(url).then(function (data) {#}
+{#        return window.jQuery.getJSON(url).then(function (data) {#}
 {#            // remove current data#}
 {#            field.empty();#}
 {##}
@@ -72,16 +72,16 @@
     
     {# ***************************************************************** #}
     {# User #}
-    $(function () {
+    window.jQuery(function () {
         {% raw %}
         var user_option_template = doT.template(
             '<option value={{=it.id}}>{{=it.name}}</option>'
         );
         {% endraw %}
 
-        var lead_user = $('#department_lead');
+        var lead_user = window.jQuery('#department_lead');
 
-        $.getJSON('/users/').then(function (data) {
+        window.jQuery.getJSON('/users/').then(function (data) {
             // append new ones
             var data_count = data.length;
             for (var i = 0; i < data_count; i++) {

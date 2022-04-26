@@ -61,31 +61,31 @@
 {% endblock page_content %}
 
 {% block extrascripts %}
-    <script type="text/javascript">
-            if("ontouchend" in document) document.write("<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.mobile.custom.min.js") }}'>"+"<"+"/script>");
-        </script>
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jqGrid/i18n/grid.locale-en.js") }}'></script>
-{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jqGrid/jquery.jqGrid.min.js") }}'></script>#}
-    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/jquery.jqGrid.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/jquery.jqGrid.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/accounting.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/plugins/ui.multiselect.js") }}'></script>
+{#    <script type="text/javascript">#}
+{#        if("ontouchend" in document) document.write("<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.mobile.custom.min.js") }}'>"+"<"+"/script>");#}
+{#    </script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jqGrid/i18n/grid.locale-en.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jqGrid/window.jQuery.jqGrid.min.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/window.jQuery.jqGrid.min.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/window.jQuery.jqGrid.min.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/accounting.min.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/plugins/ui.multiselect.js") }}'></script>#}
     <script>
-        $.jgrid.defaults.autowidth = true;
+        window.jQuery.jgrid.defaults.autowidth = true;
 
-        $.jgrid.defaults.responsive = true;
-        $.jgrid.defaults.styleUI = 'Bootstrap';
+        window.jQuery.jgrid.defaults.responsive = true;
+        window.jQuery.jgrid.defaults.styleUI = 'Bootstrap';
     </script>
 
     <script type="text/javascript">
-        window.$(document).ready(function () {
-            $.getJSON('/types/?target_entity_type=Good').then(function (good_type_data) {
+        window.jQuery(document).ready(function () {
+            window.jQuery.getJSON('/types/?target_entity_type=Good').then(function (good_type_data) {
                 var available_good_types = [];
                 for (var k=0; k < good_type_data.length; k++){
                     available_good_types.push(good_type_data[k].name);
                 }
-                $.getJSON('/price_lists/').then(function (price_list_data) {
+                window.jQuery.getJSON('/price_lists/').then(function (price_list_data) {
 
                     var available_pricelist = [];
                     for (var k=0; k < price_list_data.length; k++){
@@ -93,7 +93,7 @@
                         available_pricelist.push(price_list_data[k].name);
                     }
 
-                    $.getJSON('/studios/{{ entity.id }}/goods/').then(function (good_data) {
+                    window.jQuery.getJSON('/studios/{{ entity.id }}/goods/').then(function (good_data) {
 
                         var grid_data = good_data;
                         var available_good_units_as_list = [];
@@ -134,10 +134,10 @@
 
                         }
 
-                        jQuery(function($) {
+                        window.jQuery(function(window.jQuery) {
                         var grid_selector = "#grid-table";
                         var pager_selector = "#grid-pager";
-                        var grid = jQuery(grid_selector);
+                        var grid = window.jQuery(grid_selector);
                         grid.jqGrid({
                             //direction: "rtl",
                             data: grid_data,
@@ -167,7 +167,7 @@
                                     editoptions: {
                                         dataInit: function (element) {
                                             window.setTimeout(function () {
-                                                $(element).autocomplete({
+                                                window.jQuery(element).autocomplete({
                                                     id: 'AutoComplete',
                                                 source: available_good_types,
                                                 autoFocus: true
@@ -185,7 +185,7 @@
                                     editoptions: {
                                         dataInit: function (element) {
                                             window.setTimeout(function () {
-                                                $(element).autocomplete({
+                                                window.jQuery(element).autocomplete({
                                                     id: 'AutoComplete',
                                                 source: available_pricelist,
                                                 autoFocus: true
@@ -206,7 +206,7 @@
                                     editoptions: {
                                         dataInit: function (element) {
                                             window.setTimeout(function () {
-                                                $(element).autocomplete({
+                                                window.jQuery(element).autocomplete({
                                                     id: 'AutoComplete',
                                                 source: available_good_units_as_list,
                                                 autoFocus: true
@@ -250,7 +250,7 @@
                                     updatePagerIcons(table);
                                     enableTooltips(table);
 
-                                    $('#lui_grid-table').hide();
+                                    window.jQuery('#lui_grid-table').hide();
                                 }, 0);
                             },
                             editurl:  '/goods/edit',
@@ -289,7 +289,7 @@
                         }
 
                         function editFailed(rowID, response) {
-                            $.jgrid.info_dialog($.jgrid.errors.errcap,'<div class="ui-state-error">RowID:'+rowID+ ' :  '+ response.responseJSON.error +'</div>', $.jgrid.edit.bClose,{buttonalign:'right'})
+                            window.jQuery.jgrid.info_dialog(window.jQuery.jgrid.errors.errcap,'<div class="ui-state-error">RowID:'+rowID+ ' :  '+ response.responseJSON.error +'</div>', window.jQuery.jgrid.edit.bClose,{buttonalign:'right'})
                             //alert(response.responseJSON.error);
                         }
 
@@ -329,7 +329,7 @@
                         }
 
                         function beforeDeleteCallback(e) {
-                            var form = $(e[0]);
+                            var form = window.jQuery(e[0]);
                             if(form.data('styled')) return false;
 
                             form.closest('.ui-jqdialog').find('.ui-jqdialog-titlebar').wrapInner('<div class="widget-header" />')
@@ -339,7 +339,7 @@
                         }
 
                         function beforeEditCallback(e) {
-                            var form = $(e[0]);
+                            var form = window.jQuery(e[0]);
                             console.log(e[0])
                             form.closest('.ui-jqdialog').find('.ui-jqdialog-titlebar').wrapInner('<div class="widget-header" />')
                             style_edit_form(form);
@@ -347,12 +347,12 @@
 
                         function styleCheckbox(table) {
                         /**
-                            $(table).find('input:checkbox').addClass('ace')
+                            window.jQuery(table).find('input:checkbox').addClass('ace')
                             .wrap('<label />')
                             .after('<span class="lbl align-top" />')
 
 
-                            $('.ui-jqgrid-labels th[id*="_cb"]:first-child')
+                            window.jQuery('.ui-jqgrid-labels th[id*="_cb"]:first-child')
                             .find('input.cbox[type=checkbox]').addClass('ace')
                             .wrap('<label />').after('<span class="lbl align-top" />');
                         */
@@ -367,21 +367,21 @@
                                 'ui-icon-seek-next' : 'icon-angle-right bigger-140',
                                 'ui-icon-seek-end' : 'icon-double-angle-right bigger-140'
                             };
-                            $('.ui-pg-table:not(.navtable) > tbody > tr > .ui-pg-button > .ui-icon').each(function(){
-                                var icon = $(this);
-                                var $class = $.trim(icon.attr('class').replace('ui-icon', ''));
+                            window.jQuery('.ui-pg-table:not(.navtable) > tbody > tr > .ui-pg-button > .ui-icon').each(function(){
+                                var icon = window.jQuery(this);
+                                var $class = window.jQuery.trim(icon.attr('class').replace('ui-icon', ''));
 
                                 if($class in replacement) icon.attr('class', 'ui-icon '+replacement[$class]);
                             })
                         }
 
                         function enableTooltips(table) {
-                            $('.navtable .ui-pg-button').tooltip({container:'body'});
-                            $(table).find('.ui-pg-div').tooltip({container:'body'});
+                            window.jQuery('.navtable .ui-pg-button').tooltip({container:'body'});
+                            window.jQuery(table).find('.ui-pg-div').tooltip({container:'body'});
                         }
 
                         var timer;
-                        $("#search_cells").on("keyup", function() {
+                        window.jQuery("#search_cells").on("keyup", function() {
 
                             var self = this;
 
@@ -390,13 +390,13 @@
                                 //timer = null;
                                 var grid_selector = "#grid-table";
                                 console.log(grid_selector);
-                                jQuery(grid_selector).jqGrid('filterInput', self.value);
+                                window.jQuery(grid_selector).jqGrid('filterInput', self.value);
                             },0);
                         });
 
-                         $('.date').each(function () {
-                            var date = moment($(this).text());
-                            $(this).text(date.fromNow());
+                         window.jQuery('.date').each(function () {
+                            var date = moment(window.jQuery(this).text());
+                            window.jQuery(this).text(date.fromNow());
                         });
                     });
                     });

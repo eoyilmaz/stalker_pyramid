@@ -8,20 +8,20 @@
     {% endif %}
 </div>
 
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>#}
 
 <script type="text/javascript">
     function init_dialog() {
         console.debug('starting to initialize calendar_task dialog!!!');
-        var event_dialog = $('#dialog_template');
+        var event_dialog = window.jQuery('#dialog_template');
 
-        var dialog_label = $('#dialog_template_label');
+        var dialog_label = window.jQuery('#dialog_template_label');
         dialog_label.find('span').remove();
         dialog_label.append('<span>{{mode}} {{ item.type }}</span>');
 
         {# Start Date ******************************************************* #}
-        $('.date-picker').datepicker().next().on(ace.click_event, function(){
-            $(this).prev().focus();
+        window.jQuery('.date-picker').datepicker().next().on(ace.click_event, function(){
+            window.jQuery(this).prev().focus();
         });
 
         init_item_form_objects();
@@ -29,18 +29,18 @@
         {# ***************************************************************** #}
         console.log(event_dialog.attr('name'));
         if(event_dialog.attr('name')){
-           $('#name').val(event_dialog.attr('name'));
+           window.jQuery('#name').val(event_dialog.attr('name'));
         }
 
         if(event_dialog.attr('description')){
-           $('#description').val(event_dialog.attr('description'));
+           window.jQuery('#description').val(event_dialog.attr('description'));
         }
 
-        $('#calendar_start_date').val((new Date({{ item.start_date }})).format("dd/mm/yyyy"));
+        window.jQuery('#calendar_start_date').val((new Date({{ item.start_date }})).format("dd/mm/yyyy"));
 
         {# ***************************************************************** #}
         {# Submit Button #}
-        var submit_button = $('#dialog_template_submit_button');
+        var submit_button = window.jQuery('#dialog_template_submit_button');
         submit_button.on('click', function (e) {
             e.stopPropagation();
             e.preventDefault();
@@ -49,7 +49,7 @@
 
             var start_date = get_date_picker('calendar_start_date');
 
-            var item_form = $('#item_form');
+            var item_form = window.jQuery('#item_form');
             var params = {
                 'id': '{{ item.id }}',
                 'start_date': start_date.getTime(),
@@ -60,13 +60,13 @@
             };
 
             var url = '/budgets/{{ budget.id }}/calendar/{{ item.type }}/action';
-            $.post(
+            window.jQuery.post(
                 url,
                 item_form.serialize()+"&"+
-                $.param(params)
+                window.jQuery.param(params)
             ).done(function (jqXHR) {
 
-                $('#dialog_template').modal('hide');
+                window.jQuery('#dialog_template').modal('hide');
                 submit_button.button('reset');
                 window.location.reload();
             }).fail(function (jqXHR) {
@@ -78,14 +78,14 @@
         {# ***************************************************************** #}
         {# Delete Button #}
         {% if mode=='Update' %}
-            var delete_btn = $('#dialog_template_delete_button');
+            var delete_btn = window.jQuery('#dialog_template_delete_button');
             delete_btn.show();
             delete_btn.on('click', function (e) {
                 e.stopPropagation();
                 e.preventDefault();
 
                 // disable the submit_button
-                var delete_button = $(this);
+                var delete_button = window.jQuery(this);
                 delete_button.button('loading');
 
                 deleteItem('{{item.id }}');
@@ -98,11 +98,11 @@
 {##}
 {#                bootbox.confirm(confirm_message, function (result) {#}
 {#                    if (result) {#}
-{#                        $.post(#}
+{#                        window.jQuery.post(#}
 {#                                '/budgets/{{ budget.id }}/calendar/{{ item.type }}/delete?id={{item.id }}'#}
 {#                        ).done(function (jqXHR) {#}
 {#                            deleteTaskFromGantt('{{ item.id }}');#}
-{#                            $('#dialog_template').modal('hide');#}
+{#                            window.jQuery('#dialog_template').modal('hide');#}
 {#                        }).fail(function (jqXHR) {#}
 {#                            bootbox.alert(jqXHR.responseText);#}
 {#                        });#}

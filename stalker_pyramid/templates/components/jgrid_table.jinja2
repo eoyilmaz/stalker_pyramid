@@ -19,24 +19,23 @@
     </script>
 </div>
 
-
-<script type="text/javascript">
-            if("ontouchend" in document) document.write("<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.mobile.custom.min.js") }}'>"+"<"+"/script>");
-        </script>
-<script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/i18n/grid.locale-en.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/jquery.jqGrid.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/accounting.min.js") }}'></script>
+{#<script type="text/javascript">#}
+{#    if("ontouchend" in document) document.write("<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.mobile.custom.min.js") }}'>"+"<"+"/script>");#}
+{#</script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/i18n/grid.locale-en.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/window.jQuery.jqGrid.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/accounting.min.js") }}'></script>#}
 
 <script>
-    $.jgrid.defaults.autowidth = true;
-    $.jgrid.defaults.responsive = true;
-    $.jgrid.defaults.styleUI = 'Bootstrap';
+    window.jQuery.jgrid.defaults.autowidth = true;
+    window.jQuery.jgrid.defaults.responsive = true;
+    window.jQuery.jgrid.defaults.styleUI = 'Bootstrap';
 </script>
 <script type="text/javascript">
 
         var unloadTableData = function(){
-             $('#loading_spinner').show();
-            var tasks_table = $('#tasks_table');
+             window.jQuery('#loading_spinner').show();
+            var tasks_table = window.jQuery('#tasks_table');
             tasks_table.hide();
             tasks_table.find("#table_container").remove();
             tasks_table.find("#grid-pager").remove();
@@ -45,9 +44,9 @@
         var loadTableData = function (entry_data, tableId, cNames, cModel, footerData) {
 
             console.log("loadTableData is started");
-            $('#loading_spinner').hide();
+            window.jQuery('#loading_spinner').hide();
 
-            var tasks_table = $('#tasks_table');
+            var tasks_table = window.jQuery('#tasks_table');
             tasks_table.show();
             tasks_table.find("#table_container").remove();
             tasks_table.find("#grid-pager").remove();
@@ -62,9 +61,9 @@
                                 '<div id="grid-pager">' +
                                 '</div>');
 
-            jQuery(function($) {
+            window.jQuery(function(window.jQuery) {
 
-                jQuery(grid_selector).jqGrid({
+                window.jQuery(grid_selector).jqGrid({
                     data: grid_data,
                     datatype: "local",
                     height: 'auto',
@@ -95,32 +94,32 @@
                             updatePagerIcons(table);
                             enableTooltips(table);
 
-                            jQuery(grid_selector).jqGrid("footerData", "set", footerData);
-                            $('#lui_grid-table').hide();
+                            window.jQuery(grid_selector).jqGrid("footerData", "set", footerData);
+                            window.jQuery('#lui_grid-table').hide();
                         }, 0);
                     }
                 });
 
                 var timer;
-                $("#search_cells").on("keyup", function() {
+                window.jQuery("#search_cells").on("keyup", function() {
                     var self = this;
                     if(timer) {
                         clearTimeout(timer);
                     }
 
                     timer = setTimeout(function(){
-                        jQuery(grid_selector).jqGrid('filterInput', self.value);
+                        window.jQuery(grid_selector).jqGrid('filterInput', self.value);
                     },0);
                 });
 
                 function styleCheckbox(table) {
                 /**
-                    $(table).find('input:checkbox').addClass('ace')
+                    window.jQuery(table).find('input:checkbox').addClass('ace')
                     .wrap('<label />')
                     .after('<span class="lbl align-top" />')
 
 
-                    $('.ui-jqgrid-labels th[id*="_cb"]:first-child')
+                    window.jQuery('.ui-jqgrid-labels th[id*="_cb"]:first-child')
                     .find('input.cbox[type=checkbox]').addClass('ace')
                     .wrap('<label />').after('<span class="lbl align-top" />');
                 */
@@ -138,9 +137,9 @@
                         'ui-icon-disk' : 'icon-ok green',
                         'ui-icon-cancel' : 'icon-remove red'
                     };
-                    $(table).find('.ui-pg-div span.ui-icon').each(function(){
-                        var icon = $(this);
-                        var $class = $.trim(icon.attr('class').replace('ui-icon', ''));
+                    window.jQuery(table).find('.ui-pg-div span.ui-icon').each(function(){
+                        var icon = window.jQuery(this);
+                        var $class = window.jQuery.trim(icon.attr('class').replace('ui-icon', ''));
                         if($class in replacement) icon.attr('class', 'ui-icon '+replacement[$class]);
                     })
                     */
@@ -155,19 +154,19 @@
                         'ui-icon-seek-next' : 'icon-angle-right bigger-140',
                         'ui-icon-seek-end' : 'icon-double-angle-right bigger-140'
                     };
-                    $('.ui-pg-table:not(.navtable) > tbody > tr > .ui-pg-button > .ui-icon').each(function(){
-                        var icon = $(this);
-                        var $class = $.trim(icon.attr('class').replace('ui-icon', ''));
+                    window.jQuery('.ui-pg-table:not(.navtable) > tbody > tr > .ui-pg-button > .ui-icon').each(function(){
+                        var icon = window.jQuery(this);
+                        var $class = window.jQuery.trim(icon.attr('class').replace('ui-icon', ''));
 
                         if($class in replacement) icon.attr('class', 'ui-icon '+replacement[$class]);
                     });
                 }
 
                 function enableTooltips(table) {
-                    $('.navtable .ui-pg-button').tooltip({container:'body'});
-                    $(table).find('.ui-pg-div').tooltip({container:'body'});
+                    window.jQuery('.navtable .ui-pg-button').tooltip({container:'body'});
+                    window.jQuery(table).find('.ui-pg-div').tooltip({container:'body'});
                 }
-                //var selr = jQuery(grid_selector).jqGrid('getGridParam','selrow');
+                //var selr = window.jQuery(grid_selector).jqGrid('getGridParam','selrow');
             });
         };
 

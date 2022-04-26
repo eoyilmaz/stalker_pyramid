@@ -133,17 +133,17 @@
     </div>
 </div>
 
-<script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/i18n/grid.locale-en.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/jquery.jqGrid.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/jquery.jqGrid.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/plugins/ui.multiselect.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.bootstrap.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/dataTable_num-html_sort.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/i18n/grid.locale-en.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/window.jQuery.jqGrid.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/window.jQuery.jqGrid.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/plugins/ui.multiselect.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.dataTables.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.dataTables.bootstrap.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/dataTable_num-html_sort.js") }}'></script>#}
 
 <script>
     var oTable1 = null;
-    window.$(document).ready(function () {
+    window.jQuery(document).ready(function () {
         var project_id = localStorage.getItem("project_id");
         var status_code = '';
 
@@ -151,13 +151,13 @@
             var option_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
         {% endraw %}
 
-        var project_cb = $('#project_cb');
+        var project_cb = window.jQuery('#project_cb');
         project_cb.chosen({
             search_contains: true,
             enable_split_word_search: true
         });
 
-        $.getJSON('/entities/{{ entity.id }}/projects/').then(function(data){
+        window.jQuery.getJSON('/entities/{{ entity.id }}/projects/').then(function(data){
 
             project_cb.find('option').remove();
 
@@ -183,7 +183,7 @@
 
 
             project_cb.on('change', function () {
-                project_id = $(this).val();
+                project_id = window.jQuery(this).val();
                 localStorage.setItem("project_id", project_id);
                 localStorage.setItem("status_code", '');
 
@@ -196,7 +196,7 @@
 
     function getTableSelectedIds(){
         var ids = [];
-        $('table td:first-child input:checkbox').each(function () {
+        window.jQuery('table td:first-child input:checkbox').each(function () {
 
             if(this.checked){
                 ids.push(this.id);
@@ -217,13 +217,13 @@
     function submit_action(url, modal){
         var _query = generateQuery();
         if(modal === 'true'){
-            var event_dialog = $('#dialog_template');
+            var event_dialog = window.jQuery('#dialog_template');
             event_dialog.modal({
                 'remote': url+_query
             });
         }
         else{
-            $.post(url+_query).done(function (response_text) {
+            window.jQuery.post(url+_query).done(function (response_text) {
                 window.location.reload();
             }).fail(function (jqXHR) {
                 bootbox.alert(jqXHR.responseText);
@@ -232,7 +232,7 @@
     }
 
     function get_task_notes(id, name){
-        var event_dialog = $('#html_template');
+        var event_dialog = window.jQuery('#html_template');
         event_dialog.attr('title', name);
 {#        console.log('get_task_notes ' + name);#}
         event_dialog.modal({
@@ -242,19 +242,19 @@
 
 
     function get_task_absolute_path(task_id){
-        $.getJSON('/tasks/' + task_id + '/absolute_full_path/').then(function (absolute_full_path) {
+        window.jQuery.getJSON('/tasks/' + task_id + '/absolute_full_path/').then(function (absolute_full_path) {
             window.prompt("Copy to clipboard: Ctrl+C, Enter", absolute_full_path);
         });
     }
 
     function initInfoLink(address){
-        var tasks_status_tabs_container = $('#tasks_status_tabs_container');
+        var tasks_status_tabs_container = window.jQuery('#tasks_status_tabs_container');
         tasks_status_tabs_container.find("ul").remove();
         tasks_status_tabs_container.append('<ul class="nav nav-tabs" id="tasks_status_tabs"></ul>');
-        var tasks_status_tabs = $('#tasks_status_tabs');
-        var link_template = doT.template($('#tmpl_taskStatusLink').html());
+        var tasks_status_tabs = window.jQuery('#tasks_status_tabs');
+        var link_template = doT.template(window.jQuery('#tmpl_taskStatusLink').html());
 
-        $.getJSON(address).then(function (data) {
+        window.jQuery.getJSON(address).then(function (data) {
             var sorting_path = ['WFD','RTS','WIP', 'PREV','HREV', 'DREV', 'CMPL', 'OH','STOP'];
             var sorted_data = [];
             var first_status = '';
@@ -295,21 +295,21 @@
 
                     tasks_status_tabs.append(link_template(sorted_data[k]));
 
-                    var link = $('#link_'+sorted_data[k].status_code);
+                    var link = window.jQuery('#link_'+sorted_data[k].status_code);
                     link.attr("status_name", sorted_data[k].status_name );
 
                     link.on('click', function(){
-                        var status_code = $(this).attr('id').split('_')[1];
+                        var status_code = window.jQuery(this).attr('id').split('_')[1];
                         localStorage.setItem("status_code", status_code);
-                        localStorage.setItem("status_name", $(this).attr('status_name'));
-                        init_table_data(status_code, $(this).attr('status_name'), $('#project_cb').val());
+                        localStorage.setItem("status_name", window.jQuery(this).attr('status_name'));
+                        init_table_data(status_code, window.jQuery(this).attr('status_name'), window.jQuery('#project_cb').val());
                     });
                 }
             }
             if (first_status !== ''){
-                var tab = $('#tab_' + first_status);
+                var tab = window.jQuery('#tab_' + first_status);
                 tab.attr('class','active');
-                init_table_data(first_status, first_status_name, $('#project_cb').val());
+                init_table_data(first_status, first_status_name, window.jQuery('#project_cb').val());
             }
         });
     }
@@ -317,18 +317,18 @@
     function clear_html_modal(){
         console.log("clear_html_modal");
 
-        $('#tasks_list').hide();
-        $('#button_list').find('button').remove();
+        window.jQuery('#tasks_list').hide();
+        window.jQuery('#button_list').find('button').remove();
 
-         $('#loading_spinner').show();
+         window.jQuery('#loading_spinner').show();
 {#        if(oTable1){#}
 {#            oTable1.dataTable();#}
 {#        }#}
-        var tasks_table = $('#items_table_wrapper');
+        var tasks_table = window.jQuery('#items_table_wrapper');
         tasks_table.find('thead').remove();
         tasks_table.find('tbody').remove();
 
-        var table_container = $('#table_container');
+        var table_container = window.jQuery('#table_container');
         table_container.find(".dataTables_wrapper").remove();
     }
 
@@ -338,10 +338,10 @@
 
         console.debug('starting to initialize init_table_data dialog!!!');
 
-        var button_list = $('#button_list');
+        var button_list = window.jQuery('#button_list');
         button_list.find('button').remove();
 
-        var btn_template = doT.template($('#tmpl_btn').html());
+        var btn_template = doT.template(window.jQuery('#tmpl_btn').html());
         var remove_task_btn_info = {
             'id':'remove_resource_btn',
             'title':'Remove Task',
@@ -433,35 +433,35 @@
         {% endif %}
 
         button_list.append(btn_template(fix_btn_info));
-        $('.btn-mini').on('click', function(e){
+        window.jQuery('.btn-mini').on('click', function(e){
             e.preventDefault();
             e.stopPropagation();
-            submit_action($(this).attr("url"), $(this).attr("modal"));
+            submit_action(window.jQuery(this).attr("url"), window.jQuery(this).attr("modal"));
         });
 
-        var items_header = $('#items_header');
+        var items_header = window.jQuery('#items_header');
         items_header.text(status_name);
 
-        $('#html_template_header').attr('class', 'widget-header widget-header-small header-color-status_' + status_code.toLowerCase());
-        $('#tasks_list').show();
+        window.jQuery('#html_template_header').attr('class', 'widget-header widget-header-small header-color-status_' + status_code.toLowerCase());
+        window.jQuery('#tasks_list').show();
 
-        var table_container = $('#table_container');
+        var table_container = window.jQuery('#table_container');
         table_container.append('<table id="items_table" class="table table-striped table-bordered table-hover"><thead></thead><tbody></tbody></table>');
-        var table = $('#items_table');
+        var table = window.jQuery('#items_table');
 
         var table_head = table.find('thead');
-        var thead_template = doT.template($('#tmpl_itemThead').html());
+        var thead_template = doT.template(window.jQuery('#tmpl_itemThead').html());
         table_head.append(thead_template({}));
 
         var table_body = table.find('tbody');
-        var row_template = doT.template($('#tmpl_itemRow').html());
+        var row_template = doT.template(window.jQuery('#tmpl_itemRow').html());
 
         var query_str = 'status_code=' + status_code + '&project_id=' + project_id;
         var tableDataAddress = '/users/{{ entity.id }}/tasks/simple/?' + query_str;
 
 
-        $.getJSON(tableDataAddress).then(function (data) {
-            $('#loading_spinner').hide();
+        window.jQuery.getJSON(tableDataAddress).then(function (data) {
+            window.jQuery('#loading_spinner').hide();
             console.log("tableDataAddress is loaded");
             var total_remain_st_seconds = 0;
             var total_remain_bid_seconds = 0;
@@ -543,19 +543,19 @@
             });
             oTable1.show();
 
-            $('#total_bid').text(meaningful_time(total_remain_bid_seconds));
-            $('#total_st').text(meaningful_time(total_remain_st_seconds));
+            window.jQuery('#total_bid').text(meaningful_time(total_remain_bid_seconds));
+            window.jQuery('#total_st').text(meaningful_time(total_remain_st_seconds));
 
-            $('table th input:checkbox').on('click', function () {
+            window.jQuery('table th input:checkbox').on('click', function () {
                     var that = this;
-                    $(this).closest('table').find('tr > td:first-child input:checkbox')
+                    window.jQuery(this).closest('table').find('tr > td:first-child input:checkbox')
                         .each(function () {
                             this.checked = that.checked;
-                            $(this).closest('tr').toggleClass('selected');
+                            window.jQuery(this).closest('tr').toggleClass('selected');
                         });
                 });
 
-            $('[data-rel=popover]').popover({html:true});
+            window.jQuery('[data-rel=popover]').popover({html:true});
         });
 
         console.debug('finished initializing the init_table_data dialog!')
@@ -564,7 +564,7 @@
 
 <script type="text/javascript">
     function destruct_html_modal() {
-        $('#items_table').unbind();
-        $('#html_template').data('modal', null);
+        window.jQuery('#items_table').unbind();
+        window.jQuery('#html_template').data('modal', null);
     }
 </script>

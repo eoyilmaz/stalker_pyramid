@@ -56,15 +56,15 @@
         console.debug('init dialog from update_reference.jinja2 running!');
 
         // update dialog header
-        $('.modal-header>h3').text('Update References');
+        window.jQuery('.modal-header>h3').text('Update References');
 
-        var submit_button = $('#dialog_template_submit_button');
+        var submit_button = window.jQuery('#dialog_template_submit_button');
 
         var field_update_mode_checker = function(){
             // checks if the important fields are still updating
             // check if any of the fields are still in updating mode
-            if ($('#reference_tags').attr('is_updating') === 'true' ||
-                $('#dropzone').attr('is_updating') === 'true' // this is not setup yet!
+            if (window.jQuery('#reference_tags').attr('is_updating') === 'true' ||
+                window.jQuery('#dropzone').attr('is_updating') === 'true' // this is not setup yet!
                 ) {
                 // disable the Submit button
                 setTimeout(function(){submit_button.button('loading')}, 0);
@@ -76,11 +76,11 @@
 
         // tags
         // set the fields to updating mode
-        var tag_input = $('#reference_tags_input');
+        var tag_input = window.jQuery('#reference_tags_input');
         tag_input.attr('is_updating', true);
         field_update_mode_checker();
         var fill_tags = function(){
-            $.getJSON('/tags/?as_list=1').then(function(data){
+            window.jQuery.getJSON('/tags/?as_list=1').then(function(data){
                 tag_input.tag({
                     placeholder: tag_input.attr('placeholder'),
                     source: data
@@ -91,7 +91,7 @@
                 field_update_mode_checker();
 
                 // fix input width
-                $('#tags_control_group').find('.tags').addClass('span12');
+                window.jQuery('#tags_control_group').find('.tags').addClass('span12');
             });
         };
         fill_tags();
@@ -107,11 +107,11 @@
                 submit_button.button('loading')}, 0
             );
 
-            var tags_list = $('#reference_tags_input').val().split(', ');
-            var description_val = $('#description').val();
-            console.log("$('#description').val(): " + description_val);
+            var tags_list = window.jQuery('#reference_tags_input').val().split(', ');
+            var description_val = window.jQuery('#description').val();
+            console.log("window.jQuery('#description').val(): " + description_val);
 
-            $.post('{{ request.route_url('update_reference', id=reference.id) }}', {
+            window.jQuery.post('{{ request.route_url('update_reference', id=reference.id) }}', {
                 tags: tags_list,
                 description: description_val
             }).done(function(jqXHR){
@@ -119,7 +119,7 @@
                 // reload references
                 // get the data in jqXHR
 {#                console.debug('jqXHR : ', jqXHR);#}
-                $('#dialog_template').modal('hide');
+                window.jQuery('#dialog_template').modal('hide');
             }).fail(function(jqXHR){
                 // alert the user about what is failed
                 bootbox.alert(jqXHR.responseText);
@@ -135,10 +135,10 @@
         counter -= 1;
 
         // unbind events
-        $("#dialog_template_submit_button").unbind();
+        window.jQuery("#dialog_template_submit_button").unbind();
 
         // destroy dialog
         console.debug('destroy dialog from update_reference.jinja2 running!');
-        $('#dialog_template').data('modal', null);
+        window.jQuery('#dialog_template').data('modal', null);
     }
 </script>

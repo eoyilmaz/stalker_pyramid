@@ -64,7 +64,7 @@
                            type="text"
                            class="form-control"
                            {% if mode=='update' %}value="{{ entity.name }}"{% endif %}
-                           pattern="^[_A-z0-9]{1,}$"
+                           pattern="^[_A-z0-9]{1,}window.jQuery"
                            maxlength="16"
                            required>
                 </div>
@@ -79,7 +79,7 @@
                            name='code'
                            type="text"
                            class="form-control"
-                           pattern="^[_A-z0-9]{1,}$"
+                           pattern="^[_A-z0-9]{1,}window.jQuery"
                            {% if mode=='update' %}value="{{ entity.code }}"{% endif %}
                             >
                 </div>
@@ -337,17 +337,17 @@ entity_type, task_type, resource_id,
 resource_name, status
 </script>
 
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/chosen.jquery.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/daterangepicker.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap-colorpicker.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.autosize-min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.inputlimiter.1.3.1.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.maskedinput.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/bootstrap-tag.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.validate.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/additional-methods.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.spinner.min.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/chosen.window.jQuery.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/daterangepicker.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap-colorpicker.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.autosize-min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.inputlimiter.1.3.1.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.maskedinput.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/bootstrap-tag.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.validate.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/additional-methods.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.spinner.min.js") }}'></script>#}
 
 <script>
     function init_dialog(){
@@ -356,7 +356,7 @@ resource_name, status
         var timeout_buffer; // it is used in delaying AJAX calls see task_depends_to
 
         // update dialog header
-        $('#dialog_template_label').text('{{ mode.title() }} Task Dialog');
+        window.jQuery('#dialog_template_label').text('{{ mode.title() }} Task Dialog');
 
         // generate default values;
         var project = {
@@ -413,9 +413,9 @@ resource_name, status
             {% if entity.entity_type != 'Task' %}
                 code = "{{ entity.code }}";
             {% endif %}
-            $.getJSON('{{request.route_url('get_task', id=entity.id) }}').then(
+            window.jQuery.getJSON('{{request.route_url('get_task', id=entity.id) }}').then(
                 function (data) {
-                    $('#task_description').val(data[0].description);
+                    window.jQuery('#task_description').val(data[0].description);
                 }
             );
             {% if entity.type %}
@@ -451,21 +451,21 @@ resource_name, status
 
         {% endif %}
 
-        var submit_button = $('#dialog_template_submit_button');
+        var submit_button = window.jQuery('#dialog_template_submit_button');
 
         var field_update_mode_checker = function(){
             // checks if the important fields are still updating
             // check if any of the fields are still in updating mode
-            if ($('#task_project').attr('is_updating') === 'true' ||
-                $('#task_parent').attr('is_updating') === 'true' ||
-                $('#task_type').attr('is_updating') === 'true' ||
-                $('#asset_type').attr('is_updating') === 'true' ||
-                $('#temp_asset').attr('is_updating') === 'true' ||
-                $('#shot_sequence').attr('is_updating') === 'true' ||
-                $('#task_depends_to').attr('is_updating') === 'true' ||
-                $('#task_resources').attr('is_updating') === 'true' ||
-                $('#task_responsible').attr('is_updating') === 'true' ||
-                $('#task_good').attr('is_updating') === 'true') {
+            if (window.jQuery('#task_project').attr('is_updating') === 'true' ||
+                window.jQuery('#task_parent').attr('is_updating') === 'true' ||
+                window.jQuery('#task_type').attr('is_updating') === 'true' ||
+                window.jQuery('#asset_type').attr('is_updating') === 'true' ||
+                window.jQuery('#temp_asset').attr('is_updating') === 'true' ||
+                window.jQuery('#shot_sequence').attr('is_updating') === 'true' ||
+                window.jQuery('#task_depends_to').attr('is_updating') === 'true' ||
+                window.jQuery('#task_resources').attr('is_updating') === 'true' ||
+                window.jQuery('#task_responsible').attr('is_updating') === 'true' ||
+                window.jQuery('#task_good').attr('is_updating') === 'true') {
                 // disable the Submit button
                 setTimeout(function(){submit_button.button('loading')}, 0);
             } else {
@@ -478,15 +478,15 @@ resource_name, status
         // {# Entity Type #}
         // {# Update fields according to the selected Entity Type #}
         // convert to chosen
-        var task_entity_type = $('#task_entity_type');
+        var task_entity_type = window.jQuery('#task_entity_type');
 
         // {# set the entity type #}
         task_entity_type.val("{{ entity_type }}");
 
-        var task_inputs = $('.task_inputs');
-        var shot_inputs = $('.shot_inputs');
-        var code_inputs = $('.code_inputs');
-        var asset_inputs = $('.asset_inputs');
+        var task_inputs = window.jQuery('.task_inputs');
+        var shot_inputs = window.jQuery('.shot_inputs');
+        var code_inputs = window.jQuery('.code_inputs');
+        var asset_inputs = window.jQuery('.asset_inputs');
 
         var update_entity_type_fields = function(){
             // Asset - Code and Asset Type
@@ -525,7 +525,7 @@ resource_name, status
 
         // {# ***************************************************************** #}
         // {# Projects #}
-        var task_project = $('#task_project');
+        var task_project = window.jQuery('#task_project');
         task_project.val(project.name);
         task_project.attr('disabled', 'disabled');
 
@@ -535,20 +535,20 @@ resource_name, status
         // get tasks of that project as json from server
         // set the submit button to loading state while data is get from the server
         // set the fields to updating mode
-        var task_parent = $('#task_parent');
-        var task_depends_to = $('#task_depends_to');
+        var task_parent = window.jQuery('#task_parent');
+        var task_depends_to = window.jQuery('#task_depends_to');
 
         {% if parent %}
             // do a query for parent_info
-            $.getJSON('/tasks/?id={{ parent.id }}', function(data){
+            window.jQuery.getJSON('/tasks/?id={{ parent.id }}', function(data){
                 task_parent.val(data[0].full_path);
             });
         {% endif %}
 
 
         task_parent.bind("keydown", function(event) {
-            if(event.keyCode === $.ui.keyCode.TAB &&
-               $(this).data( "ui-autocomplete").menu.active) {
+            if(event.keyCode === window.jQuery.ui.keyCode.TAB &&
+               window.jQuery(this).data( "ui-autocomplete").menu.active) {
                 event.preventDefault();
             }
         }).autocomplete({
@@ -586,7 +586,7 @@ resource_name, status
                 var id = current_value.match(/\(([0-9]+)\)/);
 
                 // store it HTML node
-                //$('#parent_storage').attr('parent_id', id[1]);
+                //window.jQuery('#parent_storage').attr('parent_id', id[1]);
 
                 return false;
             }
@@ -629,19 +629,19 @@ resource_name, status
         // add tool tip helps
         var tool_tip_help_text = document.getElementById('tmpl_title_help').text;
 
-        $('#task_parent_helper').attr('title', tool_tip_help_text);
-        $('#task_depends_to_helper').attr('title', tool_tip_help_text);
+        window.jQuery('#task_parent_helper').attr('title', tool_tip_help_text);
+        window.jQuery('#task_depends_to_helper').attr('title', tool_tip_help_text);
         task_depends_to.attr('title', tool_tip_help_text);
 
         // {# ***************************************************************** #}
         // {# Code #}
-        var task_name = $('#task_name');
+        var task_name = window.jQuery('#task_name');
         // set default values
         task_name.val(name);
 
         // {# ***************************************************************** #}
         // {# Code #}
-        var task_code = $('#task_code');
+        var task_code = window.jQuery('#task_code');
         // set default values
         task_code.val(code);
 
@@ -652,11 +652,11 @@ resource_name, status
 
         // {# ***************************************************************** #}
         // {# Task Type #}
-        var task_type = $('#task_type');
+        var task_type = window.jQuery('#task_type');
         // set the field to updating mode
         task_type.attr('is_updating', true);
         field_update_mode_checker();
-        $.getJSON('/types/?target_entity_type=Task').then(function(available_types){
+        window.jQuery.getJSON('/types/?target_entity_type=Task').then(function(available_types){
             // map available types to an array
             var available_types_as_list = [];
 
@@ -680,9 +680,9 @@ resource_name, status
 
         // {# ***************************************************************** #}
         // {# Asset Type #}
-        var asset_type = $('#asset_type');
-        var dup_from_template = $('#dup_from_template');
-        var temp_asset = $('#temp_asset');
+        var asset_type = window.jQuery('#asset_type');
+        var dup_from_template = window.jQuery('#dup_from_template');
+        var temp_asset = window.jQuery('#temp_asset');
         temp_asset.attr('is_updating', false);
         {% raw %}
             var asset_option_template = doT.template(
@@ -693,7 +693,7 @@ resource_name, status
         // set the field to updating mode
         asset_type.attr('is_updating', true);
         field_update_mode_checker();
-        $.getJSON('/types/?target_entity_type=Asset').then(function(available_types){
+        window.jQuery.getJSON('/types/?target_entity_type=Asset').then(function(available_types){
             // map available types to an array
             var available_types_as_list = [];
             for (var i=0; i < available_types.length; i++){
@@ -742,7 +742,7 @@ resource_name, status
 
         // {# ***************************************************************** #}
         // {# Sequence #}
-        var shot_sequence = $('#shot_sequence');
+        var shot_sequence = window.jQuery('#shot_sequence');
         // convert it to a chosen
         shot_sequence.chosen({
             inherit_select_classes: true
@@ -757,7 +757,7 @@ resource_name, status
             // set the field to updating mode
             shot_sequence.attr('is_updating', true);
             field_update_mode_checker();
-            $.getJSON('/tasks/?entity_type=Sequence&project_id=' + project.id).then(function(data){
+            window.jQuery.getJSON('/tasks/?entity_type=Sequence&project_id=' + project.id).then(function(data){
                 // remove current options
                 shot_sequence.find('option').remove();
 
@@ -789,7 +789,7 @@ resource_name, status
 
         // {# ***************************************************************** #}
         // {# FPS Spinner #}
-        $('#shot_fps').ace_spinner({
+        window.jQuery('#shot_fps').ace_spinner({
             value: shot_fps,
             min: 1,
             step: 1,
@@ -797,14 +797,14 @@ resource_name, status
             btn_down_class: 'btn-info'
         }).on('change', function(){
             // check if it is in the range
-            var curr_value = $(this).val();
-            $(this).val(Math.max(curr_value, 1));
+            var curr_value = window.jQuery(this).val();
+            window.jQuery(this).val(Math.max(curr_value, 1));
         });
 
 
         // {# ***************************************************************** #}
         // {# Cut In Spinner #}
-        $('#shot_cut_in').ace_spinner({
+        window.jQuery('#shot_cut_in').ace_spinner({
             value: shot_cut_in,
             min: 0,
             max: 9999999,
@@ -813,13 +813,13 @@ resource_name, status
             btn_down_class: 'btn-info'
         }).on('change', function(){
             // check if it is in the range
-            var curr_value = $(this).val();
-            $(this).val(Math.max(curr_value, 0));
+            var curr_value = window.jQuery(this).val();
+            window.jQuery(this).val(Math.max(curr_value, 0));
         });
 
         // {# ***************************************************************** #}
         // {# Cut out Spinner #}
-        $('#shot_cut_out').ace_spinner({
+        window.jQuery('#shot_cut_out').ace_spinner({
             value: shot_cut_out,
             min: 1,
             max: 9999999,
@@ -828,14 +828,14 @@ resource_name, status
             btn_down_class: 'btn-info'
         }).on('change', function(){
             // check if it is in the range
-            var curr_value = $(this).val();
-            $(this).val(Math.max(curr_value, 1));
+            var curr_value = window.jQuery(this).val();
+            window.jQuery(this).val(Math.max(curr_value, 1));
         });
 
         // {# ***************************************************************** #}
         // {# Resources and Responsible#}
-        var task_resources = $('#task_resources');
-        var task_responsible = $('#task_responsible');
+        var task_resources = window.jQuery('#task_resources');
+        var task_responsible = window.jQuery('#task_responsible');
 
         task_resources.chosen({
             search_contains: true,
@@ -862,7 +862,7 @@ resource_name, status
         task_responsible.attr('is_updating', true);
         field_update_mode_checker();
 
-        $.getJSON('/projects/' + project.id + '/users/').then(function(data){
+        window.jQuery.getJSON('/projects/' + project.id + '/users/').then(function(data){
             // remove current elements
             task_resources.find('option').remove();
             task_responsible.find('option').remove();
@@ -896,13 +896,13 @@ resource_name, status
 
         // {# ***************************************************************** #}
         // {# Schedule Unit and Model #}
-        $('#task_schedule_unit').val(schedule_unit);
-        $('#task_schedule_model').val(schedule_model);
+        window.jQuery('#task_schedule_unit').val(schedule_unit);
+        window.jQuery('#task_schedule_model').val(schedule_model);
         
         
         // {# ***************************************************************** #}
         // {# Priority Spinner #}
-        $('#task_priority').ace_spinner({
+        window.jQuery('#task_priority').ace_spinner({
             value: priority,
             min: 1,
             max: 1000,
@@ -911,8 +911,8 @@ resource_name, status
             btn_down_class: 'btn-info'
         }).on('change', function(){
             // check if it is in the range
-            var curr_value = $(this).val();
-            $(this).val(curr_value <= 1000 ? curr_value >= 1 ? curr_value : 1 : 1000 );
+            var curr_value = window.jQuery(this).val();
+            window.jQuery(this).val(curr_value <= 1000 ? curr_value >= 1 ? curr_value : 1 : 1000 );
         });
 // {#        console.log('entity.priority : ', priority);#}
 
@@ -924,7 +924,7 @@ resource_name, status
                 '<option value={{=it.id}}>{{=it.name}}</option>'
             );
         {% endraw %}
-        var task_good = $('#task_good');
+        var task_good = window.jQuery('#task_good');
         task_good.attr('is_updating', true);
         var deferred = chosen_searchable_field_creator(task_good,'/goods/names/', task_good_option_template);
 
@@ -948,9 +948,9 @@ resource_name, status
             setTimeout(function(){submit_button.button('loading')}, 0);
 
             // enable fields
-            var entity_type_value = $('#task_entity_type').val();
+            var entity_type_value = window.jQuery('#task_entity_type').val();
 
-            var task_form = $('#task_form');
+            var task_form = window.jQuery('#task_form');
             var form_data_as_array = task_form.serializeArray();
             var form_data = {
                 'responsible_ids': [],
@@ -996,7 +996,7 @@ resource_name, status
 
             // filter dependent_ids
             if (form_data['dependent_ids'] !== '' && form_data['dependent_ids'] !== undefined) {
-                form_data['dependent_ids'] = $.map(form_data['dependent_ids'].split(','), function (value) {
+                form_data['dependent_ids'] = window.jQuery.map(form_data['dependent_ids'].split(','), function (value) {
                     value = value.match(/\(([0-9]+)\)/)[1];
                     return value;
                 });
@@ -1019,16 +1019,16 @@ resource_name, status
                 } else {
                     task_form.attr('is_sending', true);
                 }
-                $.post(
+                window.jQuery.post(
                     submit_form_url,
                     form_data
                 ).done(function(){
-                    $('#dialog_template').modal('hide');
+                    window.jQuery('#dialog_template').modal('hide');
                 }).fail(function(jqXHR){
                     task_form.attr('is_sending', false);
                     bootbox.alert(jqXHR.responseText);
                     // disable fields again
-                    $('#task_entity_type').attr('disabled', true);
+                    window.jQuery('#task_entity_type').attr('disabled', true);
                     // enable submit button again
                     setTimeout(function(){submit_button.button('reset')}, 0);
                 });
@@ -1044,7 +1044,7 @@ resource_name, status
             }
         });
 
-        $('#task_form').validate({
+        window.jQuery('#task_form').validate({
             errorElement: 'span',
             errorClass: 'help-inline',
             focusInvalid: true,
@@ -1078,16 +1078,16 @@ resource_name, status
             },
 
             invalidHandler: function (event, validator) { //display error alert on form submit
-                $('.alert-error', $('.login-form')).show();
+                window.jQuery('.alert-error', window.jQuery('.login-form')).show();
             },
 
             highlight: function (e) {
-                $(e).closest('.control-group').removeClass('info').addClass('error');
+                window.jQuery(e).closest('.control-group').removeClass('info').addClass('error');
             },
 
             success: function (e) {
-                $(e).closest('.control-group').removeClass('error').addClass('info');
-                $(e).remove();
+                window.jQuery(e).closest('.control-group').removeClass('error').addClass('info');
+                window.jQuery(e).remove();
             },
 
             errorPlacement: function (error, element) {
@@ -1115,15 +1115,15 @@ resource_name, status
     function destruct_dialog(){
         console.log('destruct task dialog start');
         // unbind events
-        $('#task_entity_type').unbind();
-        $('#task_project').unbind();
-        $('#task_parent').unbind();
-        $('#task_name').unbind();
-        $('#task_priority').unbind();
-        $('#dialog_template_submit_button').unbind();
+        window.jQuery('#task_entity_type').unbind();
+        window.jQuery('#task_project').unbind();
+        window.jQuery('#task_parent').unbind();
+        window.jQuery('#task_name').unbind();
+        window.jQuery('#task_priority').unbind();
+        window.jQuery('#dialog_template_submit_button').unbind();
 
         // remove dialog
-        $('#dialog_template').data('modal', null);
+        window.jQuery('#dialog_template').data('modal', null);
         console.log('destruct task dialog end');
     }
 </script>

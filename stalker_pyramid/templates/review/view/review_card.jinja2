@@ -88,14 +88,14 @@
 {% include 'review/view/reviewer_card.jinja2' %}
 
 <script type="text/javascript">
-    $(function () {
+    window.jQuery(function () {
         var icon_name = get_icon('resource');
-        $('#responsible_items_header').append('<i class=' + icon_name + '></i>Responsible');
+        window.jQuery('#responsible_items_header').append('<i class=' + icon_name + '></i>Responsible');
 
-        $.getJSON('/tasks/{{ entity.id }}/last_reviews/').then(function (data) {
+        window.jQuery.getJSON('/tasks/{{ entity.id }}/last_reviews/').then(function (data) {
 
-            var review_box = $('#review_box');
-            var reviewer_template = doT.template($('#tmpl_reviewer_card').html());
+            var review_box = window.jQuery('#review_box');
+            var reviewer_template = doT.template(window.jQuery('#tmpl_reviewer_card').html());
 
             for (var i = 0; i < data.length; i++) {
 
@@ -103,7 +103,7 @@
                 if (data[i].review_status_code === 'new') {
                     data[i].review_status_name = 'Pending';
                     if (data[i].reviewer_id === {{ logged_in_user.id }} ) {
-                        $(function () {
+                        window.jQuery(function () {
                             flash_message({
                                 container: 'body',
                                 title: 'Warning',
@@ -118,12 +118,12 @@
                         data[i].review_status_link = '/tasks/{{ entity.id }}/review/dialog?came_from={{ request.current_route_path() }}';
                     }
                 } else {
-                    var force_review_button = $('#force_review_button');
+                    var force_review_button = window.jQuery('#force_review_button');
                     if(force_review_button){
                         force_review_button.hide()
                     }
 
-                    var cleanup_button = $('#cleanup_button');
+                    var cleanup_button = window.jQuery('#cleanup_button');
                     if(cleanup_button){
                         cleanup_button.show()
                     }
@@ -147,15 +147,15 @@
 
                 review_box.append(reviewer_template(data[i]));
             }
-            $('#responsible_header_toolbar').append(
+            window.jQuery('#responsible_header_toolbar').append(
                 'Review Set <span class="badge badge-{{ entity.status.html_class }} badge radius-20">'+data[0].review_number+'</span>'
             )
 
 
             //show the user info on right or left depending on its position
-            $('.memberdiv').on('mouseenter', function () {
+            window.jQuery('.memberdiv').on('mouseenter', function () {
 
-                var self = $(this);
+                var self = window.jQuery(this);
                 var parent = self.closest('.row-fluid');
 
                 var off1 = parent.offset();

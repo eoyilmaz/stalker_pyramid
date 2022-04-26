@@ -16,17 +16,17 @@
     {# special case for doT it needs to be the very first script to let Gantt Chart view #}
 {#    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/doT/doT.min.js") }}'></script>#}
 
+    <script src='{{ request.static_url("stalker_pyramid:static/js/stalker.js") }}'></script>
+
+
     {# PRE-HEADER #}
     {% block pre_header %}
     {% endblock pre_header %}
 
     <link rel="stylesheet" href='{{ request.static_url("stalker_pyramid:static/css/main.css") }}'/>
-    <!--[if IE 7]>
-    <link rel="stylesheet"
-          href='{{ request.static_url("stalker_pyramid:static/ace/css/font-awesome-ie7.min.css") }}'/>
-    <![endif]-->
 
     <style>
+        {# TODO: Please move these styles in to the appropriate less/css file #}
         .spinner-preview {
             width: 100px;
             height: 100px;
@@ -58,16 +58,12 @@
             z-index: 1100;
 
         }
-
     </style>
 
 
     {# POST-HEADER #}
     {% block post_header %}
     {% endblock post_header %}
-
-{#    <link rel="stylesheet"#}
-{#          href='{{ request.static_url("stalker_pyramid:static/stalker/css/stalker.css") }}'/>#}
 
     <!--ace settings handler-->
 
@@ -236,7 +232,7 @@
 
 {# SCRIPTS #}
 {% block scripts %}
-    <script src='{{ request.static_url("stalker_pyramid:static/js/stalker.js") }}'></script>
+{#    <script src='{{ request.static_url("stalker_pyramid:static/js/stalker.js") }}'></script>#}
 {% endblock scripts %}
 
 {# EXTRA-SCRIPTS #}

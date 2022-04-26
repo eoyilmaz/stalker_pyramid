@@ -68,7 +68,7 @@
 
         console.debug('starting to initialize daily dialog!!!');
 
-        var dialog_label = $('#dialog_template_label');
+        var dialog_label = window.jQuery('#dialog_template_label');
         dialog_label.find('span').remove();
         dialog_label.append('<span>{{ mode}} Daily</span>');
 
@@ -78,8 +78,8 @@
             );
         {% endraw %}
 
-        $.getJSON('{{ request.route_path('get_statuses_for', target_entity_type='Daily') }}').then(function (data) {
-            var daily_status = $('#daily_status');
+        window.jQuery.getJSON('{{ request.route_path('get_statuses_for', target_entity_type='Daily') }}').then(function (data) {
+            var daily_status = window.jQuery('#daily_status');
             for (var i = 0; i < data.length; i++) {
                 daily_status.append(daily_status_option_template(data[i]));
             }
@@ -98,13 +98,13 @@
         });
         {# ***************************************************************** #}
         {# Submit Button #}
-        var submit_button = $('#dialog_template_submit_button');
+        var submit_button = window.jQuery('#dialog_template_submit_button');
         submit_button.on('click', function (e) {
             e.stopPropagation();
             e.preventDefault();
 
             submit_button.button('loading');
-            var daily_form = $('#daily_form');
+            var daily_form = window.jQuery('#daily_form');
 
             var url = '/dailies/create';
             {% if mode=='Update' %}
@@ -112,14 +112,14 @@
                 {% set project = daily.project %}
             {% endif %}
 
-            $.post(
+            window.jQuery.post(
                 url,
                 daily_form.serialize() + '&' +
-                $.param({
+                window.jQuery.param({
                     'project_id': {{ project.id }}
                 })
             ).done(function (jqXHR) {
-                //$('#new_outputs_storage').text(JSON.stringify(jqXHR));
+                //window.jQuery('#new_outputs_storage').text(JSON.stringify(jqXHR));
                 window.location.reload();
             }).fail(function (jqXHR) {
                 bootbox.alert(jqXHR.responseText);
@@ -133,11 +133,11 @@
 
 <script type="text/javascript">
     function destruct_dialog() {
-        $('#daily_name').unbind();
-        $('#daily_description').unbind();
-        $('#dialog_template_submit_button').unbind();
+        window.jQuery('#daily_name').unbind();
+        window.jQuery('#daily_description').unbind();
+        window.jQuery('#dialog_template_submit_button').unbind();
 
-        $('#dialog_template').data('modal', null);
+        window.jQuery('#dialog_template').data('modal', null);
     }
 </script>
 

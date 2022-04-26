@@ -60,28 +60,28 @@
 
 </div>
 
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/chosen.jquery.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.autosize-min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.inputlimiter.1.3.1.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.validate.min.js") }}'></script>
-{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.easy-pie-chart.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/chosen.window.jQuery.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.autosize-min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.inputlimiter.1.3.1.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.validate.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.easy-pie-chart.min.js") }}'></script>#}
 
 
 <script>
 function init_dialog() {
     console.debug('starting to initialize time_log dialog!!!');
 
-    var dialog_template_label = $('#dialog_template_label');
+    var dialog_template_label = window.jQuery('#dialog_template_label');
     dialog_template_label.find('span').remove();
     dialog_template_label.append('<span>Duplicate Task</span>');
 
-    $('#dialog_template_body').attr('style', "height: 350px");
+    window.jQuery('#dialog_template_body').attr('style', "height: 350px");
     var timeout_buffer;
-    var submit_button = $('#dialog_template_submit_button');
+    var submit_button = window.jQuery('#dialog_template_submit_button');
 
     {# ***************************************************************** #}
     {# Task #}
-    var dup_task_parent = $('#dup_task_parent');
+    var dup_task_parent = window.jQuery('#dup_task_parent');
 
     var get_task_data = function(search_string, callback){
             var search_buffer;
@@ -100,7 +100,7 @@ function init_dialog() {
 
                 search_buffer = search_string.split(' ');
                 // use a direct search with given words as the task full_path
-                $.extend(
+                window.jQuery.extend(
                     search_params,
                     {
                         path: search_buffer
@@ -138,7 +138,7 @@ function init_dialog() {
                 }
             }
 
-            $.getJSON('/tasks/', search_params, function (data) {
+            window.jQuery.getJSON('/tasks/', search_params, function (data) {
                 var input_source = [];
                 var result_count = data.length;
                 var max_count = 250;
@@ -152,13 +152,13 @@ function init_dialog() {
             });
         };
 
-    $.getJSON('/tasks/?id={{ entity.parent.id }}', function(data){
+    window.jQuery.getJSON('/tasks/?id={{ entity.parent.id }}', function(data){
            dup_task_parent.val(data[0].full_path);
     });
 
     dup_task_parent.bind("keydown", function(event) {
-        if(event.keyCode === $.ui.keyCode.TAB &&
-           $(this).data( "ui-autocomplete").menu.active) {
+        if(event.keyCode === window.jQuery.ui.keyCode.TAB &&
+           window.jQuery(this).data( "ui-autocomplete").menu.active) {
             event.preventDefault();
         }
     }).autocomplete({
@@ -192,7 +192,7 @@ function init_dialog() {
             var id = current_value.match(/\(([0-9]+)\)/);
 
             // store it HTML node
-            //$('#parent_storage').attr('parent_id', id[1]);
+            //window.jQuery('#parent_storage').attr('parent_id', id[1]);
 
             return false;
         }
@@ -208,7 +208,7 @@ function init_dialog() {
 
 {#    submit_button.button('loading');#}
 
-{#    $.getJSON('/projects/{{ entity.project.id }}/tasks/').then(function (data) {#}
+{#    window.jQuery.getJSON('/projects/{{ entity.project.id }}/tasks/').then(function (data) {#}
 {##}
 {#       dup_task_parent.append('<option value="-1">&nbsp;</option>');#}
 {##}
@@ -240,10 +240,10 @@ function init_dialog() {
         e.preventDefault();
 
         // disable the submit_button
-        var submit_button = $(this);
+        var submit_button = window.jQuery(this);
         submit_button.button('loading');
 
-        var dup_task_form = $('#dup_task_form');
+        var dup_task_form = window.jQuery('#dup_task_form');
 
         var form_data_as_array = dup_task_form.serializeArray();
         var form_data = {
@@ -258,20 +258,20 @@ function init_dialog() {
             parent_id = parent_match[1];
         }
         form_data['parent_id'] = parent_id;
-        form_data['dup_task_description'] = $('#dup_task_description').val();
-        form_data['dup_task_name'] = $('#dup_task_name').val();
+        form_data['dup_task_description'] = window.jQuery('#dup_task_description').val();
+        form_data['dup_task_name'] = window.jQuery('#dup_task_name').val();
 
         if (dup_task_form.validate()) {
             // merge end_date and end_time
 
-            $.post(
+            window.jQuery.post(
                 dup_task_form.attr('action'),
                 form_data
             ).done(function () {
 {#                window.location.reload();#}
                 // close the dialog
                 submit_button.button('reset');
-                $('#dialog_template').modal('hide');
+                window.jQuery('#dialog_template').modal('hide');
             }).fail(function (jqXHR) {
                 bootbox.alert('<div id="message" class="alert alert-danger bigger-110">'+jqXHR.responseText+'</div>');
                 submit_button.button('reset');
@@ -279,7 +279,7 @@ function init_dialog() {
         }
     });
 
-    $('#dup_task_form').validate({
+    window.jQuery('#dup_task_form').validate({
         errorElement: 'span',
         errorClass: 'help-inline',
         focusInvalid: true,
@@ -299,16 +299,16 @@ function init_dialog() {
         },
 
         invalidHandler: function (event, validator) { //display error alert on form submit
-            $('.alert-error', $('.login-form')).show();
+            window.jQuery('.alert-error', window.jQuery('.login-form')).show();
         },
 
         highlight: function (e) {
-            $(e).closest('.control-group').removeClass('info').addClass('error');
+            window.jQuery(e).closest('.control-group').removeClass('info').addClass('error');
         },
 
         success: function (e) {
-            $(e).closest('.control-group').removeClass('error').addClass('info');
-            $(e).remove();
+            window.jQuery(e).closest('.control-group').removeClass('error').addClass('info');
+            window.jQuery(e).remove();
         },
 
         errorPlacement: function (error, element) {
@@ -338,14 +338,14 @@ function init_dialog() {
 
 <script type="text/javascript">
     function destruct_dialog() {
-        $('#time_log_task').unbind();
-        $('#time_log_resource').unbind();
-        $('#start_end_date_range_picker').unbind();
-        $('#start_time').unbind();
-        $('#end_time').unbind();
-        $('#dialog_template_submit_button').unbind();
+        window.jQuery('#time_log_task').unbind();
+        window.jQuery('#time_log_resource').unbind();
+        window.jQuery('#start_end_date_range_picker').unbind();
+        window.jQuery('#start_time').unbind();
+        window.jQuery('#end_time').unbind();
+        window.jQuery('#dialog_template_submit_button').unbind();
 
-        $('#dialog_template').data('modal', null);
+        window.jQuery('#dialog_template').data('modal', null);
 
     }
 </script>

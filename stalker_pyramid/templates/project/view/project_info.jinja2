@@ -28,11 +28,11 @@
 <div class="hr hr8 hr-double hr-dotted"></div>
 
 <script type="text/javascript">
-    window.$(document).ready(function () {
+    window.jQuery(document).ready(function () {
         function set_field_value(role_name, url){
             console.log("set_field_value");
-            var project_role_list = $("#project_role_list");
-            $.getJSON(url).then(function (data) {
+            var project_role_list = window.jQuery("#project_role_list");
+            window.jQuery.getJSON(url).then(function (data) {
                 console.log("loaded: " +data);
 {#                if(data.name != ""){#}
                     project_role_list.append("<li><span><i class='icon-caret-right blue' ></i> <b>"+role_name+ "</b>: "+data.name+"</span></li>");

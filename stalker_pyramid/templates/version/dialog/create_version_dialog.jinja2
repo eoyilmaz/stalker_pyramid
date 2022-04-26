@@ -64,9 +64,9 @@
 
         var task_id = {{ task.id }};
         
-        $('.modal-header>h3').text('Create Version');
+        window.jQuery('.modal-header>h3').text('Create Version');
 
-        $('#input_version').ace_file_input({
+        window.jQuery('#input_version').ace_file_input({
             no_file:'No File ...',
             btn_choose:'Choose',
             btn_change:'Change',
@@ -78,9 +78,9 @@
         });
 
 
-        var bind_to_originals = $('#bind_to_originals');
-        var export_alembics = $('#export_alembics');
-        var do_playblast = $('#do_playblast');
+        var bind_to_originals = window.jQuery('#bind_to_originals');
+        var export_alembics = window.jQuery('#export_alembics');
+        var do_playblast = window.jQuery('#do_playblast');
 
         export_alembics.attr('disabled', true);
         do_playblast.attr('disabled', true);
@@ -97,7 +97,7 @@
             }
         });
 
-        var submit_button = $('#dialog_template_submit_button');
+        var submit_button = window.jQuery('#dialog_template_submit_button');
 
         // register submit event
         submit_button.on('click', function(e){
@@ -113,18 +113,18 @@
             // prepare data
             var form_data = new FormData();
 
-            var file_info = $('#input_version').data('ace_input_files');
+            var file_info = window.jQuery('#input_version').data('ace_input_files');
 
             form_data.append('file_object', file_info[0]);
             form_data.append('task_id', task_id);
-            form_data.append('take_name', $('#version_take_name').val());
-            form_data.append('is_published', $('#is_published').prop('checked'));
-            form_data.append('description', $('#version_description').val());
-            form_data.append('bind_to_originals', $('#bind_to_originals').prop('checked'));
-            form_data.append('export_alembics', $('#export_alembics').prop('checked'));
-            form_data.append('do_playblast', $('#do_playblast').prop('checked'));
+            form_data.append('take_name', window.jQuery('#version_take_name').val());
+            form_data.append('is_published', window.jQuery('#is_published').prop('checked'));
+            form_data.append('description', window.jQuery('#version_description').val());
+            form_data.append('bind_to_originals', window.jQuery('#bind_to_originals').prop('checked'));
+            form_data.append('export_alembics', window.jQuery('#export_alembics').prop('checked'));
+            form_data.append('do_playblast', window.jQuery('#do_playblast').prop('checked'));
 
-            $.ajax({
+            window.jQuery.ajax({
                 url: '{{ request.route_url('create_version') }}',
                 type: 'POST',
                 processData: false,
@@ -140,8 +140,8 @@
                             var percentComplete = evt.loaded / evt.total;
                             //Do something with upload progress
                             //console.log(percentComplete);
-                            $('#upload_progress_control').attr('data-percent', (percentComplete * 100).toFixed(1) + '%');
-                            $('#upload_progress_bar').css({'width': (percentComplete * 100) + '%'});
+                            window.jQuery('#upload_progress_control').attr('data-percent', (percentComplete * 100).toFixed(1) + '%');
+                            window.jQuery('#upload_progress_bar').css({'width': (percentComplete * 100) + '%'});
                         }
                     }, false);
 
@@ -159,7 +159,7 @@
                 // alert the user about the added files
                 // reload outputs
                 // get the data in jqXHR
-                $('#dialog_template').modal('hide');
+                window.jQuery('#dialog_template').modal('hide');
             }).fail(function (jqXHR) {
                 // alert the user about what is failed
                 console.debug('jqXHR:', jqXHR);
@@ -178,11 +178,11 @@
 {#        // reduce counter#}
 {#        counter -= 1;#}
         // unbind events
-        $("#input_version").unbind();
-        $("#dialog_template_submit_button").unbind();
+        window.jQuery("#input_version").unbind();
+        window.jQuery("#dialog_template_submit_button").unbind();
 
         // destroy dialog
         console.debug('destroy dialog from upload_output.jinja2 running!');
-        $('#dialog_template').data('modal', null);
+        window.jQuery('#dialog_template').data('modal', null);
     }
 </script>

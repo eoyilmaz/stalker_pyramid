@@ -58,32 +58,32 @@
 
     </form>
 </div>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.spinner.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.spinner.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>#}
 
 
 <script type="text/javascript">
 
     function init_dialog() {
 
-        var event_dialog = $('#dialog_template');
+        var event_dialog = window.jQuery('#dialog_template');
         console.debug('starting to initialize calendar_milestone dialog!!!');
 
-        var dialog_label = $('#dialog_template_label');
+        var dialog_label = window.jQuery('#dialog_template_label');
         dialog_label.find('span').remove();
         dialog_label.append('<span>{{mode}} Milestone</span>');
 
-        var calendar_milestone_name = $("#calendar_milestone_name");
+        var calendar_milestone_name = window.jQuery("#calendar_milestone_name");
          if(event_dialog.attr('milestone_name')){
             calendar_milestone_name.val(event_dialog.attr('milestone_name'));
         }
 
         {# Start Date ******************************************************* #}
-        $('.date-picker').datepicker().next().on(ace.click_event, function(){
-            $(this).prev().focus();
+        window.jQuery('.date-picker').datepicker().next().on(ace.click_event, function(){
+            window.jQuery(this).prev().focus();
         });
 
-        var calendar_milestone_start_date = $("#calendar_milestone_start_date");
+        var calendar_milestone_start_date = window.jQuery("#calendar_milestone_start_date");
 
         var start_date_val = (new Date(event_dialog.attr('project_start_date'))).format("dd-mm-yyyy");
         if(event_dialog.attr('start_date')){
@@ -93,7 +93,7 @@
 
         {# ***************************************************************** #}
         {# Submit Button #}
-        var submit_button = $('#dialog_template_submit_button');
+        var submit_button = window.jQuery('#dialog_template_submit_button');
         submit_button.on('click', function (e) {
             e.stopPropagation();
             e.preventDefault();
@@ -113,23 +113,23 @@
 
             var sdate = start.getTime();
 
-            var calendar_milestone_form = $('#calendar_milestone_form');
+            var calendar_milestone_form = window.jQuery('#calendar_milestone_form');
             var milestone_id = -1;
             if(event_dialog.attr('milestone_id')){
                     milestone_id = event_dialog.attr('milestone_id');
             }
 
             var url = '/budgets/{{ budget.id }}/calendar/milestone/action';
-            $.post(
+            window.jQuery.post(
                 url,
                 calendar_milestone_form.serialize()+"&"+
-                $.param({
+                window.jQuery.param({
                     'start_date': sdate,
                     'milestone_id': milestone_id,
                     'mode': '{{ mode }}'
                 })
             ).done(function (jqXHR) {
-                //$('#new_outputs_storage').text(JSON.stringify(jqXHR));
+                //window.jQuery('#new_outputs_storage').text(JSON.stringify(jqXHR));
                 window.location.reload();
             }).fail(function (jqXHR) {
                 bootbox.alert(jqXHR.responseText);
@@ -139,14 +139,14 @@
         {# ***************************************************************** #}
         {# Delete Button #}
         if(event_dialog.attr('milestone_id')){
-            var dialog_template_delete_button = $('#dialog_template_delete_button');
+            var dialog_template_delete_button = window.jQuery('#dialog_template_delete_button');
             dialog_template_delete_button.show();
             dialog_template_delete_button.on('click', function (e) {
                 e.stopPropagation();
                 e.preventDefault();
 
                 // disable the submit_button
-                var delete_button = $(this);
+                var delete_button = window.jQuery(this);
                 delete_button.button('loading');
 
                 var confirm_message =
@@ -159,15 +159,15 @@
                 bootbox.confirm(confirm_message, function (result) {
                     if (result) {
                         var milestone_id = event_dialog.attr('milestone_id');
-                        $.post(
+                        window.jQuery.post(
                             '/budgets/{{ budget.id }}/calendar/milestone/delete',
-                             $.param({
+                             window.jQuery.param({
                                     'dataSource': 'Calendar',
                                     'milestone_id': milestone_id
                             })
                         ).done(function (jqXHR) {
                             gantt.deleteTask(id);
-                            $('#dialog_template').modal('hide');
+                            window.jQuery('#dialog_template').modal('hide');
                         }).fail(function (jqXHR) {
                             bootbox.alert(jqXHR.responseText);
                         });
@@ -184,14 +184,14 @@
 
 <script type="text/javascript">
     function destruct_dialog() {
-        $('#calendar_milestone_good').unbind();
-        $('#calendar_milestone_start_date').unbind();
-        $('#calendar_milestone_duration').unbind();
-        $('#calendar_milestone_num_of_resources').unbind();
-        $('#calendar_milestone_description').unbind();
-        $('#dialog_template_submit_button').unbind();
+        window.jQuery('#calendar_milestone_good').unbind();
+        window.jQuery('#calendar_milestone_start_date').unbind();
+        window.jQuery('#calendar_milestone_duration').unbind();
+        window.jQuery('#calendar_milestone_num_of_resources').unbind();
+        window.jQuery('#calendar_milestone_description').unbind();
+        window.jQuery('#dialog_template_submit_button').unbind();
 
-        $('#dialog_template').data('modal', null);
+        window.jQuery('#dialog_template').data('modal', null);
     }
 </script>
 

@@ -225,14 +225,14 @@
 
 </div>
 
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/chosen.jquery.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/daterangepicker.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-timepicker.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.autosize-min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.inputlimiter.1.3.1.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.validate.min.js") }}'></script>
-{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.easy-pie-chart.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/chosen.window.jQuery.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/daterangepicker.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-timepicker.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.autosize-min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.inputlimiter.1.3.1.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.validate.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.easy-pie-chart.min.js") }}'></script>#}
 
 
 <script>
@@ -242,20 +242,20 @@ function init_dialog() {
 {#    console.log('mode {{ mode }}')#}
     var completed_percent;
 
-    var dialog_template_label = $('#dialog_template_label');
+    var dialog_template_label = window.jQuery('#dialog_template_label');
     dialog_template_label.find('span').remove();
     dialog_template_label.append('<span>Timelog</span>');
 
-    var submit_button = $('#dialog_template_submit_button');
+    var submit_button = window.jQuery('#dialog_template_submit_button');
     submit_button.attr('disabled', false);
 
-    var information = $('#information');
+    var information = window.jQuery('#information');
 
     var submit_finalize_form_url = null;
     var remaining_minutes_after_this_time_log_string = "";
 
     {# ***************************************************************** #}
-    var event_dialog = $('#dialog_template');
+    var event_dialog = window.jQuery('#dialog_template');
     var start_date_value;
     var end_date_value;
     if(event_dialog.attr('start') && event_dialog.attr('end')){
@@ -279,8 +279,8 @@ function init_dialog() {
     }
     {# ***************************************************************** #}
     {# Schedule Unit and Model #}
-    var task_schedule_unit = $('#task_schedule_unit');
-    var task_schedule_timing = $('#task_schedule_timing');
+    var task_schedule_unit = window.jQuery('#task_schedule_unit');
+    var task_schedule_timing = window.jQuery('#task_schedule_timing');
 
     {# ***************************************************************** #}
     {# Update Remaining Hours #}
@@ -289,14 +289,14 @@ function init_dialog() {
         // total hours of time_logs should have been given by Stalker
         // calculate the remaining hours
 
-        $('#finalize_task_form').hide();
+        window.jQuery('#finalize_task_form').hide();
 
         var task_id = parseInt(time_log_task.val());
         submit_finalize_form_url = null;
         if (task_id === -1){ return }
 
 
-        $.getJSON('/tasks/' + task_id + '/').then(function (data) {
+        window.jQuery.getJSON('/tasks/' + task_id + '/').then(function (data) {
 
             var sch_unit  = 'h';
 
@@ -361,10 +361,10 @@ function init_dialog() {
                 );
             }
 
-            var alert_information = $('#alert_information');
+            var alert_information = window.jQuery('#alert_information');
             alert_information.find('span').remove();
 
-            var percent_bar_container = $('#percent_bar_container');
+            var percent_bar_container = window.jQuery('#percent_bar_container');
 
             if (remaining_minutes_after_this_time_log > 0) {
                 submit_button.attr('disabled', false);
@@ -375,8 +375,8 @@ function init_dialog() {
                 );
                 percent_bar_container.show();
 
-                $('#if_completed').show();
-                $('#if_completed_cb').on('click', function () {
+                window.jQuery('#if_completed').show();
+                window.jQuery('#if_completed_cb').on('click', function () {
                     if(this.checked){
                         submit_finalize_form_url = '/tasks/'+task_id+'/request_review';
                     }
@@ -391,17 +391,17 @@ function init_dialog() {
                     "<span class='pull_left'>If you enter this time log, all schedule hours will be spent </span>"
                 );
                 percent_bar_container.show();
-                $('#finalize_task_form').show();
-                $('#if_completed').hide();
-                $('#if_completed_cb').prop('checked', '');
+                window.jQuery('#finalize_task_form').show();
+                window.jQuery('#if_completed').hide();
+                window.jQuery('#if_completed_cb').prop('checked', '');
 
-                var task_review_mode = $('#task_review_mode');
+                var task_review_mode = window.jQuery('#task_review_mode');
                 submit_finalize_form_url = '/tasks/'+task_id+'/'+ task_review_mode.val();
 
                 task_review_mode.on('change', function () {
-                    $('#revision_controls').toggle();
-                    $('#revision_controls_2').toggle();
-                    submit_finalize_form_url = '/tasks/'+task_id+'/'+ $(this).val();
+                    window.jQuery('#revision_controls').toggle();
+                    window.jQuery('#revision_controls_2').toggle();
+                    submit_finalize_form_url = '/tasks/'+task_id+'/'+ window.jQuery(this).val();
                 });
 
                 completed_percent = (100 - ((remaining_seconds_after_this_time_log / parseFloat(data[0].schedule_seconds)) * 100)).toFixed(1);
@@ -421,15 +421,15 @@ function init_dialog() {
                 percent_bar_container.hide();
             }
 
-            $('#percent_bar').attr('style', 'width:' + completed_percent + '%');
+            window.jQuery('#percent_bar').attr('style', 'width:' + completed_percent + '%');
             percent_bar_container.attr('data-percent', completed_percent + '%');
         });
         
     };
 
-    var time_log_form = $("#time_log_form");
-    var time_log_task = $('#time_log_task');
-    var time_log_resource = $('#time_log_resource');
+    var time_log_form = window.jQuery("#time_log_form");
+    var time_log_task = window.jQuery('#time_log_task');
+    var time_log_resource = window.jQuery('#time_log_resource');
     var parent_name = '';
     var parent = '';
 
@@ -457,7 +457,7 @@ function init_dialog() {
 
             time_log_task.find('option').remove();
 
-            $.getJSON('/users/{{ entity.id }}/tasks/?status=RTS&status=WIP&status=HREV&status=DREV').then(function (data) {
+            window.jQuery.getJSON('/users/{{ entity.id }}/tasks/?status=RTS&status=WIP&status=HREV&status=DREV').then(function (data) {
                 // append an empty one first
                 time_log_task.append('<option value="-1">&nbsp;</option>');
                 for (var i = 0; i < data.length; i++) {
@@ -523,7 +523,7 @@ function init_dialog() {
         time_log_form.attr("action", "{{ request.route_url('update_time_log', id=time_log.id) }}");
         time_log_resource.append('<option value={{ time_log.resource.id }} selected>{{ time_log.resource.name }}</option>');
 
-        $('#time_log_description').text("{{ time_log.description }}");
+        window.jQuery('#time_log_description').text("{{ time_log.description }}");
 
         parent_name = '{{ entity.project.code }}';
         {% for parent in time_log.task.parents %}
@@ -549,14 +549,14 @@ function init_dialog() {
         update_hours_to_complete();
 
         {% if has_permission('Delete_TimeLog') %}
-            var dialog_template_delete_button = $('#dialog_template_delete_button');
+            var dialog_template_delete_button = window.jQuery('#dialog_template_delete_button');
             dialog_template_delete_button.show();
             dialog_template_delete_button.on('click', function (e) {
                 e.stopPropagation();
                 e.preventDefault();
 
                 // disable the submit_button
-                var delete_button = $(this);
+                var delete_button = window.jQuery(this);
                 delete_button.button('loading');
 
                 var confirm_message =
@@ -568,7 +568,7 @@ function init_dialog() {
 
                 bootbox.confirm(confirm_message, function (result) {
                     if (result) {
-                        $.post('/time_logs/{{ time_log.id}}/delete'
+                        window.jQuery.post('/time_logs/{{ time_log.id}}/delete'
                         ).done(function (response_text) {
                             bootbox.alert('<div id="message" class="alert alert-success bigger-110">'+response_text+'</div>');
                             window.location.assign('{{ came_from }}');
@@ -590,11 +590,11 @@ function init_dialog() {
 
     var get_start_end = function () {
 
-        var date_range = $('#start_end_date_range_picker').daterangepicker().val().split(' - ');
+        var date_range = window.jQuery('#start_end_date_range_picker').daterangepicker().val().split(' - ');
         var start_date_string = date_range[0].split('/');
         var end_date_string = date_range[1].split('/');
-        var start_time_string = $('#start_time').val().split(':');
-        var end_time_string = $('#end_time').val().split(':');
+        var start_time_string = window.jQuery('#start_time').val().split(':');
+        var end_time_string = window.jQuery('#end_time').val().split(':');
 
         var start = new Date(
             parseInt(start_date_string[2]),
@@ -616,11 +616,11 @@ function init_dialog() {
 
 {#        if(start.getDate() == end.getDate() && start.getMonth()==end.getMonth()) {#}
 {##}
-{#            $('#auto_split_wh_cg').hide();#}
+{#            window.jQuery('#auto_split_wh_cg').hide();#}
 {##}
 {#        }else{#}
 {##}
-{#            $('#auto_split_wh_cg').show();#}
+{#            window.jQuery('#auto_split_wh_cg').show();#}
 {#        }#}
         return [start, end];
     };
@@ -628,11 +628,11 @@ function init_dialog() {
     {# ***************************************************************** #}
     {# Start & End Date Picker #}
     // initialize date picker
-    var start_end_date_range_picker = $('#start_end_date_range_picker').daterangepicker();
+    var start_end_date_range_picker = window.jQuery('#start_end_date_range_picker').daterangepicker();
 
     // also update the icon
     start_end_date_range_picker.next().on('click', function () {
-        $(this).prev().focus();
+        window.jQuery(this).prev().focus();
     });
 
     // fix z-index of the container
@@ -655,7 +655,7 @@ function init_dialog() {
 
     {# ***************************************************************** #}
     {# Start Time #}
-    var start_time = $('#start_time');
+    var start_time = window.jQuery('#start_time');
     start_time.val(start_time_value.format('HH:MM'));
     start_time.timepicker({
         minuteStep: 10,
@@ -670,7 +670,7 @@ function init_dialog() {
 
     {# ***************************************************************** #}
     {# End Time #}
-    var end_time = $('#end_time');
+    var end_time = window.jQuery('#end_time');
     end_time.val(end_time_value.format('HH:MM'));
     end_time.timepicker({
         minuteStep: 10,
@@ -685,14 +685,14 @@ function init_dialog() {
 
 
     var post_finalize_action = function () {
-        var finalize_task_form = $('#finalize_task_form');
+        var finalize_task_form = window.jQuery('#finalize_task_form');
         submit_button.button('loading');
         console.log('post_finalize_action');
 
-        $.post(
+        window.jQuery.post(
             submit_finalize_form_url,
             finalize_task_form.serialize() + '&' +
-            $.param({
+            window.jQuery.param({
                 'request_review_mode': 'Final',
                 'remaining_minutes_after_this_time_log_string':remaining_minutes_after_this_time_log_string
             })
@@ -711,7 +711,7 @@ function init_dialog() {
             window.location.reload();
         }, 0);
         submit_button.button('reset');
-        $('#dialog_template').modal('hide');
+        window.jQuery('#dialog_template').modal('hide');
 
     };
 
@@ -722,7 +722,7 @@ function init_dialog() {
         e.preventDefault();
 
         // disable the submit_button
-        var time_log_form = $('#time_log_form');
+        var time_log_form = window.jQuery('#time_log_form');
         submit_button.button('loading');
         // merge end_date and end_time
         var start_end = get_start_end();
@@ -730,7 +730,7 @@ function init_dialog() {
         var end = start_end[1];
 
         if(start.getDate() == end.getDate() && start.getMonth()==end.getMonth()) {
-            $('#auto_split_wh').prop('checked','');
+            window.jQuery('#auto_split_wh').prop('checked','');
         }
 
         // validate the data first
@@ -738,7 +738,7 @@ function init_dialog() {
         error_messages = [];
         form_is_valid = true;
 
-        if (completed_percent == 100 && submit_finalize_form_url && $('#task_review_mode').val() === 'request_extra_time') {
+        if (completed_percent == 100 && submit_finalize_form_url && window.jQuery('#task_review_mode').val() === 'request_extra_time') {
             var schedule_unit_value = task_schedule_unit.val();
             var current_timing_value = parseInt(task_schedule_timing.val());
 
@@ -752,10 +752,10 @@ function init_dialog() {
 
         if (form_is_valid) {
             console.log('submit_finalize_form_url '+submit_finalize_form_url);
-            $.post(
+            window.jQuery.post(
                 time_log_form.attr('action'),
                 time_log_form.serialize() + '&' +
-                $.param({
+                window.jQuery.param({
                     'start': start.toUTCString(),
                     'end': end.toUTCString()
                 })
@@ -783,7 +783,7 @@ function init_dialog() {
 
     });
 
-    $('#time_log_form').validate({
+    window.jQuery('#time_log_form').validate({
         errorElement: 'span',
         errorClass: 'help-inline',
         focusInvalid: true,
@@ -803,16 +803,16 @@ function init_dialog() {
         },
 
         invalidHandler: function (event, validator) { //display error alert on form submit
-            $('.alert-error', $('.login-form')).show();
+            window.jQuery('.alert-error', window.jQuery('.login-form')).show();
         },
 
         highlight: function (e) {
-            $(e).closest('.control-group').removeClass('info').addClass('error');
+            window.jQuery(e).closest('.control-group').removeClass('info').addClass('error');
         },
 
         success: function (e) {
-            $(e).closest('.control-group').removeClass('error').addClass('info');
-            $(e).remove();
+            window.jQuery(e).closest('.control-group').removeClass('error').addClass('info');
+            window.jQuery(e).remove();
         },
 
         errorPlacement: function (error, element) {
@@ -844,14 +844,14 @@ function init_dialog() {
     function destruct_dialog() {
         console.debug('started un-initializing the time_log dialog!');
 
-        $('#time_log_task').unbind();
-        $('#time_log_resource').unbind();
-        $('#start_end_date_range_picker').unbind();
-        $('#start_time').unbind();
-        $('#end_time').unbind();
-        $('#dialog_template_submit_button').unbind();
+        window.jQuery('#time_log_task').unbind();
+        window.jQuery('#time_log_resource').unbind();
+        window.jQuery('#start_end_date_range_picker').unbind();
+        window.jQuery('#start_time').unbind();
+        window.jQuery('#end_time').unbind();
+        window.jQuery('#dialog_template_submit_button').unbind();
 
-        $('#dialog_template').data('modal', null);
+        window.jQuery('#dialog_template').data('modal', null);
 
         console.debug('finished un-initializing the time_log dialog!');
     }

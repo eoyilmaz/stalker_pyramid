@@ -79,7 +79,7 @@
 </div><!--/widget-box-->
 
 <script>
-    $(function () {
+    window.jQuery(function () {
         var schedule_unit_seconds = seconds_in_unit('{{ entity.schedule_unit }}');
 
         var bid_seconds = to_seconds({{ entity.bid_timing }}, '{{ entity.bid_unit }}');
@@ -95,10 +95,10 @@
         var time_to_complete = convert_seconds_to_time_range(schedule_timing_seconds - total_logged_seconds);
         var time_to_complete_lmt = meaningful_time(schedule_timing_seconds - total_logged_seconds);
 
-        $('#bid').text(bid + ' (' + bid_lmt + ')');
-        $('#schedule_timing').text(schedule_timing + ' (' + schedule_timing_lmt + ')');
-        $('#total_logged').text(total_logged + ' (' + total_logged_lmt + ')');
-        $('#time_to_complete').text(time_to_complete + ' (' + time_to_complete_lmt + ')');
+        window.jQuery('#bid').text(bid + ' (' + bid_lmt + ')');
+        window.jQuery('#schedule_timing').text(schedule_timing + ' (' + schedule_timing_lmt + ')');
+        window.jQuery('#total_logged').text(total_logged + ' (' + total_logged_lmt + ')');
+        window.jQuery('#time_to_complete').text(time_to_complete + ' (' + time_to_complete_lmt + ')');
 
         var bid_bar_percent = 0;
         var separator_bar_percent = 0;
@@ -106,7 +106,7 @@
         var schedule_timing_bar_percent = 100-total_logged_bar_percent;
         if(bid_seconds < total_logged_seconds)
         {
-            $('#bid_alert').addClass('alert-danger');
+            window.jQuery('#bid_alert').addClass('alert-danger');
 
             bid_bar_percent = (bid_seconds/schedule_timing_seconds)*100;
             separator_bar_percent = 1;
@@ -114,20 +114,20 @@
             schedule_timing_bar_percent = 100 -(bid_bar_percent+separator_bar_percent+total_logged_bar_percent);
         }
         else{
-            $('#bid_alert').addClass('alert-info');
+            window.jQuery('#bid_alert').addClass('alert-info');
 
         }
 
-        var total_logged_bar = $('#total_logged_bar');
+        var total_logged_bar = window.jQuery('#total_logged_bar');
         if(schedule_timing_seconds === total_logged_seconds) {
             total_logged_bar.addClass('bar-cmpl');
         } else {
             total_logged_bar.addClass('bar-wip');
         }
 
-        $('#bid_bar').attr('style','width: ' + bid_bar_percent + '%;');
-        $('#separator_bar').attr('style','width: ' + separator_bar_percent + '%;');
-        $('#total_logged_bar').attr('style','width: ' + total_logged_bar_percent + '%;');
-        $('#schedule_timing_bar').attr('style','width: ' + schedule_timing_bar_percent + '%;');
+        window.jQuery('#bid_bar').attr('style','width: ' + bid_bar_percent + '%;');
+        window.jQuery('#separator_bar').attr('style','width: ' + separator_bar_percent + '%;');
+        window.jQuery('#total_logged_bar').attr('style','width: ' + total_logged_bar_percent + '%;');
+        window.jQuery('#schedule_timing_bar').attr('style','width: ' + schedule_timing_bar_percent + '%;');
     });
 </script>

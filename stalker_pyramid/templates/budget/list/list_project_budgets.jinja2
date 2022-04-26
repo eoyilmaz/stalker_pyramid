@@ -227,17 +227,17 @@
 {#        </script>#}
 {#    {% endraw %}#}
 
-    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/dhtmlx-suite/codebase/dhtmlx.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/dhtmlx-gantt/codebase/dhtmlxgantt.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/dhtmlx/api.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/moment/min/moment.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/dhtmlx/ext/dhtmlxgantt_multiselect.js") }}' type='text/javascript' charset='utf-8'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/accounting.min.js") }}'></script>
+{#    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/dhtmlx-suite/codebase/dhtmlx.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/dhtmlx-gantt/codebase/dhtmlxgantt.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/dhtmlx/api.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/moment/min/moment.min.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/dhtmlx/ext/dhtmlxgantt_multiselect.js") }}' type='text/javascript' charset='utf-8'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/accounting.min.js") }}'></script>#}
     <script type="text/javascript">
 
-        window.$(document).ready(function () {
-            var budget_template = doT.template($('#tmpl_budget').html());
-            $.getJSON('{{ request.route_path('get_project_budgets', id=entity.id) }}').then(function (b_data) {
+        window.jQuery(document).ready(function () {
+            var budget_template = doT.template(window.jQuery('#tmpl_budget').html());
+            window.jQuery.getJSON('{{ request.route_path('get_project_budgets', id=entity.id) }}').then(function (b_data) {
                 for(var i=0; i<b_data.length; i++ ){
 
                     if (b_data[i].date_created) {
@@ -278,7 +278,7 @@
                         b_data[i].ongorulen_kar  = son_tutar - b_data[i].ongorulen_maliyet;
                         b_data[i].ongorulen_kar_fmt  = accounting.formatMoney(b_data[i].ongorulen_kar , { symbol: "TL",  format: "%v %s" });
                     }
-                    $('#budget_list').append(budget_template(b_data[i]));
+                    window.jQuery('#budget_list').append(budget_template(b_data[i]));
                 }
             });
         });

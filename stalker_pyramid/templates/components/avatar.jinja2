@@ -9,11 +9,10 @@
                 top: 0"/>
 </div>
 
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.gritter.min.js") }}'></script>
-
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.ui.touch-punch.min.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.gritter.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.ui.touch-punch.min.js") }}'></script>#}
 <script type="text/javascript">
-    $(function () {
+    window.jQuery(function () {
 
         set_entity_thumbnail({
             url: '{{ request.route_url('get_entity_thumbnail', id=entity.id) }}',
@@ -21,7 +20,7 @@
             dom_element_query: '#entity_avatar'
         });
 
-        $.fn.editable.defaults.mode = 'inline';
+        window.jQuery.fn.editable.defaults.mode = 'inline';
 
         try {//ie8 throws some harmless exception, so let's catch it
 
@@ -29,7 +28,7 @@
             //so let's have a fake appendChild for it!
 
             var last_gritter;
-            $('#entity_avatar').editable({
+            window.jQuery('#entity_avatar').editable({
                 type: 'image',
                 name: 'avatar',
                 value: null,
@@ -48,15 +47,15 @@
                     name: 'file',//put the field name here as well, will be used inside the custom plugin
                     max_size: 11000000, //~10Mb
                     on_error: function (code) {//on_error function will be called when the selected file has a problem
-                        if (last_gritter) $.gritter.remove(last_gritter);
+                        if (last_gritter) window.jQuery.gritter.remove(last_gritter);
                         if (code == 1) {//file format error
-                            last_gritter = $.gritter.add({
+                            last_gritter = window.jQuery.gritter.add({
                                 title: 'File is not an image!',
                                 text: 'Please choose a jpg|gif|png image!',
                                 class_name: 'gritter-error gritter-center'
                             });
                         } else if (code == 2) {//file size error
-                            last_gritter = $.gritter.add({
+                            last_gritter = window.jQuery.gritter.add({
                                 title: 'File too big!',
                                 text: 'Image size should not exceed 100Kb!',
                                 class_name: 'gritter-error gritter-center'
@@ -66,7 +65,7 @@
                         }
                     },
                     on_success: function () {
-                        $.gritter.removeAll();
+                        window.jQuery.gritter.removeAll();
                     }
                 },
                 url: function (params) {
@@ -77,10 +76,10 @@
 //if value is empty, means no valid files were selected
 //but it may still be submitted by the plugin, because "" (empty string) is different from previous non-empty value whatever it was
 //so we return just here to prevent problems
-                    var entity_avatar = $('#entity_avatar');
+                    var entity_avatar = window.jQuery('#entity_avatar');
                     var value = entity_avatar.next().find('input[type=hidden]:eq(0)').val();
                     if (!value || value.length === 0) {
-                        deferred = new $.Deferred;
+                        deferred = new window.jQuery.Deferred;
                         deferred.resolve();
                         return deferred.promise();
                     }
@@ -90,7 +89,7 @@
 
 //user iframe for older browsers that don't support file upload via FormData & Ajax
                     if (!("FormData" in window)) {
-                        deferred = new $.Deferred;
+                        deferred = new window.jQuery.Deferred;
 
                         var iframe_id = 'temporary-iframe-' + (new Date()).getTime() + '-' + (parseInt(Math.random() * 1000));
                         $form.after('<iframe id="' + iframe_id + '" name="' + iframe_id + '"  width="0" height="0" src="about:blank" style="border:0;position:absolute;z-index:-1;"></iframe>');
@@ -106,7 +105,7 @@
                             var iframe = document.getElementById(iframe_id);
                             if (iframe != null) {
                                 iframe.src = "about:blank";
-                                $(iframe).remove();
+                                window.jQuery(iframe).remove();
 
                                 deferred.reject({'status': 'fail', 'message': 'Timeout!'});
                             }
@@ -119,7 +118,7 @@
                             //IE10 throws "SCRIPT5: Access is denied" exception,
                             //so we need to add the key/value pairs one by one
                             fd = new FormData();
-                            $.each($form.serializeArray(), function (index, item) {
+                            window.jQuery.each($form.serializeArray(), function (index, item) {
                                 fd.append(item.name, item.value);
                             });
                             //and then add files because files are not included in serializeArray()'s result
@@ -138,7 +137,7 @@
 
 {#                        console.log('fd:', fd);#}
 
-                        deferred = $.ajax({
+                        deferred = window.jQuery.ajax({
                             url: submit_url,
                             type: 'POST',
                             processData: false,
@@ -147,7 +146,7 @@
                             enctype: "multipart/form-data",
                             data: fd,
                             xhr: function () {
-                                var req = $.ajaxSettings.xhr();
+                                var req = window.jQuery.ajaxSettings.xhr();
                                 /*if (req && req.upload) {
                                  req.upload.addEventListener('progress', function(e) {
                                  if(e.lengthComputable) {
@@ -166,8 +165,8 @@
                                 // file is uploaded successfully
                                 // now attach it to this user as a thumbnail
 
-                                $.post('/assign_thumbnail',
-                                    $.param({
+                                window.jQuery.post('/assign_thumbnail',
+                                    window.jQuery.param({
                                         'full_path': data.files[0].full_path,
                                         'entity_id': {{ entity.id }}
                                     })
@@ -176,9 +175,9 @@
                                     // where to set the current thumbnail
                                     // update the thumbnail
 
-                                    $.getJSON('/entities/{{ entity.id }}/').done(function (data2) {
+                                    window.jQuery.getJSON('/entities/{{ entity.id }}/').done(function (data2) {
                                         var new_thumb_path = '/' + data2[0].thumbnail_full_path;
-                                        $('#entity_avatar').attr('src', new_thumb_path);
+                                        window.jQuery('#entity_avatar').attr('src', new_thumb_path);
                                         // also update side bar
                                     });
                                 });
@@ -188,7 +187,7 @@
 
                     deferred.done(function (res) {
                         {#                    if (res.status == 'OK'){#}
-                        {#                        $('#entity_avatar').get(0).src = res.url;#}
+                        {#                        window.jQuery('#entity_avatar').get(0).src = res.url;#}
                         {#                    } else {#}
                         {#                        alert(res.message);#}
                         {#                    }#}

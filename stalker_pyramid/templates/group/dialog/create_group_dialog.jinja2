@@ -57,14 +57,14 @@
     function init_dialog() {
         console.debug('starting to initialize group dialog!!!');
 
-        var dialog_template_label = $('#dialog_template_label');
+        var dialog_template_label = window.jQuery('#dialog_template_label');
         dialog_template_label.find('span').remove();
         dialog_template_label.append('<span>New Group</span>')
 
-        $('#dialog_template_body').attr('style', "height: 600px");
+        window.jQuery('#dialog_template_body').attr('style', "height: 600px");
 
         {# Submit Button #}
-        var submit_button = $('#dialog_template_submit_button');
+        var submit_button = window.jQuery('#dialog_template_submit_button');
         submit_button.on('click', function (e) {
             e.stopPropagation();
             e.preventDefault();
@@ -74,9 +74,9 @@
             submit_button.button('loading');
 
 
-            var group_create_form = $('#group_create_form');
+            var group_create_form = window.jQuery('#group_create_form');
 
-            $.post("{{ request.route_url('create_group') }}",
+            window.jQuery.post("{{ request.route_url('create_group') }}",
                    group_create_form.serialize()
             ).done(function () {
                 window.location.assign('{{ came_from }}');
@@ -97,12 +97,12 @@
 
     function destruct_dialog() {
 
-        $('.ace-checkbox-2').attr('disabled', true);
-        $('#group_create_form').unbind();
-        $('#group_name').unbind();
-        $('#group_description').unbind();
-        $('#dialog_template_submit_button').unbind();
-        $('#dialog_template').data('modal', null);
+        window.jQuery('.ace-checkbox-2').attr('disabled', true);
+        window.jQuery('#group_create_form').unbind();
+        window.jQuery('#group_name').unbind();
+        window.jQuery('#group_description').unbind();
+        window.jQuery('#dialog_template_submit_button').unbind();
+        window.jQuery('#dialog_template').data('modal', null);
 
     }
 </script>

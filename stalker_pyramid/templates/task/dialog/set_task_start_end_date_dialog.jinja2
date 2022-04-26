@@ -24,31 +24,31 @@
         </form>
     </div>
 </div>
-<script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/i18n/grid.locale-en.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/jquery.jqGrid.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/daterangepicker.min.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/i18n/grid.locale-en.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/window.jQuery.jqGrid.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/daterangepicker.min.js") }}'></script>#}
 
 <script type="text/javascript">
 
     function init_dialog() {
         console.debug('starting to initialize add_task_user_dialog dialog!!!');
 
-        $(function () {
-            var label = $('#dialog_template_label');
+        window.jQuery(function () {
+            var label = window.jQuery('#dialog_template_label');
             label.find('span').remove();
             label.append('<span>Set Start End Date</span>');
-            $('#dialog_template_body').attr('style', "height: auto");
+            window.jQuery('#dialog_template_body').attr('style', "height: auto");
 
             var url= '{{ action | safe}}';
             if(url==''){
-                $('#dialog_template').modal('hide');
+                window.jQuery('#dialog_template').modal('hide');
             }
 
-            var start_end_date_range_picker = $('#start_end_date_range_picker').daterangepicker();
+            var start_end_date_range_picker = window.jQuery('#start_end_date_range_picker').daterangepicker();
 
             // also update the icon
             start_end_date_range_picker.next().on('click', function () {
-                $(this).prev().focus();
+                window.jQuery(this).prev().focus();
             });
 
             start_end_date_range_picker.data().daterangepicker.updateFromControl();
@@ -62,7 +62,7 @@
 
             var get_start_end = function () {
 
-                var date_range = $('#start_end_date_range_picker').daterangepicker().val().split(' - ');
+                var date_range = window.jQuery('#start_end_date_range_picker').daterangepicker().val().split(' - ');
                 var start_date_string = date_range[0].split('/');
                 var end_date_string = date_range[1].split('/');
 
@@ -83,7 +83,7 @@
                 return [start, end];
             };
 
-            var submit_button = $('#dialog_template_submit_button');
+            var submit_button = window.jQuery('#dialog_template_submit_button');
             submit_button.on('click', function (e) {
 
                 e.stopPropagation();
@@ -93,15 +93,15 @@
                 var start = start_end[0];
                 var end = start_end[1];
 
-                $.post(
+                window.jQuery.post(
                     url,
-                    $.param({
+                    window.jQuery.param({
                         'start': start.toUTCString(),
                         'end': end.toUTCString()
                     })
                 ).done(function (response_text) {
                     submit_button.button('reset');
-                    $('#dialog_template').modal('hide');
+                    window.jQuery('#dialog_template').modal('hide');
                     // reload page
                     setTimeout(function () { // wait for hide event to finish
                         window.location.reload();
@@ -118,8 +118,8 @@
 
 <script type="text/javascript">
     function destruct_dialog() {
-        $('#dialog_template_submit_button').unbind();
-        $('#grid-table').unbind();
-        $('#dialog_template').data('modal', null);
+        window.jQuery('#dialog_template_submit_button').unbind();
+        window.jQuery('#grid-table').unbind();
+        window.jQuery('#dialog_template').data('modal', null);
     }
 </script>

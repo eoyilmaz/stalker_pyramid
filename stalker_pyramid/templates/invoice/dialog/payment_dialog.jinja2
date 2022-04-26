@@ -31,7 +31,7 @@
                                class='input-block-level'
                                name='unit'>
                             <option value='TL'>TL</option>
-                            <option value='$'>$</option>
+                            <option value='window.jQuery'>window.jQuery</option>
                         </select>
                 </div>
             </div>
@@ -54,15 +54,15 @@
         </div>
     </form>
 </div>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/daterangepicker.min.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/daterangepicker.min.js") }}'></script>#}
 <script type="text/javascript">
 
     function init_dialog() {
 
         console.debug('starting to initialize invoice dialog!!!');
 
-        var dialog_label = $('#dialog_template_label');
+        var dialog_label = window.jQuery('#dialog_template_label');
         dialog_label.find('span').remove();
         dialog_label.append('<span>{{mode}} Payment</span>');
 
@@ -70,27 +70,27 @@
 
         {# ***************************************************************** #}
         {# Submit Button #}
-        var submit_button = $('#dialog_template_submit_button');
+        var submit_button = window.jQuery('#dialog_template_submit_button');
         submit_button.on('click', function (e) {
             e.stopPropagation();
             e.preventDefault();
 
             submit_button.button('loading');
-            var payment_form = $('#payment_form');
+            var payment_form = window.jQuery('#payment_form');
 
             var url = '/payments/create';
             {% if mode=='Update' %}
                 url='/payments/{{ invoice.id }}/update';
             {% endif %}
 
-            $.post(
+            window.jQuery.post(
                 url,
                 payment_form.serialize() + '&' +
-                $.param({
+                window.jQuery.param({
                     'invoice_id': {{ invoice.id }}
                 })
             ).done(function (jqXHR) {
-                //$('#new_outputs_storage').text(JSON.stringify(jqXHR));
+                //window.jQuery('#new_outputs_storage').text(JSON.stringify(jqXHR));
                 window.location.reload();
             }).fail(function (jqXHR) {
                 bootbox.alert(jqXHR.responseText);
@@ -104,11 +104,11 @@
 
 <script type="text/javascript">
     function destruct_dialog() {
-{#        $('#budget_name').unbind();#}
-{#        $('#budget_description').unbind();#}
-{#        $('#dialog_template_submit_button').unbind();#}
+{#        window.jQuery('#budget_name').unbind();#}
+{#        window.jQuery('#budget_description').unbind();#}
+{#        window.jQuery('#dialog_template_submit_button').unbind();#}
 {##}
-{#        $('#dialog_template').data('modal', null);#}
+{#        window.jQuery('#dialog_template').data('modal', null);#}
     }
 </script>
 

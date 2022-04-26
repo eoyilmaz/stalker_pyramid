@@ -36,24 +36,24 @@
 
 </div>
 
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/chosen.jquery.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.autosize-min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.inputlimiter.1.3.1.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.validate.min.js") }}'></script>
-{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.easy-pie-chart.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/chosen.window.jQuery.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.autosize-min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.inputlimiter.1.3.1.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.validate.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.easy-pie-chart.min.js") }}'></script>#}
 
 
 <script>
 function init_dialog() {
     console.debug('starting to initialize time_log dialog!!!');
 
-    var dialog_template_label = $('#dialog_template_label');
+    var dialog_template_label = window.jQuery('#dialog_template_label');
     dialog_template_label.find('span').remove();
     dialog_template_label.append('<span>Duplicate Budget</span>');
 
-    $('#dialog_template_body').attr('style', "height: 350px");
+    window.jQuery('#dialog_template_body').attr('style', "height: 350px");
     var timeout_buffer;
-    var submit_button = $('#dialog_template_submit_button');
+    var submit_button = window.jQuery('#dialog_template_submit_button');
 
 
     {# ***************************************************************** #}
@@ -65,27 +65,27 @@ function init_dialog() {
 
         submit_button.button('loading');
 
-        var dup_budget_form = $('#dup_budget_form');
+        var dup_budget_form = window.jQuery('#dup_budget_form');
 
         var form_data_as_array = dup_budget_form.serializeArray();
         var form_data = {};
 
 
 
-        form_data['description'] = $('#dup_budget_description').val();
-        form_data['name'] = $('#dup_budget_name').val();
+        form_data['description'] = window.jQuery('#dup_budget_description').val();
+        form_data['name'] = window.jQuery('#dup_budget_name').val();
 
         if (dup_budget_form.validate()) {
             // merge end_date and end_time
 
-            $.post(
+            window.jQuery.post(
                 dup_budget_form.attr('action'),
                 dup_budget_form.serialize()
             ).done(function () {
                 window.location.reload();
                 // close the dialog
                 submit_button.button('reset');
-                $('#dialog_template').modal('hide');
+                window.jQuery('#dialog_template').modal('hide');
             }).fail(function (jqXHR) {
                 bootbox.alert('<div id="message" class="alert alert-danger bigger-110">'+jqXHR.responseText+'</div>');
                 submit_button.button('reset');
@@ -93,7 +93,7 @@ function init_dialog() {
         }
     });
 
-    $('#dup_budget_form').validate({
+    window.jQuery('#dup_budget_form').validate({
         errorElement: 'span',
         errorClass: 'help-inline',
         focusInvalid: true,
@@ -113,16 +113,16 @@ function init_dialog() {
         },
 
         invalidHandler: function (event, validator) { //display error alert on form submit
-            $('.alert-error', $('.login-form')).show();
+            window.jQuery('.alert-error', window.jQuery('.login-form')).show();
         },
 
         highlight: function (e) {
-            $(e).closest('.control-group').removeClass('info').addClass('error');
+            window.jQuery(e).closest('.control-group').removeClass('info').addClass('error');
         },
 
         success: function (e) {
-            $(e).closest('.control-group').removeClass('error').addClass('info');
-            $(e).remove();
+            window.jQuery(e).closest('.control-group').removeClass('error').addClass('info');
+            window.jQuery(e).remove();
         },
 
         errorPlacement: function (error, element) {
@@ -153,11 +153,11 @@ function init_dialog() {
 <script type="text/javascript">
     function destruct_dialog() {
 
-        $('#dup_budget_description').unbind();
-        $('#dup_budget_name').unbind();
-        $('#dialog_template_submit_button').unbind();
+        window.jQuery('#dup_budget_description').unbind();
+        window.jQuery('#dup_budget_name').unbind();
+        window.jQuery('#dialog_template_submit_button').unbind();
 
-        $('#dialog_template').data('modal', null);
+        window.jQuery('#dialog_template').data('modal', null);
 
     }
 </script>

@@ -98,37 +98,37 @@
     </div>
 </div>
 
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/chosen.jquery.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/chosen.window.jQuery.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>#}
 {#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/moment.min.js") }}'></script>#}
 
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/daterangepicker.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-timepicker.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap-colorpicker.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.autosize-min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.inputlimiter.1.3.1.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.maskedinput.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/bootstrap-tag.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.validate.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/additional-methods.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.spinner.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.easy-pie-chart.min.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/daterangepicker.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-timepicker.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap-colorpicker.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.autosize-min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.inputlimiter.1.3.1.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.maskedinput.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/bootstrap-tag.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.validate.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/additional-methods.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.spinner.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.easy-pie-chart.min.js") }}'></script>#}
 
 
 <script>
 function init_dialog() {
     console.debug('starting to initialize vacation dialog!!!');
 
-    var dialog_template_label = $('#dialog_template_label');
+    var dialog_template_label = window.jQuery('#dialog_template_label');
     dialog_template_label.find('span').remove();
     dialog_template_label.append('<span>Vacation</span>')
 
-    $('#dialog_template_body').attr("style", "height: 300px");
-    var dialog_template_delete_button = $('#dialog_template_delete_button');
+    window.jQuery('#dialog_template_body').attr("style", "height: 300px");
+    var dialog_template_delete_button = window.jQuery('#dialog_template_delete_button');
     dialog_template_delete_button.hide()
 
     {# ***************************************************************** #}
-    var event_dialog = $('#dialog_template')
+    var event_dialog = window.jQuery('#dialog_template')
 
     var start_date_value = new Date(event_dialog.attr('start'));
     var end_date_value = new Date(event_dialog.attr('end'));
@@ -144,10 +144,10 @@ function init_dialog() {
     //*********************************************************
     //Type
 
-    var vacation_type = $('#vacation_type');
+    var vacation_type = window.jQuery('#vacation_type');
     // set the field to updating mode
 
-    $.getJSON('/types/?target_entity_type=Vacation').then(function (available_types) {
+    window.jQuery.getJSON('/types/?target_entity_type=Vacation').then(function (available_types) {
         var available_types_as_list = [];
         for (var i=0; i < available_types.length; i++){
             available_types_as_list.push(available_types[i].name);
@@ -165,8 +165,8 @@ function init_dialog() {
         vacation_type.attr('disabled', true)
     {% endif %}
 
-    var vacation_user = $('#vacation_user');
-    var vacation_form = $("#vacation_form");
+    var vacation_user = window.jQuery('#vacation_user');
+    var vacation_form = window.jQuery("#vacation_form");
     {% if mode == 'create' %}
         //*********************************************************
         //Action
@@ -203,7 +203,7 @@ function init_dialog() {
                 e.preventDefault();
 
                 // disable the submit_button
-                var delete_button = $(this);
+                var delete_button = window.jQuery(this);
                 delete_button.button('loading');
 
                 var confirm_message =
@@ -215,7 +215,7 @@ function init_dialog() {
 
                 bootbox.confirm(confirm_message, function (result) {
                     if (result) {
-                        $.post(
+                        window.jQuery.post(
                             '/vacations/{{ vacation.id}}/delete'
                         ).done(function (response_text) {
                             bootbox.alert('<div id="message" class="alert alert-success bigger-110">'+response_text+'</div>');
@@ -248,11 +248,11 @@ function init_dialog() {
     {# Get Start End  #}
 
     var get_start_end = function () {
-        var date_range = $('#start_end_date_range_picker').daterangepicker().val().split(' - ');
+        var date_range = window.jQuery('#start_end_date_range_picker').daterangepicker().val().split(' - ');
         var start_date_string = date_range[0].split('/');
         var end_date_string = date_range[1].split('/');
-        var start_time_string = $('#start_time').val().split(':');
-        var end_time_string = $('#end_time').val().split(':');
+        var start_time_string = window.jQuery('#start_time').val().split(':');
+        var end_time_string = window.jQuery('#end_time').val().split(':');
 
         var start = new Date(parseInt(start_date_string[2]), parseInt(start_date_string[1]) - 1, parseInt(start_date_string[0]), parseInt(start_time_string[0]), parseInt(start_time_string[1]), 0, 0);
         var end = new Date(parseInt(end_date_string[2]), parseInt(end_date_string[1]) - 1, parseInt(end_date_string[0]), parseInt(end_time_string[0]), parseInt(end_time_string[1]), 0, 0);
@@ -269,13 +269,13 @@ function init_dialog() {
     {# ***************************************************************** #}
     {# Start & End Date Picker #}
 
-    window.$(document).ready(function () {
+    window.jQuery(document).ready(function () {
         // initialize date picker
-        var start_end_date_range_picker = $('#start_end_date_range_picker').daterangepicker();
+        var start_end_date_range_picker = window.jQuery('#start_end_date_range_picker').daterangepicker();
 
         // also update the icon
         start_end_date_range_picker.next().on(ace.click_event, function () {
-            $(this).prev().focus();
+            window.jQuery(this).prev().focus();
         });
 
         // fix z-index of the container
@@ -295,8 +295,8 @@ function init_dialog() {
     {# ***************************************************************** #}
     {# Start Time #}
 
-    window.$(document).ready(function () {
-        var start_time = $('#start_time');
+    window.jQuery(document).ready(function () {
+        var start_time = window.jQuery('#start_time');
         start_time.val(start_time_value.format('HH:MM'));
         start_time.timepicker({
             minuteStep: 10,
@@ -308,8 +308,8 @@ function init_dialog() {
     {# ***************************************************************** #}
     {# End Time #}
 
-    window.$(document).ready(function () {
-        var end_time = $('#end_time');
+    window.jQuery(document).ready(function () {
+        var end_time = window.jQuery('#end_time');
         end_time.val(end_time_value.format('HH:MM'));
         end_time.timepicker({
             minuteStep: 10,
@@ -321,13 +321,13 @@ function init_dialog() {
     {# ***************************************************************** #}
     {# Submit Button #}
 
-    var submit_button = $('#dialog_template_submit_button');
+    var submit_button = window.jQuery('#dialog_template_submit_button');
     submit_button.on('click', function (e) {
         e.stopPropagation();
         e.preventDefault();
 
         submit_button.button('loading');
-        var vacation_form = $('#vacation_form');
+        var vacation_form = window.jQuery('#vacation_form');
         {% if entity.entity_type != 'Studio' %}
             if (vacation_type.val() === 'StudioWide') {
 
@@ -346,9 +346,9 @@ function init_dialog() {
             var start = start_end[0];
             var end = start_end[1];
 
-            $.post(
+            window.jQuery.post(
                 vacation_form.attr('action'),
-                vacation_form.serialize() + '&' + $.param({ 'start': start.toUTCString(), 'end': end.toUTCString() })
+                vacation_form.serialize() + '&' + window.jQuery.param({ 'start': start.toUTCString(), 'end': end.toUTCString() })
             ).done(function () {
                 window.location.replace('{{ came_from }}');
             }).fail(function (jqXHR) {
@@ -358,7 +358,7 @@ function init_dialog() {
         }
     });
 
-    $('#vacation_form').validate({
+    window.jQuery('#vacation_form').validate({
         errorElement: 'span',
         errorClass: 'help-inline',
         focusInvalid: true,
@@ -381,16 +381,16 @@ function init_dialog() {
         },
 
         invalidHandler: function (event, validator) { //display error alert on form submit
-            $('.alert-error', $('.login-form')).show();
+            window.jQuery('.alert-error', window.jQuery('.login-form')).show();
         },
 
         highlight: function (e) {
-            $(e).closest('.control-group').removeClass('info').addClass('error');
+            window.jQuery(e).closest('.control-group').removeClass('info').addClass('error');
         },
 
         success: function (e) {
-            $(e).closest('.control-group').removeClass('error').addClass('info');
-            $(e).remove();
+            window.jQuery(e).closest('.control-group').removeClass('error').addClass('info');
+            window.jQuery(e).remove();
         },
 
         errorPlacement: function (error, element) {
@@ -420,11 +420,11 @@ function init_dialog() {
 
 <script type="text/javascript">
     function destruct_dialog() {
-        $('#vacation_user').unbind();
-        $('#vacation_type').unbind();
-        $('#start_end_date_range_picker').unbind();
-        $('#dialog_template_submit_button').unbind();
+        window.jQuery('#vacation_user').unbind();
+        window.jQuery('#vacation_type').unbind();
+        window.jQuery('#start_end_date_range_picker').unbind();
+        window.jQuery('#dialog_template_submit_button').unbind();
 
-        $('#dialog_template').data('modal', null);
+        window.jQuery('#dialog_template').data('modal', null);
     }
 </script>

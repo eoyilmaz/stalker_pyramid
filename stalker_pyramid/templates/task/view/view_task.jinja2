@@ -3,16 +3,16 @@
 {#PRE-HEADER #}
 {% block pre_header %}
 
-    <link rel="stylesheet"
-          href='{{ request.static_url("stalker_pyramid:static/ace/css/fullcalendar.css") }}'/>
-    <link rel="stylesheet"
-          href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap-timepicker.css") }}'/>
-    <link rel="stylesheet"
-          href='{{ request.static_url("stalker_pyramid:static/ace/css/datepicker.css") }}'/>
-    <link rel="stylesheet"
-          href='{{ request.static_url("stalker_pyramid:static/ace/css/jquery-ui-1.10.3.custom.min.css") }}'/>
-    <link rel="stylesheet"
-          href='{{ request.static_url("stalker_pyramid:static/ace/css/select2.css") }}'/>
+{#    <link rel="stylesheet"#}
+{#          href='{{ request.static_url("stalker_pyramid:static/ace/css/fullcalendar.css") }}'/>#}
+{#    <link rel="stylesheet"#}
+{#          href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap-timepicker.css") }}'/>#}
+{#    <link rel="stylesheet"#}
+{#          href='{{ request.static_url("stalker_pyramid:static/ace/css/datepicker.css") }}'/>#}
+{#    <link rel="stylesheet"#}
+{#          href='{{ request.static_url("stalker_pyramid:static/ace/css/window.jQuery-ui-1.10.3.custom.min.css") }}'/>#}
+{#    <link rel="stylesheet"#}
+{#          href='{{ request.static_url("stalker_pyramid:static/ace/css/select2.css") }}'/>#}
     {% include 'charts/chart_preheader.jinja2' %}
 
 {% endblock pre_header %}
@@ -500,18 +500,17 @@
 
 {#EXTRA-SCRIPTS#}
 {% block extrascripts %}
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery-ui-1.10.3.custom.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.ui.touch-punch.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.gritter.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.slimscroll.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.hotkeys.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/select2.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.maskedinput.min.js") }}'></script>
-
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/markdown/markdown.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/markdown/bootstrap-markdown.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.hotkeys.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/bootstrap-wysiwyg.js") }}'></script>
+{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery-ui-1.10.3.custom.min.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.ui.touch-punch.min.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.gritter.min.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.slimscroll.min.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.hotkeys.min.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/select2.min.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.maskedinput.min.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/markdown/markdown.min.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/markdown/bootstrap-markdown.min.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.hotkeys.min.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/bootstrap-wysiwyg.js") }}'></script>#}
     
     {% if entity.children | count == 0 %}
         {% if entity.status.code in ['RTS','WIP','HREV','DREV']%}
@@ -526,9 +525,9 @@
 
 {#    <script type="text/javascript">#}
 {#        // convert all dates to moment#}
-{#        $('.date').each(function () {#}
-{#            var date = moment($(this).text());#}
-{#            $(this).text(date.fromNow());#}
+{#        window.jQuery('.date').each(function () {#}
+{#            var date = moment(window.jQuery(this).text());#}
+{#            window.jQuery(this).text(date.fromNow());#}
 {#        });#}
 {#    </script>#}
 
@@ -543,28 +542,28 @@
         } else {
             console.log("error uploading file", reason, detail);
         }
-        $('<div class="alert"> <button type="button" class="close" data-dismiss="alert">&times;</button>' +
+        window.jQuery('<div class="alert"> <button type="button" class="close" data-dismiss="alert">&times;</button>' +
                 '<strong>File upload error</strong> ' + msg + ' </div>').prependTo('#alerts');
     }
 
-    $(function () {
-        $('#refresh_task_button').on('click', function (e) {
+    window.jQuery(function () {
+        window.jQuery('#refresh_task_button').on('click', function (e) {
             e.preventDefault();
             e.stopPropagation();
 
-            $.post('/tasks/{{ entity.id }}/fix/statuses/').done(function (response_text) {
+            window.jQuery.post('/tasks/{{ entity.id }}/fix/statuses/').done(function (response_text) {
                 window.location.reload();
             }).fail(function (jqXHR) {
                 bootbox.alert(jqXHR.responseText);
             });
         });
 
-        $('#watch_or_unwatch_task_button').on('click', function (e) {
+        window.jQuery('#watch_or_unwatch_task_button').on('click', function (e) {
             e.preventDefault();
             e.stopPropagation();
-            var self = $(this);
+            var self = window.jQuery(this);
             var url = self.attr('href');
-            $.post(url).done(function(){
+            window.jQuery.post(url).done(function(){
                 // change icon
                 if (self.attr('watching') === 'true') {
                     self.attr('watching', 'false');
@@ -589,25 +588,25 @@
     });
 
 
-    $(function () {
+    window.jQuery(function () {
         var icon_name = get_icon('{{ entity.entity_type.lower()}}');
-        $('#task_header').append('<i class="' + icon_name + ' bigger-125"></i>{{ entity.name }}');
+        window.jQuery('#task_header').append('<i class="' + icon_name + ' bigger-125"></i>{{ entity.name }}');
 
         {% if has_permission('Update_Task') and entity.project in logged_in_user.projects %}
             var inline_update_url = '/tasks/{{ entity.id }}/update/inline';
 
             //editables
-            $('#editable_entity_name').editable({
+            window.jQuery('#editable_entity_name').editable({
                 type: 'text',
                 name: 'name',
                 success: function (response, newValue) {
 
-                    var params = $.param({
+                    var params = window.jQuery.param({
                         attr_name: 'name',
                         attr_value: newValue
                     });
 
-                    $.post(
+                    window.jQuery.post(
                         inline_update_url, params
                     ).done(function () {
 {#                        console.log('done');#}
@@ -616,7 +615,7 @@
                     });
                 }
             });
-            $('#editable_entity_priority').editable({
+            window.jQuery('#editable_entity_priority').editable({
                 type: 'spinner',
                 name: 'priority',
                 spinner : {
@@ -625,12 +624,12 @@
                     icon_down:'icon-caret-down'
                 },
                 success: function (response, newValue) {
-                    var params = $.param({
+                    var params = window.jQuery.param({
                         attr_name: 'priority',
                         attr_value: parseInt(newValue)
                     });
 
-                    $.post(
+                    window.jQuery.post(
                         inline_update_url, params
                     ).done(function () {
                         console.log('done');
@@ -640,7 +639,7 @@
                 }
             });
 
-            $.getJSON('/types/?target_entity_type={{ entity.entity_type }}').then(function (available_types) {
+            window.jQuery.getJSON('/types/?target_entity_type={{ entity.entity_type }}').then(function (available_types) {
                 var entity_types = [];
 
                 for (var i = 0; i < available_types.length; i++) {
@@ -651,18 +650,18 @@
                 }
 
                 if (entity_types.length > 0) {
-                    $('#editable_entity_type').editable({
+                    window.jQuery('#editable_entity_type').editable({
                         type: 'select2',
                         value: '{% if entity.type %}{{ entity.type.id }}{% endif %}',
                         source: entity_types,
                         success: function (response, newValue) {
 
-                            var params = $.param({
+                            var params = window.jQuery.param({
                                 attr_name: 'type',
                                 attr_value: newValue
                             });
 
-                            $.post(
+                            window.jQuery.post(
                                 inline_update_url, params
                             ).done(function () {
 {#                                console.log('done');#}
@@ -673,7 +672,7 @@
                     });
                 }
                 else {
-                    $('#editable_entity_type').editable({
+                    window.jQuery('#editable_entity_type').editable({
                         type: 'text',
                         value: '{{ entity.entity_type }}',
                         disabled: true
@@ -681,7 +680,7 @@
                 }
             });
 
-{#            $('#editable_entity_description').editable({#}
+{#            window.jQuery('#editable_entity_description').editable({#}
 {#                mode: 'inline',#}
 {#                type: 'wysiwyg',#}
 {#                name: 'editable_entity_description',#}
@@ -693,53 +692,53 @@
 {#                },#}
 {##}
 {#                success: function (response, newValue) {#}
-{#                    $('#description_loading').show();#}
+{#                    window.jQuery('#description_loading').show();#}
 {##}
-{#                    var params = $.param({#}
+{#                    var params = window.jQuery.param({#}
 {#                        attr_name: 'description',#}
 {#                        attr_value: newValue#}
 {#                    });#}
 {##}
-{#                    $.post(inline_update_url, params).done(function () {#}
+{#                    window.jQuery.post(inline_update_url, params).done(function () {#}
 {##}
-{#                        $.getJSON('{{request.route_url('get_task', id=entity.id) }}').then(#}
+{#                        window.jQuery.getJSON('{{request.route_url('get_task', id=entity.id) }}').then(#}
 {#                            function (data) {#}
-{#                                $('#editable_entity_description').val(data.description);#}
-{#                                $('#description_loading').hide();#}
+{#                                window.jQuery('#editable_entity_description').val(data.description);#}
+{#                                window.jQuery('#description_loading').hide();#}
 {#                            }#}
 {#                        );#}
 {##}
 {#                    }).fail(function (jqXHR) {#}
 {#                        bootbox.alert('<div id="message" class="alert alert-danger bigger-110">' + jqXHR.responseText + '</div>');#}
-{#                        $('#description_loading').hide();#}
+{#                        window.jQuery('#description_loading').hide();#}
 {##}
 {#                    });#}
 {#                }#}
 {#            });#}
 {##}
-{#            $('#entity_description_edit_trigger').on('click', function(e){#}
+{#            window.jQuery('#entity_description_edit_trigger').on('click', function(e){#}
 {#                e.stopPropagation();#}
-{#                $('#editable_entity_description').editable('toggle');#}
+{#                window.jQuery('#editable_entity_description').editable('toggle');#}
 {#            });#}
             
         {% endif %}
 
 
-        $('#add_note_button').on('click', function (e) {
+        window.jQuery('#add_note_button').on('click', function (e) {
             e.stopPropagation();
             e.preventDefault();
 
             // disable the submit_button
-            var submit_button = $(this);
+            var submit_button = window.jQuery(this);
             submit_button.button('loading');
 
-            var editor = $('.wysiwyg-editor');
+            var editor = window.jQuery('.wysiwyg-editor');
             var content = editor.cleanHtml();
             var content_as_text = editor.text();
 
-            $.post(
+            window.jQuery.post(
                 "/note/create",
-                $.param({
+                window.jQuery.param({
                     content: content,
                     content_as_text: content_as_text,
                     type: "Simple Text",  {# TODO: it is not simple text anymore, update it. #}
@@ -748,7 +747,7 @@
             ).done(function () {
                 window.location.assign('{{ came_from }}');
 {#                // just append the note to the top#}
-{#                var note_simple_template = doT.template($('#tmpl_note_simple_text').html());#}
+{#                var note_simple_template = doT.template(window.jQuery('#tmpl_note_simple_text').html());#}
             }).fail(function (jqXHR) {
                 bootbox.alert('<div id="message" class="alert alert-danger bigger-110">' + jqXHR.responseText + '</div>');
                 submit_button.button('reset');
@@ -757,8 +756,8 @@
 
     });
 
-    $.getJSON('/tasks/{{ entity.id }}/events/').then(function (data) {
-        $(function () {
+    window.jQuery.getJSON('/tasks/{{ entity.id }}/events/').then(function (data) {
+        window.jQuery(function () {
             var events = [];
             var resources = {};
 
@@ -791,7 +790,7 @@
 
                         resources[prop_id]['additionalParameters']['children'][(data[i].id).toString()] = {name: '<span  class="pull-left"><a href="/tasks/' + data[i].id + '/view">' + data[i].title + '  </a></span>' + time_to_complete_str + percent_complete_str, type: 'item'}
 
-                        $('#resources_box').show();
+                        window.jQuery('#resources_box').show();
                     }
                 }
 
@@ -818,7 +817,7 @@
 
 
     var get_dependency = function (type) {
-        $.getJSON('/tasks/{{ entity.id }}/dependency/' + type + '/').then(function (data) {
+        window.jQuery.getJSON('/tasks/{{ entity.id }}/dependency/' + type + '/').then(function (data) {
 
             var depends = {};
             for (var i = 0; i < data.length; i++) {
@@ -850,12 +849,12 @@
             drawTree(type + '_tree', depends);
 
             if (data.length == 0) {
-                $('#' + type + '_tree').append('<div class="alert alert-warning">No tasks</div>');
+                window.jQuery('#' + type + '_tree').append('<div class="alert alert-warning">No tasks</div>');
             }
         });
     };
 
-    $(function () {
+    window.jQuery(function () {
         {% if entity.is_leaf %}
             get_dependency('depends');
             get_dependency('dependent_of');
@@ -863,7 +862,7 @@
         {% endif %}
     });
 
-    $.getJSON('/entities/{{ entity.id }}/version/used_by/tasks/').then(function (data) {
+    window.jQuery.getJSON('/entities/{{ entity.id }}/version/used_by/tasks/').then(function (data) {
         var tasks = {};
         for (var i = 0; i < data.length; i++) {
 
@@ -888,11 +887,11 @@
             };
         }
 
-        $(function () {
+        window.jQuery(function () {
             drawTree('version_used_by_tasks_tree', tasks);
 
             if (data.length == 0) {
-                $('#version_used_by_tasks_tree').append('<div class="alert alert-warning">No tasks</div>');
+                window.jQuery('#version_used_by_tasks_tree').append('<div class="alert alert-warning">No tasks</div>');
             }
         });
     });
@@ -907,22 +906,22 @@
 </script>
 
 <script>
-        $.getJSON('/tasks/{{ entity.id }}/', function(data){
-            $(function(){
+        window.jQuery.getJSON('/tasks/{{ entity.id }}/', function(data){
+            window.jQuery(function(){
                 // update created and update time of the task
-                $('#task_date_created').html(moment(data[0].date_created).format('YYYY-MM-DD HH:mm'));
-                $('#task_date_updated').html(moment(data[0].date_updated).format('YYYY-MM-DD HH:mm'));
+                window.jQuery('#task_date_created').html(moment(data[0].date_created).format('YYYY-MM-DD HH:mm'));
+                window.jQuery('#task_date_updated').html(moment(data[0].date_updated).format('YYYY-MM-DD HH:mm'));
             })
         })
 </script>
 
 <script>
     // fix calendar not showing up
-    $(function(){
-        $('#calendar_tab').on('click', function(){
+    window.jQuery(function(){
+        window.jQuery('#calendar_tab').on('click', function(){
             // check if the title is visible
             // meaning that calendar tab is working (somebody clicked it before)
-            var today_button = $('.fc-button-today');
+            var today_button = window.jQuery('.fc-button-today');
             if (today_button.attr('fixed_visibility_bug') !== '1') {
                 console.debug('calendar is not visible');
                 // it is not shown yet
@@ -949,12 +948,12 @@
         } else {
             console.log("error uploading file", reason, detail);
         }
-        $('<div class="alert"> <button type="button" class="close" data-dismiss="alert">&times;</button>' +
+        window.jQuery('<div class="alert"> <button type="button" class="close" data-dismiss="alert">&times;</button>' +
                 '<strong>File upload error</strong> ' + msg + ' </div>').prependTo('#alerts');
     }
 
-    $(function(){
-        $('#note_editor').ace_wysiwyg({
+    window.jQuery(function(){
+        window.jQuery('#note_editor').ace_wysiwyg({
             toolbar: [
                 'font',
                 null,
@@ -993,9 +992,9 @@
 
         //Add Image Resize Functionality to Chrome and Safari
         //webkit browsers don't have image resize functionality when content is editable
-        //so let's add something using jQuery UI resizable
+        //so let's add something using window.jQuery UI resizable
         //another option would be opening a dialog for user to enter dimensions.
-        if (typeof jQuery.ui !== 'undefined' && /applewebkit/.test(navigator.userAgent.toLowerCase())) {
+        if (typeof window.jQuery.ui !== 'undefined' && /applewebkit/.test(navigator.userAgent.toLowerCase())) {
 
             var lastResizableImg = null;
 
@@ -1007,8 +1006,8 @@
             }
 
             var enableImageResize = function () {
-                $('.wysiwyg-editor').on('mousedown', function (e) {
-                    var target = $(e.target);
+                window.jQuery('.wysiwyg-editor').on('mousedown', function (e) {
+                    var target = window.jQuery(e.target);
                     if (e.target instanceof HTMLImageElement) {
                         if (!target.data('resizable')) {
                             target.resizable({
@@ -1034,14 +1033,14 @@
 
             enableImageResize();
 
-{#            //or we can load the jQuery UI dynamically only if needed#}
-{#            if (typeof jQuery.ui !== 'undefined') enableImageResize();#}
-{#            else {//load jQuery UI if not loaded#}
-{#                $.getScript($path_assets + "/js/jquery-ui-1.10.3.custom.min.js", function (data,#}
+{#            //or we can load the window.jQuery UI dynamically only if needed#}
+{#            if (typeof window.jQuery.ui !== 'undefined') enableImageResize();#}
+{#            else {//load window.jQuery UI if not loaded#}
+{#                window.jQuery.getScript($path_assets + "/js/window.jQuery-ui-1.10.3.custom.min.js", function (data,#}
 {#                                                                                           textStatus,#}
 {#                                                                                           jqxhr) {#}
 {#                    if ('ontouchend' in document) {//also load touch-punch for touch devices#}
-{#                        $.getScript($path_assets + "/js/jquery.ui.touch-punch.min.js", function (data,#}
+{#                        window.jQuery.getScript($path_assets + "/js/window.jQuery.ui.touch-punch.min.js", function (data,#}
 {#                                                                                                 textStatus,#}
 {#                                                                                                 jqxhr) {#}
 {#                            enableImageResize();#}
@@ -1052,7 +1051,7 @@
         }
 
         // remove speech input
-        $('.wysiwyg-speech-input').remove();
+        window.jQuery('.wysiwyg-speech-input').remove();
 
     });
 </script>

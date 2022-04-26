@@ -81,9 +81,9 @@
     </tbody>
 </table>
 
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery-ui-1.10.3.custom.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.inputlimiter.1.3.1.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/additional-methods.min.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery-ui-1.10.3.custom.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.inputlimiter.1.3.1.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/additional-methods.min.js") }}'></script>#}
 
 <script type="text/javascript">
     function get_project_client_by_type(client_type){
@@ -102,29 +102,29 @@
             return {'id':client_id, 'name':client_name};
         }
 
-    window.$(document).ready(function () {
+    window.jQuery(document).ready(function () {
 
         function get_client_users(client_type, client_type_field_name, roles, users){
             var client_id = get_project_client_by_type(client_type)['id'];
             var client_name = get_project_client_by_type(client_type)['name'];
 
             if (client_id !== -1){
-                $('#'+client_type_field_name+'_name').append('<a class="green" href="/clients/'+client_id+'/view">'+client_name+'</a>');
-                $('#'+client_type_field_name+'_controls').show();
+                window.jQuery('#'+client_type_field_name+'_name').append('<a class="green" href="/clients/'+client_id+'/view">'+client_name+'</a>');
+                window.jQuery('#'+client_type_field_name+'_controls').show();
 
-{#                $.getJSON('/clients/'+client_id+'/users/').then(function (c_data) {#}
+{#                window.jQuery.getJSON('/clients/'+client_id+'/users/').then(function (c_data) {#}
 
                 var client_users = users;
                 for (var i=0; i<roles.length; i++){
 
-                    var field = $('#'+roles[i].field_name);
+                    var field = window.jQuery('#'+roles[i].field_name);
                     chosen_searchable_field_creator_by_data(field, user_option_template, client_users);
                     field.attr('role_name', roles[i].role_name);
                     field.attr('client_id', client_id);
                     field.on('change', function () {
-                        console.log("roles[i].role_name: "+$(this).attr('role_name'));
-                        var second_url = '/clients/'+$(this).attr('client_id')+'/user/append?user_id='+$(this).val()+'&role_name='+$(this).attr('role_name')
-                        set_user_role($(this).val(), $(this).attr('role_name'), second_url);
+                        console.log("roles[i].role_name: "+window.jQuery(this).attr('role_name'));
+                        var second_url = '/clients/'+window.jQuery(this).attr('client_id')+'/user/append?user_id='+window.jQuery(this).val()+'&role_name='+window.jQuery(this).attr('role_name')
+                        set_user_role(window.jQuery(this).val(), window.jQuery(this).attr('role_name'), second_url);
                     });
                     set_field_value(field, '/entities/{{ project.id }}/role_user/?role_name='+roles[i].role_name);
                 }
@@ -132,13 +132,13 @@
 {#                });#}
             }
             else{
-                 $('#'+client_type_field_name+'_controls').hide();
+                 window.jQuery('#'+client_type_field_name+'_controls').hide();
             }
         }
 
         function set_user_role(user_id, role_name, second_post_url){
             console.log("role_name: "+ role_name);
-            $.post(
+            window.jQuery.post(
                 '/entities/{{ project.id }}/users/update/',
                 'id='+user_id+"&role="+role_name
             ).done (function (response_text) {
@@ -149,7 +149,7 @@
                                 });
                if (second_post_url !== ""){
                     setTimeout(function () {
-                        $.post(
+                        window.jQuery.post(
                             second_post_url
                         ).done(function (response_text) {
                                console.log("response_text" + response_text);
@@ -171,7 +171,7 @@
         }
 
         function set_field_value(field, url){
-            $.getJSON(url).then(function (data) {
+            window.jQuery.getJSON(url).then(function (data) {
                 field.val(data.id);
                 {% if not has_permission('Update_Project') %}
                     field.attr('disabled', true);
@@ -186,7 +186,7 @@
             );
         {% endraw %}
 
-        $.getJSON('/entities/{{ studio.id }}/users/').then(function (p_data) {
+        window.jQuery.getJSON('/entities/{{ studio.id }}/users/').then(function (p_data) {
             var studio_users = p_data;
             get_client_users("Brand","brand", [{'field_name':"contact", 'role_name':"Contact"}], studio_users);
             get_client_users("Agency","agency", [{'field_name':"creative_director", 'role_name':"Creative Director"},
@@ -200,7 +200,7 @@
 
         {# ***************************************************************** #}
         {# Submit Button #}
-        var submit_button = $('#submit_button');
+        var submit_button = window.jQuery('#submit_button');
         submit_button.on('click', function (e) {
             e.stopPropagation();
             e.preventDefault();
@@ -208,12 +208,12 @@
             submit_button.button('loading');
 
 
-            var project_form = $('#project_form');
+            var project_form = window.jQuery('#project_form');
 
-            var brand = $('#brand');
-            var production_firm = $('#production_firm');
-            var adv_agency = $('#adv_agency');
-            var product_project_name = $('#product_project_name');
+            var brand = window.jQuery('#brand');
+            var production_firm = window.jQuery('#production_firm');
+            var adv_agency = window.jQuery('#adv_agency');
+            var product_project_name = window.jQuery('#product_project_name');
 
             var g_data = {
                  'product_project_name' : product_project_name.val()
@@ -233,7 +233,7 @@
             console.log("project_form.serialize(): _client_query="+_client_query);
 
             if (project_form.validate()) {
-                $.post(
+                window.jQuery.post(
                     project_form.attr('action'),
                     project_form.serialize() + "&generic_text="+generic_text+_client_query
                 ).done(function () {

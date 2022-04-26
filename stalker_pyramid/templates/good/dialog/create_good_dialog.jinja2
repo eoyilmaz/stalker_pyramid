@@ -126,7 +126,7 @@
 <script type="text/javascript">
     function init_dialog() {
         console.debug('starting to initialize good dialog!!!');
-        var dialog_label = $('#dialog_template_label');
+        var dialog_label = window.jQuery('#dialog_template_label');
         dialog_label.find('span').remove();
         dialog_label.append('<span>Create Good</span>');
 
@@ -134,8 +134,8 @@
         {# Unit #}
 
 
-        $.getJSON('/goods/').then(function (data) {
-            var good_unit = $('#good_unit');
+        window.jQuery.getJSON('/goods/').then(function (data) {
+            var good_unit = window.jQuery('#good_unit');
 
             var available_good_units_as_list = [];
             for (var i=0; i < data.length; i++){
@@ -154,8 +154,8 @@
         {# ***************************************************************** #}
         {# Price List #}
 
-        $.getJSON('/price_lists/').then(function (data) {
-            var good_price_list = $('#good_price_list');
+        window.jQuery.getJSON('/price_lists/').then(function (data) {
+            var good_price_list = window.jQuery('#good_price_list');
 
             var available_priceList_as_list = [];
             for (var i=0; i < data.length; i++){
@@ -179,8 +179,8 @@
             );
         {% endraw %}
 
-        $.getJSON('/types/?target_entity_type=Good').then(function (data) {
-            var good_type = $('#good_type');
+        window.jQuery.getJSON('/types/?target_entity_type=Good').then(function (data) {
+            var good_type = window.jQuery('#good_type');
 
             var available_types_list = [];
             for (var i=0; i < data.length; i++){
@@ -206,25 +206,25 @@
         });
         {# ***************************************************************** #}
         {# Submit Button #}
-        var submit_button = $('#dialog_template_submit_button');
+        var submit_button = window.jQuery('#dialog_template_submit_button');
         submit_button.on('click', function (e) {
             e.stopPropagation();
             e.preventDefault();
 
             submit_button.button('loading');
-            var good_form = $('#good_form');
+            var good_form = window.jQuery('#good_form');
 
             var url = '/goods/create';
 
 
-            $.post(
+            window.jQuery.post(
                 url,
                 good_form.serialize() + '&' +
-                $.param({
+                window.jQuery.param({
                     'studio_id': {{ studio.id }}
                 })
             ).done(function (jqXHR) {
-                //$('#new_outputs_storage').text(JSON.stringify(jqXHR));
+                //window.jQuery('#new_outputs_storage').text(JSON.stringify(jqXHR));
                 window.location.reload();
             }).fail(function (jqXHR) {
                 bootbox.alert(jqXHR.responseText);
@@ -238,15 +238,15 @@
 
 <script type="text/javascript">
     function destruct_dialog() {
-        $('#good_name').unbind();
-        $('#good_msrp').unbind();
-        $('#good_cost').unbind();
-        $('#good_unit').unbind();
-        $('#good_price_list').unbind();
-        $('#good_description').unbind();
-        $('#dialog_template_submit_button').unbind();
+        window.jQuery('#good_name').unbind();
+        window.jQuery('#good_msrp').unbind();
+        window.jQuery('#good_cost').unbind();
+        window.jQuery('#good_unit').unbind();
+        window.jQuery('#good_price_list').unbind();
+        window.jQuery('#good_description').unbind();
+        window.jQuery('#dialog_template_submit_button').unbind();
 
-        $('#dialog_template').data('modal', null);
+        window.jQuery('#dialog_template').data('modal', null);
     }
 </script>
 

@@ -61,18 +61,18 @@
     </div>
 </div>
 
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/chosen.jquery.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/chosen.window.jQuery.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>#}
 {#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/moment.min.js") }}'></script>#}
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/daterangepicker.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap-colorpicker.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.autosize-min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.inputlimiter.1.3.1.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.maskedinput.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/bootstrap-tag.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.validate.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/additional-methods.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.spinner.min.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/daterangepicker.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap-colorpicker.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.autosize-min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.inputlimiter.1.3.1.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.maskedinput.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/bootstrap-tag.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.validate.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/additional-methods.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.spinner.min.js") }}'></script>#}
 
 
 <script>
@@ -80,7 +80,7 @@
         console.log('initialize task dialog start');
 
         // update dialog header
-        $('#dialog_template_label').text('Update Schedule Timing Dialog');
+        window.jQuery('#dialog_template_label').text('Update Schedule Timing Dialog');
 
 
 
@@ -99,7 +99,7 @@
 
 
 
-        var submit_button = $('#dialog_template_submit_button');
+        var submit_button = window.jQuery('#dialog_template_submit_button');
 
 
 
@@ -107,8 +107,8 @@
 
         {# ***************************************************************** #}
         {# Schedule Unit and Model #}
-        $('#task_schedule_unit').val(schedule_unit);
-        $('#task_schedule_model').val(schedule_model);
+        window.jQuery('#task_schedule_unit').val(schedule_unit);
+        window.jQuery('#task_schedule_model').val(schedule_model);
 
 
 
@@ -123,9 +123,9 @@
             setTimeout(function(){submit_button.button('loading')}, 0);
 
             // enable fields
-            var entity_type_value = $('#task_entity_type').val();
+            var entity_type_value = window.jQuery('#task_entity_type').val();
 
-            var task_form = $('#task_form');
+            var task_form = window.jQuery('#task_form');
             var form_data = task_form.serialize();
 {#            console.log('form_data :', form_data);#}
 
@@ -136,21 +136,21 @@
                 } else {
                     task_form.attr('is_sending', true);
                 }
-                $.post(
+                window.jQuery.post(
                     '/tasks/{{ entity.id }}/update/schedule_timing',
                     form_data
                 ).done(function(){
 
-                    $('#dialog_template').modal('hide');
+                    window.jQuery('#dialog_template').modal('hide');
 
-                    var task_schedule_timing = $('#task_schedule_timing');
-                    $('#schedule_timing_{{ entity.id }}').text(task_schedule_timing.val())
-                    var task_schedule_unit = $('#task_schedule_unit');
-                    $('#schedule_unit_{{ entity.id }}').text(task_schedule_unit.val())
+                    var task_schedule_timing = window.jQuery('#task_schedule_timing');
+                    window.jQuery('#schedule_timing_{{ entity.id }}').text(task_schedule_timing.val())
+                    var task_schedule_unit = window.jQuery('#task_schedule_unit');
+                    window.jQuery('#schedule_unit_{{ entity.id }}').text(task_schedule_unit.val())
 
-                    if($('#task_update_bid').prop('checked')){
-                        $('#bid_timing_{{ entity.id }}').text(task_schedule_timing.val())
-                        $('#bid_unit_{{ entity.id }}').text(task_schedule_unit.val())
+                    if(window.jQuery('#task_update_bid').prop('checked')){
+                        window.jQuery('#bid_timing_{{ entity.id }}').text(task_schedule_timing.val())
+                        window.jQuery('#bid_unit_{{ entity.id }}').text(task_schedule_unit.val())
                     }
 
 
@@ -162,7 +162,7 @@
             }
         });
 
-        $('#task_form').validate({
+        window.jQuery('#task_form').validate({
             errorElement: 'span',
             errorClass: 'help-inline',
             focusInvalid: true,
@@ -196,16 +196,16 @@
             },
 
             invalidHandler: function (event, validator) { //display error alert on form submit
-                $('.alert-error', $('.login-form')).show();
+                window.jQuery('.alert-error', window.jQuery('.login-form')).show();
             },
 
             highlight: function (e) {
-                $(e).closest('.control-group').removeClass('info').addClass('error');
+                window.jQuery(e).closest('.control-group').removeClass('info').addClass('error');
             },
 
             success: function (e) {
-                $(e).closest('.control-group').removeClass('error').addClass('info');
-                $(e).remove();
+                window.jQuery(e).closest('.control-group').removeClass('error').addClass('info');
+                window.jQuery(e).remove();
             },
 
             errorPlacement: function (error, element) {
@@ -234,12 +234,12 @@
         console.log('destruct task dialog start');
         // unbind events
 
-        var dialog_template_submit_button = $('#dialog_template_submit_button');
+        var dialog_template_submit_button = window.jQuery('#dialog_template_submit_button');
         dialog_template_submit_button.button('reset')
         dialog_template_submit_button.unbind();
 
         // remove dialog
-        $('#dialog_template').data('modal', null);
+        window.jQuery('#dialog_template').data('modal', null);
         console.log('destruct task dialog end');
     }
 </script>

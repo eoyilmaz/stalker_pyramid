@@ -8,7 +8,7 @@
 
 <script type="text/javascript">
 
-    window.$(document).ready(function () {
+    window.jQuery(document).ready(function () {
         page_of(
             '{{ project.name }}',
             '{{ project.code }}',
@@ -173,41 +173,41 @@
 </script>
 
 <script type="text/javascript">
-    $.getJSON('/projects/{{ project.id }}/tasks/count/').then(function (data) {
-        $(function(){
-            $('#Tasks_count').text(data);
+    window.jQuery.getJSON('/projects/{{ project.id }}/tasks/count/').then(function (data) {
+        window.jQuery(function(){
+            window.jQuery('#Tasks_count').text(data);
         })
     });
 </script>
 
 <script type="text/javascript">
-    $.getJSON('/projects/{{ project.id }}/assets/count/').then(function (data) {
-        $(function(){
-            $('#Assets_count').text(data);
+    window.jQuery.getJSON('/projects/{{ project.id }}/assets/count/').then(function (data) {
+        window.jQuery(function(){
+            window.jQuery('#Assets_count').text(data);
         })
     });
 </script>
 
 <script type="text/javascript">
-    $.getJSON('/projects/{{ project.id }}/sequences/count/').then(function (data) {
-        $(function () {
-            $('#Sequences_count').text(data);
+    window.jQuery.getJSON('/projects/{{ project.id }}/sequences/count/').then(function (data) {
+        window.jQuery(function () {
+            window.jQuery('#Sequences_count').text(data);
         });
     });
 </script>
 
 <script type="text/javascript">
-    $.getJSON('/projects/{{ project.id }}/shots/count/').then(function (data) {
-        $(function () {
-            $('#Shots_count').text(data);
+    window.jQuery.getJSON('/projects/{{ project.id }}/shots/count/').then(function (data) {
+        window.jQuery(function () {
+            window.jQuery('#Shots_count').text(data);
         });
     });
 </script>
 
 <script type="text/javascript">
-    $.getJSON('/entities/{{ project.id }}/users/count/').then(function (data) {
-        $(function (){
-            $('#Users_count').text(data);
+    window.jQuery.getJSON('/entities/{{ project.id }}/users/count/').then(function (data) {
+        window.jQuery(function (){
+            window.jQuery('#Users_count').text(data);
         });
     });
 </script>

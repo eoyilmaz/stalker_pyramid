@@ -70,10 +70,10 @@
 
 
 <script type="text/javascript">
-    window.$(document).ready(function () {
-        var related_asset_template = doT.template($('#tmpl_related_asset_item').html());
-        var related_assets_list = $('#related_assets_list');
-        $.getJSON('/tasks/{{ entity.id }}/related/Asset/depends/').then(function (data) {
+    window.jQuery(document).ready(function () {
+        var related_asset_template = doT.template(window.jQuery('#tmpl_related_asset_item').html());
+        var related_assets_list = window.jQuery('#related_assets_list');
+        window.jQuery.getJSON('/tasks/{{ entity.id }}/related/Asset/depends/').then(function (data) {
 
             {#console.log("data.length: ", data.length);#}
             for (var i = 0; i < data.length; i++) {
@@ -89,7 +89,7 @@
                     data[i].remove_asset_action = '/entities/'+data[i].e_id+'/assets/'+data[i].id+'/remove/dialog';
                 {% endif %}
 
-                var related_asset_li = $('#related_asset_'+data[i].id);
+                var related_asset_li = window.jQuery('#related_asset_'+data[i].id);
                 if (related_asset_li.length==0){
                     related_assets_list.append(related_asset_template(data[i]));
                 }

@@ -39,9 +39,9 @@
 
 {# EXTRA-SCRIPTS #}
 {% block extrascripts %}
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.bootstrap.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/dataTable_num-html_sort.js") }}'></script>
+{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.dataTables.min.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.dataTables.bootstrap.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/dataTable_num-html_sort.js") }}'></script>#}
 
     {% raw %}
     <script id="tmpl_taskColumn" type="text/x-dot-template">
@@ -127,22 +127,22 @@
     {% endraw %}
 
     <script>
-        window.$(document).ready(function () {
+        window.jQuery(document).ready(function () {
             var icon_name = get_icon('task');
-            $('#items_header').append('<i class=' + icon_name + '></i>');
+            window.jQuery('#items_header').append('<i class=' + icon_name + '></i>');
             // fill tasks table with dynamic data
-            $.getJSON('/tasks/{{ task_type }}/children/task_type/').then(function (types_data) {
-                var column_template = doT.template($('#tmpl_taskColumn').html());
+            window.jQuery.getJSON('/tasks/{{ task_type }}/children/task_type/').then(function (types_data) {
+                var column_template = doT.template(window.jQuery('#tmpl_taskColumn').html());
 
                 var k;
-                var table_column = $('#tasks_table_column');
+                var table_column = window.jQuery('#tasks_table_column');
                 for (k = 0; k < types_data.length; k++) {
                     // append it to the table
                     table_column.append(column_template(types_data[k]));
                 }
 
-                $('#loading_spinner').hide();
-                $('#content').show();
+                window.jQuery('#loading_spinner').hide();
+                window.jQuery('#content').show();
             })
         });
     </script>

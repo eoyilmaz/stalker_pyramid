@@ -24,10 +24,10 @@
 
 <script type="text/javascript">
 
-    window.$(document).ready(function () {
+    window.jQuery(document).ready(function () {
         {% if budget %}
-            $('#start_date').text(moment({{ budget.get_generic_text_attr('start_date') }}).format('DD/MM/YYYY'));
-            $('#end_date').text(moment({{ budget.get_generic_text_attr('end_date') }}).format('DD/MM/YYYY'));
+            window.jQuery('#start_date').text(moment({{ budget.get_generic_text_attr('start_date') }}).format('DD/MM/YYYY'));
+            window.jQuery('#end_date').text(moment({{ budget.get_generic_text_attr('end_date') }}).format('DD/MM/YYYY'));
         {% endif %}
     });
 

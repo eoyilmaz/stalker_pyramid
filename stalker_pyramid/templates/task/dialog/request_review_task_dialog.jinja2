@@ -86,21 +86,21 @@
 </script>
 {% endraw %}
 
-<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/bootstrap-tag.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/chosen.jquery.min.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/bootstrap-tag.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/chosen.window.jQuery.min.js") }}'></script>#}
 
 <script>
 
     function init_dialog() {
         console.debug('starting to initialize confirm dialog!!!');
 
-        var dialog_template_label = $('#dialog_template_label');
+        var dialog_template_label = window.jQuery('#dialog_template_label');
         dialog_template_label.find('span').remove();
         dialog_template_label.append('<span class="green">Request Review Dialog</span>');
 
         {% if selected_responsible == None  %}
 
-            var task_responsible = $('#task_responsible');
+            var task_responsible = window.jQuery('#task_responsible');
 
             task_responsible.chosen({
                 search_contains: true,
@@ -134,7 +134,7 @@
             var warning_template_id = '#alert-for-{{request_review_mode}}';
 
             {% raw %}
-            var warning_message_template = doT.template($(warning_template_id).html());
+            var warning_message_template = doT.template(window.jQuery(warning_template_id).html());
             {% endraw %}
 
             var responsible_name = 'responsible of this task.';
@@ -142,13 +142,13 @@
                 responsible_name = '{{ selected_responsible.name }}';
             {% endif %}
 
-            var request_review_warning_message = $('#request-review-warning-message');
+            var request_review_warning_message = window.jQuery('#request-review-warning-message');
             request_review_warning_message.find('div').remove();
             request_review_warning_message.append(warning_message_template({'responsible_name': responsible_name}));
 
         {% else %}
-            $('#request_review_task_form').hide();
-            $('#version_message').append(
+            window.jQuery('#request_review_task_form').hide();
+            window.jQuery('#version_message').append(
                 "<div class='alert alert-error bigger-110'><p>" +
                 "A <strong>{{ task_type }}</strong> task needs to have at " +
                 "least one published version in order to be reviewed and " +
@@ -160,25 +160,25 @@
 
         {# ***************************************************************** #}
         {# Submit Button #}
-        $('#dialog_template_submit_button').on('click', function (e) {
+        window.jQuery('#dialog_template_submit_button').on('click', function (e) {
             e.stopPropagation();
             e.preventDefault();
 
             // disable the submit_button
-            var submit_button = $(this);
+            var submit_button = window.jQuery(this);
 
             if (url){
                 submit_button.button('loading');
 
-                var request_review_task_form = $('#request_review_task_form');
+                var request_review_task_form = window.jQuery('#request_review_task_form');
                 var request_review_task_form_data = request_review_task_form.serialize() + '&request_review_mode={{ request_review_mode }}';
 
                 {% if selected_responsible %}
                     request_review_task_form_data += "&selected_responsible_ids={{ selected_responsible.id }}";
                 {% endif %}
 
-                $.post(url, request_review_task_form_data).done(function (response) {
-                    $('#dialog_template').modal('hide');
+                window.jQuery.post(url, request_review_task_form_data).done(function (response) {
+                    window.jQuery('#dialog_template').modal('hide');
                     // reload page
                     setTimeout(function () { // wait for hide event to finish
                         window.location.reload();
@@ -189,7 +189,7 @@
                 });
             }
             else {
-                $('#dialog_template').modal('hide');
+                window.jQuery('#dialog_template').modal('hide');
             }
         });
 
@@ -200,7 +200,7 @@
 
 <script type="text/javascript">
     function destruct_dialog() {
-        $('#dialog_template_submit_button').unbind();
-        $('#dialog_template').data('modal', null);
+        window.jQuery('#dialog_template_submit_button').unbind();
+        window.jQuery('#dialog_template').data('modal', null);
     }
 </script>

@@ -65,28 +65,28 @@
 {% endblock page_content %}
 
 {% block extrascripts %}
-    <script class="include" type="text/javascript"
-            src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/jquery.jqplot.min.js") }}'></script>
-    <script class="include" type="text/javascript"
-        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.categoryAxisRenderer.min.js") }}'></script>
-<script class="include" type="text/javascript"
-        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.barRenderer.min.js") }}'></script>
-<script class="include" type="text/javascript"
-        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.dateAxisRenderer.min.js") }}'></script>
-<script class="include" type="text/javascript"
-        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.logAxisRenderer.min.js") }}'></script>
-<script class="include" type="text/javascript"
-        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.canvasAxisTickRenderer.min.js") }}'></script>
-<script class="include" type="text/javascript"
-        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.canvasTextRenderer.min.js") }}'></script>
-<script class="include" type="text/javascript"
-        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.pointLabels.min.js") }}'></script>
-<script class="include" type="text/javascript"
-        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.highlighter.min.js") }}'></script>
-<script class="include" type="text/javascript"
-        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.cursor.min.js") }}'></script>
+{#    <script class="include" type="text/javascript"#}
+{#            src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/window.jQuery.jqplot.min.js") }}'></script>#}
+{#    <script class="include" type="text/javascript"#}
+{#        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.categoryAxisRenderer.min.js") }}'></script>#}
+{#<script class="include" type="text/javascript"#}
+{#        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.barRenderer.min.js") }}'></script>#}
+{#<script class="include" type="text/javascript"#}
+{#        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.dateAxisRenderer.min.js") }}'></script>#}
+{#<script class="include" type="text/javascript"#}
+{#        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.logAxisRenderer.min.js") }}'></script>#}
+{#<script class="include" type="text/javascript"#}
+{#        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.canvasAxisTickRenderer.min.js") }}'></script>#}
+{#<script class="include" type="text/javascript"#}
+{#        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.canvasTextRenderer.min.js") }}'></script>#}
+{#<script class="include" type="text/javascript"#}
+{#        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.pointLabels.min.js") }}'></script>#}
+{#<script class="include" type="text/javascript"#}
+{#        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.highlighter.min.js") }}'></script>#}
+{#<script class="include" type="text/javascript"#}
+{#        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.cursor.min.js") }}'></script>#}
 
-<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/accounting.min.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/accounting.min.js") }}'></script>#}
 <style>
     .jqplot-target {
         margin: 0px;
@@ -102,14 +102,14 @@
     }
 </style>
     <script type="text/javascript">
-        window.$(document).ready(function () {
+        window.jQuery(document).ready(function () {
 
             var total_cost = parseInt({{ entity.get_generic_text_attr('total_cost') }});
             var total_price = parseInt({{ entity.get_generic_text_attr('total_price') }});
             var approved_total_price = parseInt({{ entity.get_generic_text_attr('approved_total_price') }});
 
-            $.jqplot._noToImageButton = true;
-            $.jqplot.config.enablePlugins = true;
+            window.jQuery.jqplot._noToImageButton = true;
+            window.jQuery.jqplot.config.enablePlugins = true;
 
             var line1 = [
                 ['Total Cost', total_cost],
@@ -117,7 +117,7 @@
                 ['Approved Total Price', approved_total_price]
             ];
 
-            $('#bar_chart').jqplot([line1], {
+            window.jQuery('#bar_chart').jqplot([line1], {
                 title:'',
                 highlighter: {
                     show: true,
@@ -132,7 +132,7 @@
                 },
                 seriesColors:['#17BDB8', '#00749F', '#73C774'],
                 seriesDefaults:{
-                    renderer:$.jqplot.BarRenderer,
+                    renderer:window.jQuery.jqplot.BarRenderer,
                     rendererOptions: {
                         // Set the varyBarColor option to true to use different colors for each bar.
                         // The default series colors are used.
@@ -141,7 +141,7 @@
                 },
                 axes:{
                     xaxis:{
-                        renderer: $.jqplot.CategoryAxisRenderer
+                        renderer: window.jQuery.jqplot.CategoryAxisRenderer
                     }
                 }
             });

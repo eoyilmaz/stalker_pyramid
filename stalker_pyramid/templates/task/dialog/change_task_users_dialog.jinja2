@@ -24,11 +24,11 @@
     function init_dialog() {
         console.debug('starting to initialize add_task_user_dialog dialog!!!');
 
-        $(function () {
-            var label = $('#dialog_template_label');
+        window.jQuery(function () {
+            var label = window.jQuery('#dialog_template_label');
             label.find('span').remove();
             label.append('<span>Append {{ user_type }}</span>');
-            $('#dialog_template_body').attr('style', "height: 300px");
+            window.jQuery('#dialog_template_body').attr('style', "height: 300px");
     
             var selected_users = [];
 
@@ -38,7 +38,7 @@
                 {% endfor %}
             ];
 
-            var task_users = $('#task_users');
+            var task_users = window.jQuery('#task_users');
 
             task_users.chosen({
                 search_contains: true,
@@ -49,7 +49,7 @@
                 var user_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
             {% endraw %}
 
-            $.getJSON('/projects/{{ task.project.id }}/users/?simple=1').then(function(data){
+            window.jQuery.getJSON('/projects/{{ task.project.id }}/users/?simple=1').then(function(data){
                 // remove current elements
                 task_users.find('option').remove();
 
@@ -67,22 +67,22 @@
                 task_users.trigger('liszt:updated');
             });
 
-            var submit_button = $('#dialog_template_submit_button');
+            var submit_button = window.jQuery('#dialog_template_submit_button');
             submit_button.on('click', function (e) {
 
                 e.stopPropagation();
                 e.preventDefault();
                 submit_button.button('loading');
 
-                var append_form = $("#append_form");
+                var append_form = window.jQuery("#append_form");
 
-                $.post(
+                window.jQuery.post(
                     '/tasks/{{ task.id }}/change/{{ user_type.lower() }}',
                     append_form.serialize()
                 ).done(function (response_text) {
                     window.location.assign('{{ came_from }}');
                     submit_button.button('reset');
-                    $('#dialog_template').modal('hide');
+                    window.jQuery('#dialog_template').modal('hide');
                 }).fail(function (jqXHR) {
                     bootbox.alert(jqXHR.responseText);
                     submit_button.button('reset');
@@ -96,7 +96,7 @@
 
 <script type="text/javascript">
     function destruct_dialog() {
-        $('#dialog_template_submit_button').unbind();
-        $('#dialog_template').data('modal', null);
+        window.jQuery('#dialog_template_submit_button').unbind();
+        window.jQuery('#dialog_template').data('modal', null);
     }
 </script>

@@ -15,25 +15,25 @@
     function init_dialog() {
         console.debug('starting to initialize user dialog!!!');
 
-        var dialog_template_label = $('#dialog_template_label');
+        var dialog_template_label = window.jQuery('#dialog_template_label');
         dialog_template_label.find('span').remove();
         dialog_template_label.append('<span>New User</span>');
 
-        //$('#dialog_template').attr('style', "width:700px; height:800px");
+        //window.jQuery('#dialog_template').attr('style', "width:700px; height:800px");
 
 
         // {# ***************************************************************** #}
         // {# Submit Button #}
-        var submit_button = $('#dialog_template_submit_button');
+        var submit_button = window.jQuery('#dialog_template_submit_button');
         submit_button.on('click', function (e) {
             e.stopPropagation();
             e.preventDefault();
 
             setTimeout(function(){submit_button.button('loading')}, 0)
 
-            var user_form = $('#user_form');
+            var user_form = window.jQuery('#user_form');
             if (user_form.validate().errorList.length === 0) {
-                $.post(
+                window.jQuery.post(
                     user_form.attr('action'),
                     user_form.serialize()
                 ).done(function () {
@@ -56,15 +56,15 @@
 <script type="text/javascript">
 
     function destruct_dialog() {
-        $('#user_form').unbind();
-        $('#user_name').unbind();
-        $('#user_login').unbind();
-        $('#user_email').unbind();
-        $('#user_password').unbind();
-        $('#user_password2').unbind();
-        $('#dialog_template_submit_button').unbind();
+        window.jQuery('#user_form').unbind();
+        window.jQuery('#user_name').unbind();
+        window.jQuery('#user_login').unbind();
+        window.jQuery('#user_email').unbind();
+        window.jQuery('#user_password').unbind();
+        window.jQuery('#user_password2').unbind();
+        window.jQuery('#dialog_template_submit_button').unbind();
 
-        $('#dialog_template').data('modal', null);
+        window.jQuery('#dialog_template').data('modal', null);
 
     }
 </script>

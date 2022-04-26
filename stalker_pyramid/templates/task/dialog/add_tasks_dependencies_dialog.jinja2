@@ -23,15 +23,15 @@
     </form>
 </div>
 
-{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.autosize-min.js") }}'></script>#}
-<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/bootstrap-tag.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.autosize-min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/bootstrap-tag.js") }}'></script>#}
 
 <script type="text/javascript">
     function init_dialog() {
         console.debug('starting to initialize add_task_dependencies_dialog dialog!!!');
 
         var timeout_buffer; // it is used in delaying AJAX calls see task_depends_to
-        var task_depends_to = $('#task_depends_to');
+        var task_depends_to = window.jQuery('#task_depends_to');
 
         task_depends_to.tag({
             placeholder: task_depends_to.data('placeholder'),
@@ -64,8 +64,8 @@
         // fix input width
         task_depends_to.parent().addClass('input-block-level span12');
 
-        var form = $('#change_form');
-        var submit_button = $('#dialog_template_submit_button');
+        var form = window.jQuery('#change_form');
+        var submit_button = window.jQuery('#dialog_template_submit_button');
         submit_button.on('click', function(e) {
             e.stopPropagation();
             e.preventDefault();
@@ -80,18 +80,18 @@
             var raw_dependent_ids = form.serializeArray()[0].value;
 
             console.log(raw_dependent_ids)
-            fd.dependent_ids = $.map(raw_dependent_ids.split(','), function (value) {
+            fd.dependent_ids = window.jQuery.map(raw_dependent_ids.split(','), function (value) {
                 value = value.match(/\(([0-9]+)\)/)[1];
                 return value;
             });
 
             submit_button.button('loading');
-            $.post(
+            window.jQuery.post(
                 '{{ request.route_url("add_tasks_dependencies") }}',
                 fd
             ).done(function(jqXHR){
                 submit_button.button('reset');
-                $('#dialog_template').modal('hide');
+                window.jQuery('#dialog_template').modal('hide');
             }).fail(function(jqXHR){
                 //console.debug('fail --> jqXHR:', jqXHR);
                 bootbox.alert(jqXHR.responseText);
@@ -105,7 +105,7 @@
 
 <script type="text/javascript">
     function destruct_dialog() {
-        $('#dialog_template_submit_button').unbind();
-        $('#dialog_template').data('modal', null);
+        window.jQuery('#dialog_template_submit_button').unbind();
+        window.jQuery('#dialog_template').data('modal', null);
     }
 </script>

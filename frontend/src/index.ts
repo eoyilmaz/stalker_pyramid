@@ -1,69 +1,104 @@
-// -*- coding: utf-8 -*-
-// Stalker Pyramid a Web Base Production Asset Management System
-// Copyright (C) 2009-2018 Erkan Ozgur Yilmaz
-//
-// This file is part of Stalker Pyramid.
-//
-// This library is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation;
-// version 2.1 of the License.
-//
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-// Lesser General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public
-// License along with this library; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
-// USA
+import * as jQuery from "jquery";
+import * as $ from "jquery";
 
-/// <reference path="../node_modules/@types/jquery/index.d.ts"/>
+import {Ace} from './js/ace';
+import {Stalker} from "./js/stalker";
 
-
-
-// import * as $ from 'jquery';
-import * as jQuery from 'jquery';
+// import 'x-editable/dist/bootstrap-editable/js/bootstrap-editable';
 
 import 'bootstrap';
 import './less/ace.less';
-import 'fullcalendar';
 
-
-import { Ace } from './js/ace';
-import './js/ace-elements.js';
+import './js/ace-elements';
 import './js/cache_users';
+import './js/Paginator';
+import './js/Studio';
+import get_icon from './js/utils';
 
-import get_icon from './js/utils.js';
+var dojoConfig = {async: true, parseOnLoad: true}
+// const dojo = require("../node_modules/dojo/dojo");
 
-const doT = require('./../node_modules/dot/doT.js');
-
+import {template} from "dot";
 
 
 declare global {
     interface Window {
         ace: any;
-        $: any;
-        jQuery: any;
+        stalker: any;
         bootbox: any;
-        resize_page_content: any;
         copyToClipboard: any;
-        do_playblast: any;
-        export_alembics: any;
-        flash_message: any;
-        scrollToTaskItem: any;
-        menus_under_title: any;
-        submenu_of: any;
-        menu_of: any;
-        init_dialog: any;
         destruct_dialog: any;
-        init_html_modal: any;
         destruct_html_modal: any;
+        init_dialog: any;
+        init_html_modal: any;
+        flash_message: any;
+        menu_of: any;
+        menus_under_title: any;
+        resize_page_content: any;
+        scrollToTaskItem: any;
+        submenu_of: any;
+    }
+
+    interface XEditableOptions {
+        ajaxOptions?: any;
+        anim?: string | undefined;
+        autotext?: string | undefined;
+        defaultValue?: any;
+        disabled?: boolean | undefined;
+        display?: any;
+        emptyclass?: string | undefined;
+        emptytext?: string | undefined;
+        error?: any;
+        highlight?: any;
+        mode?: string | undefined;
+        name?: string | undefined;
+        onblur?: string | undefined;
+        params?: any;
+        pk?: any;
+        placement?: string | undefined;
+        savenochange?: boolean | undefined;
+        selector?: string | undefined;
+        send?: string | undefined;
+        showbuttons?: any;
+        success?: any;
+        toggle?: string | undefined;
+        type?: string | undefined;
+        unsavedclass?: string | undefined;
+        url?: any;
+        validate?: any;
+        value?: any;
+    }
+
+    interface XEditableSubmitOptions {
+        url?: any;
+        data?: any;
+        ajaxOptions?: any;
+        error(obj: any): void;
+        success(obj: any, config: any): void;
+    }
+
+    interface XEditable {
+        options: XEditableOptions;
+        activate(): void;
+        destroy(): void;
+        disable(): void;
+        enable(): void;
+        getValue(isSingle: boolean): any;
+        hide(): void;
+        option(key: any, value: any): void;
+        setValue(value: any, convertStr: boolean): void;
+        show(closeAll: boolean): void;
+        submit(options: XEditableSubmitOptions): void;
+        toggle(closeAll: boolean): void;
+        toggleDisabled(): void;
+        validate(): void;
     }
 
     interface JQuery {
+        editable(options?: any): XEditable;
+        editable(method: string, params?: any): XEditable;
         editableform: any;
+        typeahead: any;
     }
 
     interface JQueryStatic {
@@ -71,25 +106,16 @@ declare global {
         editableform: any;
         // editable(options?: any): XEditable;
     }
-
-    interface XEditable {
-        options: XEditableOptions;
-    }
-
 }
 
-window.ace = new Ace();
-window.jQuery = jQuery;
-window.$ = jQuery;
+// window.$ = jQuery;
+// window.jQuery = jQuery;
+// window.ace = new Ace();
+// window.stalker = stalker;
+window.stalker = new Stalker();
 
 
-window.console.debug('window.$:', window.$);
-window.console.debug('window.$.getJSON:', window.$.getJSON);
-window.console.debug('jQuery:', jQuery);
-window.console.debug('jQuery.getJSON:', jQuery.getJSON);
-
-
-window.$(function () {
+$(function () {
     // choose default skin
     const skin_class = 'skin-1';
     const body = $(document.body);
@@ -109,12 +135,12 @@ window.resize_page_content = function () {
     }
 };
 
-window.jQuery(function () {
+jQuery(function () {
     window.resize_page_content();
 });
 
 
-window.$(function () {
+$(function () {
     // hide ace-settings bar
     $('#ace-settings-box').toggleClass('open');
 });
@@ -125,39 +151,6 @@ window.copyToClipboard = function (text) {
     window.prompt('Copy to clipboard: Ctrl+C, Enter', text);
 };
 
-
-// Do Playblast
-window.do_playblast = function (version_id) {
-    var result = window.confirm("Do Playblast?:" + version_id);
-    if (result === true){
-        $.post("/versions/" + version_id + "/do_playblast").done(function(){
-            const message = '<div>Job created! Check Afanasy</div>';
-            window.bootbox.alert(message);
-            $('.bootbox').prepend('<div class="modal-header alert-success"><strong>Success</strong></div>');
-        }).fail(function(jqXHR){
-            const message = '<div>' + jqXHR.responseText + '</div>';
-            window.bootbox.alert(message);
-            $('.bootbox').prepend('<div class="modal-header alert-danger"><strong>Fail</strong></div>');
-        });
-    }
-};
-
-
-// Export Alembics
-window.export_alembics = function (version_id) {
-    var result = window.confirm("Export Alembics?" + version_id);
-    if (result === true){
-        $.post("/versions/" + version_id + "/export_alembics").done(function(){
-            var message = '<div>Job created! Check Afanasy</div>';
-            window.bootbox.alert(message);
-            $('.bootbox').prepend('<div class="modal-header alert-success"><strong>Success</strong></div>');
-        }).fail(function(jqXHR){
-            var message = '<div>' + jqXHR.responseText + '</div>';
-            window.bootbox.alert(message);
-            $('.bootbox').prepend('<div class="modal-header alert-danger"><strong>Fail</strong></div>');
-        });
-    }
-};
 
 // Pop Flash Messages
 window.flash_message = function (settings) {
@@ -209,15 +202,14 @@ window.scrollToTaskItem = function (start) {
 };
 
 
-
 // {# Event Dialog Initialize #}
 $(function () {
     const event_dialog = $('#dialog_template');
 
-    const init_them_all = function() {
+    const init_them_all = function () {
         if (event_dialog.find('script.dialog_loaded')[0] !== undefined) {
             try {
-                setTimeout(function() {
+                setTimeout(function () {
                     // init_dialog() will be loaded with the dialog itself
                     window.init_dialog();
                 });
@@ -240,7 +232,7 @@ $(function () {
         e.stopPropagation();
         e.preventDefault();
         try {
-            setTimeout(function() {
+            setTimeout(function () {
                 // destruct_dialog() will be loaded with the dialog itself
                 window.destruct_dialog();
             });
@@ -249,7 +241,6 @@ $(function () {
         }
     });
 });
-
 
 
 // {# HTML Dialog Initialize #}
@@ -277,7 +268,6 @@ $(function () {
 });
 
 
-
 // {# Inline Edits #}
 $(function () {
     // $.fn.editable.defaults.mode = 'inline';
@@ -290,7 +280,7 @@ $(function () {
 window.menus_under_title = function (title, icon, menuItems) {
     $(function () {
         const sidebar_list = $('#sidebar_list');
-        const tree_link_template = doT.template($('#tmpl_sidebar_tree_link').html());
+        const tree_link_template = template($('#tmpl_sidebar_tree_link').html());
         const data_counts = menuItems.length;
 
         if (data_counts > 0) {
@@ -301,7 +291,7 @@ window.menus_under_title = function (title, icon, menuItems) {
         }
 
         const item_sublink = $('#' + title + '_sublink');
-        const tree_sublink_template = doT.template($('#tmpl_sidebar_tree_sublink').html());
+        const tree_sublink_template = template($('#tmpl_sidebar_tree_sublink').html());
 
         for (let i = 0; i < data_counts; i++) {
             item_sublink.append(tree_sublink_template(menuItems[i]));
@@ -314,7 +304,7 @@ window.submenu_of = function (id, treeItemType) {
     $.getJSON('/entities/' + id + '/' + treeItemType.toLowerCase() + 's/').then(function (data) {
         $(function () {
             const sidebar_list = $('#sidebar_list');
-            const tree_link_template = doT.template($('#tmpl_sidebar_tree_link').html());
+            const tree_link_template = template($('#tmpl_sidebar_tree_link').html());
             const data_counts = data.length;
 
             if (data_counts > 0) {
@@ -325,7 +315,7 @@ window.submenu_of = function (id, treeItemType) {
             }
 
             const item_sublink = $('#' + treeItemType + 's_sublink');
-            const tree_sublink_template = doT.template($('#tmpl_sidebar_tree_sublink').html());
+            const tree_sublink_template = template($('#tmpl_sidebar_tree_sublink').html());
 
             for (let i = 0; i < data_counts; i++) {
                 data[i].link = '/' + treeItemType.toLowerCase() + 's/' + data[i].id + '/view';
@@ -338,7 +328,7 @@ window.submenu_of = function (id, treeItemType) {
 
 window.menu_of = function (title, state, address, icon, count) {
     const sidebar_list = $('#sidebar_list');
-    const link_template = doT.template($('#tmpl_sidebar_link').html());
+    const link_template = template($('#tmpl_sidebar_link').html());
 
     const options = {
         'title': title,
@@ -349,12 +339,12 @@ window.menu_of = function (title, state, address, icon, count) {
     };
 
     const rendered_template = $($.parseHTML(link_template(options)));
-    sidebar_list.append(rendered_template);
+    sidebar_list.append(rendered_template[0]);
 
     const badge = rendered_template.find('.badge');
 
     // update the badge
-    if ( typeof(count) === 'string' && count !== 'no_badge') {
+    if (typeof (count) === 'string' && count !== 'no_badge') {
         // it is the address of the source
         $.getJSON(count).then(function (data) {
             count = data;

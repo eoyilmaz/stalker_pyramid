@@ -29,15 +29,15 @@
 </div>
 
 
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.bootstrap.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/dataTable_num-html_sort.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.dataTables.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.dataTables.bootstrap.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/dataTable_num-html_sort.js") }}'></script>#}
 
 
 <script>
     function getTableSelectedIds(){
         var ids = [];
-        $('table td:first-child input:checkbox').each(function () {
+        window.jQuery('table td:first-child input:checkbox').each(function () {
 
             if(this.checked){
                 ids.push(this.id);
@@ -61,12 +61,12 @@
         {#console.log("modal: "+ modal);#}
 
         if(modal === 'true'){
-            var event_dialog = $('#dialog_template');
+            var event_dialog = window.jQuery('#dialog_template');
             event_dialog.modal({
                 'remote': url + _query
             });
         } else {
-            $.post(url+_query).done(function (response_text) {
+            window.jQuery.post(url+_query).done(function (response_text) {
                 window.location.reload();
             }).fail(function (jqXHR) {
                 bootbox.alert(jqXHR.responseText);
@@ -75,7 +75,7 @@
     }
 
     function get_task_notes(id, name){
-         var event_dialog = $('#html_template');
+         var event_dialog = window.jQuery('#html_template');
         event_dialog.attr('title', name);
 {#        console.log('get_task_notes ' + name);#}
         event_dialog.modal({
@@ -86,7 +86,7 @@
 
     function get_task_absoulute_path(task_id){
 
-        $.getJSON('/tasks/' + task_id + '/absolute_full_path/').then(function (absolute_full_path) {
+        window.jQuery.getJSON('/tasks/' + task_id + '/absolute_full_path/').then(function (absolute_full_path) {
             window.prompt("Copy to clipboard: Ctrl+C, Enter", absolute_full_path);
         });
     }
@@ -95,11 +95,11 @@
 
         console.debug('starting to initialize init_table_data dialog!!!');
         var oTable1;
-        var button_list = $('#button_list');
+        var button_list = window.jQuery('#button_list');
         button_list.find('button').remove();
         var submit_form_url= '';
 
-        var btn_template = doT.template($('#tmpl_btn').html());
+        var btn_template = doT.template(window.jQuery('#tmpl_btn').html());
 
         var force_complete_btn_info = {
             'id':'force_complete_btn',
@@ -177,12 +177,12 @@
             button_list.append(btn_template(watch_task_btn_info));
             button_list.append(btn_template(unwatch_task_btn_info));
 
-            $('.btn-mini').on('click', function(e){
+            window.jQuery('.btn-mini').on('click', function(e){
                 e.preventDefault();
                 e.stopPropagation();
 
-                console.log($(this).attr("url"));
-                submit_action($(this).attr("url"), $(this).attr("modal"));
+                console.log(window.jQuery(this).attr("url"));
+                submit_action(window.jQuery(this).attr("url"), window.jQuery(this).attr("modal"));
             });
         {% endif %}
 
@@ -192,9 +192,9 @@
             query_str = "{{ query_str }}";
         {% else %}
             {% if filter.entity_type == 'Status' %}
-                var template_label = $('#html_template_label');
+                var template_label = window.jQuery('#html_template_label');
                 template_label.find('span').remove();
-                var html_template_header = $('#html_template_header');
+                var html_template_header = window.jQuery('#html_template_header');
                 {% if is_warning_list %}
                     template_label.append('<span>Black List<small> !! these tasks should have been sent to review or an extra time request should have been made for them !!</small></span>');
                     html_template_header.attr('class', 'table-header header-color-dark');
@@ -218,19 +218,19 @@
         {% endif %}
 
 
-        $.getJSON('/tasks/?' + query_str).then(function (data) {
+        window.jQuery.getJSON('/tasks/?' + query_str).then(function (data) {
 
             // fill items table with dynamic data
             // wait until document is ready
-            $(function () {
-                var thead_template = doT.template($('#tmpl_itemThead').html());
-                var table = $('#items_table');
+            window.jQuery(function () {
+                var thead_template = doT.template(window.jQuery('#tmpl_itemThead').html());
+                var table = window.jQuery('#items_table');
                 var table_head = table.find('thead');
                 var total_hours = 0;
                 table_head.append(thead_template({}));
 
 {#                var items = data;#}
-                var row_template = doT.template($('#tmpl_itemRow').html());
+                var row_template = doT.template(window.jQuery('#tmpl_itemRow').html());
 
                 var i;
                 var table_body = table.find('tbody');
@@ -331,21 +331,21 @@
                         table_body.append(row_template(data[i]));
                     {% endif %}
                 }
-{#                var rowFooter_template = doT.template($('#tmpl_itemFooterRow').html());#}
+{#                var rowFooter_template = doT.template(window.jQuery('#tmpl_itemFooterRow').html());#}
 {#                table_body.append(rowFooter_template({'total_hours':convert_seconds_to_time_range(total_hours)}));#}
 
 
                 oTable1 = table.dataTable(params);
                 oTable1.show();
-                $('#loading_spinner').hide();
+                window.jQuery('#loading_spinner').hide();
 
 
-                $('table th input:checkbox').on('click', function () {
+                window.jQuery('table th input:checkbox').on('click', function () {
                     var that = this;
-                    $(this).closest('table').find('tr > td:first-child input:checkbox')
+                    window.jQuery(this).closest('table').find('tr > td:first-child input:checkbox')
                             .each(function () {
                                 this.checked = that.checked;
-                                $(this).closest('tr').toggleClass('selected');
+                                window.jQuery(this).closest('tr').toggleClass('selected');
                             });
                 });
 
@@ -358,8 +358,8 @@
 
 <script type="text/javascript">
     function destruct_html_modal() {
-        $('#items_table').unbind();
-        $('#html_template').data('modal', null);
+        window.jQuery('#items_table').unbind();
+        window.jQuery('#html_template').data('modal', null);
     }
 </script>
 

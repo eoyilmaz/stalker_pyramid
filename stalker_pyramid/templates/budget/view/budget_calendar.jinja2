@@ -133,17 +133,17 @@
 	}
 
 </style>
-    <script type="text/javascript">
-        if("ontouchend" in document) document.write("<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.mobile.custom.min.js") }}'>"+"<"+"/script>");
-    </script>
-    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/i18n/grid.locale-en.js") }}'></script>
+{#    <script type="text/javascript">#}
+{#        if("ontouchend" in document) document.write("<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.mobile.custom.min.js") }}'>"+"<"+"/script>");#}
+{#    </script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/i18n/grid.locale-en.js") }}'></script>#}
 
-    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/dhtmlx-suite/codebase/dhtmlx.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/dhtmlx-gantt/codebase/dhtmlxgantt.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/dhtmlx/ext/dhtmlxgantt_marker.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/dhtmlx/api.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/moment/min/moment.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/dhtmlx/ext/dhtmlxgantt_multiselect.js") }}' type='text/javascript' charset='utf-8'></script>
+{#    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/dhtmlx-suite/codebase/dhtmlx.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/dhtmlx-gantt/codebase/dhtmlxgantt.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/dhtmlx/ext/dhtmlxgantt_marker.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/dhtmlx/api.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/moment/min/moment.min.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/dhtmlx/ext/dhtmlxgantt_multiselect.js") }}' type='text/javascript' charset='utf-8'></script>#}
 {#    <script src="http://export.dhtmlx.com/gantt/api.js"></script>#}
     <script type="text/javascript">
         var budget_start = moment({{ budget.get_generic_text_attr('start_date') }});
@@ -157,10 +157,10 @@
 
 
 
-        window.$(document).ready(function () {
+        window.jQuery(document).ready(function () {
 
             doOnLoad();
-            $('#back_button').on('click', function (e) {
+            window.jQuery('#back_button').on('click', function (e) {
 
                 e.preventDefault();
                 e.stopPropagation();
@@ -171,7 +171,7 @@
 
             });
 
-            $('#forward_button').on('click', function (e) {
+            window.jQuery('#forward_button').on('click', function (e) {
 
                 e.preventDefault();
                 e.stopPropagation();
@@ -182,7 +182,7 @@
 
             });
 
-            $('#export_button').on('click', function (e) {
+            window.jQuery('#export_button').on('click', function (e) {
 {#                console.log(gantt.getLinks())#}
                 e.preventDefault();
                 e.stopPropagation();
@@ -191,27 +191,27 @@
 
             });
 
-            $('#milestone_button').on('click', function (e) {
+            window.jQuery('#milestone_button').on('click', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
                 createItemDialog('milestone');
             });
 
-            $('#folder_button').on('click', function (e) {
+            window.jQuery('#folder_button').on('click', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
                 createItemDialog('folder');
             });
 
 
-            $('#zoom_type').on('change', setScaleConfig);
+            window.jQuery('#zoom_type').on('change', setScaleConfig);
 
         });
 
 
 
         function setScaleConfig(){
-            var value = $('#zoom_type').val();
+            var value = window.jQuery('#zoom_type').val();
             var weekScaleTemplate;
             switch (value) {
                 case "Day":
@@ -283,7 +283,7 @@
             gantt.config.order_branch = true;
             gantt.init("gantt_here");
 
-            $.getJSON('/entities/{{ studio.id }}/events/?keys=vacation').then(function (v_data) {
+            window.jQuery.getJSON('/entities/{{ studio.id }}/events/?keys=vacation').then(function (v_data) {
 
                 dhtmlx.message("Following holidays are excluded from working time:");
 
@@ -365,7 +365,7 @@
                     }
                 ];
 
-                $.getJSON('/budgets/{{ budget.id }}/entries/?data_source=Calendar').then(function (entry_data) {
+                window.jQuery.getJSON('/budgets/{{ budget.id }}/entries/?data_source=Calendar').then(function (entry_data) {
                     var total_number_of_items = 1;
                     var total_items = [];
                     var budget_entries = entry_data;
@@ -405,11 +405,11 @@
                     items.data.push(project);
                     total_items.push(project);
 
-                    $.getJSON('/budgets/{{ budget.id }}/calendar/items/?item_type=folders').then(function (f_data) {
+                    window.jQuery.getJSON('/budgets/{{ budget.id }}/calendar/items/?item_type=folders').then(function (f_data) {
                         var folders = f_data;
                         total_number_of_items += folders.length;
 
-                        $.getJSON('/budgets/{{ budget.id }}/calendar/items/?item_type=milestones').then(function (m_data) {
+                        window.jQuery.getJSON('/budgets/{{ budget.id }}/calendar/items/?item_type=milestones').then(function (m_data) {
                             var milestones = m_data;
                             total_number_of_items += milestones.length;
 
@@ -503,7 +503,7 @@
                             gantt.parse(items);
                             setTimeout(showScaleDesc, 500);
 
-                            $.getJSON('/budgets/{{ budget.id }}/calendar/items/?item_type=links').then(function (l_data) {
+                            window.jQuery.getJSON('/budgets/{{ budget.id }}/calendar/items/?item_type=links').then(function (l_data) {
                                 var budget_links = l_data;
                                 for(var i=0; i<budget_links.length; i++){
                                     gantt.addLink(budget_links[i]);
@@ -669,7 +669,7 @@
 
             var all_items_text =  JSON.stringify(all_items);
 
-            $.post(
+            window.jQuery.post(
                 '/budgets/{{ budget.id }}/calendar/list_order?items='+all_items_text
             ).done(function (jqXHR) {
 
@@ -703,7 +703,7 @@
             _query += "&end_date="+(project.end_date).getTime();
             _query += "&type="+iType;
 
-            var event_dialog = $('#dialog_template');
+            var event_dialog = window.jQuery('#dialog_template');
             event_dialog.attr("name", "");
             event_dialog.attr("description", "");
             event_dialog.modal({
@@ -723,7 +723,7 @@
             _query += "&type="+item.type;
             _query += "&index="+gantt.getGlobalTaskIndex(id);
 
-            var event_dialog = $('#dialog_template');
+            var event_dialog = window.jQuery('#dialog_template');
             event_dialog.attr("name", item.name);
             console.log("Event: "+ event_dialog.attr('name'));
             event_dialog.attr("description", item.description);
@@ -738,9 +738,9 @@
             if (id != project_id){
                 var item = gantt.getTask(id);
                 var index = gantt.getGlobalTaskIndex(id);
-                $.post(
+                window.jQuery.post(
                     '/budgets/{{ budget.id }}/calendar/'+item.type+'/action',
-                    $.param({
+                    window.jQuery.param({
                         'id': item.id,
                         'index':index,
                         'start_date': (item.start_date).getTime(),
@@ -777,7 +777,7 @@
 
             console.log("_query: "+ _query);
 
-            var event_dialog = $('#dialog_template');
+            var event_dialog = window.jQuery('#dialog_template');
             event_dialog.modal({
                 'remote': "/budgets/{{ budget.id }}/calendar/task/dialog"+_query
             });
@@ -798,7 +798,7 @@
             _query += "&type="+task.type;
             _query += "&index="+gantt.getGlobalTaskIndex(id);
 
-            var event_dialog = $('#dialog_template');
+            var event_dialog = window.jQuery('#dialog_template');
             event_dialog.attr("name", task.name);
             event_dialog.attr("description", task.description);
             event_dialog.modal({
@@ -811,9 +811,9 @@
             var index = gantt.getGlobalTaskIndex(id);
             if(task.type == "task"){
                 if(task.duration > 0){
-                    $.post(
+                    window.jQuery.post(
                         '/budgets/{{ budget.id }}/calendar/task/action',
-                        $.param({
+                        window.jQuery.param({
                                     'id': task.id,
                                     'start_date': (task.start_date).getTime(),
                                     'end_date': (task.end_date).getTime(),
@@ -847,14 +847,14 @@
                 if (result) {
                     deleteItemAction(id);
                 } else {
-                    $('#dialog_template_delete_button').button('reset');
+                    window.jQuery('#dialog_template_delete_button').button('reset');
                 }
             });
         }
 
         function deleteItemAction(id){
             var item = gantt.getTask(id);
-            $.post(
+            window.jQuery.post(
                     '/budgets/{{ budget.id }}/calendar/'+item.type+'/delete?id='+id
             ).done(function (jqXHR) {
 
@@ -870,7 +870,7 @@
                     updateAllItemsGanttIndex();
                 }, 1);
 
-                $('#dialog_template').modal('hide');
+                window.jQuery('#dialog_template').modal('hide');
 
             }).fail(function (jqXHR) {
                 bootbox.alert(jqXHR.responseText);
@@ -890,7 +890,7 @@
 
         function deleteTaskAction(id) {
             var budgetEntry_id = id.split("_")[0];
-            $.post(
+            window.jQuery.post(
                 '/budgetentries/'+budgetEntry_id+'/delete'
             ).done(function (jqXHR) {
 
@@ -903,9 +903,9 @@
 
         function createLinkAction(l_item) {
             console.log('createLinkAction');
-            $.post(
+            window.jQuery.post(
                 '/budgets/{{ budget.id }}/calendar/link/create',
-                $.param(l_item)
+                window.jQuery.param(l_item)
             ).done(function (jqXHR) {
 
             }).fail(function (jqXHR) {
@@ -914,9 +914,9 @@
         }
 
         function deleteLinkAction(id) {
-            $.post(
+            window.jQuery.post(
                 '/budgets/{{ budget.id }}/calendar/link/delete',
-                $.param({'link_id': id})
+                window.jQuery.param({'link_id': id})
             ).done(function (jqXHR) {
 
             }).fail(function (jqXHR) {
@@ -1039,7 +1039,7 @@
          {# BUDGET  ---------------------------------------------------------------------      #}
 
         function updateBudgetDialog(id) {
-            var event_dialog = $('#dialog_template');
+            var event_dialog = window.jQuery('#dialog_template');
             event_dialog.modal({
                         'remote': "/budgets/{{ budget.id }}/update/dialog?mode=Update"
                     });
@@ -1061,12 +1061,12 @@
             console.log("end : "+end.getTime());
 
             if(parseInt(budget_start) != start.getTime() || parseInt(budget_end) != end.getTime()){
-                var params = $.param({
+                var params = window.jQuery.param({
                     attr_name: 'start_and_end_dates',
                     attr_value: start.getTime() + ' - ' + end.getTime()
                 });
 
-                $.post(
+                window.jQuery.post(
                     "/budgets/{{ budget.id}}/update/inline", params
                 ).done(function () {
                     console.log('updateBudgetStartEndDate done');

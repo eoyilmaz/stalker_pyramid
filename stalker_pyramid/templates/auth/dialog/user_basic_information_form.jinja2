@@ -32,7 +32,7 @@
                        {% if mode == 'Update' %}
                        value='{{ user.name }}'
                        {% endif %}
-                       pattern="^[_A-z0-9\ ]{1,}$"
+                       pattern="^[_A-z0-9\ ]{1,}window.jQuery"
                        required>
             </div>
         </div>
@@ -50,7 +50,7 @@
                        {% if mode == 'Update' %}
                        value='{{ user.login }}'
                        {% endif %}
-                       pattern="^[_A-z0-9]{1,}$"
+                       pattern="^[_A-z0-9]{1,}window.jQuery"
                        required>
             </div>
         </div>
@@ -147,26 +147,26 @@
 
 </form>
 
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.validate.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/additional-methods.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.gritter.min.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.validate.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/additional-methods.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.gritter.min.js") }}'></script>#}
 
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.ui.touch-punch.min.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.ui.touch-punch.min.js") }}'></script>#}
 {#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/x-editable/bootstrap-editable.min.js") }}'></script>#}
 {#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/x-editable/ace-editable.min.js") }}'></script>#}
 
 
 <script type="text/javascript">
     {# Form #}
-    window.$(document).ready(function () {
+    window.jQuery(document).ready(function () {
 
         {# ***************************************************************** #}
         {# ROLE #}
-        var user_type = $('#user_type');
+        var user_type = window.jQuery('#user_type');
         {% raw %}
             var user_type_option_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
         {% endraw %}
-        $.getJSON('/types/?target_entity_type=User').then(function(available_type){
+        window.jQuery.getJSON('/types/?target_entity_type=User').then(function(available_type){
             // map available types to an array
             var available_type_as_list = [];
             for (var i=0; i < available_type.length; i++){
@@ -180,9 +180,9 @@
             });
         });
 
-        var user_form = $('#user_form');
+        var user_form = window.jQuery('#user_form');
 
-        var submit_button = $('#dialog_template_submit_button');
+        var submit_button = window.jQuery('#dialog_template_submit_button');
 
         submit_button.on('click', function(e) {
             e.stopPropagation();
@@ -237,16 +237,16 @@
             },
 
             invalidHandler: function (event, validator) { //display error alert on form submit
-                $('.alert-error', $('.login-form')).show();
+                window.jQuery('.alert-error', window.jQuery('.login-form')).show();
             },
 
             highlight: function (e) {
-                $(e).closest('.control-group').removeClass('info').addClass('error');
+                window.jQuery(e).closest('.control-group').removeClass('info').addClass('error');
             },
 
             success: function (e) {
-                $(e).closest('.control-group').removeClass('error').addClass('info');
-                $(e).remove();
+                window.jQuery(e).closest('.control-group').removeClass('error').addClass('info');
+                window.jQuery(e).remove();
             },
 
             errorPlacement: function (error, element) {

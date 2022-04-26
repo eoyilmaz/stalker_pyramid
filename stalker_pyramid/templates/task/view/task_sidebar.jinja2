@@ -94,8 +94,8 @@
 </ul>
 
 <script type="text/javascript">
-    $(function () {
-        //$('#reference_count').text(data);
+    window.jQuery(function () {
+        //window.jQuery('#reference_count').text(data);
         menu_of(
             'Dashboard',
             "{%- if request.current_route_path() == request.route_path('view_task', id=task.id) -%}'active',{%- else -%},{%- endif -%}",
@@ -184,18 +184,18 @@
             '/tasks/{{ task.id }}/reviews/count/'
         );
 
-        $('#refresh_task_button').on('click', function (e) {
+        window.jQuery('#refresh_task_button').on('click', function (e) {
             e.preventDefault();
             e.stopPropagation();
 
-            $.post('/tasks/{{ task.id }}/fix/statuses/').done(function (response_text) {
+            window.jQuery.post('/tasks/{{ task.id }}/fix/statuses/').done(function (response_text) {
                 window.location.reload();
             }).fail(function (jqXHR) {
                 bootbox.alert(jqXHR.responseText);
             });
         });
 
-        $('#delete_task_button').on('click', function (e) {
+        window.jQuery('#delete_task_button').on('click', function (e) {
             e.preventDefault();
             e.stopPropagation();
             // get the selection list
@@ -219,7 +219,7 @@
                     {% else %}
                         new_url = '/projects/{{ task.project.id }}/view';
                     {% endif %}
-                    $.post(
+                    window.jQuery.post(
                         '/tasks/delete?task_ids=' + id
                     ).done(function (response_text) {
                        alert(response_text);

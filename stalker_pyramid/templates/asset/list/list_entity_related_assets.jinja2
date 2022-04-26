@@ -65,9 +65,9 @@
 
 {# EXTRA-SCRIPTS #}
 {% block extrascripts %}
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.bootstrap.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/dataTable_num-html_sort.js") }}'></script>
+{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.dataTables.min.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.dataTables.bootstrap.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/dataTable_num-html_sort.js") }}'></script>#}
 
     {% raw %}
     <script id="tmpl_assetTypeLink" type="text/x-dot-template">
@@ -162,10 +162,10 @@
     {% endraw %}
 
     <script type="text/javascript">
-    window.$(document).ready(function () {
-{#        var related_asset_template = doT.template($('#tmpl_related_asset_item').html());#}
-{#        var related_assets_list = $('#related_assets_list');#}
-        $.getJSON('/tasks/{{ entity.id }}/related/Asset/depends/').then(function (assets) {
+    window.jQuery(document).ready(function () {
+{#        var related_asset_template = doT.template(window.jQuery('#tmpl_related_asset_item').html());#}
+{#        var related_assets_list = window.jQuery('#related_assets_list');#}
+        window.jQuery.getJSON('/tasks/{{ entity.id }}/related/Asset/depends/').then(function (assets) {
             var asset_id_query = '';
             console.log("assets.length: "+assets.length);
             for (var i = 0; i < assets.length; i++) {
@@ -173,15 +173,15 @@
             }
             asset_id_query = asset_id_query.substring(0, asset_id_query.length-1);
             console.log(asset_id_query);
-            $.getJSON('/entities/{{ entity.id }}/related/assets?'+asset_id_query).then(function (data) {
+            window.jQuery.getJSON('/entities/{{ entity.id }}/related/assets?'+asset_id_query).then(function (data) {
                 console.log(data.length);
-                var asset_template = doT.template($('#tmpl_assetRow').html());
-                 $(function () {
+                var asset_template = doT.template(window.jQuery('#tmpl_assetRow').html());
+                 window.jQuery(function () {
                     var types_data = data[data.length-1]['all_types_list'];
 
-                    var column_template = doT.template($('#tmpl_assetColumn').html());
+                    var column_template = doT.template(window.jQuery('#tmpl_assetColumn').html());
                     var x;
-                    var table_column = $('#assets_table_column');
+                    var table_column = window.jQuery('#assets_table_column');
                     for (x = 0; x < types_data.length; x++) {
 
                         // append it to the table
@@ -189,7 +189,7 @@
                         table_column.append(column_template(types_data[x]));
                     }
                     var i;
-                    var table_body = $('#assets_table>tbody');
+                    var table_body = window.jQuery('#assets_table>tbody');
 
                     for (i = 0; i < data.length-1; i++) {
 
@@ -207,14 +207,14 @@
                         // append it to the table
                         table_body.append(asset_template(data[i]));
 
-                        var asset_row = $('#asset_row_' + data[i].id);
+                        var asset_row = window.jQuery('#asset_row_' + data[i].id);
 
                         console.log('asset_row: '+ asset_row);
-                        var asset_summary_cell = $('#asset_summary_cell_' + data[i].id);
+                        var asset_summary_cell = window.jQuery('#asset_summary_cell_' + data[i].id);
 
-                        var cell_template = doT.template($('#tmpl_taskCell').html());
-                        var empty_cell_template = doT.template($('#tmpl_taskCell_empty').html());
-                        var cell_row_template = doT.template($('#tmpl_taskCellRow').html());
+                        var cell_template = doT.template(window.jQuery('#tmpl_taskCell').html());
+                        var empty_cell_template = doT.template(window.jQuery('#tmpl_taskCell_empty').html());
+                        var cell_row_template = doT.template(window.jQuery('#tmpl_taskCellRow').html());
                         var task_cell_height = 150;
 
                         for (var j = 0; j < types_data.length; j++) {
@@ -229,7 +229,7 @@
                                     })
                                 );
                                 console.log('#task_cell_' + types_data[j].id + '_' + data[i].id);
-                                var task_cell = $('#task_cell_' + types_data[j].id + '_' + data[i].id);
+                                var task_cell = window.jQuery('#task_cell_' + types_data[j].id + '_' + data[i].id);
                                 var task_cell_row_height = task_cell_height/tasks.length-5*(tasks.length-1);
                                 for (var k = 0; k < tasks.length; k++) {
                                     var task = tasks[k];
@@ -256,7 +256,7 @@
                             }
                         }
 
-                        var asset_summary_cell_template = doT.template($('#tmpl_assetSummaryCell').html());
+                        var asset_summary_cell_template = doT.template(window.jQuery('#tmpl_assetSummaryCell').html());
 
                         for (var n = 0; n < data[i]['nulls'].length; n++) {
                             var null_type_task = data[i]['nulls'][n];
@@ -264,12 +264,12 @@
                         }
                     }
 
-                    var oTable1 = $('#assets_table').dataTable({
+                    var oTable1 = window.jQuery('#assets_table').dataTable({
                         'aLengthMenu': [[-1, 10, 25, 50, 100, 200], ["All", 10, 25, 50, 100, 200]],
                         "iDisplayLength": -1,
                     });
-                    $('#loading_spinner').hide();
-                    $('#content').show();
+                    window.jQuery('#loading_spinner').hide();
+                    window.jQuery('#content').show();
                 });
             });
         });

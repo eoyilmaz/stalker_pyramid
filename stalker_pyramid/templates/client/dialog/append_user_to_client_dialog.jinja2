@@ -111,27 +111,27 @@
     function init_dialog() {
         console.debug('starting to initialize append_class_to_entity dialog!!!555555');
 
-        var dialog_template_label = $('#dialog_template_label');
+        var dialog_template_label = window.jQuery('#dialog_template_label');
         dialog_template_label.find('span').remove();
         dialog_template_label.append('<span>Append User</span>');
 
         {# ***************************************************************** #}
         {# CLIENT #}
-        var client_user = $('#client_user');
+        var client_user = window.jQuery('#client_user');
         {% raw %}
             var client_user_option_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
         {% endraw %}
-        $.getJSON('/clients/{{ client.id }}/user/out_stack/').then(function (u_data) {
+        window.jQuery.getJSON('/clients/{{ client.id }}/user/out_stack/').then(function (u_data) {
             chosen_searchable_field_creator_by_data(client_user, client_user_option_template, u_data);
         });
 
         {# ***************************************************************** #}
         {# ROLE #}
-        var role = $('#role');
+        var role = window.jQuery('#role');
         {% raw %}
             var role_option_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
         {% endraw %}
-        $.getJSON('/roles/').then(function(available_roles){
+        window.jQuery.getJSON('/roles/').then(function(available_roles){
             // map available types to an array
             var available_roles_as_list = [];
             for (var i=0; i < available_roles.length; i++){
@@ -149,19 +149,19 @@
 
         {# ***************************************************************** #}
         {# SUBMIT #}
-        var submit_button = $('#dialog_template_submit_button');
+        var submit_button = window.jQuery('#dialog_template_submit_button');
         submit_button.on('click', function (e) {
 
             e.stopPropagation();
             e.preventDefault();
             submit_button.button('loading');
 
-            var append_form = $("#append_form");
+            var append_form = window.jQuery("#append_form");
 
-            $.post('/clients/{{ client.id }}/user/append', append_form.serialize() ).done(function (response_text) {
+            window.jQuery.post('/clients/{{ client.id }}/user/append', append_form.serialize() ).done(function (response_text) {
                 window.location.reload();
                 submit_button.button('reset');
-                $('#dialog_template').modal('hide');
+                window.jQuery('#dialog_template').modal('hide');
             }).fail(function (jqXHR) {
                 bootbox.alert(jqXHR.responseText);
                 submit_button.button('reset');
@@ -174,7 +174,7 @@
 
 <script type="text/javascript">
     function destruct_dialog() {
-        $('#dialog_template_submit_button').unbind();
-        $('#dialog_template').data('modal', null);
+        window.jQuery('#dialog_template_submit_button').unbind();
+        window.jQuery('#dialog_template').data('modal', null);
     }
 </script>

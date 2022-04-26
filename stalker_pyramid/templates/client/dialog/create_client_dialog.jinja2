@@ -14,22 +14,22 @@
     function init_dialog() {
         console.debug('starting to initialize client dialog!!!');
 
-        var dialog_template_label = $('#dialog_template_label');
+        var dialog_template_label = window.jQuery('#dialog_template_label');
         dialog_template_label.find('span').remove();
         dialog_template_label.append('<span>New Client</span>');
 
 {#        *****************************************************************#}
 {#        Submit Button#}
-        var submit_button = $('#dialog_template_submit_button');
+        var submit_button = window.jQuery('#dialog_template_submit_button');
         submit_button.on('click', function (e) {
             e.stopPropagation();
             e.preventDefault();
 
             submit_button.button('loading');
 
-            var client_form = $('#client_form');
+            var client_form = window.jQuery('#client_form');
             if (client_form.validate()) {
-                $.post(
+                window.jQuery.post(
                     client_form.attr('action'),
                     client_form.serialize()
                 ).done(function () {
@@ -49,13 +49,13 @@
 <script type="text/javascript">
 
     function destruct_dialog() {
-        $('#client_form').unbind();
-        $('#client_name').unbind();
-        $('#client_description').unbind();
+        window.jQuery('#client_form').unbind();
+        window.jQuery('#client_name').unbind();
+        window.jQuery('#client_description').unbind();
 
-        $('#dialog_template_submit_button').unbind();
+        window.jQuery('#dialog_template_submit_button').unbind();
 
-        $('#dialog_template').data('modal', null);
+        window.jQuery('#dialog_template').data('modal', null);
 
     }
 </script>

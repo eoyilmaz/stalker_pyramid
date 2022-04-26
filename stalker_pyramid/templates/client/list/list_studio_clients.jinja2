@@ -122,20 +122,20 @@
 {#    </script>#}
 {#    {% endraw %}#}
 
-    <script type="text/javascript">
-        if("ontouchend" in document) document.write("<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.mobile.custom.min.js") }}'>"+"<"+"/script>");
-    </script>
-    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/i18n/grid.locale-en.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/jquery.jqGrid.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/jquery.jqGrid.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/plugins/ui.multiselect.js") }}'></script>
+{#    <script type="text/javascript">#}
+{#        if("ontouchend" in document) document.write("<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.mobile.custom.min.js") }}'>"+"<"+"/script>");#}
+{#    </script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/i18n/grid.locale-en.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/window.jQuery.jqGrid.min.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/window.jQuery.jqGrid.min.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/plugins/ui.multiselect.js") }}'></script>#}
 
     <script type="text/javascript">
-        window.$(document).ready(function () {
+        window.jQuery(document).ready(function () {
 
             var lastSelection;
             var grid_selector = "#grid-table";
-            var grid = jQuery(grid_selector);
+            var grid = window.jQuery(grid_selector);
 
             function makelistLink(array, list_type){
 
@@ -169,11 +169,11 @@
             }
 
             function editFailed(rowID, response) {
-                $.jgrid.info_dialog($.jgrid.errors.errcap,'<div class="ui-state-error">RowID:'+rowID+ ' :  '+ response.responseJSON.error +'</div>', $.jgrid.edit.bClose,{buttonalign:'right'})
+                window.jQuery.jgrid.info_dialog(window.jQuery.jgrid.errors.errcap,'<div class="ui-state-error">RowID:'+rowID+ ' :  '+ response.responseJSON.error +'</div>', window.jQuery.jgrid.edit.bClose,{buttonalign:'right'})
                 alert(response.responseJSON.error);
             }
 
-            $.getJSON('/studios/{{ studio.id }}/clients/').then(function (entry_data) {
+            window.jQuery.getJSON('/studios/{{ studio.id }}/clients/').then(function (entry_data) {
 
                 var grid_data = entry_data;
                 for(var j=0; j<grid_data.length; j++ ){
@@ -181,15 +181,15 @@
                     grid_data[j].namelink = "<a href='/clients/"+grid_data[j].id+"/view'>"+grid_data[j].name+"</a>";
 
                 }
-                $.getJSON('/types/?target_entity_type=Client').then(function(available_type){
+                window.jQuery.getJSON('/types/?target_entity_type=Client').then(function(available_type){
                     var available_type_as_list = [];
                     for (var i=0; i < available_type.length; i++){
                         available_type_as_list.push(available_type[i].name);
                     }
 
-                    jQuery(function($) {
+                    window.jQuery(function(window.jQuery) {
                         var grid_selector = "#grid-table";
-                        jQuery(grid_selector).jqGrid({
+                        window.jQuery(grid_selector).jqGrid({
                             //direction: "rtl",
                             data: grid_data,
                             datatype: "local",
@@ -214,7 +214,7 @@
                                     editoptions: {
                                         dataInit: function (element) {
                                             window.setTimeout(function () {
-                                                $(element).autocomplete({
+                                                window.jQuery(element).autocomplete({
                                                     id: 'AutoComplete',
                                                 source: available_type_as_list,
                                                 autoFocus: true
@@ -244,26 +244,26 @@
                             caption: "",
                             onSelectRow: editRow,
                             loadComplete : function() {
-                                var $self = $(this);
+                                var $self = window.jQuery(this);
 
                                 var table = this;
                                 setTimeout(function(){
     {#                                    styleCheckbox(table);#}
     {#                                    updateActionIcons(table);#}
 
-                                    $('#lui_grid-table').hide();
+                                    window.jQuery('#lui_grid-table').hide();
                                 }, 0);
                             }
                         });
                     });
 
                     var timer;
-                    $("#search_cells").on("keyup", function() {
+                    window.jQuery("#search_cells").on("keyup", function() {
                         var self = this;
                         if(timer) { clearTimeout(timer); }
                         timer = setTimeout(function(){
                             //timer = null;
-                            jQuery(grid_selector).jqGrid('filterInput', self.value);
+                            window.jQuery(grid_selector).jqGrid('filterInput', self.value);
                         },0);
                     });
                 });

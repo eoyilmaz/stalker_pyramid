@@ -30,22 +30,22 @@
 
 
 </div>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/chosen.jquery.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/daterangepicker.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap-colorpicker.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.autosize-min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.inputlimiter.1.3.1.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.maskedinput.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/bootstrap-tag.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.validate.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/additional-methods.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.spinner.min.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/chosen.window.jQuery.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/daterangepicker.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap-colorpicker.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.autosize-min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.inputlimiter.1.3.1.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.maskedinput.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/bootstrap-tag.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.validate.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/additional-methods.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.spinner.min.js") }}'></script>#}
 
 <script>
-    $(function () {
-        var task_types = $('#task_types');
-        var task_ids = $('#task_ids');
+    window.jQuery(function () {
+        var task_types = window.jQuery('#task_types');
+        var task_ids = window.jQuery('#task_ids');
 
         task_types.chosen({
             search_contains: true,
@@ -64,7 +64,7 @@
 
         task_ids.append('<option value=""></option>');
 
-        $.getJSON('/tasks/{{ entity.id }}/children_task_types/').then(function(data){
+        window.jQuery.getJSON('/tasks/{{ entity.id }}/children_task_types/').then(function(data){
             console.log('loaded '+data.length);
             // remove current elements
             task_types.find('option').remove();
@@ -85,7 +85,7 @@
             task_types.attr('is_updating', false);
         });
 
-        var type_submit_btn = $('#type_submit_btn');
+        var type_submit_btn = window.jQuery('#type_submit_btn');
         type_submit_btn.on('click', function(e){
             e.stopPropagation();
             e.preventDefault();
@@ -98,7 +98,7 @@
             }
             console.log('loaded '+type_ids_query);
 
-            $.getJSON('/tasks/{{ entity.id }}/children_tasks/?'+type_ids_query).then(function(data){
+            window.jQuery.getJSON('/tasks/{{ entity.id }}/children_tasks/?'+type_ids_query).then(function(data){
 
                 task_ids.find('option').remove();
 
@@ -119,7 +119,7 @@
             });
         })
 
-        var task_submit_btn = $('#task_submit_btn');
+        var task_submit_btn = window.jQuery('#task_submit_btn');
         task_submit_btn.on('click', function(e){
             e.stopPropagation();
             e.preventDefault();

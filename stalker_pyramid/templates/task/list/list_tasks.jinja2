@@ -526,9 +526,9 @@
 
 <script type='text/javascript'
         data-dojo-config="async: true, parseOnLoad: true"
-        src='{{ request.static_url("stalker_pyramid:static/node_modules/dojo/dojo.js") }}'>
+{#        src='{{ request.static_url("stalker_pyramid:static/node_modules/dojo/dojo.js") }}'>#}
 </script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/daterangepicker.min.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/daterangepicker.min.js") }}'></script>#}
 
 <script type="text/javascript">
 
@@ -600,12 +600,12 @@ require([
     var gantt_chart_dgrid_id = '{{ entity.entity_type }}_{{ entity.id }}_gantt_dgrid';
 
     // allow the gantt to resize with the window
-    $(window).on('resize', function () {
-        var gantt_height = $(window).height() - 170;
+    window.jQuery(window).on('resize', function () {
+        var gantt_height = window.jQuery(window).height() - 170;
         {# 230 #}
-        $('#' + gantt_chart_dom_id).css({height: gantt_height});
+        window.jQuery('#' + gantt_chart_dom_id).css({height: gantt_height});
     });
-    $(window).trigger('resize');
+    window.jQuery(window).trigger('resize');
 
     {# TODO: If this is a studio then the query should contain all project ids #}
     {#       Also we should check for departments #}
@@ -635,76 +635,76 @@ require([
 
     // column togglers
     // TODO: implement it to the GanttGrid
-{#    $('#action_column_toggler').on('click', function (e) {#}
+{#    window.jQuery('#action_column_toggler').on('click', function (e) {#}
 {#        gantt_chart.toggle_column('action');#}
 {#        setTimeout(function () {#}
 {#            gantt_column.refresh();#}
 {#        }, 0);#}
 {#    });#}
-    $('#id_column_toggler').on('click', function (e) {
+    window.jQuery('#id_column_toggler').on('click', function (e) {
         gantt_chart.toggle_column('id');
         setTimeout(function () {
             gantt_column.refresh();
         }, 0);
     });
-    $('#name_column_toggler').on('click', function (e) {
+    window.jQuery('#name_column_toggler').on('click', function (e) {
         gantt_chart.toggle_column('name');
         setTimeout(function () {
             gantt_column.refresh();
         }, 0);
     });
-    $('#priority_column_toggler').on('click', function (e) {
+    window.jQuery('#priority_column_toggler').on('click', function (e) {
         gantt_chart.toggle_column('priority');
         setTimeout(function () {
             gantt_column.refresh();
         }, 0);
     });
-    $('#complete_column_toggler').on('click', function (e) {
+    window.jQuery('#complete_column_toggler').on('click', function (e) {
         gantt_chart.toggle_column('complete');
         setTimeout(function () {
             gantt_column.refresh();
         }, 0);
     });
-    $('#resource_column_toggler').on('click', function (e) {
+    window.jQuery('#resource_column_toggler').on('click', function (e) {
         gantt_chart.toggle_column('resource');
         setTimeout(function () {
             gantt_column.refresh();
         }, 0);
     });
-    $('#timing_column_toggler').on('click', function (e) {
+    window.jQuery('#timing_column_toggler').on('click', function (e) {
         gantt_chart.toggle_column('timing');
         setTimeout(function () {
             gantt_column.refresh();
         }, 0);
     });
-    $('#start_column_toggler').on('click', function (e) {
+    window.jQuery('#start_column_toggler').on('click', function (e) {
         gantt_chart.toggle_column('start');
         setTimeout(function () {
             gantt_column.refresh();
         }, 0);
     });
-    $('#end_column_toggler').on('click', function (e) {
+    window.jQuery('#end_column_toggler').on('click', function (e) {
         gantt_chart.toggle_column('end');
         setTimeout(function () {
             gantt_column.refresh();
         }, 0);
     });
-    $('#status_column_toggler').on('click', function (e) {
+    window.jQuery('#status_column_toggler').on('click', function (e) {
         gantt_chart.toggle_column('status');
         setTimeout(function () {
             gantt_column.refresh();
         }, 0);
     });
-    $('#dependencies_column_toggler').on('click', function (e) {
+    window.jQuery('#dependencies_column_toggler').on('click', function (e) {
         gantt_chart.toggle_column('dependencies');
         setTimeout(function () {
             gantt_column.refresh();
         }, 0);
     });
-    $('#chart_column_toggler').on('click', function (e) {
+    window.jQuery('#chart_column_toggler').on('click', function (e) {
         gantt_chart.toggle_column('set-1');
-        $(".dgrid-column-set-scroller.dgrid-scrollbar-height.dgrid-column-set-scroller-1").toggle();
-        $(".dgrid-column-set-scroller-1").toggle();
+        window.jQuery(".dgrid-column-set-scroller.dgrid-scrollbar-height.dgrid-column-set-scroller-1").toggle();
+        window.jQuery(".dgrid-column-set-scroller-1").toggle();
         setTimeout(function () {
             gantt_column.refresh();
         }, 0);
@@ -715,14 +715,14 @@ require([
         var selected_ids = gantt_chart.selected_ids();
         if (selected_ids.length > 0) {
             // update create child task
-            var child_task_button = $('#child_task_button');
+            var child_task_button = window.jQuery('#child_task_button');
             var parent_org_href = child_task_button.attr('original-href');
             // update parent id
             var parent_href = parent_org_href + '?parent_id=' + selected_ids[0];
             child_task_button.attr('href', parent_href);
 
             // update create dependent task buttons
-            var dependent_task_button = $('#dependent_task_button');
+            var dependent_task_button = window.jQuery('#dependent_task_button');
             var dependent_org_href = dependent_task_button.attr('original-href');
             var dep_ids_param = '?';
             for (var i = 0; i < selected_ids.length; i++) {
@@ -733,38 +733,38 @@ require([
             dependent_task_button.attr('href', dependent_href);
 
             // update update button
-            $('#update_task_menu_item').attr(
+            window.jQuery('#update_task_menu_item').attr(
                 'href',
                 '/tasks/' + selected_ids[0] + '/update/dialog'
             );
 
-            $('#update_task_dependencies_menu_item').attr(
+            window.jQuery('#update_task_dependencies_menu_item').attr(
                 'href',
                 '/tasks/' + selected_ids[0] + '/update/dependencies/dialog'
             );
 
-{#            console.log('update_task_dependencies_menu_item: '+$('#update_task_dependencies_menu_item').attr('href'))#}
+{#            console.log('update_task_dependencies_menu_item: '+window.jQuery('#update_task_dependencies_menu_item').attr('href'))#}
 
 
 
-            $('#add_time_log_menu_item').attr(
+            window.jQuery('#add_time_log_menu_item').attr(
                 'href',
                 '/entities/' + selected_ids[0] + '/timelogs/create/dialog'
             );
 
-            $('#request_review_menu_item').attr(
+            window.jQuery('#request_review_menu_item').attr(
                 'href',
                 '/tasks/' + selected_ids[0] + '/request_review/dialog'
             );
 
-            $('#create_ticket_menu_item').attr(
+            window.jQuery('#create_ticket_menu_item').attr(
                 'href',
                 '/tickets/-1/create/dialog?task_id='+ selected_ids[0]
             );
         }
     });
 
-    {#    $('#request_review_menu_item').on('click', function(e) {#}
+    {#    window.jQuery('#request_review_menu_item').on('click', function(e) {#}
     {#        e.preventDefault();#}
     {#        e.stopPropagation();#}
     {##}
@@ -785,7 +785,7 @@ require([
     {#                    var url = '';#}
     {#                    for (var i=0; i < selected_ids.length; i += 1){#}
     {#                        url = '/tasks/' + selected_ids[i] + '/request_review';#}
-    {#                        $.post(url).done(function(response){#}
+    {#                        window.jQuery.post(url).done(function(response){#}
     {#                            bootbox.alert(response);#}
     {#                        }).fail(function(jqXHR){#}
     {#                            bootbox.alert(jqXHR.responseText);#}
@@ -814,7 +814,7 @@ require([
 
     var select_first_and_show_task_dialog = function (e, self) {
         select_first_and_do_something(e, function () {
-            $("#dialog_template").modal({
+            window.jQuery("#dialog_template").modal({
                 target: '#dialog_template',
                 keyboard: false,
                 remote: self.attr('href')
@@ -823,18 +823,18 @@ require([
     };
 
     // create buttons
-    $('#child_task_button').on('click', function (e) {
-        select_first_and_show_task_dialog(e, $(this));
+    window.jQuery('#child_task_button').on('click', function (e) {
+        select_first_and_show_task_dialog(e, window.jQuery(this));
     });
-    $('#dependent_task_button').on('click', function (e) {
-        select_first_and_show_task_dialog(e, $(this));
+    window.jQuery('#dependent_task_button').on('click', function (e) {
+        select_first_and_show_task_dialog(e, window.jQuery(this));
     });
 
     // duplicate hierarchy button
-    $('#duplicate_task_hierarchy_menu_item').on('click', function (e) {
+    window.jQuery('#duplicate_task_hierarchy_menu_item').on('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
-        var self = $(this);
+        var self = window.jQuery(this);
 
         var selected_ids = gantt_chart.selected_ids();
         {# TODO: update it to display task names in the message #}
@@ -843,17 +843,17 @@ require([
         {#        for (var i=0; i < selected_ids.length(); i++){#}
         {#            // get task info#}
         {#            task_id = selected_ids[i];#}
-        {#            $.get('/tasks/' + task_id + '/').done(function(data){#}
+        {#            window.jQuery.get('/tasks/' + task_id + '/').done(function(data){#}
         {#                tasks.push(data);#}
         {#            });#}
         {#        }#}
 
-        $.getJSON('/entities/' + selected_ids[0] + '/').then(function (data) {
+        window.jQuery.getJSON('/entities/' + selected_ids[0] + '/').then(function (data) {
 
 {#            console.log('data name'+ data[0].name);#}
             // warn the user about what is going to happen and ask if it is ok
 
-            $('#dialog_template').modal({
+            window.jQuery('#dialog_template').modal({
                 'remote': '/tasks/' + selected_ids[0] + '/duplicate/dialog?came_from={{ request.current_route_path() }}'
             });
 
@@ -877,8 +877,8 @@ require([
 {#                        // get the id and send it to the server#}
 {#                        var url = '';#}
 {#                        for (var i = 0; i < selected_ids.length; i++) {#}
-{#                            url = '/tasks/' + selected_ids[i] + '/duplicate?name=' +  $('#dup_task_name').val()+'&description='+  $('#dup_task_description').val();#}
-{#                            $.post(url).done(function () {#}
+{#                            url = '/tasks/' + selected_ids[i] + '/duplicate?name=' +  window.jQuery('#dup_task_name').val()+'&description='+  window.jQuery('#dup_task_description').val();#}
+{#                            window.jQuery.post(url).done(function () {#}
 {#                                gantt_column.reload();#}
 {#                            }).fail(function (jqXHR){#}
 {#                                bootbox.alert(jqXHR.responseText);#}
@@ -889,7 +889,7 @@ require([
         })
     });
 
-    $('#add_time_log_menu_item').on('click', function (e) {
+    window.jQuery('#add_time_log_menu_item').on('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
 
@@ -902,19 +902,19 @@ require([
         end.setHours(19); // TODO: this is hard coded and not good
 
         var allDay = false;
-        var event_dialog = $('#dialog_template');
+        var event_dialog = window.jQuery('#dialog_template');
 
         event_dialog.attr('start', start);
         event_dialog.attr('end', end);
         event_dialog.attr('allDay', allDay);
 
         event_dialog.modal({
-            'remote': $(this).attr('href') + '?came_from="' + window.location.pathname + '"'
+            'remote': window.jQuery(this).attr('href') + '?came_from="' + window.location.pathname + '"'
         });
     });
 
 
-    $('#change_tasks_users_menu_item').on('click', function (e) {
+    window.jQuery('#change_tasks_users_menu_item').on('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
 
@@ -929,14 +929,14 @@ require([
            _query +='&task_ids='+selected_ids[i];
         }
         var remote = '/tasks/change/Resources/dialog' + _query;
-        var event_dialog = $('#dialog_template');
+        var event_dialog = window.jQuery('#dialog_template');
         event_dialog.modal({
             'remote': remote
         });
     });
 
 
-    $('#change_tasks_priority_menu_item').on('click', function (e) {
+    window.jQuery('#change_tasks_priority_menu_item').on('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
 
@@ -954,14 +954,14 @@ require([
         }
         var remote = '/tasks/change_priority/dialog'+_query;
         console.log ('remote: ' + remote);
-        var event_dialog = $('#dialog_template');
+        var event_dialog = window.jQuery('#dialog_template');
         event_dialog.modal({
             'remote': remote
         });
     });
 
 
-    $('#add_tasks_dependencies_menu_item').on('click', function (e) {
+    window.jQuery('#add_tasks_dependencies_menu_item').on('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
 
@@ -978,13 +978,13 @@ require([
         }
         var remote = "{{ request.route_url('add_tasks_dependencies_dialog') }}" + _query;
         console.log ('remote: ' + remote);
-        var event_dialog = $('#dialog_template');
+        var event_dialog = window.jQuery('#dialog_template');
         event_dialog.modal({
             'remote': remote
         });
     });
 
-    $('#delete_task_menu_item').on('click', function (e) {
+    window.jQuery('#delete_task_menu_item').on('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
 
@@ -1016,7 +1016,7 @@ require([
                    _query += 'task_ids=' + selected_ids[i];
                 }
 
-                $.post(
+                window.jQuery.post(
                     '/tasks/delete?' + _query
                 ).done(function (response_text) {
                     bootbox.alert(response_text);
@@ -1032,15 +1032,15 @@ require([
     // get the gantt column
     var gantt_column = gantt_chart.columnSets[1][0][0];
 
-    $("#gantt_update_zoom_level_button").on('click', function(e) {
+    window.jQuery("#gantt_update_zoom_level_button").on('click', function(e) {
         // update date values
-        var start_and_end_dates_as_string = $('#task_start_end_date_range_picker').val();
+        var start_and_end_dates_as_string = window.jQuery('#task_start_end_date_range_picker').val();
         var dates = start_and_end_dates_as_string.split(' - ');
         var start_date = moment(dates[0], 'DD/MM/YYYY').startOf('day');
         var end_date = moment(dates[1], 'DD/MM/YYYY').endOf('day');
 
         // get zoom level
-        var zoom_level = $('#zoom_level').val();
+        var zoom_level = window.jQuery('#zoom_level').val();
 
         // get the total amount of element going to be rendered
         var element_count = gantt_column.guess_element_count(+start_date, +end_date, zoom_level);
@@ -1074,22 +1074,22 @@ require([
     });
 
     // Reload Button
-    $("#gantt_reload_button").on('click', function (e) {
+    window.jQuery("#gantt_reload_button").on('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
         gantt_column.reload();
     });
 
     // Refresh Button
-    $("#gantt_refresh_button").on('click', function (e) {
+    window.jQuery("#gantt_refresh_button").on('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
         gantt_column.refresh();
     });
 
     // scroll to button
-    $("#gantt_scroll_to_button").on('click', function (e) {
-        var start = $(this).attr('start');
+    window.jQuery("#gantt_scroll_to_button").on('click', function (e) {
+        var start = window.jQuery(this).attr('start');
         gantt_column.scrollToDate(start);
         e.preventDefault();
         e.stopPropagation();
@@ -1097,9 +1097,9 @@ require([
 
     // Schedule
     {% if has_permission('Update_Task')  and (project in logged_in_user.projects)%}
-        $('#gantt_schedule_tasks_button').on('click', function () {
+        window.jQuery('#gantt_schedule_tasks_button').on('click', function () {
             // get the schedule info first
-            $.getJSON('{{ request.route_url("schedule_info") }}').then(function(data){
+            window.jQuery.getJSON('{{ request.route_url("schedule_info") }}').then(function(data){
                 // check if the system is suitable to be scheduled
                 if (data.is_scheduling){
                     // the system is scheduling right now, don't do anything
@@ -1109,7 +1109,7 @@ require([
                         moment(data.scheduling_started_at).format('YYYY-MM-DD HH:mm') +
                         '), please wait until the current scheduling is done!</div>';
                     bootbox.alert(message);
-                    $('.bootbox')
+                    window.jQuery('.bootbox')
                         .prepend('<div class="modal-header alert-danger"><strong>Fail</strong></div>')
                         .css({
                             'max-height': '90%',
@@ -1117,7 +1117,7 @@ require([
                         });
                 } else {
                     // suitable to be scheduled
-                    var dialog = $("#schedule-dialog-message").dialog({
+                    var dialog = window.jQuery("#schedule-dialog-message").dialog({
                         modal: true,
                         title: "Scheduling Tasks",
                         title_html: true,
@@ -1129,20 +1129,20 @@ require([
                     var timer = 0;
                     var last_scheduled_at = moment(data.last_scheduled_at);
                     var last_scheduling_took = Number(data.last_scheduling_took) || 100;
-                    var schedule_progress = $('#schedule-progress');
+                    var schedule_progress = window.jQuery('#schedule-progress');
                     var schedule_progress_bar = schedule_progress.find('.bar');
         
                     // set the system on scheduling
-                    $.post('{{ request.route_url("studio_scheduling_mode", _query={"mode": 1}) }}').then(function(){
+                    window.jQuery.post('{{ request.route_url("studio_scheduling_mode", _query={"mode": 1}) }}').then(function(){
                         // update schedule fields with data
-                        $('#last_scheduled_by').append(data.last_scheduled_by);
-                        $('#last_scheduled_at').append(last_scheduled_at.format('YYYY-MM-DD HH:mm'));
-                        $('#last_scheduling_took').append(last_scheduling_took.toFixed(0), ' seconds');
+                        window.jQuery('#last_scheduled_by').append(data.last_scheduled_by);
+                        window.jQuery('#last_scheduled_at').append(last_scheduled_at.format('YYYY-MM-DD HH:mm'));
+                        window.jQuery('#last_scheduling_took').append(last_scheduling_took.toFixed(0), ' seconds');
         
                         // start timer
                         function myTimer() {
                             timer += 1;
-                            $('#current_scheduling_time').html(timer);
+                            window.jQuery('#current_scheduling_time').html(timer);
                             // extend the progress bar
                             var percent = Math.min(
                                 100,
@@ -1156,16 +1156,16 @@ require([
                         timer_function = setInterval(function(){myTimer()}, 1000);
                         
                         // now do the scheduling
-                        $.post(
+                        window.jQuery.post(
                             '{{ request.route_url("auto_schedule_tasks") }}'
                         ).done(function (data) {
                             var message = '<div>' + data + '</div>';
                             bootbox.alert(message);
-                            $('.bootbox').prepend('<div class="modal-header alert-success"><strong>Success</strong></div>');
+                            window.jQuery('.bootbox').prepend('<div class="modal-header alert-success"><strong>Success</strong></div>');
                         }).fail(function (jqXHR) {
                             var message = '<div>' + jqXHR.responseText + '</div>';
                             bootbox.alert(message);
-                            $('.bootbox').prepend('<div class="modal-header alert-danger"><strong>Fail</strong></div>');
+                            window.jQuery('.bootbox').prepend('<div class="modal-header alert-danger"><strong>Fail</strong></div>');
                         }).always(function () {
                             // reset timer
                             window.clearInterval(timer_function);
@@ -1178,20 +1178,20 @@ require([
         });
     {% endif %}
 
-    $('#gantt_go_to_today_button').on('click', function () {
+    window.jQuery('#gantt_go_to_today_button').on('click', function () {
         gantt_column.centerOnToday();
     });
 
     // create the zoom window
-    $('#gantt_zoom_selection').on('click', function(e) {
+    window.jQuery('#gantt_zoom_selection').on('click', function(e) {
         // change button state
-        $('#gantt_zoom_selection').find('button').button('loading');
+        window.jQuery('#gantt_zoom_selection').find('button').button('loading');
 
-        var dragDetector = $($.parseHTML('<div class="dragDetector"></div>'));
-        var zoomBox = $($.parseHTML('<div class="zoomBox"></div>'));
-        $('#' + gantt_chart_dom_id).append(zoomBox).append(dragDetector);
+        var dragDetector = window.jQuery(window.jQuery.parseHTML('<div class="dragDetector"></div>'));
+        var zoomBox = window.jQuery(window.jQuery.parseHTML('<div class="zoomBox"></div>'));
+        window.jQuery('#' + gantt_chart_dom_id).append(zoomBox).append(dragDetector);
 
-        $('.dragDetector').mousedown(function (e) {
+        window.jQuery('.dragDetector').mousedown(function (e) {
             e.stopPropagation();
             e.preventDefault();
             this.start_pos = e.offsetX;
@@ -1212,13 +1212,13 @@ require([
         }).mouseup(function(e) {
             this.start_resizing = false;
             // get the left and width of the zoomBox
-            var start_x = $('.dgrid-column-set-cell.dgrid-column-set-1').offset().left;
-            var scroll_left = $('.dgrid-column-set-cell.dgrid-column-set-1>div').scrollLeft();
+            var start_x = window.jQuery('.dgrid-column-set-cell.dgrid-column-set-1').offset().left;
+            var scroll_left = window.jQuery('.dgrid-column-set-cell.dgrid-column-set-1>div').scrollLeft();
             var left = zoomBox.offset().left - start_x + scroll_left;
             var width = zoomBox.width();
 
             // unbind events
-            $('.dragDetector').unbind();
+            window.jQuery('.dragDetector').unbind();
 
             // delete the elements
             zoomBox.remove();
@@ -1231,10 +1231,10 @@ require([
             // update interface elements
             var formatted_start_date = moment(zoomed_dates.start).format('DD/MM/YYYY');
             var formatted_end_date = moment(zoomed_dates.end).format('DD/MM/YYYY');
-            var start_end_date_range_picker = $('#task_start_end_date_range_picker');
+            var start_end_date_range_picker = window.jQuery('#task_start_end_date_range_picker');
             start_end_date_range_picker.val(formatted_start_date + ' - ' + formatted_end_date);
             start_end_date_range_picker.data().daterangepicker.updateFromControl();
-            $('#zoom_level').val(zoom_level);
+            window.jQuery('#zoom_level').val(zoom_level);
 
             // zoom the gantt chart
             gantt_column.start = +zoomed_dates.start;
@@ -1248,7 +1248,7 @@ require([
 
             // restore button
             setTimeout(function () {
-                $('#gantt_zoom_selection').find('button').button('reset');
+                window.jQuery('#gantt_zoom_selection').find('button').button('reset');
             });
         });
     });
@@ -1260,9 +1260,9 @@ require([
     {# ***************************************************************** #}
     {# Start & End Date Picker #}
 
-    $(function () {
+    window.jQuery(function () {
         // initialize date picker
-        var start_end_date_range_picker = $('#task_start_end_date_range_picker').daterangepicker({
+        var start_end_date_range_picker = window.jQuery('#task_start_end_date_range_picker').daterangepicker({
             locale: {
                 format: 'DD/MM/YYYY'
             }
@@ -1270,7 +1270,7 @@ require([
 
         // also update the icon
         start_end_date_range_picker.next().on('click', function () {
-            $(this).prev().focus();
+            window.jQuery(this).prev().focus();
         });
 
         // fix z-index of the container

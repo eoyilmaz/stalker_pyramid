@@ -221,36 +221,14 @@
 
 
 <script type="text/javascript">
-    window.$.getJSON('/users/{{ logged_in_user.id }}/open_tickets/').then(function (data) {
-        $(function () {
-            var notifications = $('#notifications');
-            var total_tickets = data.length;
+    $(() => {
+        let logged_in_user_id = -1;
+        logged_in_user_id = {{ logged_in_user.id }};
+        let notification_url = "{{ request.route_path('list_entity_tickets', id=logged_in_user.id) }}";
 
-            if (total_tickets === 0) {
-                notifications.append('<a data-toggle="dropdown" class="dropdown-toggle" href="#"><i class="icon-bell-alt icon-bell light-grey"></i><span class="badge badge-important">0</span></a>');
-            } else {
-                notifications.append('<a data-toggle="dropdown" class="dropdown-toggle" href="#"><i class="icon-bell-alt icon-animated-bell"></i><span class="badge badge-important">' + total_tickets + '</span></a>');
-            }
-
-            notifications.append('<ul class="pull-right dropdown-navbar dropdown-menu dropdown-caret dropdown-closer"></ul>');
-
-            var row_template = doT.template($('#tmpl_notificationRow').html());
-
-            var notifications_list = notifications.find('ul');
-            notifications_list.append('<li class="nav-header"><i class="icon-warning-sign"></i>' + total_tickets + ' Open Tickets</li>');
-
-            var limit = Math.min(5, total_tickets);
-            for (var i = 0; i < limit; i++) {
-                notifications_list.append(row_template(data[i]));
-            }
-
-            notifications_list.append('<li><a href="{{ request.route_path('list_entity_tickets', id=logged_in_user.id) }}">See all tickets<i class="icon-arrow-right"></i></a></li>');
-        });
-    });
-
-    $.getJSON('/users/{{ logged_in_user.id }}/tasks/count/').then(function (data) {
-        $(function(){
-            $('#nav_bar_task_count').text(data);
-        })
+        console.log("window.stalker", window.stalker);
+        console.log("window.jQuery", window.jQuery);
+        window.stalker.update_open_ticket_count(logged_in_user_id, notification_url);
+        window.stalker.update_user_tasks_count(logged_in_user_id);
     });
 </script>

@@ -208,17 +208,17 @@
             title: function () {
                 // Filename (Tags)| Hires (DL)
 
-                var url = $(this).attr('href');
+                var url = window.jQuery(this).attr('href');
 
-                var original_title = $(this).attr('original_filename');
+                var original_title = window.jQuery(this).attr('original_filename');
 
-                var tags = $(this).attr('tags');
+                var tags = window.jQuery(this).attr('tags');
 
-                var view_hires_url = '/' + $(this).attr('hires_full_path');
-                var download_hires_url = '/FD' + $(this).attr('hires_download_path');
+                var view_hires_url = '/' + window.jQuery(this).attr('hires_full_path');
+                var download_hires_url = '/FD' + window.jQuery(this).attr('hires_download_path');
 
-                var view_webres_url = '/' + $(this).attr('webres_full_path');
-                var download_webres_url = '/FD' + $(this).attr('webres_download_path');
+                var view_webres_url = '/' + window.jQuery(this).attr('webres_full_path');
+                var download_webres_url = '/FD' + window.jQuery(this).attr('webres_download_path');
 
                 var open_hires_in_new_tab_link = '<a title="View Original in new Tab"  href="' + view_hires_url + '" target="_blank">Original</a></span>';
                 var download_hires_link = '<span><a title="Download Original" class="icon-cloud-download blue" href="' + download_hires_url + '">&nbsp</a></span>';
@@ -239,12 +239,12 @@
             },
             onComplete: function () {
                 // fit image to colorBox
-                var photo = $('.cboxPhoto');
+                var photo = window.jQuery('.cboxPhoto');
                 var photo_width = photo.width();
                 var photo_height = photo.height();
                 var photo_ratio = photo_width / photo_height;
     
-                var cbox = $('#cboxContent');
+                var cbox = window.jQuery('#cboxContent');
                 var cbox_width = cbox.width();
                 var cbox_height = cbox.height();
                 var cbox_ratio = cbox_width / cbox_height;
@@ -262,7 +262,7 @@
                     multiplier = cbox_width / photo_width;
                     photo_height *= multiplier;
     
-                    photo.css($.extend(css_options, {
+                    photo.css(window.jQuery.extend(css_options, {
                         width: '100%',
                         height: 'auto',
                         left: 0,
@@ -272,7 +272,7 @@
                     multiplier = cbox_height / photo_height;
                     photo_width *= multiplier;
     
-                    photo.css($.extend(css_options, {
+                    photo.css(window.jQuery.extend(css_options, {
                         width: 'auto',
                         height: '100%',
                         left: (cbox_width - photo_width) * 0.5 + 'px',
@@ -282,14 +282,14 @@
             }
         };
 
-        $.getJSON('/dailies/{{ entity.id }}/outputs/').then(function (data) {
-            $(function () {
-                var daily_task_template = doT.template($('#tmpl_daily_task').html());
-                var daily_tasks_list = $('#daily_tasks');
+        window.jQuery.getJSON('/dailies/{{ entity.id }}/outputs/').then(function (data) {
+            window.jQuery(function () {
+                var daily_task_template = doT.template(window.jQuery('#tmpl_daily_task').html());
+                var daily_tasks_list = window.jQuery('#daily_tasks');
 
                 for(var i=0; i< data.length; i++){
                     var task = data[i];
-                    var task_div = $('#daily_task_'+task.task_id);
+                    var task_div = window.jQuery('#daily_task_'+task.task_id);
                     if (task_div.length==0){
 
                         {% if logged_in_user.thumbnail %}
@@ -299,21 +299,21 @@
                         {% endif %}
 
                         daily_tasks_list.append(daily_task_template(task));
-                        $('#add_note_button_'+data[i].task_id).on('click', function (e) {
+                        window.jQuery('#add_note_button_'+data[i].task_id).on('click', function (e) {
                             e.stopPropagation();
                             e.preventDefault();
-                            var submit_button = $(this);
+                            var submit_button = window.jQuery(this);
                             submit_button.button('loading');
-                            var task_id = parseInt($(this).attr('id').split('add_note_button_')[1]);
-                            var add_note_form = $('#add_note_form_'+task_id);
+                            var task_id = parseInt(window.jQuery(this).attr('id').split('add_note_button_')[1]);
+                            var add_note_form = window.jQuery('#add_note_form_'+task_id);
 
-                            var content = $('#message').val();
+                            var content = window.jQuery('#message').val();
 
                             console.log(add_note_form.serialize());
 
-                            $.post(
+                            window.jQuery.post(
                                 "/note/create",
-                                add_note_form.serialize()+'&entity_ids='+task_id+'&entity_ids={{ entity.id }}&'+$.param({'type': "Daily_Note"})
+                                add_note_form.serialize()+'&entity_ids='+task_id+'&entity_ids={{ entity.id }}&'+window.jQuery.param({'type': "Daily_Note"})
                             ).done(function () {
                                 window.location.assign('{{ came_from }}');
                             }).fail(function (jqXHR) {
@@ -323,11 +323,11 @@
                         });
 
                         var local_colorbox_params = {};
-                        $.extend(local_colorbox_params, colorbox_params);
+                        window.jQuery.extend(local_colorbox_params, colorbox_params);
                         local_colorbox_params['rel'] = 'Group' + data[i]['task_id'];
 
-                        var output_template = doT.template($('#tmpl_output_item').html());
-                        var outputs = $('#outputs_' + task.task_id);
+                        var output_template = doT.template(window.jQuery('#tmpl_output_item').html());
+                        var outputs = window.jQuery('#outputs_' + task.task_id);
 
                         // order the data according to the filename
                         task.links = task.links.sort(
@@ -350,8 +350,8 @@
                             });
                         }
 
-                        var note_template = doT.template($('#tmpl_note_item').html());
-                        var notes = $('#notes_' + task.task_id);
+                        var note_template = doT.template(window.jQuery('#tmpl_note_item').html());
+                        var notes = window.jQuery('#notes_' + task.task_id);
                         for (var k=0; k<task.notes.length; k++){
                             var note = task.notes[k];
 
@@ -372,9 +372,9 @@
                     }
                 }
 
-                $('.date').each(function () {
-                    var date = moment($(this).text());
-                    $(this).text(date.fromNow());
+                window.jQuery('.date').each(function () {
+                    var date = moment(window.jQuery(this).text());
+                    window.jQuery(this).text(date.fromNow());
                 });
 
             });

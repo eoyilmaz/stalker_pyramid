@@ -65,19 +65,19 @@
         </div>
     </div>
 
-<script type="text/javascript">
-        if("ontouchend" in document) document.write("<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.mobile.custom.min.js") }}'>"+"<"+"/script>");
-    </script>
-    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/i18n/grid.locale-en.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/jquery.jqGrid.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/accounting.min.js") }}'></script>
-    <link src='{{ request.static_url("stalker_pyramid:static/jqgrid/ui.jqgrid-bootstrap.css") }}'/>
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.slimscroll.min.js") }}'></script>
+{#    <script type="text/javascript">#}
+{#        if("ontouchend" in document) document.write("<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.mobile.custom.min.js") }}'>"+"<"+"/script>");#}
+{#    </script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/i18n/grid.locale-en.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/window.jQuery.jqGrid.min.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/accounting.min.js") }}'></script>#}
+{#    <link src='{{ request.static_url("stalker_pyramid:static/jqgrid/ui.jqgrid-bootstrap.css") }}'/>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.slimscroll.min.js") }}'></script>#}
 
     <script>
-        $.jgrid.defaults.autowidth = true;
-        $.jgrid.defaults.responsive = true;
-{#        $.jgrid.defaults.styleUI = 'Bootstrap';#}
+        window.jQuery.jgrid.defaults.autowidth = true;
+        window.jQuery.jgrid.defaults.responsive = true;
+{#        window.jQuery.jgrid.defaults.styleUI = 'Bootstrap';#}
     </script>
     <style>
     .ui-jqgrid .ui-jqgrid-labels th.ui-th-column {
@@ -92,17 +92,17 @@
     </style>
     <script type="text/javascript">
 
-        window.$(document).ready(function () {
+        window.jQuery(document).ready(function () {
 
-            $('.slim-scroll').each(function () {
-                var $this = $(this);
+            window.jQuery('.slim-scroll').each(function () {
+                var $this = window.jQuery(this);
                 $this.slimScroll({
                     height: $this.data('height') || 100,
                     railVisible:true
                 });
             });
 
-            $('#add_project_entries_to_budget_button').hide();
+            window.jQuery('#add_project_entries_to_budget_button').hide();
             var total_cost = 0;
             var total_msrp = 0;
             var total_price = 0;
@@ -149,16 +149,16 @@
                             {name:'actions', index:'actions', width:60, editable: false}
                          ];
 
-            $("#custom_entry_button").on('click', function (e) {
-                 var event_dialog = $('#dialog_template');
+            window.jQuery("#custom_entry_button").on('click', function (e) {
+                 var event_dialog = window.jQuery('#dialog_template');
 
                 event_dialog.modal({
                     'remote': '{{request.route_path('budgetentry_dialog',id=-1, mode="create", _query={'budget_id':entity.id }) }}'
                 });
             });
 
-            $("#duplicate_button").on('click', function (e) {
-                 var event_dialog = $('#dialog_template');
+            window.jQuery("#duplicate_button").on('click', function (e) {
+                 var event_dialog = window.jQuery('#dialog_template');
 
                 event_dialog.modal({
                     'remote': '{{ request.route_url("duplicate_budget_dialog", id=entity.id)}}'
@@ -169,7 +169,7 @@
 
                 if(!grid_lists_data[id]){
                     grid_lists_data[id] = [];
-                    $('#tables').append("<table id="+id+"></table>");
+                    window.jQuery('#tables').append("<table id="+id+"></table>");
                 }
 
                 grid_lists_data[id].push(data);
@@ -203,8 +203,8 @@
             function create_discount_report(){
 
                 var report_table = "#report_table";
-                jQuery(function($) {
-                        jQuery(report_table).jqGrid({
+                window.jQuery(function(window.jQuery) {
+                        window.jQuery(report_table).jqGrid({
                             //direction: "rtl",
                             data: grid_lists_report,
                             datatype: "local",
@@ -239,7 +239,7 @@
             function find_table(table_id){
 
                 var grid_selector = "#"+table_id;
-                return jQuery(grid_selector);
+                return window.jQuery(grid_selector);
 
             }
 
@@ -382,12 +382,12 @@
                 console.log("gridLoadComplete");
                 calculateTotals();
                 setTimeout(function(){
-                    $('#lui_grid-table').hide();
+                    window.jQuery('#lui_grid-table').hide();
                 }, 0);
             }
 
             function getCellValue(rowId, cellId) {
-                var cell = jQuery('#' + rowId + '_' + cellId);
+                var cell = window.jQuery('#' + rowId + '_' + cellId);
                 return cell.val();
             }
 
@@ -456,16 +456,16 @@
                     total_price += parseInt(grid_data[t].price);
                 }
 
-                $('#total_msrp').text(accounting.formatMoney(total_msrp, { symbol: "TL",  format: "%v %s" }));
-{#                $('#total_cost').text(accounting.formatMoney(total_cost, { symbol: "TL",  format: "%v %s" }));#}
-                $('#total_price').text(accounting.formatMoney(total_price, { symbol: "TL",  format: "%v %s" }));
+                window.jQuery('#total_msrp').text(accounting.formatMoney(total_msrp, { symbol: "TL",  format: "%v %s" }));
+{#                window.jQuery('#total_cost').text(accounting.formatMoney(total_cost, { symbol: "TL",  format: "%v %s" }));#}
+                window.jQuery('#total_price').text(accounting.formatMoney(total_price, { symbol: "TL",  format: "%v %s" }));
                 var discount = total_cost-total_price;
-                $('#total_discount').text(accounting.formatMoney(discount, { symbol: "TL",  format: "%v %s" }));
-                $('#total_discount_proportion').text(((discount/total_cost)*100).toFixed(2) + "%");
+                window.jQuery('#total_discount').text(accounting.formatMoney(discount, { symbol: "TL",  format: "%v %s" }));
+                window.jQuery('#total_discount_proportion').text(((discount/total_cost)*100).toFixed(2) + "%");
 
                 calculateSummaryTotals(total_msrp, total_cost, total_price, {{ approved_total_price }});
 
-                $.post(
+                window.jQuery.post(
                     '/budgets/{{ entity.id }}/set/totals?total_cost='+total_cost+'&total_price='+total_price+'&total_msrp='+total_msrp
                 ).done(function (response_text) {
                        flash_message({
@@ -484,7 +484,7 @@
 
                     var grid = find_table(prop);
 
-                    jQuery(function($) {
+                    window.jQuery(function(window.jQuery) {
                         grid.jqGrid({
                             //direction: "rtl",
                             data: grid_lists_data[prop],
@@ -513,7 +513,7 @@
                 }
             }
 
-            $.getJSON('/budgets/{{ entity.id }}/entries/').then(function (entry_data) {
+            window.jQuery.getJSON('/budgets/{{ entity.id }}/entries/').then(function (entry_data) {
 
                 grid_data = entry_data;
 
@@ -573,7 +573,7 @@
                 }
 
                 {% if entity.status.code == 'PLN' and mode == 'table_detail' %}
-                    $.getJSON('/studios/{{ entity.id }}/goods/').then(function (good_data) {
+                    window.jQuery.getJSON('/studios/{{ entity.id }}/goods/').then(function (good_data) {
 
                         for(var k=0; k<good_data.length; k++ ){
 

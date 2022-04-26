@@ -78,7 +78,7 @@
 
 
 <script>
-    $(function () {
+    window.jQuery(function () {
 
         function style_edit_form(form) {
 
@@ -99,17 +99,17 @@
         }
 
         var icon_name = get_icon('{{ list_item_type.lower() }}');
-        $('#'+'{{ list_item_type.lower() }}'+'_items_header').append('<i class=' + icon_name + '></i>{{ list_item_type }}s');
+        window.jQuery('#'+'{{ list_item_type.lower() }}'+'_items_header').append('<i class=' + icon_name + '></i>{{ list_item_type }}s');
 
         console.log('{{ address }}');
         // fill items table with dynamic data
-        $.getJSON('{{ address }}').then(function (data) {
+        window.jQuery.getJSON('{{ address }}').then(function (data) {
             console.log('{{ address }} loaded');
-            var row_template = doT.template($('#tmpl_list_item').html());
+            var row_template = doT.template(window.jQuery('#tmpl_list_item').html());
 
             // wait until document is ready
-            $(function () {
-                var editable_list = $('#'+'{{ list_item_type.lower() }}'+'_editable_list');
+            window.jQuery(function () {
+                var editable_list = window.jQuery('#'+'{{ list_item_type.lower() }}'+'_editable_list');
                 var i;
                 for (i = 0; i < data.length; i++) {
 
@@ -126,8 +126,8 @@
                     // append it to the table
                     editable_list.append(row_template(data[i]));
                     if (data[i].item_remove_link){
-                        var delete_template = doT.template($('#tmpl_item_remove').html());
-                        $('#editable_list_item_actions_' + data[i].id).append(delete_template(data[i]));
+                        var delete_template = doT.template(window.jQuery('#tmpl_item_remove').html());
+                        window.jQuery('#editable_list_item_actions_' + data[i].id).append(delete_template(data[i]));
                     }
                 }
 

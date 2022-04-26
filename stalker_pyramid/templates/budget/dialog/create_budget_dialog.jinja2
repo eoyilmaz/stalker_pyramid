@@ -9,8 +9,8 @@
 
 </div>
 
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/daterangepicker.min.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/daterangepicker.min.js") }}'></script>#}
 <script type="text/javascript">
 
     function init_dialog() {
@@ -20,23 +20,23 @@
 
         {# ***************************************************************** #}
         {# Submit Button #}
-        var submit_button = $('#dialog_template_submit_button');
+        var submit_button = window.jQuery('#dialog_template_submit_button');
         submit_button.on('click', function (e) {
             e.stopPropagation();
             e.preventDefault();
 
             submit_button.button('loading');
-            var budget_form = $('#budget_form');
+            var budget_form = window.jQuery('#budget_form');
 
             var url = '/budgets/create';
             var params = {
                     'project_id': {{ project.id }}
                 };
 
-            $.post(
+            window.jQuery.post(
                 url,
                 budget_form.serialize() + '&' +
-                $.param(params)
+                window.jQuery.param(params)
             ).done(function (new_url) {
                 window.location.assign(new_url);
             }).fail(function (jqXHR) {
@@ -51,13 +51,13 @@
 
 <script type="text/javascript">
     function destruct_dialog() {
-        $('#budget_name').unbind();
-        $('#budget_type').unbind();
-        $('#start_date_picker').unbind();
-        $('#budget_description').unbind();
-        $('#dialog_template_submit_button').unbind();
+        window.jQuery('#budget_name').unbind();
+        window.jQuery('#budget_type').unbind();
+        window.jQuery('#start_date_picker').unbind();
+        window.jQuery('#budget_description').unbind();
+        window.jQuery('#dialog_template_submit_button').unbind();
 
-        $('#dialog_template').data('modal', null);
+        window.jQuery('#dialog_template').data('modal', null);
     }
 </script>
 

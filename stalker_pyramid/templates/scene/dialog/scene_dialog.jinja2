@@ -101,11 +101,11 @@
     </div>
 </div>
 
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.spinner.min.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.spinner.min.js") }}'></script>#}
 <script type="text/javascript">
     function init_dialog() {
         console.debug('starting to initialize scene dialog!!!');
-        var dialog_label = $('#dialog_template_label');
+        var dialog_label = window.jQuery('#dialog_template_label');
         dialog_label.find('span').remove();
         dialog_label.append('<span>{{ mode }} Scene</span>');
 
@@ -119,7 +119,7 @@
         {# ***************************************************************** #}
         {# Sequence #}
         var deferred;
-        var sequence = $('#sequence');
+        var sequence = window.jQuery('#sequence');
         deferred = chosen_searchable_field_creator(sequence, '/entities/{{ project.id }}/sequences/', option_template);
         {% if sequence %}
             deferred.then(function () {
@@ -130,14 +130,14 @@
 
         {# ***************************************************************** #}
         {# Temp Scene #}
-        var temp_scene = $('#temp_scene');
+        var temp_scene = window.jQuery('#temp_scene');
         deferred = chosen_searchable_field_creator(temp_scene, '/entities/{{ project.id }}/scenes/simple/', option_template);
         deferred.then(function () {
                     temp_scene.trigger('liszt:updated');
                 });
         {# ***************************************************************** #}
         {# Temp Shot #}
-        var temp_shot = $('#temp_shot');
+        var temp_shot = window.jQuery('#temp_shot');
         deferred = chosen_searchable_field_creator(temp_shot, '/entities/{{ project.id }}/shots/simple/', option_template);
         deferred.then(function () {
             temp_shot.trigger('liszt:updated');
@@ -145,7 +145,7 @@
 
         {# ***************************************************************** #}
         {# Shots #}
-         $('#shot_count').ace_spinner({
+         window.jQuery('#shot_count').ace_spinner({
             value:{{ shot_count }},
             min:{{ shot_count }},
             max:99,
@@ -153,29 +153,29 @@
             btn_up_class:'btn-info',
             btn_down_class:'btn-info'}).on('change', function(){
             // check if it is in the range
-            var curr_value = $(this).val();
-            $(this).val(curr_value <= 1 ? 1 : curr_value);
+            var curr_value = window.jQuery(this).val();
+            window.jQuery(this).val(curr_value <= 1 ? 1 : curr_value);
         });
         {# ***************************************************************** #}
         {# Submit Button #}
-        var submit_button = $('#dialog_template_submit_button');
+        var submit_button = window.jQuery('#dialog_template_submit_button');
         submit_button.on('click', function (e) {
             e.stopPropagation();
             e.preventDefault();
 
             submit_button.button('loading');
-            var scene_form = $('#scene_form');
+            var scene_form = window.jQuery('#scene_form');
 
             var url = '/scenes/{{ mode.lower() }}'
             {% if mode == 'Update' %}
                 url = '/scenes/{{ scene.id }}/{{ mode.lower() }}'
             {% endif %}
 
-            $.post(
+            window.jQuery.post(
                 url,
                 scene_form.serialize()
             ).done(function (jqXHR) {
-                //$('#new_outputs_storage').text(JSON.stringify(jqXHR));
+                //window.jQuery('#new_outputs_storage').text(JSON.stringify(jqXHR));
                 window.location.reload();
             }).fail(function (jqXHR) {
                 bootbox.alert(jqXHR.responseText);
@@ -189,15 +189,15 @@
 
 <script type="text/javascript">
     function destruct_dialog() {
-        $('#scene_name').unbind();
-        $('#scene_msrp').unbind();
-        $('#scene_cost').unbind();
-        $('#scene_unit').unbind();
-        $('#scene_price_list').unbind();
-        $('#scene_description').unbind();
-        $('#dialog_template_submit_button').unbind();
+        window.jQuery('#scene_name').unbind();
+        window.jQuery('#scene_msrp').unbind();
+        window.jQuery('#scene_cost').unbind();
+        window.jQuery('#scene_unit').unbind();
+        window.jQuery('#scene_price_list').unbind();
+        window.jQuery('#scene_description').unbind();
+        window.jQuery('#dialog_template_submit_button').unbind();
 
-        $('#dialog_template').data('modal', null);
+        window.jQuery('#dialog_template').data('modal', null);
     }
 </script>
 

@@ -61,23 +61,23 @@
 {% endblock page_content %}
 
 {% block extrascripts %}
-    <script type="text/javascript">
-        if("ontouchend" in document) document.write("<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.mobile.custom.min.js") }}'>"+"<"+"/script>");
-    </script>
-    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/i18n/grid.locale-en.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/jquery.jqGrid.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/accounting.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/codebase/dhtmlxgantt.js") }}'></script>
-    <link src='{{ request.static_url("stalker_pyramid:static/jqgrid/ui.jqgrid-bootstrap.css") }}'/>
+{#    <script type="text/javascript">#}
+{#        if("ontouchend" in document) document.write("<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.mobile.custom.min.js") }}'>"+"<"+"/script>");#}
+{#    </script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/i18n/grid.locale-en.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/window.jQuery.jqGrid.min.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/accounting.min.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/codebase/dhtmlxgantt.js") }}'></script>#}
+{#    <link src='{{ request.static_url("stalker_pyramid:static/jqgrid/ui.jqgrid-bootstrap.css") }}'/>#}
     <script>
-        $.jgrid.defaults.width = 780;
-        $.jgrid.defaults.responsive = true;
-        $.jgrid.defaults.styleUI = 'Bootstrap';
+        window.jQuery.jgrid.defaults.width = 780;
+        window.jQuery.jgrid.defaults.responsive = true;
+        window.jQuery.jgrid.defaults.styleUI = 'Bootstrap';
     </script>
     <script type="text/javascript">
-        window.$(document).ready(function () {
+        window.jQuery(document).ready(function () {
 
-            $('#add_project_entries_to_budget_button').hide();
+            window.jQuery('#add_project_entries_to_budget_button').hide();
             var total_cost = 0;
             var total_msrp = 0;
             var total_price = 0;
@@ -85,7 +85,7 @@
             var lastSelection;
 
             var grid_selector = "#grid-table";
-            var grid = jQuery(grid_selector);
+            var grid = window.jQuery(grid_selector);
 
             function currencyFmatter (cellvalue, options, rowObject){
                return accounting.formatMoney(cellvalue, { symbol: "TL",  format: "%v %s" });
@@ -101,19 +101,19 @@
                                                    unit:'TOTAL'
                 });
 
-                $('#total_price_top').text(accounting.formatMoney(total_price, { symbol: "TL",  format: "%v %s" }));
-                $('#total_price_bottom').text(accounting.formatMoney(total_price, { symbol: "TL",  format: "%v %s" }));
+                window.jQuery('#total_price_top').text(accounting.formatMoney(total_price, { symbol: "TL",  format: "%v %s" }));
+                window.jQuery('#total_price_bottom').text(accounting.formatMoney(total_price, { symbol: "TL",  format: "%v %s" }));
 
             }
 
             function gridLoadComplete() {
                 calculateTotals();
                 setTimeout(function(){
-                    $('#lui_grid-table').hide();
+                    window.jQuery('#lui_grid-table').hide();
                 }, 0);
             }
 
-            $.getJSON('/budgets/{{ entity.id }}/entries/').then(function (entry_data) {
+            window.jQuery.getJSON('/budgets/{{ entity.id }}/entries/').then(function (entry_data) {
 
                 grid_data = entry_data;
 
@@ -132,7 +132,7 @@
                     }
                 }
 
-                jQuery(function($) {
+                window.jQuery(function(window.jQuery) {
 
                     grid.jqGrid({
                         //direction: "rtl",

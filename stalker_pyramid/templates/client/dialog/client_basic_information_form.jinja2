@@ -98,11 +98,11 @@
     </div>
 
 </form>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.validate.min.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.validate.min.js") }}'></script>#}
 <script type="text/javascript">
 
     {# Form #}
-    window.$(document).ready(function () {
+    window.jQuery(document).ready(function () {
         {% raw %}
             var report_templates_option_template = doT.template(
                 '<option value={{=it.id}}>{{=it.name}}</option>'
@@ -121,7 +121,7 @@
             {% endfor %}
         ];
 
-        var client_report_template = $('#client_report_template');
+        var client_report_template = window.jQuery('#client_report_template');
 {#        chosen_searchable_field_creator_by_data(client_report_template, report_templates_option_template, report_templates);#}
         client_report_template.autocomplete({
                 delay: 0,
@@ -136,9 +136,9 @@
 
         {# ***************************************************************** #}
         {# TYPE #}
-        var client_type = $('#client_type');
+        var client_type = window.jQuery('#client_type');
 
-        $.getJSON('/types/?target_entity_type=Client').then(function(available_type){
+        window.jQuery.getJSON('/types/?target_entity_type=Client').then(function(available_type){
             // map available types to an array
             var available_type_as_list = [];
             for (var i=0; i < available_type.length; i++){
@@ -152,7 +152,7 @@
             });
         });
 
-        $('#client_form').validate({
+        window.jQuery('#client_form').validate({
             errorElement: 'span',
             errorClass: 'help-inline',
             focusInvalid: true,
@@ -190,16 +190,16 @@
             },
 
             invalidHandler: function (event, validator) { //display error alert on form submit
-                $('.alert-error', $('.login-form')).show();
+                window.jQuery('.alert-error', window.jQuery('.login-form')).show();
             },
 
             highlight: function (e) {
-                $(e).closest('.control-group').removeClass('info').addClass('error');
+                window.jQuery(e).closest('.control-group').removeClass('info').addClass('error');
             },
 
             success: function (e) {
-                $(e).closest('.control-group').removeClass('error').addClass('info');
-                $(e).remove();
+                window.jQuery(e).closest('.control-group').removeClass('error').addClass('info');
+                window.jQuery(e).remove();
             },
 
             errorPlacement: function (error, element) {

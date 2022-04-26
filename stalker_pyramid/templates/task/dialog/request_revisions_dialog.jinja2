@@ -63,41 +63,41 @@
         </form>
     </div>
 </div>
-<script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/i18n/grid.locale-en.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/jquery.jqGrid.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/accounting.min.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/i18n/grid.locale-en.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/window.jQuery.jqGrid.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/accounting.min.js") }}'></script>#}
 
 <script type="text/javascript">
 
     function init_dialog() {
         console.debug('starting to initialize add_task_user_dialog dialog!!!');
 
-        $(function () {
-            var label = $('#dialog_template_label');
+        window.jQuery(function () {
+            var label = window.jQuery('#dialog_template_label');
             label.find('span').remove();
             label.append('<span>Request Revisions</span>');
-            $('#dialog_template_body').attr('style', "height: auto");
+            window.jQuery('#dialog_template_body').attr('style', "height: auto");
 
             var url= '{{ action | safe}}';
             if(url==''){
-                $('#dialog_template').modal('hide');
+                window.jQuery('#dialog_template').modal('hide');
             }
 
-            var submit_button = $('#dialog_template_submit_button');
+            var submit_button = window.jQuery('#dialog_template_submit_button');
             submit_button.on('click', function (e) {
 
                 e.stopPropagation();
                 e.preventDefault();
                 submit_button.button('loading');
 
-                var request_revisions_form = $("#request_revisions_form");
+                var request_revisions_form = window.jQuery("#request_revisions_form");
 
-                $.post(
+                window.jQuery.post(
                     url,
                     request_revisions_form.serialize()
                 ).done(function (response_text) {
                     submit_button.button('reset');
-                    $('#dialog_template').modal('hide');
+                    window.jQuery('#dialog_template').modal('hide');
 
                     setTimeout(function () { // wait for hide event to finish
                         window.location.reload();
@@ -114,7 +114,7 @@
 
 <script type="text/javascript">
     function destruct_dialog() {
-        $('#dialog_template_submit_button').unbind();
-        $('#dialog_template').data('modal', null);
+        window.jQuery('#dialog_template_submit_button').unbind();
+        window.jQuery('#dialog_template').data('modal', null);
     }
 </script>

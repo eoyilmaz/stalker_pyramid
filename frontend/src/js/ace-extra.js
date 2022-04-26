@@ -6,142 +6,142 @@ ace.config = {
 }
 
 ace.settings = {
-	is : function(item, status) {
-		//such as ace.settings.is('navbar', 'fixed')
-		return (ace.data.get('settings', item+'-'+status) == 1)
-	},
-	exists : function(item, status) {
-		return (ace.data.get('settings', item+'-'+status) !== null)
-	},
-	set : function(item, status) {
-		ace.data.set('settings', item+'-'+status, 1)
-	},
-	unset : function(item, status) {
-		ace.data.set('settings', item+'-'+status, -1)
-	},
-	remove : function(item, status) {
-		ace.data.remove('settings', item+'-'+status)
-	},
+    is : function(item, status) {
+        //such as ace.settings.is('navbar', 'fixed')
+        return (ace.data.get('settings', item+'-'+status) == 1)
+    },
+    exists : function(item, status) {
+        return (ace.data.get('settings', item+'-'+status) !== null)
+    },
+    set : function(item, status) {
+        ace.data.set('settings', item+'-'+status, 1)
+    },
+    unset : function(item, status) {
+        ace.data.set('settings', item+'-'+status, -1)
+    },
+    remove : function(item, status) {
+        ace.data.remove('settings', item+'-'+status)
+    },
 
-	navbar_fixed : function(fix) {
-		fix = fix || false;
-		if(!fix && ace.settings.is('sidebar', 'fixed')) {
-			ace.settings.sidebar_fixed(false);
-		}
-		
-		var navbar = document.getElementById('navbar');
-		if(fix) {
-			if(!ace.hasClass(navbar , 'navbar-fixed-top'))  ace.addClass(navbar , 'navbar-fixed-top');
-			if(!ace.hasClass(document.body , 'navbar-fixed'))  ace.addClass(document.body , 'navbar-fixed');
-			
-			ace.settings.set('navbar', 'fixed');
-		} else {
-			ace.removeClass(navbar , 'navbar-fixed-top');
-			ace.removeClass(document.body , 'navbar-fixed');
-			
-			ace.settings.unset('navbar', 'fixed');
-		}
-		
-		document.getElementById('ace-settings-navbar').checked = fix;
-	},
+    navbar_fixed : function(fix) {
+        fix = fix || false;
+        if(!fix && ace.settings.is('sidebar', 'fixed')) {
+            ace.settings.sidebar_fixed(false);
+        }
 
+        var navbar = document.getElementById('navbar');
+        if(fix) {
+            if(!ace.hasClass(navbar , 'navbar-fixed-top'))  ace.addClass(navbar , 'navbar-fixed-top');
+            if(!ace.hasClass(document.body , 'navbar-fixed'))  ace.addClass(document.body , 'navbar-fixed');
 
-	breadcrumbs_fixed : function(fix) {
-		fix = fix || false;
-		if(fix && !ace.settings.is('sidebar', 'fixed')) {
-			ace.settings.sidebar_fixed(true);
-		}
+            ace.settings.set('navbar', 'fixed');
+        } else {
+            ace.removeClass(navbar , 'navbar-fixed-top');
+            ace.removeClass(document.body , 'navbar-fixed');
 
-		var breadcrumbs = document.getElementById('breadcrumbs');
-		if(fix) {
-			if(!ace.hasClass(breadcrumbs , 'breadcrumbs-fixed'))  ace.addClass(breadcrumbs , 'breadcrumbs-fixed');
-			if(!ace.hasClass(document.body , 'breadcrumbs-fixed'))  ace.addClass(document.body , 'breadcrumbs-fixed');
-			
-			ace.settings.set('breadcrumbs', 'fixed');
-		} else {
-			ace.removeClass(breadcrumbs , 'breadcrumbs-fixed');
-			ace.removeClass(document.body , 'breadcrumbs-fixed');
-			
-			ace.settings.unset('breadcrumbs', 'fixed');
-		}
-		document.getElementById('ace-settings-breadcrumbs').checked = fix;
-	},
+            ace.settings.unset('navbar', 'fixed');
+        }
+
+        document.getElementById('ace-settings-navbar').checked = fix;
+    },
 
 
-	sidebar_fixed : function(fix) {
-		fix = fix || false;
-		if(!fix && ace.settings.is('breadcrumbs', 'fixed')) {
-			ace.settings.breadcrumbs_fixed(false);
-		}
+    breadcrumbs_fixed : function(fix) {
+        fix = fix || false;
+        if(fix && !ace.settings.is('sidebar', 'fixed')) {
+            ace.settings.sidebar_fixed(true);
+        }
 
-		if( fix && !ace.settings.is('navbar', 'fixed') ) {
-			ace.settings.navbar_fixed(true);
-		}
+        var breadcrumbs = document.getElementById('breadcrumbs');
+        if(fix) {
+            if(!ace.hasClass(breadcrumbs , 'breadcrumbs-fixed'))  ace.addClass(breadcrumbs , 'breadcrumbs-fixed');
+            if(!ace.hasClass(document.body , 'breadcrumbs-fixed'))  ace.addClass(document.body , 'breadcrumbs-fixed');
 
-		var sidebar = document.getElementById('sidebar');
-		if(fix) {
-			if( !ace.hasClass(sidebar , 'sidebar-fixed') )  ace.addClass(sidebar , 'sidebar-fixed');
-			ace.settings.set('sidebar', 'fixed');
-		} else {
-			ace.removeClass(sidebar , 'sidebar-fixed');
-			ace.settings.unset('sidebar', 'fixed');
-		}
-		document.getElementById('ace-settings-sidebar').checked = fix;
-	},
+            ace.settings.set('breadcrumbs', 'fixed');
+        } else {
+            ace.removeClass(breadcrumbs , 'breadcrumbs-fixed');
+            ace.removeClass(document.body , 'breadcrumbs-fixed');
+
+            ace.settings.unset('breadcrumbs', 'fixed');
+        }
+        document.getElementById('ace-settings-breadcrumbs').checked = fix;
+    },
 
 
-	sidebar_collapsed : function(collpase) {
-		collpase = collpase || false;
+    sidebar_fixed : function(fix) {
+        fix = fix || false;
+        if(!fix && ace.settings.is('breadcrumbs', 'fixed')) {
+            ace.settings.breadcrumbs_fixed(false);
+        }
 
-		var sidebar = document.getElementById('sidebar');
-		var icon = document.getElementById('sidebar-collapse').querySelector('[class*="icon-"]');
-		var $icon1 = icon.getAttribute('data-icon1');//the icon for expanded state
-		var $icon2 = icon.getAttribute('data-icon2');//the icon for collapsed state
+        if( fix && !ace.settings.is('navbar', 'fixed') ) {
+            ace.settings.navbar_fixed(true);
+        }
 
-		if(collpase) {
-			ace.addClass(sidebar , 'menu-min');
-			ace.removeClass(icon , $icon1);
-			ace.addClass(icon , $icon2);
+        var sidebar = document.getElementById('sidebar');
+        if(fix) {
+            if( !ace.hasClass(sidebar , 'sidebar-fixed') )  ace.addClass(sidebar , 'sidebar-fixed');
+            ace.settings.set('sidebar', 'fixed');
+        } else {
+            ace.removeClass(sidebar , 'sidebar-fixed');
+            ace.settings.unset('sidebar', 'fixed');
+        }
+        document.getElementById('ace-settings-sidebar').checked = fix;
+    },
 
-			ace.settings.set('sidebar', 'collapsed');
-		} else {
-			ace.removeClass(sidebar , 'menu-min');
-			ace.removeClass(icon , $icon2);
-			ace.addClass(icon , $icon1);
 
-			ace.settings.unset('sidebar', 'collapsed');
-		}
+    sidebar_collapsed : function(collpase) {
+        collpase = collpase || false;
 
-	},
-	/**
-	select_skin : function(skin) {
-	}
-	*/
+        var sidebar = document.getElementById('sidebar');
+        var icon = document.getElementById('sidebar-collapse').querySelector('[class*="icon-"]');
+        var $icon1 = icon.getAttribute('data-icon1');//the icon for expanded state
+        var $icon2 = icon.getAttribute('data-icon2');//the icon for collapsed state
+
+        if(collpase) {
+            ace.addClass(sidebar , 'menu-min');
+            ace.removeClass(icon , $icon1);
+            ace.addClass(icon , $icon2);
+
+            ace.settings.set('sidebar', 'collapsed');
+        } else {
+            ace.removeClass(sidebar , 'menu-min');
+            ace.removeClass(icon , $icon2);
+            ace.addClass(icon , $icon1);
+
+            ace.settings.unset('sidebar', 'collapsed');
+        }
+
+    },
+    /**
+    select_skin : function(skin) {
+    }
+    */
 }
 
 
 //check the status of something
 ace.settings.check = function(item, val) {
-	if(! ace.settings.exists(item, val) ) return;//no such setting specified
-	var status = ace.settings.is(item, val);//is breadcrumbs-fixed? or is sidebar-collapsed? etc
-	
-	var mustHaveClass = {
-		'navbar-fixed' : 'navbar-fixed-top',
-		'sidebar-fixed' : 'sidebar-fixed',
-		'breadcrumbs-fixed' : 'breadcrumbs-fixed',
-		'sidebar-collapsed' : 'menu-min'
-	}
+    if(! ace.settings.exists(item, val) ) return;//no such setting specified
+    var status = ace.settings.is(item, val);//is breadcrumbs-fixed? or is sidebar-collapsed? etc
+
+    var mustHaveClass = {
+        'navbar-fixed' : 'navbar-fixed-top',
+        'sidebar-fixed' : 'sidebar-fixed',
+        'breadcrumbs-fixed' : 'breadcrumbs-fixed',
+        'sidebar-collapsed' : 'menu-min'
+    }
 
 
-	//if an element doesn't have a specified class, but saved settings say it should, then add it
-	//for example, sidebar isn't .fixed, but user fixed it on a previous page
-	//or if an element has a specified class, but saved settings say it shouldn't, then remove it
-	//for example, sidebar by default is minimized (.menu-min hard coded), but user expanded it and now shouldn't have 'menu-min' class
-	
-	var target = document.getElementById(item);//#navbar, #sidebar, #breadcrumbs
-	if(status != ace.hasClass(target , mustHaveClass[item+'-'+val])) {
-		ace.settings[item+'_'+val](status);//call the relevant function to mage the changes
-	}
+    //if an element doesn't have a specified class, but saved settings say it should, then add it
+    //for example, sidebar isn't .fixed, but user fixed it on a previous page
+    //or if an element has a specified class, but saved settings say it shouldn't, then remove it
+    //for example, sidebar by default is minimized (.menu-min hard coded), but user expanded it and now shouldn't have 'menu-min' class
+
+    var target = document.getElementById(item);//#navbar, #sidebar, #breadcrumbs
+    if(status != ace.hasClass(target , mustHaveClass[item+'-'+val])) {
+        ace.settings[item+'_'+val](status);//call the relevant function to mage the changes
+    }
 }
 
 
@@ -154,93 +154,93 @@ ace.settings.check = function(item, val) {
 //method == 2, use cookies
 //method not specified, use localStorage if available, otherwise cookies
 ace.data_storage = function(method, undefined) {
-	var prefix = 'ace.';
+    var prefix = 'ace.';
 
-	var storage = null;
-	var type = 0;
-	
-	if((method == 1 || method === undefined) && 'localStorage' in window && window['localStorage'] !== null) {
-		storage = ace.storage;
-		type = 1;
-	}
-	else if(storage == null && (method == 2 || method === undefined) && 'cookie' in document && document['cookie'] !== null) {
-		storage = ace.cookie;
-		type = 2;
-	}
+    var storage = null;
+    var type = 0;
 
-	//var data = {}
-	this.set = function(namespace, key, value, undefined) {
-		if(!storage) return;
-		
-		if(value === undefined) {//no namespace here?
-			value = key;
-			key = namespace;
+    if((method == 1 || method === undefined) && 'localStorage' in window && window['localStorage'] !== null) {
+        storage = ace.storage;
+        type = 1;
+    }
+    else if(storage == null && (method == 2 || method === undefined) && 'cookie' in document && document['cookie'] !== null) {
+        storage = ace.cookie;
+        type = 2;
+    }
 
-			if(value == null) storage.remove(prefix+key)
-			else {
-				if(type == 1)
-					storage.set(prefix+key, value)
-				else if(type == 2)
-					storage.set(prefix+key, value, ace.config.cookie_expiry)
-			}
-		}
-		else {
-			if(type == 1) {//localStorage
-				if(value == null) storage.remove(prefix+namespace+'.'+key)
-				else storage.set(prefix+namespace+'.'+key, value);
-			}
-			else if(type == 2) {//cookie
-				var val = storage.get(prefix+namespace);
-				var tmp = val ? JSON.parse(val) : {};
+    //var data = {}
+    this.set = function(namespace, key, value, undefined) {
+        if(!storage) return;
 
-				if(value == null) {
-					delete tmp[key];//remove
-					if(ace.sizeof(tmp) == 0) {//no other elements in this cookie, so delete it
-						storage.remove(prefix+namespace);
-						return;
-					}
-				}
-				
-				else {
-					tmp[key] = value;
-				}
+        if(value === undefined) {//no namespace here?
+            value = key;
+            key = namespace;
 
-				storage.set(prefix+namespace , JSON.stringify(tmp), ace.config.cookie_expiry)
-			}
-		}
-	}
+            if(value == null) storage.remove(prefix+key)
+            else {
+                if(type == 1)
+                    storage.set(prefix+key, value)
+                else if(type == 2)
+                    storage.set(prefix+key, value, ace.config.cookie_expiry)
+            }
+        }
+        else {
+            if(type == 1) {//localStorage
+                if(value == null) storage.remove(prefix+namespace+'.'+key)
+                else storage.set(prefix+namespace+'.'+key, value);
+            }
+            else if(type == 2) {//cookie
+                var val = storage.get(prefix+namespace);
+                var tmp = val ? JSON.parse(val) : {};
 
-	this.get = function(namespace, key, undefined) {
-		if(!storage) return null;
-		
-		if(key === undefined) {//no namespace here?
-			key = namespace;
-			return storage.get(prefix+key);
-		}
-		else {
-			if(type == 1) {//localStorage
-				return storage.get(prefix+namespace+'.'+key);
-			}
-			else if(type == 2) {//cookie
-				var val = storage.get(prefix+namespace);
-				var tmp = val ? JSON.parse(val) : {};
-				return key in tmp ? tmp[key] : null;
-			}
-		}
-	}
+                if(value == null) {
+                    delete tmp[key];//remove
+                    if(ace.sizeof(tmp) == 0) {//no other elements in this cookie, so delete it
+                        storage.remove(prefix+namespace);
+                        return;
+                    }
+                }
 
-	
-	this.remove = function(namespace, key, undefined) {
-		if(!storage) return;
-		
-		if(key === undefined) {
-			key = namespace
-			this.set(key, null);
-		}
-		else {
-			this.set(namespace, key, null);
-		}
-	}
+                else {
+                    tmp[key] = value;
+                }
+
+                storage.set(prefix+namespace , JSON.stringify(tmp), ace.config.cookie_expiry)
+            }
+        }
+    }
+
+    this.get = function(namespace, key, undefined) {
+        if(!storage) return null;
+
+        if(key === undefined) {//no namespace here?
+            key = namespace;
+            return storage.get(prefix+key);
+        }
+        else {
+            if(type == 1) {//localStorage
+                return storage.get(prefix+namespace+'.'+key);
+            }
+            else if(type == 2) {//cookie
+                var val = storage.get(prefix+namespace);
+                var tmp = val ? JSON.parse(val) : {};
+                return key in tmp ? tmp[key] : null;
+            }
+        }
+    }
+
+
+    this.remove = function(namespace, key, undefined) {
+        if(!storage) return;
+
+        if(key === undefined) {
+            key = namespace
+            this.set(key, null);
+        }
+        else {
+            this.set(namespace, key, null);
+        }
+    }
 }
 
 
@@ -249,84 +249,84 @@ ace.data_storage = function(method, undefined) {
 
 //cookie storage
 ace.cookie = {
-	// The following functions are from Cookie.js class in TinyMCE, Moxiecode, used under LGPL.
+    // The following functions are from Cookie.js class in TinyMCE, Moxiecode, used under LGPL.
 
-	/**
-	 * Get a cookie.
-	 */
-	get : function(name) {
-		var cookie = document.cookie, e, p = name + "=", b;
+    /**
+     * Get a cookie.
+     */
+    get : function(name) {
+        var cookie = document.cookie, e, p = name + "=", b;
 
-		if ( !cookie )
-			return;
+        if ( !cookie )
+            return;
 
-		b = cookie.indexOf("; " + p);
+        b = cookie.indexOf("; " + p);
 
-		if ( b == -1 ) {
-			b = cookie.indexOf(p);
+        if ( b == -1 ) {
+            b = cookie.indexOf(p);
 
-			if ( b != 0 )
-				return null;
+            if ( b != 0 )
+                return null;
 
-		} else {
-			b += 2;
-		}
+        } else {
+            b += 2;
+        }
 
-		e = cookie.indexOf(";", b);
+        e = cookie.indexOf(";", b);
 
-		if ( e == -1 )
-			e = cookie.length;
+        if ( e == -1 )
+            e = cookie.length;
 
-		return decodeURIComponent( cookie.substring(b + p.length, e) );
-	},
+        return decodeURIComponent( cookie.substring(b + p.length, e) );
+    },
 
-	/**
-	 * Set a cookie.
-	 *
-	 * The 'expires' arg can be either a JS Date() object set to the expiration date (back-compat)
-	 * or the number of seconds until expiration
-	 */
-	set : function(name, value, expires, path, domain, secure) {
-		var d = new Date();
+    /**
+     * Set a cookie.
+     *
+     * The 'expires' arg can be either a JS Date() object set to the expiration date (back-compat)
+     * or the number of seconds until expiration
+     */
+    set : function(name, value, expires, path, domain, secure) {
+        var d = new Date();
 
-		if ( typeof(expires) == 'object' && expires.toGMTString ) {
-			expires = expires.toGMTString();
-		} else if ( parseInt(expires, 10) ) {
-			d.setTime( d.getTime() + ( parseInt(expires, 10) * 1000 ) ); // time must be in miliseconds
-			expires = d.toGMTString();
-		} else {
-			expires = '';
-		}
+        if ( typeof(expires) == 'object' && expires.toGMTString ) {
+            expires = expires.toGMTString();
+        } else if ( parseInt(expires, 10) ) {
+            d.setTime( d.getTime() + ( parseInt(expires, 10) * 1000 ) ); // time must be in miliseconds
+            expires = d.toGMTString();
+        } else {
+            expires = '';
+        }
 
-		document.cookie = name + "=" + encodeURIComponent(value) +
-			((expires) ? "; expires=" + expires : "") +
-			((path) ? "; path=" + path : "") +
-			((domain) ? "; domain=" + domain : "") +
-			((secure) ? "; secure" : "");
-	},
+        document.cookie = name + "=" + encodeURIComponent(value) +
+            ((expires) ? "; expires=" + expires : "") +
+            ((path) ? "; path=" + path : "") +
+            ((domain) ? "; domain=" + domain : "") +
+            ((secure) ? "; secure" : "");
+    },
 
-	/**
-	 * Remove a cookie.
-	 *
-	 * This is done by setting it to an empty value and setting the expiration time in the past.
-	 */
-	remove : function(name, path) {
-		this.set(name, '', -1000, path);
-	}
+    /**
+     * Remove a cookie.
+     *
+     * This is done by setting it to an empty value and setting the expiration time in the past.
+     */
+    remove : function(name, path) {
+        this.set(name, '', -1000, path);
+    }
 };
 
 
 //local storage
 ace.storage = {
-	get: function(key) {
-		return window['localStorage'].getItem(key);
-	},
-	set: function(key, value) {
-		window['localStorage'].setItem(key , value);
-	},
-	remove: function(key) {
-		window['localStorage'].removeItem(key);
-	}
+    get: function(key) {
+        return window['localStorage'].getItem(key);
+    },
+    set: function(key, value) {
+        window['localStorage'].setItem(key , value);
+    },
+    remove: function(key) {
+        window['localStorage'].removeItem(key);
+    }
 };
 
 
@@ -337,34 +337,34 @@ ace.storage = {
 //count the number of properties in an object
 //useful for getting the number of elements in an associative array
 ace.sizeof = function(obj) {
-	var size = 0;
-	for(var key in obj) if(obj.hasOwnProperty(key)) size++;
-	return size;
+    var size = 0;
+    for(var key in obj) if(obj.hasOwnProperty(key)) size++;
+    return size;
 }
 
 //because jQuery may not be loaded at this stage, we use our own toggleClass
 ace.hasClass = function(elem, className) {
-	return (" " + elem.className + " ").indexOf(" " + className + " ") > -1;
+    return (" " + elem.className + " ").indexOf(" " + className + " ") > -1;
 }
 ace.addClass = function(elem, className) {
  if (!ace.hasClass(elem, className)) {
-	var currentClass = elem.className;
-	elem.className = currentClass + (currentClass.length? " " : "") + className;
+    var currentClass = elem.className;
+    elem.className = currentClass + (currentClass.length? " " : "") + className;
  }
 }
 ace.removeClass = function(elem, className) {ace.replaceClass(elem, className);}
 
 ace.replaceClass = function(elem, className, newClass) {
-	var classToRemove = new RegExp(("(^|\\s)" + className + "(\\s|$)"), "i");
-	elem.className = elem.className.replace(classToRemove, function (match, p1, p2) {
-		return newClass? (p1 + newClass + p2) : " ";
-	}).replace(/^\s+|\s+$/g, "");
+    var classToRemove = new RegExp(("(^|\\s)" + className + "(\\s|$)"), "i");
+    elem.className = elem.className.replace(classToRemove, function (match, p1, p2) {
+        return newClass? (p1 + newClass + p2) : " ";
+    }).replace(/^\s+|\s+$/g, "");
 }
 
 ace.toggleClass = function(elem, className) {
-	if(ace.hasClass(elem, className))
-		ace.removeClass(elem, className);
-	else ace.addClass(elem, className);
+    if(ace.hasClass(elem, className))
+        ace.removeClass(elem, className);
+    else ace.addClass(elem, className);
 }
 
 

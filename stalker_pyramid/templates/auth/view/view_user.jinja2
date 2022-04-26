@@ -2,14 +2,14 @@
 
 {# PRE-HEADER#}
 {% block pre_header %}
-    <link rel="stylesheet"
-          href='{{ request.static_url("stalker_pyramid:static/ace/css/fullcalendar.css") }}'/>
-    <link rel="stylesheet"
-          href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap-timepicker.css") }}'/>
-    <link rel="stylesheet"
-          href='{{ request.static_url("stalker_pyramid:static/ace/css/datepicker.css") }}'/>
-    <link rel="stylesheet"
-          href='{{ request.static_url("stalker_pyramid:static/ace/css/daterangepicker.css") }}'/>
+{#    <link rel="stylesheet"#}
+{#          href='{{ request.static_url("stalker_pyramid:static/ace/css/fullcalendar.css") }}'/>#}
+{#    <link rel="stylesheet"#}
+{#          href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap-timepicker.css") }}'/>#}
+{#    <link rel="stylesheet"#}
+{#          href='{{ request.static_url("stalker_pyramid:static/ace/css/datepicker.css") }}'/>#}
+{#    <link rel="stylesheet"#}
+{#          href='{{ request.static_url("stalker_pyramid:static/ace/css/daterangepicker.css") }}'/>#}
 
     {% include 'charts/chart_preheader.jinja2' %}
 
@@ -61,8 +61,8 @@
 
     <script type="text/javascript">
 
-        window.$(document).ready(function () {
-            $.getJSON('/users/{{ entity.id }}/events/?keys=time_log&keys=vacation').then(function (data) {
+        window.jQuery(document).ready(function () {
+            window.jQuery.getJSON('/users/{{ entity.id }}/events/?keys=time_log&keys=vacation').then(function (data) {
                 var events = [];
 
                 var total_timelogs = 0;
@@ -94,10 +94,10 @@
                 }
                 drawCalendar('calendar', events);
 });
-                window.$(document).ready(function () {
+                window.jQuery(document).ready(function () {
 
 
-    {#                var placeholder = $('#piechart-placeholder').css({'width':'90%' , 'min-height':'150px'});#}
+    {#                var placeholder = window.jQuery('#piechart-placeholder').css({'width':'90%' , 'min-height':'150px'});#}
     {#                  var data = [#}
     {#                    { label: "You have worked",  data: total_timelogs, color: "#68BC31"},#}
     {#                    { label: "Your vacations",  data: 240.5, color: "#2091CF"},#}

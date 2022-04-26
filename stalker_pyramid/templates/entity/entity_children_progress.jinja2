@@ -28,10 +28,10 @@
 
 
 <script class="code" type="text/javascript">
-    $.getJSON('/tasks/?parent_id={{ entity.id }}').then(function (data) {
-        $(function () {
-            var entity_children = $('#entity_children');
-            var child_template = doT.template($('#tmpl_child').html());
+    window.jQuery.getJSON('/tasks/?parent_id={{ entity.id }}').then(function (data) {
+        window.jQuery(function () {
+            var entity_children = window.jQuery('#entity_children');
+            var child_template = doT.template(window.jQuery('#tmpl_child').html());
 
             for (var i = 0; i < data.length; i++) {
                 if (!data[i].completed) {

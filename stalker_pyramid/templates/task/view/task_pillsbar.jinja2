@@ -4,8 +4,8 @@
 
 
 <script type="text/javascript">
-    $(function () {
-        //$('#reference_count').text(data);
+    window.jQuery(function () {
+        //window.jQuery('#reference_count').text(data);
         menu_of(
             'Dashboard',
             "{%- if request.current_route_path() == request.route_path('view_task', id=task.id) -%}'active'{%- else -%}{%- endif -%}",

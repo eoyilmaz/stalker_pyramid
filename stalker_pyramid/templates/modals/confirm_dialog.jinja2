@@ -34,31 +34,31 @@
     function init_dialog() {
         console.debug('starting to initialize confirm dialog!!!');
 
-        var dialog_template_label = $('#dialog_template_label');
+        var dialog_template_label = window.jQuery('#dialog_template_label');
         dialog_template_label.find('span').remove();
         dialog_template_label.append('<span class="red"><i class="icon-warning-sign"></i> Warning</span>');
 
-        $('#message').append('{{ message | safe}}');
+        window.jQuery('#message').append('{{ message | safe}}');
 
         {# ***************************************************************** #}
         {# Submit Button #}
-        $('#dialog_template_submit_button').on('click', function (e) {
+        window.jQuery('#dialog_template_submit_button').on('click', function (e) {
             e.stopPropagation();
             e.preventDefault();
             // disable the submit_button
-            var submit_button = $(this);
+            var submit_button = window.jQuery(this);
 
             var url= '{{ action | safe}}';
             if(url==''){
-                $('#dialog_template').modal('hide');
+                window.jQuery('#dialog_template').modal('hide');
             }
             else{
                 submit_button.button('loading');
-                var confirm_form = $('#confirm_form');
+                var confirm_form = window.jQuery('#confirm_form');
                 var confirm_form_data = confirm_form.serialize();
 
-                $.post(url, confirm_form_data).done(function (response) {
-                    $('#dialog_template').modal('hide');
+                window.jQuery.post(url, confirm_form_data).done(function (response) {
+                    window.jQuery('#dialog_template').modal('hide');
                     // reload page
                     setTimeout(function () { // wait for hide event to finish
                         window.location.reload();
@@ -70,9 +70,9 @@
             }
         });
 
-        $('.date').each(function () {
-            var date = moment($(this).text());
-            $(this).text(date.fromNow());
+        window.jQuery('.date').each(function () {
+            var date = moment(window.jQuery(this).text());
+            window.jQuery(this).text(date.fromNow());
         });
 
         console.debug('finished initializing the confirm dialog!')
@@ -82,7 +82,7 @@
 
 <script type="text/javascript">
     function destruct_dialog() {
-        $('#dialog_template_submit_button').unbind();
-        $('#dialog_template').data('modal', null);
+        window.jQuery('#dialog_template_submit_button').unbind();
+        window.jQuery('#dialog_template').data('modal', null);
     }
 </script>

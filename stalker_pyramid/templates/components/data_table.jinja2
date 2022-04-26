@@ -58,16 +58,15 @@
 </div>
 
 
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.bootstrap.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/dataTable_num-html_sort.js") }}'></script>
-
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.dataTables.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.dataTables.bootstrap.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/dataTable_num-html_sort.js") }}'></script>#}
 
 <script>
-    window.$(document).ready(function () {
+    window.jQuery(document).ready(function () {
 
         var icon_name = get_icon('{{ list_item_type.lower() }}');
-        var items_header = $('#items_header');
+        var items_header = window.jQuery('#items_header');
         items_header.append('<i class="' + icon_name + ' bigger-125"></i> {{ list_item_type }}s');
 
         {% if collapsed %}
@@ -77,18 +76,18 @@
         var loadTableData = function (address, tableId, tableParams, sortingParams) {
 {#            console.log('loadTableData' + address);#}
             // fill items table with dynamic data
-            $.getJSON(address).then(function (data) {
+            window.jQuery.getJSON(address).then(function (data) {
 
-                var thead_template = doT.template($('#tmpl_itemThead').html());
-                var table_head = $('#' + tableId + '>thead');
+                var thead_template = doT.template(window.jQuery('#tmpl_itemThead').html());
+                var table_head = window.jQuery('#' + tableId + '>thead');
                 table_head.append(thead_template({}));
 
                 var items = data;
-                var row_template = doT.template($('#tmpl_itemRow').html());
+                var row_template = doT.template(window.jQuery('#tmpl_itemRow').html());
 
-                $(function () {
+                window.jQuery(function () {
                     var i;
-                    var table_body = $('#' + tableId + '>tbody');
+                    var table_body = window.jQuery('#' + tableId + '>tbody');
                     for (i = 0; i < data.length; i++) {
 
                         if (data[i].status_code) {
@@ -126,18 +125,18 @@
                         table_body.append(row_template(data[i]));
                     }
 
-                    var table_object = $('#' + tableId);
+                    var table_object = window.jQuery('#' + tableId);
                     var oTable1 = table_object.dataTable(tableParams);
                     oTable1.fnSort(sortingParams);
 
                     table_object.show();
-                    $('#loading_spinner').hide();
-                    $('table th input:checkbox').on('click', function () {
+                    window.jQuery('#loading_spinner').hide();
+                    window.jQuery('table th input:checkbox').on('click', function () {
                         var that = this;
-                        $(this).closest('table').find('tr > td:first-child input:checkbox')
+                        window.jQuery(this).closest('table').find('tr > td:first-child input:checkbox')
                                 .each(function () {
                                     this.checked = that.checked;
-                                    $(this).closest('tr').toggleClass('selected');
+                                    window.jQuery(this).closest('tr').toggleClass('selected');
                                 });
                     });
 

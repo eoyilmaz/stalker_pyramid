@@ -83,16 +83,16 @@
 </div>
 
 {#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/moment.min.js") }}'></script>#}
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.autosize-min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.inputlimiter.1.3.1.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/additional-methods.min.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.autosize-min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.inputlimiter.1.3.1.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/additional-methods.min.js") }}'></script>#}
 
 <script>
     function init_dialog(){
         console.log('initialize ticket dialog start');
 
         // update dialog header
-        $('#dialog_template_label').text('Create Ticket Dialog');
+        window.jQuery('#dialog_template_label').text('Create Ticket Dialog');
 
         // generate default values;
         var project = {
@@ -100,7 +100,7 @@
             name: "{{ project.name }}"
         };
         var submit_form_url = '{{ request.route_url("create_ticket") }}';
-        var submit_button = $('#dialog_template_submit_button');
+        var submit_button = window.jQuery('#dialog_template_submit_button');
 
         {# ***************************************************************** #}
         {# Submit Button #}
@@ -112,7 +112,7 @@
             // disable submit button
             submit_button.button('loading');
 
-            var form = $('#ticket_form');
+            var form = window.jQuery('#ticket_form');
             var form_data = form.serialize();
 {#            console.log('form_data :', form_data);#}
 
@@ -122,11 +122,11 @@
             } else {
                 form.attr('is_sending', true);
             }
-            $.post(
+            window.jQuery.post(
                 submit_form_url,
                 form_data
             ).done(function(){
-                $('#dialog_template').modal('hide');
+                window.jQuery('#dialog_template').modal('hide');
                 // reload page
                 setTimeout(function () { // wait for hide event to finish
                     window.location.reload();
@@ -148,12 +148,12 @@
     function destruct_dialog(){
         console.log('destruct ticket dialog start');
         // unbind events
-        $('#task_review_mode').unbind();
-        $('#task_priority').unbind();
-        $('#dialog_template_submit_button').unbind();
+        window.jQuery('#task_review_mode').unbind();
+        window.jQuery('#task_priority').unbind();
+        window.jQuery('#dialog_template_submit_button').unbind();
 
         // remove dialog
-        $('#dialog_template').data('modal', null);
+        window.jQuery('#dialog_template').data('modal', null);
         console.log('destruct ticket dialog end');
     }
 </script>

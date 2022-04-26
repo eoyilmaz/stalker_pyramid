@@ -97,22 +97,22 @@
  </script>
 {% endraw %}
 <script type="text/javascript">
-    $(function () {
+    window.jQuery(function () {
 
 
-        $("#new_project_button").on('click', function (e) {
-             var event_dialog = $('#dialog_template');
+        window.jQuery("#new_project_button").on('click', function (e) {
+             var event_dialog = window.jQuery('#dialog_template');
 
             event_dialog.modal({
                 'remote': '{{request.route_path('create_project_dialog', id=-1, _query={'mode': "Create" }) }}'
             });
         });
 
-        $.getJSON('/entities/{{ entity.id }}/projects/').then(function (data) {
+        window.jQuery.getJSON('/entities/{{ entity.id }}/projects/').then(function (data) {
 
-            var filter_template = doT.template($('#tmpl_filter_template').html());
-            var project_card_template = doT.template($('#tmpl_project_card').html());
-            var filter_lists = $('#filter_lists');
+            var filter_template = doT.template(window.jQuery('#tmpl_filter_template').html());
+            var project_card_template = doT.template(window.jQuery('#tmpl_project_card').html());
+            var filter_lists = window.jQuery('#filter_lists');
 
 
             for(var i=0; i<data.length;i++){
@@ -128,10 +128,10 @@
                    data[i].status_icon = get_icon(data[i].status_code.toUpperCase());
                 }
 
-                var entity_projects = $('#entity_projects_' + data[i].status_code);
+                var entity_projects = window.jQuery('#entity_projects_' + data[i].status_code);
                 if (entity_projects.length === 0){
                     filter_lists.append(filter_template(data[i]));
-                    entity_projects = $('#entity_projects_' + data[i].status_code);
+                    entity_projects = window.jQuery('#entity_projects_' + data[i].status_code);
                 }
                 entity_projects.append(project_card_template(data[i]));
             }

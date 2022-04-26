@@ -91,13 +91,13 @@
  </script>
 {% endraw %}
 <script type="text/javascript">
-    $(function () {
+    window.jQuery(function () {
 
-        $.getJSON('/entities/{{ entity.id }}/projects/').then(function (data) {
+        window.jQuery.getJSON('/entities/{{ entity.id }}/projects/').then(function (data) {
 
-            var status_template = doT.template($('#tmpl_status_template').html());
-            var project_card_template = doT.template($('#tmpl_project_card').html());
-            var status_lists = $('#status_lists');
+            var status_template = doT.template(window.jQuery('#tmpl_status_template').html());
+            var project_card_template = doT.template(window.jQuery('#tmpl_project_card').html());
+            var status_lists = window.jQuery('#status_lists');
 
 
             for(var i=0; i<data.length;i++){
@@ -113,10 +113,10 @@
                    data[i].status_icon = get_icon(data[i].status_code.toUpperCase());
                 }
 
-                var entity_projects = $('#entity_projects_' + data[i].status_code);
+                var entity_projects = window.jQuery('#entity_projects_' + data[i].status_code);
                 if (entity_projects.length === 0){
                     status_lists.append(status_template(data[i]));
-                    entity_projects = $('#entity_projects_' + data[i].status_code);
+                    entity_projects = window.jQuery('#entity_projects_' + data[i].status_code);
                 }
                 entity_projects.append(project_card_template(data[i]));
             }

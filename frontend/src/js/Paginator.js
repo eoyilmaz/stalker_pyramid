@@ -18,8 +18,8 @@
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
 try {
-    var doT = require('../../doT/doT.min');
-    var jQuery = require('../../jquery/jquery-2.1.1.min');
+    var doT = require("./../../node_modules/dot/doT.min");
+    var jQuery = require('../../node_modules/jquery/dist/jquery.min');
 } catch (e) {}
 
 

@@ -44,19 +44,19 @@
     </div>
 </div>
 
-<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/bootstrap-tag.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/chosen.jquery.min.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/bootstrap-tag.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/chosen.window.jQuery.min.js") }}'></script>#}
 
 <script>
 
     function init_dialog() {
         console.debug('starting to initialize confirm dialog!!!');
 
-        var dialog_template_label = $('#dialog_template_label');
+        var dialog_template_label = window.jQuery('#dialog_template_label');
         dialog_template_label.find('span').remove();
         dialog_template_label.append('<span class="green">Request Review Dialog</span>');
 
-        $('#warning-message').append('{{ message | safe}}');
+        window.jQuery('#warning-message').append('{{ message | safe}}');
 
         var url = '{{ action }}';
 {#        console.log('url : '+url);#}
@@ -66,22 +66,22 @@
 
         {# ***************************************************************** #}
         {# Submit Button #}
-        $('#dialog_template_submit_button').on('click', function (e) {
+        window.jQuery('#dialog_template_submit_button').on('click', function (e) {
             e.stopPropagation();
             e.preventDefault();
 
             // disable the submit_button
-            var submit_button = $(this);
+            var submit_button = window.jQuery(this);
 
             console.log("url: "+url);
 
             if (url){
                 submit_button.button('loading');
-                var force_task_status_form = $('#force_task_status_form');
+                var force_task_status_form = window.jQuery('#force_task_status_form');
                 var force_task_status_form_data = force_task_status_form.serialize();
 
-                $.post(url, force_task_status_form_data).done(function (response) {
-                    $('#dialog_template').modal('hide');
+                window.jQuery.post(url, force_task_status_form_data).done(function (response) {
+                    window.jQuery('#dialog_template').modal('hide');
                     // reload page
                     setTimeout(function () { // wait for hide event to finish
                         window.location.reload();
@@ -92,7 +92,7 @@
                 });
             }
             else {
-                $('#dialog_template').modal('hide');
+                window.jQuery('#dialog_template').modal('hide');
             }
         });
 
@@ -103,7 +103,7 @@
 
 <script type="text/javascript">
     function destruct_dialog() {
-        $('#dialog_template_submit_button').unbind();
-        $('#dialog_template').data('modal', null);
+        window.jQuery('#dialog_template_submit_button').unbind();
+        window.jQuery('#dialog_template').data('modal', null);
     }
 </script>

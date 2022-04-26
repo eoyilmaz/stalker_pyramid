@@ -14,14 +14,14 @@
     function init_dialog() {
         console.debug('starting to initialize project dialog!!!');
 
-        var dialog_template_label = $('#dialog_template_label');
+        var dialog_template_label = window.jQuery('#dialog_template_label');
         dialog_template_label.find('span').remove();
         dialog_template_label.append('<span>{{ mode }} Project</span>');
 
         {# ***************************************************************** #}
         {# Submit Button #}
-        window.$(document).ready(function () {
-            var submit_button = $('#dialog_template_submit_button');
+        window.jQuery(document).ready(function () {
+            var submit_button = window.jQuery('#dialog_template_submit_button');
             submit_button.on('click', function (e) {
                 e.stopPropagation();
                 e.preventDefault();
@@ -30,13 +30,13 @@
 
                 console.log('project_form');
 
-                var project_form = $('#project_form');
+                var project_form = window.jQuery('#project_form');
 
-                var brand = $('#brand');
-                var production_house = $('#production_house');
-                var adv_agency = $('#adv_agency');
-                var product_project_name = $('#product_project_name');
-                var mark_name = $('#mark_name');
+                var brand = window.jQuery('#brand');
+                var production_house = window.jQuery('#production_house');
+                var adv_agency = window.jQuery('#adv_agency');
+                var product_project_name = window.jQuery('#product_project_name');
+                var mark_name = window.jQuery('#mark_name');
 
                 var g_data = {
                      'product_project_name' : product_project_name.val(),
@@ -56,7 +56,7 @@
 {#                console.log("project_form.serialize(): _client_query="+_client_query);#}
 
                 if (project_form.validate()) {
-                    $.post(
+                    window.jQuery.post(
                         project_form.attr('action'),
                         project_form.serialize()+"&generic_text="+generic_text
                     ).done(function (new_url) {
@@ -75,15 +75,15 @@
 <script type="text/javascript">
 
     function destruct_dialog() {
-        $('#project_form').unbind();
-        $('#project_name').unbind();
-        $('#project_login').unbind();
-        $('#project_email').unbind();
-        $('#project_password').unbind();
-        $('#project_password2').unbind();
-        $('#dialog_template_submit_button').unbind();
+        window.jQuery('#project_form').unbind();
+        window.jQuery('#project_name').unbind();
+        window.jQuery('#project_login').unbind();
+        window.jQuery('#project_email').unbind();
+        window.jQuery('#project_password').unbind();
+        window.jQuery('#project_password2').unbind();
+        window.jQuery('#dialog_template_submit_button').unbind();
 
-        $('#dialog_template').data('modal', null);
+        window.jQuery('#dialog_template').data('modal', null);
 
     }
 </script>

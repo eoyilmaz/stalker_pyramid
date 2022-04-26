@@ -87,10 +87,10 @@
 
     </div>
 </div>
-<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/bootstrap-tag.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/utils.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/chosen.jquery.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.autosize-min.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/bootstrap-tag.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/utils.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/chosen.window.jQuery.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.autosize-min.js") }}'></script>#}
 
 <script>
     function init_dialog(){
@@ -103,14 +103,14 @@
         };
 
         // update dialog header
-        $('#dialog_template_label').text('Create Ticket Dialog');
+        window.jQuery('#dialog_template_label').text('Create Ticket Dialog');
 
-        var submit_button = $('#dialog_template_submit_button');
+        var submit_button = window.jQuery('#dialog_template_submit_button');
 
         var field_update_mode_checker = function(){
             // checks if the important fields are still updating
             // check if any of the fields are still in updating mode
-            if ($('#ticket_owner').attr('is_updating') === 'true') {
+            if (window.jQuery('#ticket_owner').attr('is_updating') === 'true') {
                 // disable the Submit button
                 setTimeout(function(){submit_button.button('loading')}, 0);
             } else {
@@ -122,7 +122,7 @@
 
         {# ***************************************************************** #}
         {# Owner #}
-        var ticket_owner = $('#ticket_owner');
+        var ticket_owner = window.jQuery('#ticket_owner');
 
         ticket_owner.chosen({
             search_contains: true,
@@ -141,7 +141,7 @@
         ticket_owner.attr('is_updating', true);
         field_update_mode_checker();
 
-        $.getJSON('/projects/' + project.id + '/users/?simple=1').then(function(data){
+        window.jQuery.getJSON('/projects/' + project.id + '/users/?simple=1').then(function(data){
             // remove current elements
             ticket_owner.find('option').remove();
 
@@ -167,7 +167,7 @@
         {# Links #}
 
         var timeout_buffer; // it is used in delaying AJAX calls see task_depends_to
-        var ticket_links = $('#ticket_links');
+        var ticket_links = window.jQuery('#ticket_links');
 
         ticket_links.tag({
             placeholder: ticket_links.data('placeholder'),
@@ -209,7 +209,7 @@
             // disable submit button
             submit_button.button('loading');
 
-            var form = $('#ticket_form');
+            var form = window.jQuery('#ticket_form');
             var form_data = form.serialize();
 
             var link_ids;
@@ -219,7 +219,7 @@
             var raw_link_ids = form.serializeArray()[5].value;
 
 
-            link_ids = $.map(raw_link_ids.split(','), function (value) {
+            link_ids = window.jQuery.map(raw_link_ids.split(','), function (value) {
                 var values = value.match(/\(([0-9]+)\)/);
                 if( values !== null && values !== undefined ){
                     return values[1];
@@ -234,14 +234,14 @@
             } else {
                 form.attr('is_sending', true);
             }
-            $.post(
+            window.jQuery.post(
                 submit_form_url,
                 form_data+ '&' +
-                $.param({
+                window.jQuery.param({
                     'link_ids':link_ids
                 })
              ).done(function(){
-                $('#dialog_template').modal('hide');
+                window.jQuery('#dialog_template').modal('hide');
                 // reload page
                 setTimeout(function () { // wait for hide event to finish
                     window.location.reload();
@@ -263,10 +263,10 @@
     function destruct_dialog(){
         console.log('destruct ticket dialog start');
         // unbind events
-        $('#dialog_template_submit_button').unbind();
+        window.jQuery('#dialog_template_submit_button').unbind();
 
         // remove dialog
-        $('#dialog_template').data('modal', null);
+        window.jQuery('#dialog_template').data('modal', null);
         console.log('destruct ticket dialog end');
     }
 </script>

@@ -8,32 +8,32 @@
 </div>
 
 
-<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/bootstrap-tag.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/bootstrap-tag.js") }}'></script>#}
 
 
 <script type="text/javascript">
     function init_dialog() {
         console.debug('starting to initialize department dialog!!!');
 
-        var dialog_template_label = $('#dialog_template_label');
+        var dialog_template_label = window.jQuery('#dialog_template_label');
 
         dialog_template_label.find('span').remove();
         dialog_template_label.append('<span>New Department</span>');
 
-        var dialog_template_body = $('#dialog_template_body');
+        var dialog_template_body = window.jQuery('#dialog_template_body');
         dialog_template_body.attr('style', "height: 350px");
         
         {# ***************************************************************** #}
         {# Submit Button #}
-        var submit_button = $('#dialog_template_submit_button');
+        var submit_button = window.jQuery('#dialog_template_submit_button');
         submit_button.on('click', function (e) {
             e.stopPropagation();
             e.preventDefault();
 
             submit_button.button('loading');
-            var department_form = $('#department_form');
+            var department_form = window.jQuery('#department_form');
 
-            $.post(department_form.attr('action'),
+            window.jQuery.post(department_form.attr('action'),
                 department_form.serialize()
             ).done(function () {
                 window.location.assign('{{ came_from }}');
@@ -51,13 +51,13 @@
 
     function destruct_dialog() {
 
-        $('#department_name').unbind();
-        $('#department_lead').unbind();
-        $('#form-field-tags').unbind();
-        $('#department_description').unbind();
-        $('#dialog_template_submit_button').unbind();
+        window.jQuery('#department_name').unbind();
+        window.jQuery('#department_lead').unbind();
+        window.jQuery('#form-field-tags').unbind();
+        window.jQuery('#department_description').unbind();
+        window.jQuery('#dialog_template_submit_button').unbind();
 
-        $('#dialog_template').data('modal', null);
+        window.jQuery('#dialog_template').data('modal', null);
 
     }
 </script>

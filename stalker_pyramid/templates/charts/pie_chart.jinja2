@@ -1,50 +1,47 @@
 <script type="text/javascript">
 
-
-			  function drawPieChart(placeholder, data, position) {
-			 	  console.log(placeholder)
-                  $.plot(placeholder, data, {
-					series: {
-						pie: {
-							show: true,
-							tilt:0.8,
-							highlight: {
-								opacity: 0.25
-							},
-							stroke: {
-								color: '#fff',
-								width: 2
-							},
-                            label: {
-                                show: true,
-                                radius: 0.5,
-                                background: {
-                                    color: '#ffffff',
-                                    opacity: 0.8
-                                },
-                                threshold: 0
-                            },
-							startAngle: 2
-						}
-					},
-					legend: {
-						show: true,
-						position: position || "ne",
-						labelBoxBorderColor: null,
-						margin:[-30,15]
-					}
-					,
-					grid: {
-						hoverable: true,
-						clickable: true
-					}
-				 })
-			 }
-
-
+function drawPieChart(placeholder, data, position) {
+  console.log(placeholder);
+  window.jQuery.plot(placeholder, data, {
+    series: {
+        pie: {
+            show: true,
+            tilt:0.8,
+            highlight: {
+                opacity: 0.25
+            },
+            stroke: {
+                color: '#fff',
+                width: 2
+            },
+            label: {
+                show: true,
+                radius: 0.5,
+                background: {
+                    color: '#ffffff',
+                    opacity: 0.8
+                },
+                threshold: 0
+            },
+            startAngle: 2
+        }
+    },
+    legend: {
+        show: true,
+        position: position || "ne",
+        labelBoxBorderColor: null,
+        margin:[-30,15]
+    }
+    ,
+    grid: {
+        hoverable: true,
+        clickable: true
+    }
+ });
+}
 </script>
 
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.easy-pie-chart.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/flot/jquery.flot.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/flot/jquery.flot.pie.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/flot/jquery.flot.resize.min.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.easy-pie-chart.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/flot/window.jQuery.flot.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/flot/window.jQuery.flot.pie.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/flot/window.jQuery.flot.resize.min.js") }}'></script>#}

@@ -45,9 +45,8 @@
     <div class="span12" id="result_table">
     </div>
 </div>
- <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jqGrid/i18n/grid.locale-en.js") }}'></script>
-
-<script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/jquery.jqGrid.min.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jqGrid/i18n/grid.locale-en.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/window.jQuery.jqGrid.min.js") }}'></script>#}
 <script>
     function updatePagerIcons(table) {
         var replacement =
@@ -57,9 +56,9 @@
             'ui-icon-seek-next' : 'icon-angle-right bigger-140',
             'ui-icon-seek-end' : 'icon-double-angle-right bigger-140'
         };
-        $('.ui-pg-table:not(.navtable) > tbody > tr > .ui-pg-button > .ui-icon').each(function(){
-            var icon = $(this);
-            var $class = $.trim(icon.attr('class').replace('ui-icon', ''));
+        window.jQuery('.ui-pg-table:not(.navtable) > tbody > tr > .ui-pg-button > .ui-icon').each(function(){
+            var icon = window.jQuery(this);
+            var $class = window.jQuery.trim(icon.attr('class').replace('ui-icon', ''));
 
             if($class in replacement) icon.attr('class', 'ui-icon '+replacement[$class]);
         })
@@ -67,12 +66,12 @@
 
     function loadSeachedTaskData(q_str){
         console.log("loadSeachedTaskData:" + q_str);
-        var result_table = $('#result_table');
+        var result_table = window.jQuery('#result_table');
         result_table.find("#table_container").remove();
         result_table.find("#grid-pager").remove();
 
-        $.getJSON('/tasks/?leaf_only=1&project_id={{ entity.id }}&' + q_str).then(function (data) {
-                $('#submit_task_query').button('reset');
+        window.jQuery.getJSON('/tasks/?leaf_only=1&project_id={{ entity.id }}&' + q_str).then(function (data) {
+                window.jQuery('#submit_task_query').button('reset');
 
                 var bid_seconds = 0;
                 var schedule_timing_seconds = 0;
@@ -112,18 +111,18 @@
                 var total_logged = convert_seconds_to_time_range(total_logged_seconds);
                 var total_logged_lmt = meaningful_time(total_logged_seconds);
 
-                $('#total_task').text(total_task);
-                $('#bid').text(bid + ' (' + bid_lmt + ')');
-                $('#schedule_timing').text(schedule_timing + ' (' + schedule_timing_lmt + ')');
-                $('#total_logged').text(total_logged + ' (' + total_logged_lmt + ')');
+                window.jQuery('#total_task').text(total_task);
+                window.jQuery('#bid').text(bid + ' (' + bid_lmt + ')');
+                window.jQuery('#schedule_timing').text(schedule_timing + ' (' + schedule_timing_lmt + ')');
+                window.jQuery('#total_logged').text(total_logged + ' (' + total_logged_lmt + ')');
 
                 result_table.append('<div id="table_container"><table id="grid-table"></table></div><div id="grid-pager"></div>');
 
-                jQuery(function($) {
+                window.jQuery(function(window.jQuery) {
                     var grid_selector = "#grid-table";
                     var pager_selector = "#grid-pager";
 
-                    jQuery(grid_selector).jqGrid({
+                    window.jQuery(grid_selector).jqGrid({
                         data: data,
                         datatype: "local",
                         height: 'auto',
@@ -150,7 +149,7 @@
                             var table = this;
                             setTimeout(function(){
                                  updatePagerIcons(table);
-                                $('#lui_grid-table').hide();
+                                window.jQuery('#lui_grid-table').hide();
                             }, 0);
                         },
                         caption: ""
@@ -158,9 +157,9 @@
                 });
             });
     }
-    $(function () {
-        var submit_button = $('#submit_task_query');
-        var task_query = $('#task_query');
+    window.jQuery(function () {
+        var submit_button = window.jQuery('#submit_task_query');
+        var task_query = window.jQuery('#task_query');
         submit_button.on('click', function(e){
             e.stopPropagation();
             e.preventDefault();
@@ -186,7 +185,7 @@
 {#            if (asset_type_query_str !=""){#}
 {#                asset_type_query_str = asset_type_query_str.substring(0, asset_type_query_str.length-1);#}
 {#                console.log("asset_type_query_str: "+asset_type_query_str);#}
-{#                $.getJSON('/entities/{{ entity.id }}/assets/?' + asset_type_query_str).then(function (assets_data) {#}
+{#                window.jQuery.getJSON('/entities/{{ entity.id }}/assets/?' + asset_type_query_str).then(function (assets_data) {#}
 {##}
 {#                    console.log(assets_data.length);#}
 {#                    var total_asset = assets_data.length;#}

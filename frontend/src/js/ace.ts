@@ -1,10 +1,121 @@
 // if (!('ace' in window)) window['ace'] = {};
 import * as $ from 'jquery';
+
 import 'bootstrap';
 import './jquery_extend';
 import './ace-elements';
+import './additional-methods';
 import 'x-editable/dist/bootstrap-editable/js/bootstrap-editable';
 import 'select2';
+
+// import "moment/dist/moment";
+
+require("../../node_modules/moment/dist/moment");
+require("../../node_modules/as-jqplot/dist/jquery.jqplot.min");
+require("../../node_modules/as-jqplot/dist/plugins/jqplot.categoryAxisRenderer.min");
+require("../../node_modules/as-jqplot/dist/plugins/jqplot.barRenderer.min");
+require("../../node_modules/as-jqplot/dist/plugins/jqplot.dateAxisRenderer.min");
+require("../../node_modules/as-jqplot/dist/plugins/jqplot.logAxisRenderer.min");
+require("../../node_modules/as-jqplot/dist/plugins/jqplot.canvasAxisTickRenderer.min");
+require("../../node_modules/as-jqplot/dist/plugins/jqplot.canvasTextRenderer.min");
+require("../../node_modules/as-jqplot/dist/plugins/jqplot.pointLabels.min");
+require("../../node_modules/as-jqplot/dist/plugins/jqplot.highlighter.min");
+require("../../node_modules/as-jqplot/dist/plugins/jqplot.cursor.min");
+require("../../node_modules/as-jqplot/dist/examples/syntaxhighlighter/scripts/shCore");
+require("../../node_modules/as-jqplot/dist/examples/syntaxhighlighter/scripts/shBrushJScript");
+require("../../node_modules/as-jqplot/dist/examples/syntaxhighlighter/scripts/shBrushXml");
+require("../../node_modules/accounting/accounting.min");
+require("../../node_modules/dropzone/dist/dropzone-min");
+
+require("../../node_modules/bootstrap-wysiwyg/js/bootstrap-wysiwyg.min");
+require("../../node_modules/bootstrap-tagsinput/dist/bootstrap-tagsinput.min")  // TODO: This is not the intended plugin
+require("../../node_modules/bootstrap-datepicker/js/bootstrap-datepicker");
+require("../../node_modules/bootstrap-markdown/js/bootstrap-markdown");
+require("../../node_modules/bootstrap-colorpicker/dist/js/bootstrap-colorpicker.min");
+
+require("../../node_modules/dhtmlx-suite/codebase/dhtmlx");
+require("../../node_modules/dhtmlx-gantt/codebase/dhtmlxgantt");
+require("../../node_modules/daterangepicker/daterangepicker");
+require("../../node_modules/easy-pie-chart/dist/jquery.easypiechart");
+require("../../node_modules/jquery-ui/ui/widgets/accordion");
+require("../../node_modules/jquery-ui/ui/widgets/sortable");
+require("../../node_modules/jquery-ui-touch-punch/jquery.ui.touch-punch");
+require("../../node_modules/jquery-autosize/jquery.autosize");
+require("../../node_modules/jquery.flot/jquery.flot");
+require("../../node_modules/jquery.flot/jquery.flot.pie");
+require("../../node_modules/jquery.flot/jquery.flot.resize");
+require("../../node_modules/jquery.hotkeys/jquery.hotkeys");
+require("../../node_modules/jquery.maskedinput/src/jquery.maskedinput");
+require("../../node_modules/jquery-mobile/dist/jquery.mobile.min");
+require("../../node_modules/jquery-inputlimiter/jquery.inputlimiter");
+require("../../node_modules/jquery-validation/dist/jquery.validate");
+require("../../node_modules/jquery-slimscroll/jquery.slimscroll");
+require("../../node_modules/gritter/js/jquery.gritter");
+require("../../node_modules/free-jqgrid/dist/i18n/grid.locale-en");
+require("../../node_modules/free-jqgrid/dist/jquery.jqgrid.min");
+require("../../node_modules/free-jqgrid/dist/plugins/ui.multiselect");
+require("../../node_modules/markdown/lib/markdown");
+require("../../node_modules/select2/dist/js/select2")
+require("../../node_modules/fuelux/js/spinbox");
+require("../../node_modules/fullcalendar/dist/fullcalendar.min");
+require("../../node_modules/datatables/media/js/jquery.dataTables.min");
+require("./dataTable_num-html_sort");
+
+//
+// import "moment/dist/moment";
+//
+// import "as-jqplot/dist/jquery.jqplot.min";
+// import "as-jqplot/dist/plugins/jqplot.categoryAxisRenderer.min";
+// import "as-jqplot/dist/plugins/jqplot.barRenderer.min";
+// import "as-jqplot/dist/plugins/jqplot.dateAxisRenderer.min";
+// import "as-jqplot/dist/plugins/jqplot.logAxisRenderer.min";
+// import "as-jqplot/dist/plugins/jqplot.canvasAxisTickRenderer.min";
+// import "as-jqplot/dist/plugins/jqplot.canvasTextRenderer.min";
+// import "as-jqplot/dist/plugins/jqplot.pointLabels.min";
+// import "as-jqplot/dist/plugins/jqplot.highlighter.min";
+// import "as-jqplot/dist/plugins/jqplot.cursor.min";
+// import "as-jqplot/dist/examples/syntaxhighlighter/scripts/shCore";
+// import "as-jqplot/dist/examples/syntaxhighlighter/scripts/shBrushJScript";
+// import "as-jqplot/dist/examples/syntaxhighlighter/scripts/shBrushXml";
+// import "accounting/accounting.min";
+// import "dropzone/dist/dropzone-min";
+//
+// import "bootstrap-wysiwyg/js/bootstrap-wysiwyg.min";
+// import "bootstrap-tagsinput/dist/bootstrap-tagsinput.min";  // TODO: This is not the intended plugin
+// import "bootstrap-datepicker/js/bootstrap-datepicker";
+// import "bootstrap-markdown/js/bootstrap-markdown";
+// import "bootstrap-colorpicker/dist/js/bootstrap-colorpicker.min";
+//
+// import "dhtmlx-suite/codebase/dhtmlx";
+// import "dhtmlx-gantt/codebase/dhtmlxgantt";
+// import "daterangepicker/daterangepicker";
+// import "easy-pie-chart/dist/jquery.easypiechart";
+// import "jquery-ui/ui/widgets/accordion";
+// import "jquery-ui/ui/widgets/sortable";
+// import "jquery-ui-touch-punch/jquery.ui.touch-punch";
+// import "jquery-autosize/jquery.autosize";
+// import "jquery.flot/jquery.flot";
+// import "jquery.flot/jquery.flot.pie";
+// import "jquery.flot/jquery.flot.resize";
+// import "jquery.hotkeys/jquery.hotkeys";
+// import "jquery.maskedinput/src/jquery.maskedinput";
+// import "jquery-mobile/dist/jquery.mobile.min";
+// import "jquery-inputlimiter/jquery.inputlimiter";
+// import "jquery-validation/dist/jquery.validate";
+// import "jquery-slimscroll/jquery.slimscroll";
+// import "gritter/js/jquery.gritter";
+// import "free-jqgrid/dist/i18n/grid.locale-en";
+// import "free-jqgrid/dist/jquery.jqgrid.min";
+// import "free-jqgrid/dist/plugins/ui.multiselect";
+// import "markdown/lib/markdown";
+// import "select2/dist/js/select2";
+// import "fuelux/js/spinbox";
+// import "fullcalendar/dist/fullcalendar.min";
+// import "datatables/media/js/jquery.dataTables.min";
+// import "./dataTable_num-html_sort";
+
+
+
 
 
 // declare global {
@@ -127,7 +238,6 @@ export class Ace {
         });
     };
 
-
     general_things() {
         const self = this;
 
@@ -150,7 +260,8 @@ export class Ace {
         let check_box;
         const ace_settings_navbar = $('#ace-settings-navbar');
         ace_settings_navbar.on('click', function () {
-            self.settings.navbar_fixed(this.checked); // @ ace-extra.js
+            // self.settings.navbar_fixed(this.checked); // @ ace-extra.js
+            self.settings.navbar_fixed(true); // @ ace-extra.js
         });
         check_box = ace_settings_navbar.get(0);
         if (check_box) {
@@ -159,7 +270,8 @@ export class Ace {
 
         const ace_settings_sidebar = $('#ace-settings-sidebar');
         ace_settings_sidebar.on('click', function () {
-            self.settings.sidebar_fixed(this.checked); // @ ace-extra.js
+            // self.settings.sidebar_fixed(this.checked); // @ ace-extra.js
+            self.settings.sidebar_fixed(true); // @ ace-extra.js
         });
         check_box = ace_settings_sidebar.get(0);
         if (check_box) {
@@ -168,7 +280,8 @@ export class Ace {
 
         const ace_settings_breadcrumbs = $('#ace-settings-breadcrumbs');
         ace_settings_breadcrumbs.on('click', function () {
-            self.settings.breadcrumbs_fixed(this.checked); // @ ace-extra.js
+            // self.settings.breadcrumbs_fixed(this.checked); // @ ace-extra.js
+            self.settings.breadcrumbs_fixed(true); // @ ace-extra.js
         });
         check_box = ace_settings_breadcrumbs.get(0);
         if (check_box) {
@@ -300,12 +413,14 @@ export class Ace {
                     $box.addClass('position-relative');
                 }
                 $box.append('<div class="widget-box-layer"><i class="icon-spinner icon-spin icon-2x white"></i></div>');
+                let random_duration:number;
+                random_duration = Math.random() * 1000 + 1000;
                 setTimeout(function () {
                     $box.find('.widget-box-layer').remove();
                     if ($remove) {
                         $box.removeClass('position-relative');
                     }
-                }, (Math.random() * 1000 + 1000)).toFixed(0);
+                }, parseInt(random_duration.toFixed(0)));
             } else if ($action === 'settings') {
             }
 
@@ -372,8 +487,8 @@ export class Ace {
         function swap_styles(style1, style2, elements) {
             elements.each(function () {
                 const e = $(this);
-                const tmp = e.css(style2);
-                e.css(style2, e.css(style1));
+                const tmp = e.css(style2).val()[0];
+                e.css(style2, e.css(style1).val()[0]);
                 e.css(style1, tmp);
             });
         }

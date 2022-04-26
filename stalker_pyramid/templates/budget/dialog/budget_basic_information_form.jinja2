@@ -73,12 +73,12 @@
         </div>
     </form>
 
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.validate.min.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.validate.min.js") }}'></script>#}
 <script type="text/javascript">
 
     {# Form #}
-    window.$(document).ready(function () {
-        var dialog_label = $('#dialog_template_label');
+    window.jQuery(document).ready(function () {
+        var dialog_label = window.jQuery('#dialog_template_label');
         dialog_label.find('span').remove();
 
         dialog_label.append('<span>Teklif</span>');
@@ -92,8 +92,8 @@
             );
         {% endraw %}
 
-        $.getJSON('/types/?target_entity_type=Budget').then(function (data) {
-            var budget_type = $('#budget_type');
+        window.jQuery.getJSON('/types/?target_entity_type=Budget').then(function (data) {
+            var budget_type = window.jQuery('#budget_type');
 
             for (var i = 0; i < data.length; i++) {
                 budget_type.append(budget_type_option_template(data[i]));
@@ -113,10 +113,10 @@
 
         {#Start Date ----------------------------------------------------------#}
         {% if mode == 'Update' %}
-            var start_date_picker = $('#start_date_picker').datepicker();
+            var start_date_picker = window.jQuery('#start_date_picker').datepicker();
 
-            $('.date-picker').datepicker().next().on(ace.click_event, function(){
-                        $(this).prev().focus();
+            window.jQuery('.date-picker').datepicker().next().on(ace.click_event, function(){
+                        window.jQuery(this).prev().focus();
                     });
 
             start_date_picker.on('shown', function (e) {
@@ -130,7 +130,7 @@
             var end_date = moment({{ budget.get_generic_text_attr('end_date') }});
             duration = end_date.diff(start_date, 'days');
 
-            var duration_tag = $('#duration');
+            var duration_tag = window.jQuery('#duration');
             duration_tag.text(duration+ " Days");
             duration_tag.attr("duration",duration);
             start_date_picker.val(start_date.format('DD/MM/YYYY'));

@@ -67,16 +67,16 @@
         console.debug('init dialog from upload_version_output.jinja2 running!');
 
         // update dialog header
-        $('.modal-header>h3').text('Upload Outputs');
+        window.jQuery('.modal-header>h3').text('Upload Outputs');
 
-        var submit_button = $('#dialog_template_submit_button');
+        var submit_button = window.jQuery('#dialog_template_submit_button');
         //This is for holding info about the uploaded link ids
         var entity_id = {{ entity.id }};
         var files = [];
 
         var uploading_file_counter = 0;
 
-        var dzone = new Dropzone($(".dropzone")[0], {
+        var dzone = new Dropzone(window.jQuery(".dropzone")[0], {
             init: function(){
                 this.on("addedfile", function(file){
                     // set the submit button to loading state
@@ -124,18 +124,18 @@
         {% endraw %}
 
 
-         var daily = $('#daily');
+         var daily = window.jQuery('#daily');
 
-        $('#add_to_daily').on('click', function () {
+        window.jQuery('#add_to_daily').on('click', function () {
             if(this.checked){
 
 {#                {% if entity.task.status.code not in ['WIP','DREV','PREV','CMPL'] %}#}
-{#                    $('#information').show();#}
+{#                    window.jQuery('#information').show();#}
 {#                {% else %}#}
-{#                    $('#dailies_list').show();#}
+{#                    window.jQuery('#dailies_list').show();#}
 {#                    daily.find('option').remove();#}
 {##}
-{#                    $.getJSON('{{ request.route_path('get_project_dailies', id=entity.task.project.id, _query={'status_code':'OPEN'}) }}').then(function (data) {#}
+{#                    window.jQuery.getJSON('{{ request.route_path('get_project_dailies', id=entity.task.project.id, _query={'status_code':'OPEN'}) }}').then(function (data) {#}
             {#            // append an empty one first#}
             {#            daily.append('<option value="-1">&nbsp;</option>');#}
 {#                        for (var i = 0; i < data.length; i++) {#}
@@ -150,10 +150,10 @@
 {##}
 {#                    });#}
 {#                {% endif %}#}
-                $('#dailies_list').show();
+                window.jQuery('#dailies_list').show();
                 daily.find('option').remove();
 
-                $.getJSON('{{ request.route_path('get_project_dailies', id=entity.task.project.id, _query={'status_code':'OPEN'}) }}').then(function (data) {
+                window.jQuery.getJSON('{{ request.route_path('get_project_dailies', id=entity.task.project.id, _query={'status_code':'OPEN'}) }}').then(function (data) {
         {#            // append an empty one first#}
         {#            daily.append('<option value="-1">&nbsp;</option>');#}
                     for (var i = 0; i < data.length; i++) {
@@ -169,9 +169,9 @@
                 });
 
             } else {
-                $('#dailies_list').hide();
+                window.jQuery('#dailies_list').hide();
                 daily.find('option').remove();
-                $('#information').hide();
+                window.jQuery('#information').hide();
             }
         });
 
@@ -203,17 +203,17 @@
             }
             var daily_id = -1;
 {#            {% if entity.task.status.code in ['WIP', 'DREV', 'PREV', 'CMPL'] %}#}
-{#                if($('#add_to_daily').prop('checked')){#}
+{#                if(window.jQuery('#add_to_daily').prop('checked')){#}
 {#                    daily_id = daily.val()#}
 {#                }#}
 {#            {% endif %}#}
-            if($('#add_to_daily').prop('checked')){
+            if(window.jQuery('#add_to_daily').prop('checked')){
                     daily_id = daily.val()
                 }
 
             console.debug('daily_id: ', daily_id);
 
-            $.post('{{ request.route_url('assign_output') }}', {
+            window.jQuery.post('{{ request.route_url('assign_output') }}', {
                 entity_id: entity_id,
                 file_info: file_info,
                 full_paths: full_paths,
@@ -225,8 +225,8 @@
                 // reload outputs
                 // get the data in jqXHR
 {#                console.debug('jqXHR : ', jqXHR);#}
-                $('#new_outputs_storage').text(JSON.stringify(jqXHR));
-                $('#dialog_template').modal('hide');
+                window.jQuery('#new_outputs_storage').text(JSON.stringify(jqXHR));
+                window.jQuery('#dialog_template').modal('hide');
             }).fail(function(jqXHR){
                 // alert the user about what is failed
                 bootbox.alert(jqXHR.responseText);
@@ -242,12 +242,12 @@
         counter -= 1;
 
         // unbind events
-        $(".dropzone").unbind();
-        $("#daily").unbind();
-        $("#dialog_template_submit_button").unbind();
+        window.jQuery(".dropzone").unbind();
+        window.jQuery("#daily").unbind();
+        window.jQuery("#dialog_template_submit_button").unbind();
 
         // destroy dialog
         console.debug('destroy dialog from upload_output.jinja2 running!');
-        $('#dialog_template').data('modal', null);
+        window.jQuery('#dialog_template').data('modal', null);
     }
 </script>

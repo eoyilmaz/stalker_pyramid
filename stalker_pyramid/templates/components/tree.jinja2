@@ -1,5 +1,5 @@
-<script class="include" type="text/javascript"
-        src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.tree.min.js") }}'></script>
+{#<script class="include" type="text/javascript"#}
+{#        src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.tree.min.js") }}'></script>#}
 <script type="text/javascript">
 
     var DataSourceTree = function (options) {
@@ -34,7 +34,7 @@
 
 
     function drawTree(placeholder, tree_data) {
-        $('#' + placeholder).ace_tree({
+        window.jQuery('#' + placeholder).ace_tree({
             dataSource: new DataSourceTree({data: tree_data}),
             loadingHTML: '<div class="tree-loading"><i class="icon-refresh icon-spin blue"></i></div>',
             'open-icon' : 'icon-folder-open',

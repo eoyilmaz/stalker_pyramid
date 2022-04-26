@@ -32,35 +32,35 @@
     </div>
 </div>
 
-<script type="text/javascript"
-            src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/jquery.jqplot.min.js") }}'></script>
-<script type="text/javascript"
-        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/examples/syntaxhighlighter/scripts/shCore.min.js") }}'></script>
-<script type="text/javascript"
-        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/examples/syntaxhighlighter/scripts/shBrushJScript.min.js") }}'></script>
-<script type="text/javascript"
-        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/examples/syntaxhighlighter/scripts/shBrushXml.min.js") }}'></script>
+{#<script type="text/javascript"#}
+{#            src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/window.jQuery.jqplot.min.js") }}'></script>#}
+{#<script type="text/javascript"#}
+{#        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/examples/syntaxhighlighter/scripts/shCore.min.js") }}'></script>#}
+{#<script type="text/javascript"#}
+{#        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/examples/syntaxhighlighter/scripts/shBrushJScript.min.js") }}'></script>#}
+{#<script type="text/javascript"#}
+{#        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/examples/syntaxhighlighter/scripts/shBrushXml.min.js") }}'></script>#}
 
 <!-- End Don't touch this! -->
 
 <!-- Additional plugins go here -->
 
-<script type="text/javascript"
-        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.categoryAxisRenderer.min.js") }}'></script>
-<script type="text/javascript"
-        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.barRenderer.min.js") }}'></script>
-<script type="text/javascript"
-        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.dateAxisRenderer.min.js") }}'></script>
-<script type="text/javascript"
-        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.logAxisRenderer.min.js") }}'></script>
-<script type="text/javascript"
-        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.canvasAxisTickRenderer.min.js") }}'></script>
-<script type="text/javascript"
-        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.canvasTextRenderer.min.js") }}'></script>
-<script type="text/javascript"
-        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.pointLabels.min.js") }}'></script>
-<script type="text/javascript"
-        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.highlighter.min.js") }}'></script>
+{#<script type="text/javascript"#}
+{#        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.categoryAxisRenderer.min.js") }}'></script>#}
+{#<script type="text/javascript"#}
+{#        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.barRenderer.min.js") }}'></script>#}
+{#<script type="text/javascript"#}
+{#        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.dateAxisRenderer.min.js") }}'></script>#}
+{#<script type="text/javascript"#}
+{#        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.logAxisRenderer.min.js") }}'></script>#}
+{#<script type="text/javascript"#}
+{#        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.canvasAxisTickRenderer.min.js") }}'></script>#}
+{#<script type="text/javascript"#}
+{#        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.canvasTextRenderer.min.js") }}'></script>#}
+{#<script type="text/javascript"#}
+{#        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.pointLabels.min.js") }}'></script>#}
+{#<script type="text/javascript"#}
+{#        src='{{ request.static_url("stalker_pyramid:static/node_modules/as-jqplot/dist/plugins/jqplot.highlighter.min.js") }}'></script>#}
 
 
 <script type="text/javascript">
@@ -76,7 +76,7 @@
         return months <= 0 ? 0 : months;
     }
     
-    $(function () {
+    window.jQuery(function () {
         var query_str = '';
         {% if entity.entity_type == 'Project' %}
             query_str = 'project_id={{entity.id}}';
@@ -93,21 +93,21 @@
         var end_date = new Date(2015,11,1);
 
         console.log('query_str: '+query_str);
-        $.jqplot._noToImageButton = true;
-        $.jqplot.config.enablePlugins = true;
-        $.getJSON('/entities/{{ entity.id }}/task_min_start/').then(function (min_start_date) {
+        window.jQuery.jqplot._noToImageButton = true;
+        window.jQuery.jqplot.config.enablePlugins = true;
+        window.jQuery.getJSON('/entities/{{ entity.id }}/task_min_start/').then(function (min_start_date) {
             
             start_date = new Date(min_start_date * 1000);
             
-            $.getJSON('/entities/{{ entity.id }}/task_max_end/').then(function (max_end_date) {
+            window.jQuery.getJSON('/entities/{{ entity.id }}/task_max_end/').then(function (max_end_date) {
                 
                 end_date = new Date(max_end_date * 1000);
                 
-                $.getJSON('/entities/{{ entity.id }}/total_schedule_seconds/').then(function (t_schedule_seconds) {
+                window.jQuery.getJSON('/entities/{{ entity.id }}/total_schedule_seconds/').then(function (t_schedule_seconds) {
 
                     var t_schedule_hours = t_schedule_seconds/3600.0;
 
-                    $.getJSON('/time_logs/monthly?'+query_str).then(function (data) {
+                    window.jQuery.getJSON('/time_logs/monthly?'+query_str).then(function (data) {
 
                         for (var j=0; j<data.length; j+=1){
                             t_schedule_hours += data[j]['total_hours'];
@@ -136,7 +136,7 @@
                             [end_date.format('yyyy-mm').toString(), 1]
                         ];
         
-                        $.jqplot("chart1", [remaining_schedule_hours, target_final], {
+                        window.jQuery.jqplot("chart1", [remaining_schedule_hours, target_final], {
                             seriesColors: ["rgba(78, 135, 194, 0.7)", "rgb(211, 235, 59)"],
                             title: {
                                 text:'Monthly Project Burn Down Chart',
@@ -183,8 +183,8 @@
                             },
                             axes: {
                                 xaxis: {
-                                    renderer: $.jqplot.DateAxisRenderer,
-                                    tickRenderer: $.jqplot.CanvasAxisTickRenderer,
+                                    renderer: window.jQuery.jqplot.DateAxisRenderer,
+                                    tickRenderer: window.jQuery.jqplot.CanvasAxisTickRenderer,
                                     tickOptions: {
                                         formatString: "%b %Y",
                                         angle: -30,
@@ -196,7 +196,7 @@
                                     drawMajorGridlines: true
                                 },
                                 yaxis: {
-                                    renderer: $.jqplot.LinearAxisRenderer,
+                                    renderer: window.jQuery.jqplot.LinearAxisRenderer,
                                     pad: 0,
                                     rendererOptions: {
                                         minorTicks: 1
@@ -209,7 +209,7 @@
                             }
 
                         });
-                        $('.jqplot-highlighter-tooltip').addClass('ui-corner-all');
+                        window.jQuery('.jqplot-highlighter-tooltip').addClass('ui-corner-all');
         
 {#                        var remaining_months = monthDiff(#}
 {#                            new Date(),#}
@@ -234,9 +234,9 @@
 
                         //console.log('remaining_months: '+remaining_months+'  previous_value: '+previous_value);
         
-{#                        $.jqplot('chart2', [monthly_timelogs, old_target_timelogs, new_target_timelogs], {#}
+{#                        window.jQuery.jqplot('chart2', [monthly_timelogs, old_target_timelogs, new_target_timelogs], {#}
 {#                            seriesColors: ["rgba(78, 135, 194, 0.7)", "rgb(211, 200, 59)","rgb(211, 59, 59)"],#}
-                         $.jqplot('chart2', [monthly_timelogs], {
+                         window.jQuery.jqplot('chart2', [monthly_timelogs], {
                             seriesColors: ["rgba(78, 135, 194, 0.7)"],
                             series: [
                                 {
@@ -272,8 +272,8 @@
                             },
                             axes:{
                                 xaxis: {
-                                    renderer: $.jqplot.DateAxisRenderer,
-                                    tickRenderer: $.jqplot.CanvasAxisTickRenderer,
+                                    renderer: window.jQuery.jqplot.DateAxisRenderer,
+                                    tickRenderer: window.jQuery.jqplot.CanvasAxisTickRenderer,
                                     tickOptions: {
                                         formatString: "%b %Y",
                                         angle: -30,
@@ -285,7 +285,7 @@
                                     drawMajorGridlines: false
                                 },
                                 yaxis: {
-                                    renderer: $.jqplot.LinearAxisRenderer,
+                                    renderer: window.jQuery.jqplot.LinearAxisRenderer,
                                     pad: 1,
                                     rendererOptions: {
                                         minorTicks: 1

@@ -11,11 +11,11 @@
 <script>
         function initInfoBtn(address){
 
-            var infobtn = $('#infobox');
+            var infobtn = window.jQuery('#infobox');
             infobtn.find(".btn").remove();
-            var infobtn_template = doT.template($('#tmpl_infobtn').html());
+            var infobtn_template = doT.template(window.jQuery('#tmpl_infobtn').html());
 
-            $.getJSON(address).then(function (data) {
+            window.jQuery.getJSON(address).then(function (data) {
 
                 var sorting_path = ['WFD','RTS','WIP', 'PREV','HREV', 'DREV', 'CMPL', 'OH','STOP'];
                 var sorted_data = [];
@@ -50,16 +50,16 @@
                         }
 
                         infobtn.append(infobtn_template(sorted_data[k]));
-                        var btn = $('#btn_'+sorted_data[k].status_code);
+                        var btn = window.jQuery('#btn_'+sorted_data[k].status_code);
                         btn.on('click', function(){
-                            var status_code = $(this).attr('id').split('_')[1];
+                            var status_code = window.jQuery(this).attr('id').split('_')[1];
                             localStorage.setItem("status_code", status_code);
-                            init_table_data(status_code, $('#project_cb').val());
+                            init_table_data(status_code, window.jQuery('#project_cb').val());
                         });
                     }
                 }
                 if (first_status != ''){
-                    init_table_data(first_status, $('#project_cb').val());
+                    init_table_data(first_status, window.jQuery('#project_cb').val());
                 }
             });
         }

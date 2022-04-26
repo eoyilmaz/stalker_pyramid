@@ -54,19 +54,17 @@
     </table>
 </div>
 
-<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/accounting.min.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/accounting.min.js") }}'></script>#}
 <script type="text/javascript">
-
-
     function calculateSummaryTotals(tMsrp, tCost, tPrice, aTotalPrice){
         console.log("calculateSummaryTotals")
-        $('#ara_toplam').text(accounting.formatMoney(tPrice, { symbol: "TL",  format: "%v %s" }));
+        window.jQuery('#ara_toplam').text(accounting.formatMoney(tPrice, { symbol: "TL",  format: "%v %s" }));
         var yapimevi_servisi = tPrice*0.15;
-        $('#yapimevi_servisi').text(accounting.formatMoney(yapimevi_servisi, { symbol: "TL",  format: "%v %s" }));
+        window.jQuery('#yapimevi_servisi').text(accounting.formatMoney(yapimevi_servisi, { symbol: "TL",  format: "%v %s" }));
         var net_toplam = tPrice+yapimevi_servisi;
-        $('#net_toplam').text(accounting.formatMoney(net_toplam, { symbol: "TL",  format: "%v %s" }));
+        window.jQuery('#net_toplam').text(accounting.formatMoney(net_toplam, { symbol: "TL",  format: "%v %s" }));
         var onaylanan_net_tutar = parseInt(aTotalPrice);
-        $('#onaylanan_net_tutar').text(accounting.formatMoney(aTotalPrice, { symbol: "TL",  format: "%v %s" }));
+        window.jQuery('#onaylanan_net_tutar').text(accounting.formatMoney(aTotalPrice, { symbol: "TL",  format: "%v %s" }));
 
         var son_tutar = net_toplam;
         if(onaylanan_net_tutar>0){
@@ -74,19 +72,19 @@
         }
 
         var kdv = son_tutar*0.18;
-        $('#kdv').text(accounting.formatMoney(kdv, { symbol: "TL",  format: "%v %s" }));
+        window.jQuery('#kdv').text(accounting.formatMoney(kdv, { symbol: "TL",  format: "%v %s" }));
         var brut_toplam = son_tutar + kdv;
-        $('#brut_toplam').text(accounting.formatMoney(brut_toplam, { symbol: "TL",  format: "%v %s" }));
+        window.jQuery('#brut_toplam').text(accounting.formatMoney(brut_toplam, { symbol: "TL",  format: "%v %s" }));
 
         var ongorulen_maliyet = tMsrp;
-        $('#ongorulen_maliyet').text(accounting.formatMoney(ongorulen_maliyet, { symbol: "TL",  format: "%v %s" }));
+        window.jQuery('#ongorulen_maliyet').text(accounting.formatMoney(ongorulen_maliyet, { symbol: "TL",  format: "%v %s" }));
         var gerceklesen_maliyet = 0;
-        $('#gerceklesen_maliyet').text(gerceklesen_maliyet);
+        window.jQuery('#gerceklesen_maliyet').text(gerceklesen_maliyet);
         var ongorulen_kar = son_tutar - ongorulen_maliyet;
 
-        $('#ongorulen_kar').text(accounting.formatMoney(ongorulen_kar, { symbol: "TL",  format: "%v %s" }));
+        window.jQuery('#ongorulen_kar').text(accounting.formatMoney(ongorulen_kar, { symbol: "TL",  format: "%v %s" }));
         var gerceklesen_kar = son_tutar - gerceklesen_maliyet;
-        $('#gerceklesen_kar').text(accounting.formatMoney(gerceklesen_kar, { symbol: "TL",  format: "%v %s" }));
+        window.jQuery('#gerceklesen_kar').text(accounting.formatMoney(gerceklesen_kar, { symbol: "TL",  format: "%v %s" }));
         console.log("onaylanan_net_tutar: "+ onaylanan_net_tutar);
         console.log("son_tutar: "+ son_tutar);
         console.log("net_toplam: "+ net_toplam);
@@ -94,16 +92,16 @@
         if (isNaN(ongorulen_kar_yuzdesi)){
             ongorulen_kar_yuzdesi = 0;
         }
-        $('#ongorulen_kar_yuzdesi').text(ongorulen_kar_yuzdesi+"%");
+        window.jQuery('#ongorulen_kar_yuzdesi').text(ongorulen_kar_yuzdesi+"%");
         var kar_yuzdesi = (100*(gerceklesen_kar/ son_tutar)).toFixed(2);
         if (isNaN(kar_yuzdesi)){
             kar_yuzdesi = 0;
         }
-        $('#kar_yuzdesi').text(kar_yuzdesi+"%");
+        window.jQuery('#kar_yuzdesi').text(kar_yuzdesi+"%");
 
     }
 
-    window.$(document).ready(function () {
+    window.jQuery(document).ready(function () {
         {% if budget %}
             var total_msrp = parseInt({{ budget.get_generic_text_attr('total_msrp') }});
             var total_cost = parseInt({{ budget.get_generic_text_attr('total_cost') }});

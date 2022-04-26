@@ -85,12 +85,12 @@
 
         console.debug('starting to initialize budget dialog!!!');
 
-        var dialog_label = $('#dialog_template_label');
+        var dialog_label = window.jQuery('#dialog_template_label');
         dialog_label.find('span').remove();
         dialog_label.append('<span>{{ type_name}} BUDGET</span>');
 
         var status_code = '{{ status_code }}';
-        var save_as_btn = $('#save_as_btn');
+        var save_as_btn = window.jQuery('#save_as_btn');
 
         var first_post_url = '/budgets/{{ budget.id }}/status/'+status_code;
         var second_post_url = "";
@@ -108,12 +108,12 @@
                     status_code = 'CNCLD';
                     first_post_url = '/budgets/{{ budget.id }}/status/'+status_code;
                     second_post_url = '/budgets/{{ budget.id }}/duplicate?status_code=HREV';
-                    $('#save_as_form').show();
+                    window.jQuery('#save_as_form').show();
                 } else {
                     status_code = 'HREV';
                     first_post_url = '/budgets/{{ budget.id }}/status/'+status_code;
                     second_post_url = '';
-                    $('#save_as_form').hide();
+                    window.jQuery('#save_as_form').hide();
                 }
             });
         }
@@ -121,30 +121,30 @@
 
         {# ***************************************************************** #}
         {# Submit Button #}
-        var submit_button = $('#dialog_template_submit_button');
+        var submit_button = window.jQuery('#dialog_template_submit_button');
         submit_button.on('click', function (e) {
             e.stopPropagation();
             e.preventDefault();
 
             submit_button.button('loading');
-            var budget_form = $('#budget_form');
+            var budget_form = window.jQuery('#budget_form');
 
-            $.post(
+            window.jQuery.post(
                 first_post_url,
                 budget_form.serialize()+ '&' +
-                $.param({
+                window.jQuery.param({
                     'total_price': {{ budget_total_price }}
                 })
             ).done(function (jqXHR) {
                 if (second_post_url != ""){
                     setTimeout(function () {
                         submit_button.button('loading');
-                        $.post(
+                        window.jQuery.post(
                             second_post_url, budget_form.serialize()
                         ).done(function (response_text) {
                             window.location.reload();
                             submit_button.button('reset');
-                            $('#dialog_template').modal('hide');
+                            window.jQuery('#dialog_template').modal('hide');
                         }).fail(function (jqXHR) {
                             bootbox.alert('<div id="message" class="alert alert-danger bigger-110">'+jqXHR.responseText+'</div>');
                             submit_button.button('reset');
@@ -153,7 +153,7 @@
                 } else {
                     window.location.reload();
                     submit_button.button('reset');
-                    $('#dialog_template').modal('hide');
+                    window.jQuery('#dialog_template').modal('hide');
                 }
             }).fail(function (jqXHR) {
                 bootbox.alert(jqXHR.responseText);
@@ -167,11 +167,11 @@
 
 <script type="text/javascript">
     function destruct_dialog() {
-        $('#budget_name').unbind();
-        $('#budget_description').unbind();
-        $('#dialog_template_submit_button').unbind();
+        window.jQuery('#budget_name').unbind();
+        window.jQuery('#budget_description').unbind();
+        window.jQuery('#dialog_template_submit_button').unbind();
 
-        $('#dialog_template').data('modal', null);
+        window.jQuery('#dialog_template').data('modal', null);
     }
 </script>
 

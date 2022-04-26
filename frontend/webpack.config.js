@@ -9,10 +9,6 @@ const devMode = process.env.NODE_ENV !== 'production';
 const config = {
     entry: path.resolve('src', 'index.ts'),
     plugins: [
-        new webpack.ProvidePlugin({
-            $: 'jquery',
-            jQuery: 'jquery',
-        }),
         new MiniCssExtractPlugin({
             // Options similar to the same options in webpackOptions.output
             // both options are optional
@@ -22,6 +18,13 @@ const config = {
     ],
     module: {
         rules: [
+            {
+                test: require.resolve('jquery'),
+                loader: "expose-loader",
+                options: {
+                    exposes: ["$", "jQuery"],
+                }
+            },
             {
                 test: /\.tsx?$/,
                 use: 'ts-loader',
@@ -42,22 +45,6 @@ const config = {
                 test: /\.(woff|woff2|eot|ttf|otf)$/,
                 loader: "file-loader"
             },
-            // {
-            //     test: /\.less$/,
-            //     include: path.join(__dirname, 'src/less'),
-            //     use: [
-            //         'style-loader',
-            //         "css-loader",
-            //         {
-            //             loader: 'typings-for-css-modules-loader',
-            //             options: {
-            //                 modules: true,
-            //                 namedExport: true,
-            //                 camelCase: true,
-            //             }
-            //         },
-            //     ]
-            // },
             {
                 test: /\.css$/,
                 include: path.join(__dirname, 'src/css'),
@@ -121,5 +108,9 @@ const config = {
         publicPath: "/",
     },
 };
+
+config.node = {
+  fs: 'empty',
+}
 
 module.exports = config;

@@ -196,19 +196,19 @@
     </table>
 </form>
 
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/chosen.jquery.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/daterangepicker.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-timepicker.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.autosize-min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.inputlimiter.1.3.1.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.validate.min.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/chosen.window.jQuery.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/daterangepicker.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-timepicker.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.autosize-min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.inputlimiter.1.3.1.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.validate.min.js") }}'></script>#}
 
 <script type="text/javascript">
     {# Chosen Field Updater #}
     var chosen_field_creator = function (field, url, data_template) {
         // fill image format with new json data
-        return $.getJSON(url).then(function (data) {
+        return window.jQuery.getJSON(url).then(function (data) {
             // remove current data
             field.empty();
 
@@ -223,7 +223,7 @@
     };
 
     var init_time_picker =  function(name,time_value){
-        var time_picker = $('#' + name);
+        var time_picker = window.jQuery('#' + name);
         time_picker.val(time_value.format('HH:MM'));
         time_picker.timepicker({
             minuteStep: 1,
@@ -234,7 +234,7 @@
 
     {# ***************************************************************** #}
     {# User #}
-    window.$(document).ready(function () {
+    window.jQuery(document).ready(function () {
         var start_time_value = new Date();
         start_time_value.setHours(10);
         start_time_value.setMinutes(0);
@@ -264,9 +264,9 @@
         );
         {% endraw %}
 
-        var lead_user = $('#studio_lead');
+        var lead_user = window.jQuery('#studio_lead');
 
-        $.getJSON('/users/').then(function (data) {
+        window.jQuery.getJSON('/users/').then(function (data) {
             // append new ones
             var data_count = data.length;
             for (var i = 0; i < data_count; i++) {

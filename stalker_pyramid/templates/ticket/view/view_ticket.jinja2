@@ -207,12 +207,12 @@
 {% endblock page_content %}
 
 {% block extrascripts %}
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery-ui-1.10.3.custom.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.ui.touch-punch.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/markdown/markdown.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/markdown/bootstrap-markdown.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.hotkeys.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/bootstrap-wysiwyg.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery-ui-1.10.3.custom.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.ui.touch-punch.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/markdown/markdown.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/markdown/bootstrap-markdown.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.hotkeys.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/bootstrap-wysiwyg.js") }}'></script>#}
 
 <script type="text/javascript">
 
@@ -225,12 +225,12 @@
         } else {
             console.log("error uploading file", reason, detail);
         }
-        $('<div class="alert"> <button type="button" class="close" data-dismiss="alert">&times;</button>' +
+        window.jQuery('<div class="alert"> <button type="button" class="close" data-dismiss="alert">&times;</button>' +
                 '<strong>File upload error</strong> ' + msg + ' </div>').prependTo('#alerts');
     }
 
-    $(function(){
-        $('#comment_editor').ace_wysiwyg({
+    window.jQuery(function(){
+        window.jQuery('#comment_editor').ace_wysiwyg({
             toolbar: [
                 'font',
                 null,
@@ -269,9 +269,9 @@
 
         //Add Image Resize Functionality to Chrome and Safari
         //webkit browsers don't have image resize functionality when content is editable
-        //so let's add something using jQuery UI resizable
+        //so let's add something using window.jQuery UI resizable
         //another option would be opening a dialog for user to enter dimensions.
-        if (typeof jQuery.ui !== 'undefined' && /applewebkit/.test(navigator.userAgent.toLowerCase())) {
+        if (typeof window.jQuery.ui !== 'undefined' && /applewebkit/.test(navigator.userAgent.toLowerCase())) {
 
             var lastResizableImg = null;
 
@@ -283,8 +283,8 @@
             }
 
             var enableImageResize = function () {
-                $('.wysiwyg-editor').on('mousedown', function (e) {
-                    var target = $(e.target);
+                window.jQuery('.wysiwyg-editor').on('mousedown', function (e) {
+                    var target = window.jQuery(e.target);
                     if (e.target instanceof HTMLImageElement) {
                         if (!target.data('resizable')) {
                             target.resizable({
@@ -311,14 +311,14 @@
             enableImageResize();
 
 
-{#            //or we can load the jQuery UI dynamically only if needed#}
-{#            if (typeof jQuery.ui !== 'undefined') enableImageResize();#}
-{#            else {//load jQuery UI if not loaded#}
-{#                $.getScript($path_assets + "/js/jquery-ui-1.10.3.custom.min.js", function (data,#}
+{#            //or we can load the window.jQuery UI dynamically only if needed#}
+{#            if (typeof window.jQuery.ui !== 'undefined') enableImageResize();#}
+{#            else {//load window.jQuery UI if not loaded#}
+{#                window.jQuery.getScript($path_assets + "/js/window.jQuery-ui-1.10.3.custom.min.js", function (data,#}
 {#                                                                                           textStatus,#}
 {#                                                                                           jqxhr) {#}
 {#                    if ('ontouchend' in document) {//also load touch-punch for touch devices#}
-{#                        $.getScript($path_assets + "/js/jquery.ui.touch-punch.min.js", function (data,#}
+{#                        window.jQuery.getScript($path_assets + "/js/window.jQuery.ui.touch-punch.min.js", function (data,#}
 {#                                                                                                 textStatus,#}
 {#                                                                                                 jqxhr) {#}
 {#                            enableImageResize();#}
@@ -329,24 +329,24 @@
         }
 
         // remove speech input
-        $('.wysiwyg-speech-input').remove();
+        window.jQuery('.wysiwyg-speech-input').remove();
 
         // convert all dates to moment
-        $('.date').each(function(){
-            var date = moment($(this).text());
-            $(this).text(date.fromNow());
+        window.jQuery('.date').each(function(){
+            var date = moment(window.jQuery(this).text());
+            window.jQuery(this).text(date.fromNow());
         });
 
     });
 </script>
 
 <script type="text/javascript">
-$(function(){
+window.jQuery(function(){
     {# radio buttons #}
 
     {# fill ticket resolutions #}
-    var ticket_resolutions = $("#ticket_resolutions");
-    $.getJSON('/tickets/resolutions/', function(data) {
+    var ticket_resolutions = window.jQuery("#ticket_resolutions");
+    window.jQuery.getJSON('/tickets/resolutions/', function(data) {
         // remove all previous options
         ticket_resolutions.find('option').remove();
         
@@ -357,23 +357,23 @@ $(function(){
         {% endraw %}
 
         for (var i = 0; i < data.length; i += 1) {
-            ticket_resolutions.append($($.parseHTML(option_template(data[i]))));
+            ticket_resolutions.append(window.jQuery(window.jQuery.parseHTML(option_template(data[i]))));
         }
-        $('#ticket_set_resolution').val('resolve_as:' + data[0]);
+        window.jQuery('#ticket_set_resolution').val('resolve_as:' + data[0]);
     });
 
     // also changing this should set the value of radio group
     ticket_resolutions.on('change', function() {
-        $('#ticket_set_resolution').val('resolve_as:' + $(this).val());
+        window.jQuery('#ticket_set_resolution').val('resolve_as:' + window.jQuery(this).val());
     });
 
     {# fill users #}
-    var project_users = $('#project_users');
+    var project_users = window.jQuery('#project_users');
 
     // also set value of the radio button
     project_users.on('change', function() {
-        $('#ticket_set_owner').val(
-            'set_owner:' + $(this).val()
+        window.jQuery('#ticket_set_owner').val(
+            'set_owner:' + window.jQuery(this).val()
         )
     });
 
@@ -390,11 +390,11 @@ $(function(){
     });
 
     {# show or hide controls #}
-    $('#ticket_set_resolution').parent().hide();
-    $('#ticket_set_owner').parent().hide();
-    $('#ticket_del_resolution').parent().hide();
+    window.jQuery('#ticket_set_resolution').parent().hide();
+    window.jQuery('#ticket_set_owner').parent().hide();
+    window.jQuery('#ticket_del_resolution').parent().hide();
 
-    $.getJSON('/tickets/workflow/', function(data) {
+    window.jQuery.getJSON('/tickets/workflow/', function(data) {
         var ticket_action;
         var action;
         var current_ticket_status = "{{ ticket.status.name.title() }}";
@@ -405,42 +405,42 @@ $(function(){
                 action = ticket_action[current_ticket_status].action
                 if (action === 'set_resolution') {
                     // show resolve as field
-                    $('#ticket_set_resolution').parent().show();
+                    window.jQuery('#ticket_set_resolution').parent().show();
                 } else if (action === 'set_owner') {
                     // show assign field
-                    $('#ticket_set_owner').parent().show();
+                    window.jQuery('#ticket_set_owner').parent().show();
                 } else if (action === 'del_resolution') {
                     // show delete resolution field
-                    $('#ticket_del_resolution').parent().show();
+                    window.jQuery('#ticket_del_resolution').parent().show();
                 }
             }
         }
     });
 
     // prevent default
-    $("#ticket_form").on("submit", function(e) {
+    window.jQuery("#ticket_form").on("submit", function(e) {
         e.preventDefault();
         e.stopPropagation();
     });
 
-    var submit_button = $("#submit-button");
+    var submit_button = window.jQuery("#submit-button");
     submit_button.on("click", function(e) {
         e.preventDefault();
         e.stopPropagation();
         // change button state
         submit_button.button('loading');
         // submit changes
-        var wysiwyg_editor = $('.wysiwyg-editor');
+        var wysiwyg_editor = window.jQuery('.wysiwyg-editor');
         var comment = wysiwyg_editor.cleanHtml();
         var comment_as_text = wysiwyg_editor.text();
-        var action = $('input[name="action_radio"]:checked').val();
+        var action = window.jQuery('input[name="action_radio"]:checked').val();
         var url = '/tickets/{{ ticket.id }}/update';
-        var params = $.param({
+        var params = window.jQuery.param({
             comment: comment,
             comment_as_text: comment_as_text,
             action: action
         });
-        $.post(url, params).done(function(data) {
+        window.jQuery.post(url, params).done(function(data) {
             // reload page
             window.location.reload();
         }).fail(function(jqXHR) {

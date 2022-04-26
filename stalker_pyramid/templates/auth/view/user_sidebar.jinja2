@@ -5,7 +5,7 @@
 <ul id="sidebar_list" class='nav nav-list'></ul>
 
 <script>
-    $(function () {
+    window.jQuery(function () {
         page_of('{{ user.name }}',
                 '{{ user.login }}',
                 '{%- if user.thumbnail -%}/{{ user.thumbnail.full_path }}{%- else -%}{{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_0.png")}}{%- endif -%}',
@@ -97,7 +97,7 @@
 {#            '/users/{{ entity.id }}/tasks/count/'#}
 {#        );#}
 
-{#            $('#Vacations_count').text(data);#}
+{#            window.jQuery('#Vacations_count').text(data);#}
         menu_of('Vacations',
             "{%- if request.current_route_path() == request.route_path('list_entity_vacations', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('list_entity_vacations', id=user.id) }}',
