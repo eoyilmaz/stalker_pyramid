@@ -95,8 +95,8 @@
 
         window.jQuery.getJSON('/entities/{{ entity.id }}/projects/').then(function (data) {
 
-            var status_template = doT.template(window.jQuery('#tmpl_status_template').html());
-            var project_card_template = doT.template(window.jQuery('#tmpl_project_card').html());
+            var status_template = window.dot_template(window.jQuery('#tmpl_status_template').html());
+            var project_card_template = window.dot_template(window.jQuery('#tmpl_project_card').html());
             var status_lists = window.jQuery('#status_lists');
 
 

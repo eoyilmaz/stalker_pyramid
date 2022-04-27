@@ -78,12 +78,12 @@
             // fill items table with dynamic data
             window.jQuery.getJSON(address).then(function (data) {
 
-                var thead_template = doT.template(window.jQuery('#tmpl_itemThead').html());
+                var thead_template = window.dot_template(window.jQuery('#tmpl_itemThead').html());
                 var table_head = window.jQuery('#' + tableId + '>thead');
                 table_head.append(thead_template({}));
 
                 var items = data;
-                var row_template = doT.template(window.jQuery('#tmpl_itemRow').html());
+                var row_template = window.dot_template(window.jQuery('#tmpl_itemRow').html());
 
                 window.jQuery(function () {
                     var i;

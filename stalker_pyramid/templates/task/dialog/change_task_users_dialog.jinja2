@@ -46,7 +46,7 @@
             });
 
             {% raw %}
-                var user_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
+                var user_template = window.dot_template('<option value={{=it.id}}>{{=it.name}}</option>');
             {% endraw %}
 
             window.jQuery.getJSON('/projects/{{ task.project.id }}/users/?simple=1').then(function(data){

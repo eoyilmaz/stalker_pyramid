@@ -71,7 +71,7 @@
 
 <script type="text/javascript">
     window.jQuery(document).ready(function () {
-        var related_asset_template = doT.template(window.jQuery('#tmpl_related_asset_item').html());
+        var related_asset_template = window.dot_template(window.jQuery('#tmpl_related_asset_item').html());
         var related_assets_list = window.jQuery('#related_assets_list');
         window.jQuery.getJSON('/tasks/{{ entity.id }}/related/Asset/depends/').then(function (data) {
 

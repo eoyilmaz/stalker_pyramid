@@ -119,7 +119,7 @@
         {# CLIENT #}
         var client_user = window.jQuery('#client_user');
         {% raw %}
-            var client_user_option_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
+            var client_user_option_template = window.dot_template('<option value={{=it.id}}>{{=it.name}}</option>');
         {% endraw %}
         window.jQuery.getJSON('/clients/{{ client.id }}/user/out_stack/').then(function (u_data) {
             chosen_searchable_field_creator_by_data(client_user, client_user_option_template, u_data);
@@ -129,7 +129,7 @@
         {# ROLE #}
         var role = window.jQuery('#role');
         {% raw %}
-            var role_option_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
+            var role_option_template = window.dot_template('<option value={{=it.id}}>{{=it.name}}</option>');
         {% endraw %}
         window.jQuery.getJSON('/roles/').then(function(available_roles){
             // map available types to an array

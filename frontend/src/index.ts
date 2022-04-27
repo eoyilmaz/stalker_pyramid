@@ -5,6 +5,8 @@ import * as $ from "jquery";
 // import "x-editable";
 
 import 'bootstrap';
+import 'bootstrap-typeahead';
+import 'chosen-js';
 import './less/ace.less';
 
 import './js/ace-elements';
@@ -41,6 +43,7 @@ var dojoConfig = {async: true, parseOnLoad: true}
 // const dojo = require("../node_modules/dojo/dojo");
 
 import {template} from "dot";
+import * as moment from "moment";
 
 
 declare global {
@@ -80,6 +83,9 @@ declare global {
         findArrayElement: any,
         validate_timing_value: any,
         page_of: any,
+
+        dot_template: any,
+        moment: any,
 
     }
 
@@ -179,6 +185,8 @@ window.findArrayElement = findArrayElement;
 window.validate_timing_value = validate_timing_value;
 window.page_of = page_of;
 
+window.dot_template = template;
+window.moment = moment;
 
 $(function () {
     // choose default skin

@@ -263,7 +263,7 @@
          * Draws reference items
          */
         var draw_reference_items = function (options) {
-            var referenceItemTemplate = doT.template(document.getElementById('tmpl_reference_item').text);
+            var referenceItemTemplate = window.dot_template(document.getElementById('tmpl_reference_item').text);
 
             options = window.jQuery.extend({
                 current_page: 1,
@@ -397,7 +397,7 @@
                 var data = window.jQuery.parseJSON(new_references_storage.text());
                 // empty the storage
                 new_references_storage.text('');
-                var referenceItemTemplate = doT.template(document.getElementById('tmpl_reference_item').text);
+                var referenceItemTemplate = window.dot_template(document.getElementById('tmpl_reference_item').text);
                 for (var i = 0; i < data.length; i++) {
                     // prepend repositories/{id}/ to make it compatible with the
                     // new style references

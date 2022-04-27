@@ -32,7 +32,7 @@
             var infobox = window.jQuery('#infobox');
 
             infobox.find(".infobox").remove();
-            var infobox_template = doT.template(window.jQuery('#tmpl_infobox').html());
+            var infobox_template = window.dot_template(window.jQuery('#tmpl_infobox').html());
 
             window.jQuery.getJSON(address).then(function (data) {
                 var sorting_path = ['WFD','RTS','WIP', 'PREV','HREV', 'DREV', 'CMPL', 'OH','STOP'];

@@ -284,7 +284,7 @@
 
         window.jQuery.getJSON('/dailies/{{ entity.id }}/outputs/').then(function (data) {
             window.jQuery(function () {
-                var daily_task_template = doT.template(window.jQuery('#tmpl_daily_task').html());
+                var daily_task_template = window.dot_template(window.jQuery('#tmpl_daily_task').html());
                 var daily_tasks_list = window.jQuery('#daily_tasks');
 
                 for(var i=0; i< data.length; i++){
@@ -326,7 +326,7 @@
                         window.jQuery.extend(local_colorbox_params, colorbox_params);
                         local_colorbox_params['rel'] = 'Group' + data[i]['task_id'];
 
-                        var output_template = doT.template(window.jQuery('#tmpl_output_item').html());
+                        var output_template = window.dot_template(window.jQuery('#tmpl_output_item').html());
                         var outputs = window.jQuery('#outputs_' + task.task_id);
 
                         // order the data according to the filename
@@ -350,7 +350,7 @@
                             });
                         }
 
-                        var note_template = doT.template(window.jQuery('#tmpl_note_item').html());
+                        var note_template = window.dot_template(window.jQuery('#tmpl_note_item').html());
                         var notes = window.jQuery('#notes_' + task.task_id);
                         for (var k=0; k<task.notes.length; k++){
                             var note = task.notes[k];

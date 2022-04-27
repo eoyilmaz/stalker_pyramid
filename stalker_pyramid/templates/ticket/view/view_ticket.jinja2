@@ -351,7 +351,7 @@ window.jQuery(function(){
         ticket_resolutions.find('option').remove();
         
         {% raw %}
-        var option_template = doT.template(
+        var option_template = window.dot_template(
             "<option value={{= it }}>{{= it }}</option>"
         );
         {% endraw %}
@@ -378,7 +378,7 @@ window.jQuery(function(){
     });
 
     {% raw %}
-    var project_users_template = doT.template('<option value="{{= it.id }}">{{= it.name }}</option>');
+    var project_users_template = window.dot_template('<option value="{{= it.id }}">{{= it.name }}</option>');
     {% endraw %}
     chosen_field_creator(
         project_users,

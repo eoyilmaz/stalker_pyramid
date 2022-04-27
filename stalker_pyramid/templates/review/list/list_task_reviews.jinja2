@@ -135,7 +135,7 @@
         // wait until document is ready
         window.jQuery(function () {
             var reviewers = reviewers_data;
-            var column_template = doT.template(window.jQuery('#tmpl_reviewColumn').html());
+            var column_template = window.dot_template(window.jQuery('#tmpl_reviewColumn').html());
             var k;
             var table_column = window.jQuery('#reviews_table_column');
             for (k = 0; k < reviewers.length; k++) {
@@ -145,7 +145,7 @@
 
             window.jQuery.getJSON('/tasks/{{ entity.id }}/reviews/').then(function (data) {
                 var reviews = data;
-                var review_row_template = doT.template(window.jQuery('#tmpl_reviewRow').html());
+                var review_row_template = window.dot_template(window.jQuery('#tmpl_reviewRow').html());
                 var reviews_by_numbers = [];
 
                 var table_body = window.jQuery('#reviews_table>tbody');
@@ -162,7 +162,7 @@
 
                 for (var j = reviews_by_numbers.length-1 ; j >= 0; j--) {
                     review_row = window.jQuery('#review_row_' + (j+1));
-                    cell_template = doT.template(window.jQuery('#tmpl_reviewCell').html());
+                    cell_template = window.dot_template(window.jQuery('#tmpl_reviewCell').html());
 
                     for (var m = 0; m < reviewers.length; m++) {
                         review = reviews_by_numbers[j][reviewers[m].reviewer_id];

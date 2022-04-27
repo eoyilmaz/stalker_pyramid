@@ -232,7 +232,7 @@
             window.jQuery('#items_header').append('<i class=' + icon_name + '></i>');
 
             var types = [];
-            var column_template = doT.template(window.jQuery('#tmpl_sceneColumn').html());
+            var column_template = window.dot_template(window.jQuery('#tmpl_sceneColumn').html());
 
             window.jQuery(function () {
                 window.jQuery.getJSON('/shots/children/task_type/?entity_id={{ entity.id }}').then(function (data){
@@ -247,7 +247,7 @@
                     window.jQuery.getJSON('/entities/{{ entity.id }}/scenes/').then(function (data) {
 
                     var scenes = data;
-                    var scene_template = doT.template(window.jQuery('#tmpl_sceneRow').html());
+                    var scene_template = window.dot_template(window.jQuery('#tmpl_sceneRow').html());
 
                     window.jQuery(function () {
                         var i;
@@ -262,9 +262,9 @@
                             // append it to the table
                             table_body.append(scene_template(data[i]));
 
-                            var cell_template = doT.template(window.jQuery('#tmpl_taskCell').html());
-                            var empty_cell_template = doT.template(window.jQuery('#tmpl_taskCell_empty').html());
-                            var shot_task_cell_template = doT.template(window.jQuery('#tmpl_taskCell_shot_task').html());
+                            var cell_template = window.dot_template(window.jQuery('#tmpl_taskCell').html());
+                            var empty_cell_template = window.dot_template(window.jQuery('#tmpl_taskCell_empty').html());
+                            var shot_task_cell_template = window.dot_template(window.jQuery('#tmpl_taskCell_shot_task').html());
 
                             var scene_row = window.jQuery('#scene_row_' + data[i].id);
 

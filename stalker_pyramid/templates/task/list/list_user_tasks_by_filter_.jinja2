@@ -65,7 +65,7 @@
         var status_code = '';
 
         {% raw %}
-            var option_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
+            var option_template = window.dot_template('<option value={{=it.id}}>{{=it.name}}</option>');
         {% endraw %}
 
         var project_cb = window.jQuery('#project_cb');
@@ -121,7 +121,7 @@
         var tasks_status_tabs = window.jQuery('#tasks_status_tabs');
         console.log("address: " + address);
         tasks_status_tabs.find("li").remove();
-        var link_template = doT.template(window.jQuery('#tmpl_taskStatusLink').html());
+        var link_template = window.dot_template(window.jQuery('#tmpl_taskStatusLink').html());
 
 
         window.jQuery.getJSON(address).then(function (data) {
@@ -199,7 +199,7 @@
         var button_list = window.jQuery('#button_list');
         button_list.find('button').remove();
 
-        var btn_template = doT.template(window.jQuery('#tmpl_btn').html());
+        var btn_template = window.dot_template(window.jQuery('#tmpl_btn').html());
         var remove_task_btn_info = {
                                         'id':'remove_resource_btn',
                                         'title':'Remove Task',

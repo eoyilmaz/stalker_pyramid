@@ -59,7 +59,7 @@
         });
 
         {% raw %}
-            var option_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
+            var option_template = window.dot_template('<option value={{=it.id}}>{{=it.name}}</option>');
         {% endraw %}
 
         task_ids.append('<option value=""></option>');

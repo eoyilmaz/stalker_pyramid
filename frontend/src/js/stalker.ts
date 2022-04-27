@@ -51,7 +51,7 @@ export class Stalker implements StalkerBase {
             });
         });
 
-        jQuery.getJSON('/users/{{ logged_in_user.id }}/tasks/count/').then(function (data) {
+        jQuery.getJSON('/users/' + logged_in_user_id + '/tasks/count/').then(function (data) {
             $(function () {
                 $('#nav_bar_task_count').text(data);
             })

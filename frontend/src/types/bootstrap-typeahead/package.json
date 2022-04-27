@@ -1,0 +1,27 @@
+{
+    "name": "@types/bootstrap-typeahead",
+    "version": "2.3.2",
+    "description": "TypeScript definitions for Bootstrap 2 Typeahead",
+    "homepage": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/bootstrap-3-typeahead",
+    "license": "MIT",
+    "contributors": [
+        {
+            "name": "Anderson Friaça",
+            "url": "https://github.com/AndersonFriaca",
+            "githubUsername": "AndersonFriaca"
+        }
+    ],
+    "main": "",
+    "types": "index.d.ts",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+        "directory": "types/bootstrap-typeahead"
+    },
+    "scripts": {},
+    "dependencies": {
+        "@types/jquery": "*"
+    },
+    "typesPublisherContentHash": "f2972c77877e0241567a5abc5cd6914378dab76299d9e38653aa4269ecf2fda5",
+    "typeScriptVersion": "3.6"
+}

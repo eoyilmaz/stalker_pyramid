@@ -105,7 +105,7 @@
         // fill items table with dynamic data
         window.jQuery.getJSON('{{ address }}').then(function (data) {
             console.log('{{ address }} loaded');
-            var row_template = doT.template(window.jQuery('#tmpl_list_item').html());
+            var row_template = window.dot_template(window.jQuery('#tmpl_list_item').html());
 
             // wait until document is ready
             window.jQuery(function () {
@@ -126,7 +126,7 @@
                     // append it to the table
                     editable_list.append(row_template(data[i]));
                     if (data[i].item_remove_link){
-                        var delete_template = doT.template(window.jQuery('#tmpl_item_remove').html());
+                        var delete_template = window.dot_template(window.jQuery('#tmpl_item_remove').html());
                         window.jQuery('#editable_list_item_actions_' + data[i].id).append(delete_template(data[i]));
                     }
                 }

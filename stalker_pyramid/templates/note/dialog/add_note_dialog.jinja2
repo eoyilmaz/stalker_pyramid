@@ -50,7 +50,7 @@
                 ).done(function () {
                     window.location.assign('{{ came_from }}');
     {#                // just append the note to the top#}
-    {#                var note_simple_template = doT.template(window.jQuery('#tmpl_note_simple_text').html());#}
+    {#                var note_simple_template = window.dot_template(window.jQuery('#tmpl_note_simple_text').html());#}
                 }).fail(function (jqXHR) {
                     bootbox.alert('<div id="message" class="alert alert-danger bigger-110">' + jqXHR.responseText + '</div>');
                     submit_button.button('reset');

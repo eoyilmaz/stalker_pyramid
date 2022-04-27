@@ -148,7 +148,7 @@
         var status_code = '';
 
         {% raw %}
-            var option_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
+            var option_template = window.dot_template('<option value={{=it.id}}>{{=it.name}}</option>');
         {% endraw %}
 
         var project_cb = window.jQuery('#project_cb');
@@ -252,7 +252,7 @@
         tasks_status_tabs_container.find("ul").remove();
         tasks_status_tabs_container.append('<ul class="nav nav-tabs" id="tasks_status_tabs"></ul>');
         var tasks_status_tabs = window.jQuery('#tasks_status_tabs');
-        var link_template = doT.template(window.jQuery('#tmpl_taskStatusLink').html());
+        var link_template = window.dot_template(window.jQuery('#tmpl_taskStatusLink').html());
 
         window.jQuery.getJSON(address).then(function (data) {
             var sorting_path = ['WFD','RTS','WIP', 'PREV','HREV', 'DREV', 'CMPL', 'OH','STOP'];
@@ -341,7 +341,7 @@
         var button_list = window.jQuery('#button_list');
         button_list.find('button').remove();
 
-        var btn_template = doT.template(window.jQuery('#tmpl_btn').html());
+        var btn_template = window.dot_template(window.jQuery('#tmpl_btn').html());
         var remove_task_btn_info = {
             'id':'remove_resource_btn',
             'title':'Remove Task',
@@ -450,11 +450,11 @@
         var table = window.jQuery('#items_table');
 
         var table_head = table.find('thead');
-        var thead_template = doT.template(window.jQuery('#tmpl_itemThead').html());
+        var thead_template = window.dot_template(window.jQuery('#tmpl_itemThead').html());
         table_head.append(thead_template({}));
 
         var table_body = table.find('tbody');
-        var row_template = doT.template(window.jQuery('#tmpl_itemRow').html());
+        var row_template = window.dot_template(window.jQuery('#tmpl_itemRow').html());
 
         var query_str = 'status_code=' + status_code + '&project_id=' + project_id;
         var tableDataAddress = '/users/{{ entity.id }}/tasks/simple/?' + query_str;

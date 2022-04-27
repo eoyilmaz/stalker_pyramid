@@ -196,7 +196,7 @@ function init_dialog() {
         {# ***************************************************************** #}
         {# Task #}
         {% raw %}
-            var task_option_template = doT.template(
+            var task_option_template = window.dot_template(
                 '<option value={{=it.id}}>{{=it.name}}</option>'
             );
         {% endraw %}
@@ -225,7 +225,7 @@ function init_dialog() {
     {# ***************************************************************** #}
     {# Project #}
     {% raw %}
-        var project_option_template = doT.template(
+        var project_option_template = window.dot_template(
             '<option value={{=it.id}}>{{=it.name}}</option>'
         );
     {% endraw %}

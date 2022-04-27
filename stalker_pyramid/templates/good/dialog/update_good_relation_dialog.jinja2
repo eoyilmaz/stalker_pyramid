@@ -44,7 +44,7 @@
         dialog_label.append('<span>{{ good.name }}</span>');
 
         {% raw %}
-            var good_option_template = doT.template(
+            var good_option_template = window.dot_template(
                 '<option value={{=it.id}}>{{=it.name}}</option>'
             );
         {% endraw %}

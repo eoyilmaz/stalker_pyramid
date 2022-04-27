@@ -259,7 +259,7 @@
         init_time_picker('sun_end', end_time_value)
 
         {% raw %}
-        var user_option_template = doT.template(
+        var user_option_template = window.dot_template(
             '<option value={{=it.id}}>{{=it.name}}</option>'
         );
         {% endraw %}

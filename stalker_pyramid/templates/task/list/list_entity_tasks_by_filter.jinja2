@@ -99,7 +99,7 @@
         button_list.find('button').remove();
         var submit_form_url= '';
 
-        var btn_template = doT.template(window.jQuery('#tmpl_btn').html());
+        var btn_template = window.dot_template(window.jQuery('#tmpl_btn').html());
 
         var force_complete_btn_info = {
             'id':'force_complete_btn',
@@ -223,14 +223,14 @@
             // fill items table with dynamic data
             // wait until document is ready
             window.jQuery(function () {
-                var thead_template = doT.template(window.jQuery('#tmpl_itemThead').html());
+                var thead_template = window.dot_template(window.jQuery('#tmpl_itemThead').html());
                 var table = window.jQuery('#items_table');
                 var table_head = table.find('thead');
                 var total_hours = 0;
                 table_head.append(thead_template({}));
 
 {#                var items = data;#}
-                var row_template = doT.template(window.jQuery('#tmpl_itemRow').html());
+                var row_template = window.dot_template(window.jQuery('#tmpl_itemRow').html());
 
                 var i;
                 var table_body = table.find('tbody');
@@ -331,7 +331,7 @@
                         table_body.append(row_template(data[i]));
                     {% endif %}
                 }
-{#                var rowFooter_template = doT.template(window.jQuery('#tmpl_itemFooterRow').html());#}
+{#                var rowFooter_template = window.dot_template(window.jQuery('#tmpl_itemFooterRow').html());#}
 {#                table_body.append(rowFooter_template({'total_hours':convert_seconds_to_time_range(total_hours)}));#}
 
 

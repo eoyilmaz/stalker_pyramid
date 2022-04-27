@@ -104,7 +104,7 @@
     {# Form #}
     window.jQuery(document).ready(function () {
         {% raw %}
-            var report_templates_option_template = doT.template(
+            var report_templates_option_template = window.dot_template(
                 '<option value={{=it.id}}>{{=it.name}}</option>'
             );
         {% endraw %}

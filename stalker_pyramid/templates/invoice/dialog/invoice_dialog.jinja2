@@ -77,7 +77,7 @@
         dialog_label.append('<span>{{mode}} Invoice</span>');
 
         {% raw %}
-            var invoice_type_option_template = doT.template(
+            var invoice_type_option_template = window.dot_template(
                 '<option value={{=it.id}}>{{=it.name}}</option>'
             );
         {% endraw %}

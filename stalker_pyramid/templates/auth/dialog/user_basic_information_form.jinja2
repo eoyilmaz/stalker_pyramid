@@ -164,7 +164,7 @@
         {# ROLE #}
         var user_type = window.jQuery('#user_type');
         {% raw %}
-            var user_type_option_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
+            var user_type_option_template = window.dot_template('<option value={{=it.id}}>{{=it.name}}</option>');
         {% endraw %}
         window.jQuery.getJSON('/types/?target_entity_type=User').then(function(available_type){
             // map available types to an array

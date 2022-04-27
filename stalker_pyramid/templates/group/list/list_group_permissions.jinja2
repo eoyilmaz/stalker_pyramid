@@ -93,7 +93,7 @@
         window.jQuery.getJSON('{{ address }}').then(function (data) {
 
             label_data = data;
-            var permission_template = doT.template(window.jQuery('#tmpl_permission').html());
+            var permission_template = window.dot_template(window.jQuery('#tmpl_permission').html());
 
             var table_id = '{{mode }}_permission';
             var table_body = window.jQuery('#' + table_id + '>tbody');

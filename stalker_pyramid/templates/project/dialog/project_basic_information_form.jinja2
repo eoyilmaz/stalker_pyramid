@@ -287,7 +287,7 @@
             });
 
 {#            {% raw %}#}
-{#                var option_template = doT.template(#}
+{#                var option_template = window.dot_template(#}
 {#                    '<option value={{=it.id}}>{{=it.name}}</option>'#}
 {#                );#}
 {#            {% endraw %}#}
@@ -313,7 +313,7 @@
         {% endif %}
 
         {% raw %}
-            var option_template = doT.template(
+            var option_template = window.dot_template(
                 '<option value={{=it.id}}>{{=it.name}}</option>'
             );
         {% endraw %}
@@ -367,7 +367,7 @@
         {# IMAGE FORMAT #}
 
         {% raw %}
-            var image_format_option_template = doT.template(
+            var image_format_option_template = window.dot_template(
                 '<option value={{=it.id}}>{{=it.name}} ({{=it.width}} x {{=it.height}} x {{=it.pixel_aspect}})</option>'
             );
         {% endraw %}

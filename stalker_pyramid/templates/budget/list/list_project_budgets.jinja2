@@ -236,7 +236,7 @@
     <script type="text/javascript">
 
         window.jQuery(document).ready(function () {
-            var budget_template = doT.template(window.jQuery('#tmpl_budget').html());
+            var budget_template = window.dot_template(window.jQuery('#tmpl_budget').html());
             window.jQuery.getJSON('{{ request.route_path('get_project_budgets', id=entity.id) }}').then(function (b_data) {
                 for(var i=0; i<b_data.length; i++ ){
 

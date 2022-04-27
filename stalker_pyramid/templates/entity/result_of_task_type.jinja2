@@ -452,7 +452,7 @@
 
         {% if entity.entity_type != 'Project' %}
             {% raw %}
-                var option_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
+                var option_template = window.dot_template('<option value={{=it.id}}>{{=it.name}}</option>');
             {% endraw %}
             project_cb.chosen({
                 search_contains: true,

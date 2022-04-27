@@ -13,7 +13,7 @@
 
             var infobtn = window.jQuery('#infobox');
             infobtn.find(".btn").remove();
-            var infobtn_template = doT.template(window.jQuery('#tmpl_infobtn').html());
+            var infobtn_template = window.dot_template(window.jQuery('#tmpl_infobtn').html());
 
             window.jQuery.getJSON(address).then(function (data) {
 

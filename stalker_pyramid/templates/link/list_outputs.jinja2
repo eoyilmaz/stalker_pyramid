@@ -248,7 +248,7 @@
      * Draws output items
      */
     var draw_output_items = function (options) {
-        var outputItemTemplate = doT.template(document.getElementById('tmpl_output_item').text);
+        var outputItemTemplate = window.dot_template(document.getElementById('tmpl_output_item').text);
 
         options = window.jQuery.extend({
             current_page: 1,
@@ -389,7 +389,7 @@
             var data = window.jQuery.parseJSON(new_outputs_storage.text());
             // empty the storage
             new_outputs_storage.text('');
-            var outputItemTemplate = doT.template(document.getElementById('tmpl_output_item').text);
+            var outputItemTemplate = window.dot_template(document.getElementById('tmpl_output_item').text);
             for (var i = 0; i < data.length; i++) {
                 // prepend repositories/{id}/ to make it compatible with the
                 // new style outputs

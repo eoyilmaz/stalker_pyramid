@@ -225,7 +225,7 @@
             var types = types_data;
 
             window.jQuery(function () {
-                var column_template = doT.template(window.jQuery('#tmpl_shotColumn').html());
+                var column_template = window.dot_template(window.jQuery('#tmpl_shotColumn').html());
                 var k;
                 var table_column = window.jQuery('#shots_table_column');
                 for (k = 0; k < types_data.length; k++) {
@@ -235,7 +235,7 @@
                 window.jQuery.getJSON('/entities/{{ entity.id }}/shots/').then(function (data) {
 
                     var shots = data;
-                    var shot_template = doT.template(window.jQuery('#tmpl_shotRow').html());
+                    var shot_template = window.dot_template(window.jQuery('#tmpl_shotRow').html());
                     // wait until document is ready
                     window.jQuery(function () {
                         var i;
@@ -266,7 +266,7 @@
                             // append it to the table
                             table_body.append(shot_template(data[i]));
 
-                            var cell_template = doT.template(window.jQuery('#tmpl_taskCell').html());
+                            var cell_template = window.dot_template(window.jQuery('#tmpl_taskCell').html());
                             var shot_row = window.jQuery('#shot_row_' + data[i].id);
 
                             for (var j = 0; j < types_data.length; j++) {
@@ -306,7 +306,7 @@
                             }
 
                             var shot_summary_cell = window.jQuery('#shot_summary_cell_' + data[i].id);
-                            var shot_summary_cell_template = doT.template(window.jQuery('#tmpl_shotSummaryCell').html());
+                            var shot_summary_cell_template = window.dot_template(window.jQuery('#tmpl_shotSummaryCell').html());
 
                             for (var n = 0; n < data[i]['nulls'].length; n++) {
                                 var null_type_task = data[i]['nulls'][n];

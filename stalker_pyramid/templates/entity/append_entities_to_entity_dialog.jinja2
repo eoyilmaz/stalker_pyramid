@@ -60,7 +60,7 @@
         window.jQuery(document).ready(function () {
             window.jQuery.getJSON('/entities/{{ entity.id }}/{{ entities_name }}/out_stack/').then(function (data) {
 
-                var item_template = doT.template(window.jQuery('#tmpl_append_item').html());
+                var item_template = window.dot_template(window.jQuery('#tmpl_append_item').html());
                 var table_body = window.jQuery('#multiple_select_list>tbody');
 
                 // append new options to the select

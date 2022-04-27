@@ -108,7 +108,7 @@
             });
 
             {% raw %}
-                var responsible_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
+                var responsible_template = window.dot_template('<option value={{=it.id}}>{{=it.name}}</option>');
             {% endraw %}
 
             task_responsible.find('option').remove();
@@ -134,7 +134,7 @@
             var warning_template_id = '#alert-for-{{request_review_mode}}';
 
             {% raw %}
-            var warning_message_template = doT.template(window.jQuery(warning_template_id).html());
+            var warning_message_template = window.dot_template(window.jQuery(warning_template_id).html());
             {% endraw %}
 
             var responsible_name = 'responsible of this task.';

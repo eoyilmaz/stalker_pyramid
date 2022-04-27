@@ -183,12 +183,12 @@
 
         {# Good ******************************************************* #}
         {% raw %}
-            var pl_option_template = doT.template(
+            var pl_option_template = window.dot_template(
                     '<option value={{=it.id}}>{{=it.name}}</option>'
             );
         {% endraw %}
         {% raw %}
-            var good_option_template = doT.template(
+            var good_option_template = window.dot_template(
                     '<option value={{=it.id}}_{{=it.unit }}>{{=it.name}}</option>'
             );
         {% endraw %}

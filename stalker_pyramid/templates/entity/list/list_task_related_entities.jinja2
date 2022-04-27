@@ -63,7 +63,7 @@
 
 
         var related_entities_list = window.jQuery('#related_entities_list');
-        var related_entity_template = doT.template(window.jQuery('#tmpl_related_entity_item').html());
+        var related_entity_template = window.dot_template(window.jQuery('#tmpl_related_entity_item').html());
 
         window.jQuery.getJSON('/tasks/{{ entity.id }}/related/'+e_type+'/'+d_type+'/').then(function (data) {
             console.log('loaded '+data.length);

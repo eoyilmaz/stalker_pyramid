@@ -186,7 +186,7 @@
                     var types = types_data;
 
                     window.jQuery(function () {
-                        var column_template = doT.template(window.jQuery('#tmpl_assetColumn').html());
+                        var column_template = window.dot_template(window.jQuery('#tmpl_assetColumn').html());
                         var x;
                         var table_column = window.jQuery('#assets_table_column');
                         for (x = 0; x < types.length; x++) {
@@ -198,7 +198,7 @@
 
                         window.jQuery.getJSON('/entities/{{ entity.id }}/assets/?asset_type_id=' + asset_type_id).then(function (data) {
                             var assets = data;
-                            var asset_template = doT.template(window.jQuery('#tmpl_assetRow').html());
+                            var asset_template = window.dot_template(window.jQuery('#tmpl_assetRow').html());
 
                             // wait until document is ready
                             window.jQuery(function () {
@@ -224,9 +224,9 @@
 
                                     var asset_summary_cell = window.jQuery('#asset_summary_cell_' + data[i].id);
 
-                                    var cell_template = doT.template(window.jQuery('#tmpl_taskCell').html());
-                                    var empty_cell_template = doT.template(window.jQuery('#tmpl_taskCell_empty').html());
-                                    var cell_row_template = doT.template(window.jQuery('#tmpl_taskCellRow').html());
+                                    var cell_template = window.dot_template(window.jQuery('#tmpl_taskCell').html());
+                                    var empty_cell_template = window.dot_template(window.jQuery('#tmpl_taskCell_empty').html());
+                                    var cell_row_template = window.dot_template(window.jQuery('#tmpl_taskCellRow').html());
                                     var task_cell_height = 150;
 
                                     for (var j = 0; j < types_data.length; j++) {
@@ -268,7 +268,7 @@
                                         }
                                     }
 
-                                    var asset_summary_cell_template = doT.template(window.jQuery('#tmpl_assetSummaryCell').html());
+                                    var asset_summary_cell_template = window.dot_template(window.jQuery('#tmpl_assetSummaryCell').html());
 
                                     for (var n = 0; n < data[i]['nulls'].length; n++) {
                                         var null_type_task = data[i]['nulls'][n];
@@ -289,7 +289,7 @@
             };
 
             window.jQuery.getJSON('/assets/types/?project_id={{ entity.id }}').then(function (types) {
-                var link_template = doT.template(window.jQuery('#tmpl_assetTypeLink').html());
+                var link_template = window.dot_template(window.jQuery('#tmpl_assetTypeLink').html());
 
                 var asset_type_tabs = window.jQuery('#asset_type_tabs');
                 var selected_asset_id = types[0].asset_type_id;

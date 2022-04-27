@@ -685,7 +685,7 @@ resource_name, status
         var temp_asset = window.jQuery('#temp_asset');
         temp_asset.attr('is_updating', false);
         {% raw %}
-            var asset_option_template = doT.template(
+            var asset_option_template = window.dot_template(
                 '<option value={{=it.id}}>{{=it.name}}</option>'
             );
         {% endraw %}
@@ -749,7 +749,7 @@ resource_name, status
         });
 
         {% raw %}
-        var sequence_template = doT.template('<option value="{{=it.id}}">{{=it.name}}</option>');
+        var sequence_template = window.dot_template('<option value="{{=it.id}}">{{=it.name}}</option>');
         {% endraw %}
 
         // and update it on project change
@@ -849,7 +849,7 @@ resource_name, status
         });
 
         {% raw %}
-        var resource_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
+        var resource_template = window.dot_template('<option value={{=it.id}}>{{=it.name}}</option>');
         {% endraw %}
 
         //
@@ -920,7 +920,7 @@ resource_name, status
         // {# ***************************************************************** #}
         // {# Good #}
         {% raw %}
-            var task_good_option_template = doT.template(
+            var task_good_option_template = window.dot_template(
                 '<option value={{=it.id}}>{{=it.name}}</option>'
             );
         {% endraw %}

@@ -95,7 +95,7 @@
         window.jQuery.getJSON('/tasks/{{ entity.id }}/last_reviews/').then(function (data) {
 
             var review_box = window.jQuery('#review_box');
-            var reviewer_template = doT.template(window.jQuery('#tmpl_reviewer_card').html());
+            var reviewer_template = window.dot_template(window.jQuery('#tmpl_reviewer_card').html());
 
             for (var i = 0; i < data.length; i++) {
 

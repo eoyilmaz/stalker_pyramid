@@ -154,9 +154,9 @@
         window.jQuery(function () {
             var logged_in_user_id = '{{ logged_in_user.id }}';
             var notes = window.jQuery('#notes');
-            var note_simple_template = doT.template(window.jQuery('#tmpl_note_simple_text').html());
-            var note_activity_template = doT.template(window.jQuery('#tmpl_note_activity').html());
-            var note_daily_template = doT.template(window.jQuery('#tmpl_note_daily').html());
+            var note_simple_template = window.dot_template(window.jQuery('#tmpl_note_simple_text').html());
+            var note_activity_template = window.dot_template(window.jQuery('#tmpl_note_activity').html());
+            var note_daily_template = window.dot_template(window.jQuery('#tmpl_note_daily').html());
 
             var event_dialog = window.jQuery('#html_template');
             var html_template_label = window.jQuery('#html_template_label');

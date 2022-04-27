@@ -125,15 +125,15 @@
     // load templates with doT.js
     var templates = {};
 
-    templates.projectBar = doT.template(document.getElementById('tmpl_projectBar').text);
-    templates.parentTaskBar = doT.template(document.getElementById('tmpl_parentTaskBar').text);
-    templates.taskBar = doT.template(document.getElementById('tmpl_taskBar').text);
+    templates.projectBar = window.dot_template(document.getElementById('tmpl_projectBar').text);
+    templates.parentTaskBar = window.dot_template(document.getElementById('tmpl_parentTaskBar').text);
+    templates.taskBar = window.dot_template(document.getElementById('tmpl_taskBar').text);
 
-    templates.taskEditRow = doT.template(document.getElementById('tmpl_taskEditRow').text);
+    templates.taskEditRow = window.dot_template(document.getElementById('tmpl_taskEditRow').text);
 
-    templates.projectLink = doT.template(document.getElementById('tmpl_projectLink').text);
-    templates.taskLink = doT.template(document.getElementById('tmpl_taskLink').text);
-    templates.resourceLink = doT.template(document.getElementById('tmpl_resourceLink').text);
+    templates.projectLink = window.dot_template(document.getElementById('tmpl_projectLink').text);
+    templates.taskLink = window.dot_template(document.getElementById('tmpl_taskLink').text);
+    templates.resourceLink = window.dot_template(document.getElementById('tmpl_resourceLink').text);
 
 </script>
 

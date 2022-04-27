@@ -132,7 +132,7 @@
             window.jQuery('#items_header').append('<i class=' + icon_name + '></i>');
             // fill tasks table with dynamic data
             window.jQuery.getJSON('/tasks/{{ task_type }}/children/task_type/').then(function (types_data) {
-                var column_template = doT.template(window.jQuery('#tmpl_taskColumn').html());
+                var column_template = window.dot_template(window.jQuery('#tmpl_taskColumn').html());
 
                 var k;
                 var table_column = window.jQuery('#tasks_table_column');

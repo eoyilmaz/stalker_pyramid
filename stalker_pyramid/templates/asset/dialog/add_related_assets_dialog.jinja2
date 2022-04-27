@@ -81,7 +81,7 @@
     var vehicle_data = [];
 
     {% raw %}
-        var asset_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
+        var asset_template = window.dot_template('<option value={{=it.id}}>{{=it.name}}</option>');
     {% endraw %}
 
     var format_field = function(field_name){
