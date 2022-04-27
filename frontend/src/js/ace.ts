@@ -57,7 +57,6 @@ require("../../node_modules/free-jqgrid/dist/plugins/ui.multiselect");
 require("../../node_modules/markdown/lib/markdown");
 require("../../node_modules/select2/dist/js/select2")
 require("../../node_modules/fuelux/js/spinbox");
-require("../../node_modules/fullcalendar/dist/fullcalendar.min");
 require("../../node_modules/datatables/media/js/jquery.dataTables.min");
 require("./dataTable_num-html_sort");
 

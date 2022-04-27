@@ -4,6 +4,10 @@ import * as $ from "jquery";
 // require('../node_modules/x-editable/dist/bootstrap-editable/js/bootstrap-editable');
 // import "x-editable";
 
+import { Calendar } from '@fullcalendar/core';
+import dayGridPlugin from '@fullcalendar/daygrid';
+
+
 import 'bootstrap';
 import 'bootstrap-typeahead';
 import 'chosen-js';
@@ -430,3 +434,14 @@ window.menu_of = function (title, state, address, icon, count) {
     }
 };
 
+
+document.addEventListener('DOMContentLoaded', function() {
+  let calendarEl: HTMLElement = document.getElementById('calendar')!;
+
+  let calendar = new Calendar(calendarEl, {
+    plugins: [ dayGridPlugin ]
+    // options here
+  });
+
+  calendar.render();
+});

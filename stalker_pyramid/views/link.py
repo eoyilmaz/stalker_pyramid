@@ -1396,6 +1396,16 @@ def serve_files(request):
 
 
 @view_config(
+    route_name='favicon'
+)
+def favicon(request):
+    """serve the favicon
+    """
+    from pyramid.request import Request
+    return request.invoke_subrequest(Request.blank("/static/stalker/images/favicon.ico"))
+
+
+@view_config(
     route_name='forced_download_files'
 )
 def force_download_files(request):

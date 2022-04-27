@@ -26,6 +26,11 @@ const config = {
                 }
             },
             {
+                test: /\.js$/,
+                enforce: "pre",
+                use: ["source-map-loader"],
+            },
+            {
                 test: /\.tsx?$/,
                 use: 'ts-loader',
                 exclude: /node_modules/
@@ -36,14 +41,18 @@ const config = {
                     {
                         loader: 'url-loader',
                         options: {
-                            limit: 8192
+                            limit: 81920,
+                            fallback: 'file-loader'
                         }
                     }
                 ]
             },
             {
                 test: /\.(woff|woff2|eot|ttf|otf)$/,
-                loader: "file-loader"
+                loader: "file-loader",
+                options: {
+                    publicPath: '/static/',
+                }
             },
             {
                 test: /\.css$/,
@@ -77,10 +86,10 @@ const config = {
                     /\.(config|overrides|variables)$/,
                 ],
                 use: [
-                    // {
-                    // //     loader: 'style-loader' // creates style nodes from JS strings
-                    //     loader: MiniCssExtractPlugin.loader,
-                    // },
+                    {
+                        loader: 'style-loader' // creates style nodes from JS strings
+                        // loader: MiniCssExtractPlugin.loader,
+                    },
                     {
                         loader: 'css-loader' // translates CSS into CommonJS
                     },

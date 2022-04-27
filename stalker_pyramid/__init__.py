@@ -44,7 +44,6 @@ cgru_host_mask_alembic = ""
 cgru_host_mask_playblast = ""
 
 
-
 __string_types__ = []
 if sys.version_info[0] >= 3:  # Python 3
     __string_types__ = tuple([str])
@@ -174,6 +173,7 @@ def main(global_config, **settings):
     config.add_route('deform_test', '/deform_test')
 
     config.add_route('home', '/')
+    config.add_route("favicon", "/favicon.ico")
     config.add_route('me_menu', '/me_menu')
     config.add_route('signin', '/signin')
     config.add_route('login', '/login')
