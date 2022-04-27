@@ -12,8 +12,7 @@
     "types": [ "node" ],
     "typeRoots": [
       "node_modules/@types",
-      "src/",
-      "src/js",
+      "src/types",
     ],
     "lib": [
       "es2019",

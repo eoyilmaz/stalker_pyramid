@@ -1,10 +1,8 @@
 import * as jQuery from "jquery";
 import * as $ from "jquery";
 
-import {Ace} from './js/ace';
-import {Stalker} from "./js/stalker";
-
-// import 'x-editable/dist/bootstrap-editable/js/bootstrap-editable';
+// require('../node_modules/x-editable/dist/bootstrap-editable/js/bootstrap-editable');
+// import "x-editable";
 
 import 'bootstrap';
 import './less/ace.less';
@@ -13,7 +11,31 @@ import './js/ace-elements';
 import './js/cache_users';
 import './js/Paginator';
 import './js/Studio';
-import get_icon from './js/utils';
+import {
+    get_icon,
+    append_thumbnail,
+    chosen_field_creator,
+    chosen_searchable_field_creator,
+    chosen_searchable_field_creator_by_data,
+    convert_seconds_to_hour,
+    convert_seconds_to_time_range,
+    to_seconds,
+    get_date_range,
+    get_date_picker,
+    get_task_data,
+    meaningful_time,
+    meaningful_time_between,
+    remove_thumbnails,
+    seconds_in_unit,
+    set_entity_thumbnail,
+    units,
+    findArrayElement,
+    validate_timing_value,
+    page_of
+} from './js/utils';
+
+import {Ace} from './js/ace';
+import {Stalker} from "./js/stalker";
 
 var dojoConfig = {async: true, parseOnLoad: true}
 // const dojo = require("../node_modules/dojo/dojo");
@@ -37,75 +59,97 @@ declare global {
         resize_page_content: any;
         scrollToTaskItem: any;
         submenu_of: any;
+
+        get_icon: any,
+        append_thumbnail: any,
+        chosen_field_creator: any,
+        chosen_searchable_field_creator: any,
+        chosen_searchable_field_creator_by_data: any,
+        convert_seconds_to_hour: any,
+        convert_seconds_to_time_range: any,
+        to_seconds: any,
+        get_date_range: any,
+        get_date_picker: any,
+        get_task_data: any,
+        meaningful_time: any,
+        meaningful_time_between: any,
+        remove_thumbnails: any,
+        seconds_in_unit: any,
+        set_entity_thumbnail: any,
+        units: any,
+        findArrayElement: any,
+        validate_timing_value: any,
+        page_of: any,
+
     }
 
-    interface XEditableOptions {
-        ajaxOptions?: any;
-        anim?: string | undefined;
-        autotext?: string | undefined;
-        defaultValue?: any;
-        disabled?: boolean | undefined;
-        display?: any;
-        emptyclass?: string | undefined;
-        emptytext?: string | undefined;
-        error?: any;
-        highlight?: any;
-        mode?: string | undefined;
-        name?: string | undefined;
-        onblur?: string | undefined;
-        params?: any;
-        pk?: any;
-        placement?: string | undefined;
-        savenochange?: boolean | undefined;
-        selector?: string | undefined;
-        send?: string | undefined;
-        showbuttons?: any;
-        success?: any;
-        toggle?: string | undefined;
-        type?: string | undefined;
-        unsavedclass?: string | undefined;
-        url?: any;
-        validate?: any;
-        value?: any;
-    }
-
-    interface XEditableSubmitOptions {
-        url?: any;
-        data?: any;
-        ajaxOptions?: any;
-        error(obj: any): void;
-        success(obj: any, config: any): void;
-    }
-
-    interface XEditable {
-        options: XEditableOptions;
-        activate(): void;
-        destroy(): void;
-        disable(): void;
-        enable(): void;
-        getValue(isSingle: boolean): any;
-        hide(): void;
-        option(key: any, value: any): void;
-        setValue(value: any, convertStr: boolean): void;
-        show(closeAll: boolean): void;
-        submit(options: XEditableSubmitOptions): void;
-        toggle(closeAll: boolean): void;
-        toggleDisabled(): void;
-        validate(): void;
-    }
-
-    interface JQuery {
-        editable(options?: any): XEditable;
-        editable(method: string, params?: any): XEditable;
-        editableform: any;
-        typeahead: any;
-    }
-
-    interface JQueryStatic {
-        gritter: any;
-        editableform: any;
-        // editable(options?: any): XEditable;
-    }
+    // interface XEditableOptions {
+    //     ajaxOptions?: any;
+    //     anim?: string | undefined;
+    //     autotext?: string | undefined;
+    //     defaultValue?: any;
+    //     disabled?: boolean | undefined;
+    //     display?: any;
+    //     emptyclass?: string | undefined;
+    //     emptytext?: string | undefined;
+    //     error?: any;
+    //     highlight?: any;
+    //     mode?: string | undefined;
+    //     name?: string | undefined;
+    //     onblur?: string | undefined;
+    //     params?: any;
+    //     pk?: any;
+    //     placement?: string | undefined;
+    //     savenochange?: boolean | undefined;
+    //     selector?: string | undefined;
+    //     send?: string | undefined;
+    //     showbuttons?: any;
+    //     success?: any;
+    //     toggle?: string | undefined;
+    //     type?: string | undefined;
+    //     unsavedclass?: string | undefined;
+    //     url?: any;
+    //     validate?: any;
+    //     value?: any;
+    // }
+    //
+    // interface XEditableSubmitOptions {
+    //     url?: any;
+    //     data?: any;
+    //     ajaxOptions?: any;
+    //     error(obj: any): void;
+    //     success(obj: any, config: any): void;
+    // }
+    //
+    // interface XEditable {
+    //     options: XEditableOptions;
+    //     activate(): void;
+    //     destroy(): void;
+    //     disable(): void;
+    //     enable(): void;
+    //     getValue(isSingle: boolean): any;
+    //     hide(): void;
+    //     option(key: any, value: any): void;
+    //     setValue(value: any, convertStr: boolean): void;
+    //     show(closeAll: boolean): void;
+    //     submit(options: XEditableSubmitOptions): void;
+    //     toggle(closeAll: boolean): void;
+    //     toggleDisabled(): void;
+    //     validate(): void;
+    // }
+    //
+    // interface JQuery {
+    //     editable(options?: any): XEditable;
+    //     editable(method: string, params?: any): XEditable;
+    //     editableform: any;
+    //     typeahead: any;
+    // }
+    //
+    // interface JQueryStatic {
+    //     gritter: any;
+    //     editableform: any;
+    //     // editable(options?: any): XEditable;
+    // }
 }
 
 // window.$ = jQuery;
@@ -113,6 +157,27 @@ declare global {
 // window.ace = new Ace();
 // window.stalker = stalker;
 window.stalker = new Stalker();
+
+window.get_icon = get_icon;
+window.append_thumbnail = append_thumbnail;
+window.chosen_field_creator = chosen_field_creator;
+window.chosen_searchable_field_creator = chosen_searchable_field_creator;
+window.chosen_searchable_field_creator_by_data = chosen_searchable_field_creator_by_data;
+window.convert_seconds_to_hour = convert_seconds_to_hour;
+window.convert_seconds_to_time_range = convert_seconds_to_time_range;
+window.to_seconds = to_seconds;
+window.get_date_range = get_date_range;
+window.get_date_picker = get_date_picker;
+window.get_task_data = get_task_data;
+window.meaningful_time = meaningful_time;
+window.meaningful_time_between = meaningful_time_between;
+window.remove_thumbnails = remove_thumbnails;
+window.seconds_in_unit = seconds_in_unit;
+window.set_entity_thumbnail = set_entity_thumbnail;
+window.units = units;
+window.findArrayElement = findArrayElement;
+window.validate_timing_value = validate_timing_value;
+window.page_of = page_of;
 
 
 $(function () {
@@ -159,11 +224,11 @@ window.flash_message = function (settings) {
     settings.message = settings.message || '';
     settings.type = settings.type || 'success'; // success, warning, error
 
-    jQuery.gritter.add({
-        title: settings.title,
-        text: settings.message,
-        class_name: 'gritter-' + settings.type
-    });
+    // jQuery.gritter.add({
+    //     title: settings.title,
+    //     text: settings.message,
+    //     class_name: 'gritter-' + settings.type
+    // });
 };
 
 // flash all session messages as gritter
@@ -269,12 +334,12 @@ $(function () {
 
 
 // {# Inline Edits #}
-$(function () {
-    // $.fn.editable.defaults.mode = 'inline';
-    $.fn.editableform.loading = '<div class=\'editableform-loading\'><i class=\'light-blue icon-2x icon-spinner icon-spin\'></i></div>';
-    $.fn.editableform.buttons = '<button type="submit" class="btn btn-info editable-submit"><i class="icon-ok icon-white"></i></button>' +
-        '<button type="button" class="btn editable-cancel"><i class="icon-remove"></i></button>';
-});
+// $(function () {
+//     // $.fn.editable.defaults.mode = 'inline';
+//     $.fn.editableform.loading = '<div class=\'editableform-loading\'><i class=\'light-blue icon-2x icon-spinner icon-spin\'></i></div>';
+//     $.fn.editableform.buttons = '<button type="submit" class="btn btn-info editable-submit"><i class="icon-ok icon-white"></i></button>' +
+//         '<button type="button" class="btn editable-cancel"><i class="icon-remove"></i></button>';
+// });
 
 
 window.menus_under_title = function (title, icon, menuItems) {

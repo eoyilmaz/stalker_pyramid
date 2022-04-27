@@ -17,8 +17,11 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
-let jQuery = require('../../node_modules/jquery/dist/jquery.min');
-let $ = jQuery;
+import * as $ from 'jquery';
+import {template} from "dot";
+import "daterangepicker";
+import "bootstrap-datepicker";
+import "jquery-colorbox";
 
 
 /**
@@ -41,7 +44,16 @@ export function get_task_data(options) {
         project_id: null
     }, options);
 
-    let search_buffer, search_params = {}, key_value_pair, key, value, i;
+    class SearchParam {
+        project_id: Number;
+    }
+
+    let search_buffer;
+    let search_params = new SearchParam();
+    let key_value_pair;
+    let key;
+    let value;
+    let i;
 
     search_params.project_id = options.project_id;
 
@@ -429,7 +441,7 @@ export function meaningful_time_between(time1, time2) {
 export function page_of(name, code, thumbnail_full_path, update_link) {
     'use strict';
     let sidebar_list = $('#sidebar_list');
-    let media_template = doT.template($('#tmpl_sidebar_media').html());
+    let media_template = template($('#tmpl_sidebar_media').html());
     let dic = {
         'name': name,
         'thumbnail_full_path': thumbnail_full_path,
@@ -551,7 +563,7 @@ export let validate_timing_value = function(options) {
 
     // check resolution
     if (options.unit === 'min') {
-        let fixed_timing_value = (options.value / 10).toFixed(0) * 10;
+        let fixed_timing_value = parseInt((options.value / 10).toFixed(0)) * 10;
         // need to be multiple of 10
         if (options.value !== fixed_timing_value) {
             is_valid = false;
@@ -581,9 +593,9 @@ export function findArrayElement(array, attr_name, attr_value) {
 
 export let get_date_range = function (field_name) {
 
-    let date_range_val = $('#'+field_name).daterangepicker().val();
+    let date_range_val = $('#' + field_name).daterangepicker().val();
     if (date_range_val){
-        let date_range = date_range_val.split(' - ');
+        let date_range = typeof date_range_val === "string" ? date_range_val.split(' - ') : "";
         let start_date_string = date_range[0].split('/');
         let end_date_string = date_range[1].split('/');
 
@@ -610,9 +622,9 @@ export let get_date_range = function (field_name) {
 export let get_date_picker = function (field_name) {
     console.log("get_date_picker: "+field_name);
 
-    let date_picker_val = $('#'+field_name).datepicker().val();
+    let date_picker_val = $('#' + field_name).datepicker().val();
     if (date_picker_val){
-        let date_arr = date_picker_val.split('/');
+        let date_arr = typeof date_picker_val === "string" ? date_picker_val.split('/') : "";
         return new Date(
             parseInt(date_arr[2]),
             parseInt(date_arr[1]) - 1,

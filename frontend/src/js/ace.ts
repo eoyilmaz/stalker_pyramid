@@ -442,13 +442,13 @@ export class Ace {
             'Virginia', 'Washington', 'West Virginia', 'Wisconsin',
             'Wyoming'];
 
-        $('#nav-search-input').typeahead({
-            source: this.variable_US_STATES,
-            updater: function (item) {
-                $('#nav-search-input').focus();
-                return item;
-            }
-        });
+        // $('#nav-search-input').typeahead({
+        //     source: this.variable_US_STATES,
+        //     updater: function (item) {
+        //         $('#nav-search-input').focus();
+        //         return item;
+        //     }
+        // });
     };
 
     switch_direction() {

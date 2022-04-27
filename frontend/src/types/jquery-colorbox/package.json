@@ -1,0 +1,27 @@
+{
+    "name": "@types/jquery-colorbox",
+    "version": "1.6.4",
+    "description": "TypeScript definitions for jquery-colorbox",
+    "homepage": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/jquery.colorbox",
+    "license": "MIT",
+    "contributors": [
+        {
+            "name": "Gidon Junge",
+            "url": "https://github.com/gjunge",
+            "githubUsername": "gjunge"
+        }
+    ],
+    "main": "",
+    "types": "index.d.ts",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+        "directory": "types/jquery.colorbox"
+    },
+    "scripts": {},
+    "dependencies": {
+        "@types/jquery": "*"
+    },
+    "typesPublisherContentHash": "d2ee90326ca62672918161fb4b139c9dc520badfea2a8a6f54a597e532a09c50",
+    "typeScriptVersion": "3.6"
+}
