@@ -218,14 +218,3 @@
     </li>
 </script>
 {% endraw %}
-
-
-<script type="text/javascript">
-    $(() => {
-        let logged_in_user_id = {{ logged_in_user.id }};
-        let notification_url = "{{ request.route_path('list_entity_tickets', id=logged_in_user.id) }}";
-
-        window.stalker.update_open_ticket_count(logged_in_user_id, notification_url);
-        window.stalker.update_user_tasks_count(logged_in_user_id);
-    });
-</script>

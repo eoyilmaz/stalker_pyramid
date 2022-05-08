@@ -90,8 +90,6 @@
             search_contains: true,
             enable_split_word_search: true
         });
-
-
         field.find('option').remove();
         return field;
     }
@@ -145,12 +143,10 @@
             label.find('span').remove();
             label.append('<span>Add Assets</span>');
 
-
             format_field('environments');
             format_field('characters');
             format_field('active_props');
             format_field('vehicles');
-
 
             var environment_type_names=['Exterior', 'Interior','Building','Building%20Part','BG-Building'];
             var environment_type_query ='asset_type_names='+environment_type_names[0];

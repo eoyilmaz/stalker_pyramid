@@ -28,6 +28,12 @@
     "url": "https://github.com/eoyilmaz/stalker_pyramid/issues"
   },
   "homepage": "https://github.com/eoyilmaz/stalker_pyramid#readme",
+
+  "//": [
+    "for fullcalendar to work properly, the latest version requires webpack 5",
+    "and we can not install it."
+  ],
+
   "dependencies": {
     "@fullcalendar/core": "^4.4.2",
     "@fullcalendar/daygrid": "^4.4.2",
@@ -106,6 +112,7 @@
     "@types/bootstrap-datepicker": "^0.0.15",
     "@types/chosen-js": "^1.8.3",
     "@types/daterangepicker": "^3.1.4",
+    "@types/datatables.net": "^1.10.18",
     "@types/dot": "^1.1.5",
     "@types/jquery": "^3.5.14",
     "@types/node": "^17.0.26",

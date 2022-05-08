@@ -12,8 +12,6 @@ import interactionPlugin from '@fullcalendar/interaction';
 export function drawCalendar(cid, events) {
 
     console.debug("Code is here A1")
-    console.debug("cid: ", cid);
-    console.debug("events: ", events);
 
     let update_event_action = function (event_type, event_id) {
         let event_dialog = jQuery('#dialog_template');

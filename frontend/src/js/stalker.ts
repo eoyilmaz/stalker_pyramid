@@ -31,8 +31,8 @@ export class Stalker implements StalkerBase {
     update_open_ticket_count = function (logged_in_user_id: Number, notification_url: string) {
         jQuery.getJSON('/users/' + logged_in_user_id + '/open_tickets/').then(function (data) {
             jQuery(function () {
-                var notifications = $('#notifications');
-                var total_tickets = data.length;
+                let notifications = $('#notifications');
+                let total_tickets = data.length;
 
                 if (total_tickets === 0) {
                     notifications.append('<a data-toggle="dropdown" class="dropdown-toggle" href="#"><i class="icon-bell-alt icon-bell light-grey"></i><span class="badge badge-important">0</span></a>');
@@ -42,13 +42,13 @@ export class Stalker implements StalkerBase {
 
                 notifications.append('<ul class="pull-right dropdown-navbar dropdown-menu dropdown-caret dropdown-closer"></ul>');
 
-                var row_template = template($('#tmpl_notificationRow').html());
+                let row_template = template($('#tmpl_notificationRow').html());
 
-                var notifications_list = notifications.find('ul');
+                let notifications_list = notifications.find('ul');
                 notifications_list.append('<li class="nav-header"><i class="icon-warning-sign"></i>' + total_tickets + ' Open Tickets</li>');
 
-                var limit = Math.min(5, total_tickets);
-                for (var i = 0; i < limit; i++) {
+                let limit = Math.min(5, total_tickets);
+                for (let i = 0; i < limit; i++) {
                     notifications_list.append(row_template(data[i]));
                 }
 
@@ -73,7 +73,7 @@ export class Stalker implements StalkerBase {
 
     // Do Playblast
     do_playblast = function (version_id) {
-        var result = window.confirm("Do Playblast?:" + version_id);
+        let result = window.confirm("Do Playblast?:" + version_id);
         if (result === true) {
             $.post("/versions/" + version_id + "/do_playblast").done(function () {
                 const message = '<div>Job created! Check Afanasy</div>';
@@ -89,14 +89,14 @@ export class Stalker implements StalkerBase {
 
     // Export Alembics
     export_alembics = function (version_id) {
-        var result = window.confirm("Export Alembics?" + version_id);
+        let result = window.confirm("Export Alembics?" + version_id);
         if (result === true) {
             $.post("/versions/" + version_id + "/export_alembics").done(function () {
-                var message = '<div>Job created! Check Afanasy</div>';
+                let message = '<div>Job created! Check Afanasy</div>';
                 window.bootbox.alert(message);
                 $('.bootbox').prepend('<div class="modal-header alert-success"><strong>Success</strong></div>');
             }).fail(function (jqXHR) {
-                var message = '<div>' + jqXHR.responseText + '</div>';
+                let message = '<div>' + jqXHR.responseText + '</div>';
                 window.bootbox.alert(message);
                 $('.bootbox').prepend('<div class="modal-header alert-danger"><strong>Fail</strong></div>');
             });

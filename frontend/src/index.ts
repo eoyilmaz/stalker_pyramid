@@ -451,7 +451,7 @@ window.menu_of = function (title, state, address, icon, count) {
 
 
 jQuery(function() {
-    console.debug("This is working 12")
+    console.debug("This is working 12");
     let entity_id = 31; // TODO: Fix this with the value of template variable {{ entity.id }}
     jQuery.getJSON('/users/'+ entity_id +'/events/?keys=time_log&keys=vacation').then(function (data) {
         let events = [];
@@ -484,5 +484,16 @@ jQuery(function() {
         }
         let stalker = new Stalker();
         stalker.drawCalendar('calendar', events);
+    });
+});
+
+
+jQuery(function() {
+    jQuery.getJSON("/get_logged_in_user_id", function(logged_in_user_id){
+        jQuery.getJSON("/request_route_path?route_name=list_entity_tickets&id=" + logged_in_user_id, function(notification_url){
+            let stalker = new Stalker();
+            stalker.update_open_ticket_count(logged_in_user_id, notification_url);
+            stalker.update_user_tasks_count(logged_in_user_id);
+        });
     });
 });

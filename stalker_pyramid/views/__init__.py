@@ -537,3 +537,13 @@ def measure_time(f):
         return return_data
 
     return inner_f
+
+
+@view_config(
+    route_name="request_route_path",
+    renderer="json"
+)
+def request_route_path(request):
+    """Return the requested route pat."""
+    logger.debug(request.params)
+    return request.route_path(**request.params)

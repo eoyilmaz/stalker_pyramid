@@ -1,5 +1,6 @@
 // if (!('ace' in window)) window['ace'] = {};
 import * as $ from 'jquery';
+import * as jQuery from 'jquery';
 
 import 'bootstrap';
 import './jquery_extend';
@@ -7,6 +8,7 @@ import './ace-elements';
 import './additional-methods';
 import 'x-editable/dist/bootstrap-editable/js/bootstrap-editable';
 import 'select2';
+import "datatables.net";
 
 // import "moment/dist/moment";
 
@@ -57,7 +59,6 @@ require("../../node_modules/free-jqgrid/dist/plugins/ui.multiselect");
 require("../../node_modules/markdown/lib/markdown");
 require("../../node_modules/select2/dist/js/select2")
 require("../../node_modules/fuelux/js/spinbox");
-require("../../node_modules/datatables/media/js/jquery.dataTables.min");
 require("./dataTable_num-html_sort");
 
 //
@@ -112,10 +113,6 @@ require("./dataTable_num-html_sort");
 // import "fullcalendar/dist/fullcalendar.min";
 // import "datatables/media/js/jquery.dataTables.min";
 // import "./dataTable_num-html_sort";
-
-
-
-
 
 // declare global {
 //     interface Window {

@@ -322,7 +322,7 @@
 
          window.jQuery('#loading_spinner').show();
 {#        if(oTable1){#}
-{#            oTable1.dataTable();#}
+{#            oTable1.DataTable();#}
 {#        }#}
         var tasks_table = window.jQuery('#items_table_wrapper');
         tasks_table.find('thead').remove();
@@ -526,7 +526,7 @@
                 table_body.append(row_template(data[i]));
             }
 
-            oTable1 = table.dataTable({
+            oTable1 = table.DataTable({
                 "aoColumns": [
                     { "bSortable": false },
                     null,

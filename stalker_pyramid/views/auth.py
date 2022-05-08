@@ -806,6 +806,20 @@ def has_permission(request):
 
 
 @view_config(
+    route_name="get_logged_in_user_id",
+    renderer="json"
+)
+def get_logged_in_user_id(request):
+    """Return logged in user id.
+
+    :param request: pyramid.request.Request object.
+    :return: The user id as json
+    """
+    logged_in_user = get_logged_in_user(request)
+    return logged_in_user.id
+
+
+@view_config(
     route_name='logout'
 )
 def logout(request):

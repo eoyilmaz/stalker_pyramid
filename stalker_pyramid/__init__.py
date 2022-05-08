@@ -179,6 +179,8 @@ def main(global_config, **settings):
     config.add_route('login', '/login')
     config.add_route('logout', '/logout')
     config.add_route('has_permission', "has_permission")
+    config.add_route('get_logged_in_user_id', "get_logged_in_user_id")
+    config.add_route("request_route_path", "request_route_path")
 
     config.add_route('flash_message', '/flash_message')
 
