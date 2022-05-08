@@ -241,20 +241,20 @@
                 for(var i=0; i<b_data.length; i++ ){
 
                     if (b_data[i].date_created) {
-                        b_data[i].date_created = new Date(b_data[i].date_created).format('yyyy-mm-dd HH:MM');
+                        b_data[i].date_created = new Date(b_data[i].date_created).format('YYYY-MM-DD HH:mm');
                     }
                     if (b_data[i].start) {
-                        b_data[i].start = new Date(b_data[i].start).format('yyyy-mm-dd HH:MM');
+                        b_data[i].start = new Date(b_data[i].start).format('YYYY-MM-DD HH:mm');
                     }
                     if (b_data[i].end) {
-                        b_data[i].end = new Date(b_data[i].end).format('yyyy-mm-dd HH:MM');
+                        b_data[i].end = new Date(b_data[i].end).format('YYYY-MM-DD HH:mm');
                     }
                     if (b_data[i].generic_data){
                         if (b_data[i].generic_data.start_date) {
-                            b_data[i].start_date = new Date(b_data[i].generic_data.start_date).format('yyyy-mm-dd HH:MM');
+                            b_data[i].start_date = new Date(b_data[i].generic_data.start_date).format('YYYY-MM-DD HH:mm');
                         }
                         if (b_data[i].generic_data.end_date) {
-                            b_data[i].end_date = new Date(b_data[i].generic_data.end_date).format('yyyy-mm-dd HH:MM');
+                            b_data[i].end_date = new Date(b_data[i].generic_data.end_date).format('YYYY-MM-DD HH:mm');
                         }
 
                         b_data[i].net_toplam  = parseInt(b_data[i].generic_data.total_price)*1.15;

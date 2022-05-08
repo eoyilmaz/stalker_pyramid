@@ -173,7 +173,7 @@
 
                 for(var j=0; j<grid_data.length; j++ ){
                     if (grid_data[j].date_created) {
-                            grid_data[j].date_created = new Date(grid_data[j].date_created).format('yyyy-mm-dd HH:MM');
+                            grid_data[j].date_created = new Date(grid_data[j].date_created).format('YYYY-MM-DD HH:mm');
                     }
                     grid_data[j].delete_action = "<a data-target='#dialog_template' data-toggle='modal' data-keyboard=false href='/entities/"+grid_data[j].id+"/delete/dialog'> <i class='icon-trash'></i></a>"
                     total_payment += grid_data[j].amount;

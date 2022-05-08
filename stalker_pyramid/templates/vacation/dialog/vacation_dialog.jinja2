@@ -282,7 +282,7 @@ function init_dialog() {
         // start_end_date_range_picker.data().daterangepicker.container.css({'z-index': 1060});
 
         start_end_date_range_picker.val(
-            start_date_value.format('dd/mm/yyyy') + ' - ' + end_date_value.format('dd/mm/yyyy')
+            start_date_value.format('DD/MM/YYYY') + ' - ' + end_date_value.format('DD/MM/YYYY')
         );
 
         start_end_date_range_picker.data().daterangepicker.updateFromControl();
@@ -297,7 +297,7 @@ function init_dialog() {
 
     window.jQuery(document).ready(function () {
         var start_time = window.jQuery('#start_time');
-        start_time.val(start_time_value.format('HH:MM'));
+        start_time.val(start_time_value.format('HH:mm'));
         start_time.timepicker({
             minuteStep: 10,
             showSeconds: false,
@@ -310,7 +310,7 @@ function init_dialog() {
 
     window.jQuery(document).ready(function () {
         var end_time = window.jQuery('#end_time');
-        end_time.val(end_time_value.format('HH:MM'));
+        end_time.val(end_time_value.format('HH:mm'));
         end_time.timepicker({
             minuteStep: 10,
             showSeconds: false,

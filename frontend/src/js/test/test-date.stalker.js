@@ -18,7 +18,7 @@
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
 
-var Date = require('../date.stalker').Date;
+var Date = require('../date_stalker.ts').Date;
 
 exports['test Date.getClock() is working properly'] = function (test) {
     var test_date = new Date(1383579474543);

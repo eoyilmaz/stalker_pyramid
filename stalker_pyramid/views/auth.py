@@ -795,6 +795,17 @@ def get_permissions_from_multi_dict(multi_dict):
 
 
 @view_config(
+    route_name="has_permission",
+    renderer='json'
+)
+def has_permission(request):
+    """has_permission as a route."""
+    permission = request.params.get('permission')
+    p = PermissionChecker(request)
+    return p(permission)
+
+
+@view_config(
     route_name='logout'
 )
 def logout(request):

@@ -94,7 +94,7 @@
     window.jQuery.getJSON('/schedule_info').then(function (data) {
         window.jQuery(document).ready(function () {
             window.jQuery('#project_last_schedule_by').append(data.last_scheduled_by);
-            window.jQuery('#project_last_schedule_at').append(new Date(data.last_scheduled_at).format('yyyy-mm-dd HH:MM'));
+            window.jQuery('#project_last_schedule_at').append(new Date(data.last_scheduled_at).format('YYYY-MM-DD HH:mm'));
             window.jQuery('#project_last_schedule_took').append(parseInt(data.last_scheduling_took/60) +' minutes');
 
             var project_schedule_button = window.jQuery('#project_schedule_button');

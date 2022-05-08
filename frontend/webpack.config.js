@@ -12,7 +12,7 @@ const config = {
         new MiniCssExtractPlugin({
             // Options similar to the same options in webpackOptions.output
             // both options are optional
-            filename: "css/[name].css",  // devMode ? '[name].css': '[name].[hash].css',
+            filename: "css/stalker.css",  // devMode ? '[name].css': '[name].[hash].css',
             chunkFilename: "css/[id].css",  // devMode ? '[id].css': '[id].[hash].css',
         })
     ],
@@ -64,8 +64,12 @@ const config = {
                     {
                         loader: 'style-loader',
                     },
+                    // {
+                    //     loader: MiniCssExtractPlugin.loader
+                    // },
                     {
                         loader: "css-loader",
+                        // options: { importLoaders: 1 }
                     },
                     // {
                     //     loader: 'typings-for-css-modules-loader',
@@ -91,7 +95,8 @@ const config = {
                         // loader: MiniCssExtractPlugin.loader,
                     },
                     {
-                        loader: 'css-loader' // translates CSS into CommonJS
+                        loader: 'css-loader', // translates CSS into CommonJS
+                        // options: { importLoaders: 1 }
                     },
                     {
                         loader: 'less-loader', // compiles Less to CSS

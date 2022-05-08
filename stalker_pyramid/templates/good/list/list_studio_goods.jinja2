@@ -108,7 +108,7 @@
                             if(grid_data[i]['updated_by_id']){
                                 grid_data[i]['updated_by'] = "<a href='/users/"+grid_data[i]['updated_by_id']+"/view'>"+grid_data[i]['updated_by_name']+"</a>";
                             }
-                            grid_data[i].date_updated = "<span class='date'>"+ new Date(grid_data[i].date_updated).format('yyyy-mm-dd HH:MM')+"</span>";
+                            grid_data[i].date_updated = "<span class='date'>"+ new Date(grid_data[i].date_updated).format('YYYY-MM-DD HH:mm')+"</span>";
 
 
                             if (available_good_units_as_list.indexOf(grid_data[i].unit) == -1){

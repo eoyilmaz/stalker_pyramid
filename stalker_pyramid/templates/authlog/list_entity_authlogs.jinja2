@@ -130,15 +130,15 @@
                 for (var i = 0; i < data.length; i++) {
                     var new_data = {};
                     new_data.user_id = data[i].user_id;
-                    new_data.date = new Date(data[i].date_created).format('yyyy-mm-dd');
+                    new_data.date = new Date(data[i].date_created).format('YYYY-MM-DD');
                     var index = findArrayElement(new_list,'date', new_data.date, 'user_id',new_data.user_id );
                     console.log("new_data.user_id: " + new_data.user_id);
                     if(index == -1){
                         for (var j = 0; j < data.length; j++) {
                             var data_date = data[j].date_created;
                             var data_action = data[j].action;
-                            var c_date = new Date(data_date).format('yyyy-mm-dd');
-                            var c_hour = new Date(data_date).format('HH:MM');
+                            var c_date = new Date(data_date).format('YYYY-MM-DD');
+                            var c_hour = new Date(data_date).format('HH:mm');
                             if(new_data.date == c_date && new_data.user_id == data[j].user_id){
                                 if(data_action == 'login'){
                                     if(new_data.login){

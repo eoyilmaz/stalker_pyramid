@@ -638,7 +638,7 @@ function init_dialog() {
     // fix z-index of the container
     // start_end_date_range_picker.data().daterangepicker.container.css({'z-index': 1060});
     start_end_date_range_picker.val(
-        start_date_value.format('mm/dd/yyyy') + ' - ' + end_date_value.format('mm/dd/yyyy')
+        start_date_value.format('MM/DD/YYYY') + ' - ' + end_date_value.format('MM/DD/YYYY')
     );
 
     start_end_date_range_picker.data().daterangepicker.updateFromControl();
@@ -656,7 +656,7 @@ function init_dialog() {
     {# ***************************************************************** #}
     {# Start Time #}
     var start_time = window.jQuery('#start_time');
-    start_time.val(start_time_value.format('HH:MM'));
+    start_time.val(start_time_value.format('HH:mm'));
     start_time.timepicker({
         minuteStep: 10,
         showSeconds: false,
@@ -671,7 +671,7 @@ function init_dialog() {
     {# ***************************************************************** #}
     {# End Time #}
     var end_time = window.jQuery('#end_time');
-    end_time.val(end_time_value.format('HH:MM'));
+    end_time.val(end_time_value.format('HH:mm'));
     end_time.timepicker({
         minuteStep: 10,
         showSeconds: false,

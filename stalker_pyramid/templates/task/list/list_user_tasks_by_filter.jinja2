@@ -473,15 +473,15 @@
                     data[i].thumbnail_full_path = '/' + data[i].thumbnail_full_path
                 }
 
-                data[i].start = new Date(data[i].start).format('yyyy-mm-dd');
+                data[i].start = new Date(data[i].start).format('YYYY-MM-DD');
 
                 if(data[i].end){
                     data[i].end = new Date(data[i].end);
                     if (data[i].end< new Date()){
-                        data[i].end = '<span class="red">'+data[i].end.format('yyyy-mm-dd')+'</span>'
+                        data[i].end = '<span class="red">'+data[i].end.format('YYYY-MM-DD')+'</span>'
                     }
                     else{
-                        data[i].end = '<span class="green">'+data[i].end.format('yyyy-mm-dd')+'</span>'
+                        data[i].end = '<span class="green">'+data[i].end.format('YYYY-MM-DD')+'</span>'
                     }
                 }
 

@@ -102,7 +102,7 @@
     "@angular/compiler": "^11.2.14",
     "@angular/core": "^11.2.14",
     "@types/accounting": "^0.4.2",
-    "@types/bootstrap": "^4.6.2",
+    "@types/bootstrap": "^3.4.0",
     "@types/bootstrap-datepicker": "^0.0.15",
     "@types/chosen-js": "^1.8.3",
     "@types/daterangepicker": "^3.1.4",

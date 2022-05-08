@@ -237,9 +237,9 @@
                 for (i = 0; i < data.length; i++) {
                     // fix dates
 
-                    data[i].start = new Date(data[i].start).format('yyyy-mm-dd HH:MM');
+                    data[i].start = new Date(data[i].start).format('YYYY-MM-DD HH:mm');
                     if(data[i].end){
-                        data[i].end = new Date(data[i].end).format('yyyy-mm-dd HH:MM');
+                        data[i].end = new Date(data[i].end).format('YYYY-MM-DD HH:mm');
                     }
 
                     if (data[i].thumbnail_full_path === null) {

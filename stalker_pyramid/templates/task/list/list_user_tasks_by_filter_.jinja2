@@ -328,7 +328,7 @@
 
             for (var i = 0; i < data.length; i++) {
 
-                data[i].start = new Date(data[i].start).format('yyyy-mm-dd');
+                data[i].start = new Date(data[i].start).format('YYYY-MM-DD');
 
                 if(data[i].end){
                     data[i].end = new Date(data[i].end);
@@ -390,9 +390,9 @@
         });
 
         function endDateFormatter(cellvalue, options, rowObject){
-            var val = cellvalue.format('yyyy-mm-dd');
+            var val = cellvalue.format('YYYY-MM-DD');
             if (cellvalue< new Date()){
-                val = '<span class="red">'+cellvalue.format('yyyy-mm-dd')+'</span>'
+                val = '<span class="red">'+cellvalue.format('YYYY-MM-DD')+'</span>'
             }
             return val;
         }

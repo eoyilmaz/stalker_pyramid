@@ -279,7 +279,7 @@
             });
             for (var i = 0; i < ref_count; i++) {
                 data[i].task_id = task_id;
-                data[i].date_created = new Date(data[i].date_created).format('yyyy-mm-dd HH:MM');
+                data[i].date_created = new Date(data[i].date_created).format('YYYY-MM-DD HH:mm');
                 append_thumbnail({
                     data: data[i],
                     template: outputItemTemplate,
@@ -394,7 +394,7 @@
                 // prepend repositories/{id}/ to make it compatible with the
                 // new style outputs
                 data[i].thumbnail_full_path = repo_prepend + data[i].thumbnail_full_path;
-                data[i].date_created = new Date(data[i].date_created).format('yyyy-mm-dd HH:MM');
+                data[i].date_created = new Date(data[i].date_created).format('YYYY-MM-DD HH:mm');
 
                 data[i].full_path = repo_prepend + data[i].full_path;
                 data[i].task_id = task_id;

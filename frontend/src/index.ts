@@ -6,7 +6,9 @@ import * as $ from "jquery";
 
 import { Calendar } from '@fullcalendar/core';
 import dayGridPlugin from '@fullcalendar/daygrid';
-
+import timeGridPlugin from '@fullcalendar/timegrid';
+import listPlugin from '@fullcalendar/list';
+import interactionPlugin from '@fullcalendar/interaction';
 
 import 'bootstrap';
 import 'bootstrap-typeahead';
@@ -175,24 +177,24 @@ window.chosen_searchable_field_creator = chosen_searchable_field_creator;
 window.chosen_searchable_field_creator_by_data = chosen_searchable_field_creator_by_data;
 window.convert_seconds_to_hour = convert_seconds_to_hour;
 window.convert_seconds_to_time_range = convert_seconds_to_time_range;
-window.to_seconds = to_seconds;
+window.findArrayElement = findArrayElement;
 window.get_date_range = get_date_range;
 window.get_date_picker = get_date_picker;
 window.get_task_data = get_task_data;
 window.meaningful_time = meaningful_time;
 window.meaningful_time_between = meaningful_time_between;
+window.page_of = page_of;
 window.remove_thumbnails = remove_thumbnails;
 window.seconds_in_unit = seconds_in_unit;
 window.set_entity_thumbnail = set_entity_thumbnail;
+window.to_seconds = to_seconds;
 window.units = units;
-window.findArrayElement = findArrayElement;
 window.validate_timing_value = validate_timing_value;
-window.page_of = page_of;
 
 window.dot_template = template;
 window.moment = moment;
 
-$(function () {
+jQuery(function() {
     // choose default skin
     const skin_class = 'skin-1';
     const body = $(document.body);
@@ -212,12 +214,12 @@ window.resize_page_content = function () {
     }
 };
 
-jQuery(function () {
+jQuery(function() {
     window.resize_page_content();
 });
 
 
-$(function () {
+jQuery(function() {
     // hide ace-settings bar
     $('#ace-settings-box').toggleClass('open');
 });
@@ -244,7 +246,7 @@ window.flash_message = function (settings) {
 };
 
 // flash all session messages as gritter
-$(function () {
+jQuery(function() {
     let item, title, type, message;
     const all_messages = $.parseHTML($('#tmpl_flash_message').text());
     for (let i = 0; i < all_messages.length; i++) {
@@ -263,8 +265,8 @@ $(function () {
 });
 
 // {# Add came_from attribute to all a's #}
-$(function () {
-    $('a.dialog').each(function (i) {
+jQuery(function() {
+    jQuery('a.dialog').each(function (i) {
         const href = this.getAttribute('href');
         if (href !== '#') {
             this.setAttribute('href', href + '?came_from={{ request.path }}')
@@ -275,13 +277,13 @@ $(function () {
 
 // {# Gantt Chart Scroll #}
 window.scrollToTaskItem = function (start) {
-    $('#gantt_scroll_to_button').attr('start', start).trigger('click');
+    jQuery('#gantt_scroll_to_button').attr('start', start).trigger('click');
 };
 
 
 // {# Event Dialog Initialize #}
-$(function () {
-    const event_dialog = $('#dialog_template');
+jQuery(function() {
+    const event_dialog = jQuery('#dialog_template');
 
     const init_them_all = function () {
         if (event_dialog.find('script.dialog_loaded')[0] !== undefined) {
@@ -321,7 +323,7 @@ $(function () {
 
 
 // {# HTML Dialog Initialize #}
-$(function () {
+jQuery(function() {
     const html_dialog = $('#html_template');
     html_dialog.on('shown', function (e) {
         e.stopPropagation();
@@ -435,13 +437,52 @@ window.menu_of = function (title, state, address, icon, count) {
 };
 
 
-document.addEventListener('DOMContentLoaded', function() {
-  let calendarEl: HTMLElement = document.getElementById('calendar')!;
+// document.addEventListener('DOMContentLoaded', function() {
+//   let calendarEl: HTMLElement = document.getElementById('calendar')!;
+//
+//   let calendar = new Calendar(calendarEl, {
+//     plugins: [ dayGridPlugin ]
+//     // options here
+//   });
+//
+//   calendar.render();
+// });
 
-  let calendar = new Calendar(calendarEl, {
-    plugins: [ dayGridPlugin ]
-    // options here
-  });
 
-  calendar.render();
+
+jQuery(function() {
+    console.debug("This is working 12")
+    let entity_id = 31; // TODO: Fix this with the value of template variable {{ entity.id }}
+    jQuery.getJSON('/users/'+ entity_id +'/events/?keys=time_log&keys=vacation').then(function (data) {
+        let events = [];
+        let total_timelogs = 0;
+
+        for (let i = 0; i < data.length; i++) {
+            let start_date = new Date(parseInt(data[i].start));
+            let end_date = new Date(parseInt(data[i].end));
+            let title = data[i].title;
+
+            if(data[i].entity_type === 'timelogs'){
+                let timelog_hours = (Number(end_date)- Number(start_date)) / 3600000;
+                total_timelogs += timelog_hours;
+                title = data[i].title;
+            }
+
+            let event = {
+                id: data[i].id,
+                extendedProps: {
+                    entity_type: data[i].entity_type
+                },
+                title: title,
+                start: start_date,
+                end: end_date,
+                className: data[i].className,
+                allDay: data[i].allDay
+            };
+
+            events.push(event);
+        }
+        let stalker = new Stalker();
+        stalker.drawCalendar('calendar', events);
+    });
 });

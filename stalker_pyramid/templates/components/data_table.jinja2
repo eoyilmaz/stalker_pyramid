@@ -94,20 +94,20 @@
                             data[i].status_code = data[i].status_code.toLowerCase();
                         }
                         if (data[i].date_created) {
-                            data[i].date_created = new Date(data[i].date_created).format('yyyy-mm-dd HH:MM');
+                            data[i].date_created = new Date(data[i].date_created).format('YYYY-MM-DD HH:mm');
                         }
                         if (data[i].start) {
-                            data[i].start = new Date(data[i].start).format('yyyy-mm-dd HH:MM');
+                            data[i].start = new Date(data[i].start).format('YYYY-MM-DD HH:mm');
                         }
                         if (data[i].end) {
-                            data[i].end = new Date(data[i].end).format('yyyy-mm-dd HH:MM');
+                            data[i].end = new Date(data[i].end).format('YYYY-MM-DD HH:mm');
                         }
                         if (data[i].generic_data){
                             if (data[i].generic_data.start_date) {
-                                data[i].start_date = new Date(data[i].generic_data.start_date).format('yyyy-mm-dd HH:MM');
+                                data[i].start_date = new Date(data[i].generic_data.start_date).format('YYYY-MM-DD HH:mm');
                             }
                             if (data[i].generic_data.end_date) {
-                                data[i].end_date = new Date(data[i].generic_data.end_date).format('yyyy-mm-dd HH:MM');
+                                data[i].end_date = new Date(data[i].generic_data.end_date).format('YYYY-MM-DD HH:mm');
                             }
                         }
 

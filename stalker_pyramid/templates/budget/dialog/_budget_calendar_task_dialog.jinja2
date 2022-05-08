@@ -149,9 +149,9 @@
 
         var calendar_task_start_date = window.jQuery("#calendar_task_start_date");
 
-        var start_date_val = (new Date(event_dialog.attr('project_start_date'))).format("dd-mm-yyyy");
+        var start_date_val = (new Date(event_dialog.attr('project_start_date'))).format("DD-MM-YYYY");
         if(event_dialog.attr('start_date')){
-            start_date_val = (new Date(event_dialog.attr('start_date'))).format("dd-mm-yyyy");
+            start_date_val = (new Date(event_dialog.attr('start_date'))).format("DD-MM-YYYY");
         }
         calendar_task_start_date.val(start_date_val);
 

@@ -1,103 +1,103 @@
 {#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/fullcalendar.min.js") }}'></script>#}
-
-<!--inline scripts related to this page-->
-<script>
-    function drawCalendar(cid, events) {
-        var update_event_action = function (eType, eId) {
-            var event_dialog = window.jQuery('#dialog_template');
-
-            event_dialog.modal({
-                'remote': "/" + eType + "/" + eId + "/update/dialog?came_from={{ request.current_route_path() }}"
-            });
-        };
-
-        var create_event_action = function (start, end, allDay, eId, eType) {
-            var event_dialog = window.jQuery('#dialog_template');
-
-            event_dialog.attr('start', start);
-            event_dialog.attr('end', end);
-            event_dialog.attr('allDay', allDay);
-
-            event_dialog.modal({
-                'remote': "/entities/" + eId + "/" + eType +"s/create/dialog?came_from={{ request.current_route_path() }}"
-            });
-        };
-
-        /* initialize the calendar
-        -----------------------------------------------------------------*/
-        var calendar = window.jQuery('#' + cid).fullCalendar({
-            {% if event_type %}
-                {% if has_permission('Create_' + event_type) %}
-                    select: function (start, end, allDay) {
-                        {% if  event_type=='TimeLog' %}
-                            var now = new Date();
-                            if(now > end){
-                                create_event_action(start, end, allDay, '{{ entity.id }}', '{{ event_type.lower() }}')
-                            }
-                        {% else %}
-                                create_event_action(start, end, allDay, '{{ entity.id }}', '{{ event_type.lower() }}')
-                        {% endif %}
-                        calendar.fullCalendar('unselect');
-                    },
-                {% endif %}
-            {% endif %}
-
-            eventClick: function (calEvent, jsEvent, view) {
-                jsEvent.preventDefault();
-                jsEvent.stopPropagation();
-
-                if (calEvent.entity_type === 'vacations') {
-                    {% if has_permission('Update_Vacation') %}
-                        if (calEvent.title === 'StudioWide') {
-                            {% if has_permission('Update_Studio') %}
-                                update_event_action(calEvent.entity_type, calEvent.eId);
-                            {% endif %}
-                        } else {
-                            update_event_action(calEvent.entity_type, calEvent.eId);
-                        }
-                    {% endif %}
-                } else if (calEvent.entity_type === 'timelogs') {
-                    {% if has_permission('Update_TimeLog') %}
-                        update_event_action(calEvent.entity_type, calEvent.eId);
-                    {% endif %}
-                } else if (calEvent.entity_type === 'tasks') {
-                    if(jsEvent.button === 0) {
-                        window.location.assign("/tasks/" + calEvent.eId + "/view");
-                    } else if (jsEvent.button === 1) {
-                        window.open("/tasks/" + calEvent.eId + "/view", '_blank');
-                    }
-                }
-            },
-
-            eventMouseover: function(event, jsEvent, view){
-                // add title attribute to each event
-                setTimeout(function(){
-                    window.jQuery(jsEvent.target).find('.fc-event-title').each(function(){
-                        var self = window.jQuery(this);
-                        self.attr('title', self.text());
-                    });
-                }, 0);
-            },
-
-            buttonText: {
-                prev: '<i class="icon-chevron-left"></i>',
-                next: '<i class="icon-chevron-right"></i>'
-            },
-
-            header: {
-                left: 'prev,next today',
-                center: 'title',
-                right: 'month,agendaWeek,agendaDay'
-            },
-            events: events,
-            editable: true,
-            droppable: false, // this allows things to be dropped onto the calendar !!!
-
-            selectable: true,
-            selectHelper: true,
-            firstDay: 1,
-
-            timeFormat: "H:mm {- H:mm}"
-        });
-    }
-</script>
+{##}
+{#<!--inline scripts related to this page-->#}
+{#<script>#}
+{#    function drawCalendar(cid, events) {#}
+{#        var update_event_action = function (eType, eId) {#}
+{#            var event_dialog = window.jQuery('#dialog_template');#}
+{##}
+{#            event_dialog.modal({#}
+{#                'remote': "/" + eType + "/" + eId + "/update/dialog?came_from={{ request.current_route_path() }}"#}
+{#            });#}
+{#        };#}
+{##}
+{#        var create_event_action = function (start, end, allDay, eId, eType) {#}
+{#            var event_dialog = window.jQuery('#dialog_template');#}
+{##}
+{#            event_dialog.attr('start', start);#}
+{#            event_dialog.attr('end', end);#}
+{#            event_dialog.attr('allDay', allDay);#}
+{##}
+{#            event_dialog.modal({#}
+{#                'remote': "/entities/" + eId + "/" + eType +"s/create/dialog?came_from={{ request.current_route_path() }}"#}
+{#            });#}
+{#        };#}
+{##}
+{#        /* initialize the calendar#}
+{#        -----------------------------------------------------------------*/#}
+{#        var calendar = window.jQuery('#' + cid).fullCalendar({#}
+{#            {% if event_type %}#}
+{#                {% if has_permission('Create_' + event_type) %}#}
+{#                    select: function (start, end, allDay) {#}
+{#                        {% if  event_type=='TimeLog' %}#}
+{#                            var now = new Date();#}
+{#                            if(now > end){#}
+{#                                create_event_action(start, end, allDay, '{{ entity.id }}', '{{ event_type.lower() }}')#}
+{#                            }#}
+{#                        {% else %}#}
+{#                                create_event_action(start, end, allDay, '{{ entity.id }}', '{{ event_type.lower() }}')#}
+{#                        {% endif %}#}
+{#                        calendar.fullCalendar('unselect');#}
+{#                    },#}
+{#                {% endif %}#}
+{#            {% endif %}#}
+{##}
+{#            eventClick: function (calEvent, jsEvent, view) {#}
+{#                jsEvent.preventDefault();#}
+{#                jsEvent.stopPropagation();#}
+{##}
+{#                if (calEvent.entity_type === 'vacations') {#}
+{#                    {% if has_permission('Update_Vacation') %}#}
+{#                        if (calEvent.title === 'StudioWide') {#}
+{#                            {% if has_permission('Update_Studio') %}#}
+{#                                update_event_action(calEvent.entity_type, calEvent.eId);#}
+{#                            {% endif %}#}
+{#                        } else {#}
+{#                            update_event_action(calEvent.entity_type, calEvent.eId);#}
+{#                        }#}
+{#                    {% endif %}#}
+{#                } else if (calEvent.entity_type === 'timelogs') {#}
+{#                    {% if has_permission('Update_TimeLog') %}#}
+{#                        update_event_action(calEvent.entity_type, calEvent.eId);#}
+{#                    {% endif %}#}
+{#                } else if (calEvent.entity_type === 'tasks') {#}
+{#                    if(jsEvent.button === 0) {#}
+{#                        window.location.assign("/tasks/" + calEvent.eId + "/view");#}
+{#                    } else if (jsEvent.button === 1) {#}
+{#                        window.open("/tasks/" + calEvent.eId + "/view", '_blank');#}
+{#                    }#}
+{#                }#}
+{#            },#}
+{##}
+{#            eventMouseover: function(event, jsEvent, view){#}
+{#                // add title attribute to each event#}
+{#                setTimeout(function(){#}
+{#                    window.jQuery(jsEvent.target).find('.fc-event-title').each(function(){#}
+{#                        var self = window.jQuery(this);#}
+{#                        self.attr('title', self.text());#}
+{#                    });#}
+{#                }, 0);#}
+{#            },#}
+{##}
+{#            buttonText: {#}
+{#                prev: '<i class="icon-chevron-left"></i>',#}
+{#                next: '<i class="icon-chevron-right"></i>'#}
+{#            },#}
+{##}
+{#            header: {#}
+{#                left: 'prev,next today',#}
+{#                center: 'title',#}
+{#                right: 'month,agendaWeek,agendaDay'#}
+{#            },#}
+{#            events: events,#}
+{#            editable: true,#}
+{#            droppable: false, // this allows things to be dropped onto the calendar !!!#}
+{##}
+{#            selectable: true,#}
+{#            selectHelper: true,#}
+{#            firstDay: 1,#}
+{##}
+{#            timeFormat: "H:mm {- H:mm}"#}
+{#        });#}
+{#    }#}
+{#</script>#}

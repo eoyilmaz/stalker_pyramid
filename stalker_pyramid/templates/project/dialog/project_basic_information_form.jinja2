@@ -339,7 +339,7 @@
             var start_date = new Date({{ milliseconds_since_epoch(project.start) }});
             var end_date = new Date({{ milliseconds_since_epoch(project.end) }});
             start_end_date_range_picker.val(
-                    start_date.format('dd/mm/yyyy') + ' - ' + end_date.format('dd/mm/yyyy')
+                    start_date.format('DD/MM/YYYY') + ' - ' + end_date.format('DD/MM/YYYY')
             );
             start_end_date_range_picker.data().daterangepicker.updateFromControl();
 

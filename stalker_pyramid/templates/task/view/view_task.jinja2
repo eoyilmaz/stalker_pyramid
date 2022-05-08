@@ -588,7 +588,8 @@
     });
 
 
-    window.jQuery(function () {
+    {#window.jQuery(function () {#}
+    document.addEventListener("DOMContentLoaded", function() {
         var icon_name = get_icon('{{ entity.entity_type.lower()}}');
         window.jQuery('#task_header').append('<i class="' + icon_name + ' bigger-125"></i>{{ entity.name }}');
 
@@ -799,8 +800,10 @@
                 }
 
                 var event = {
-                    eId: data[i].id,
-                    entity_type: data[i].entity_type,
+                    id: data[i].id,
+                    extendedProps: {
+                        entity_type: data[i].entity_type,
+                    },
                     title: title,
                     start: start_date,
                     end: end_date,
@@ -810,7 +813,7 @@
                 events.push(event);
             }
 
-            drawCalendar('calendar', events);
+            window.stalker.drawCalendar('calendar', events);
             drawTree('resource_tree', resources);
         });
     });

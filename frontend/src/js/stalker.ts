@@ -1,8 +1,9 @@
 import * as $ from 'jquery';
 import * as jQuery from 'jquery';
-
-
+import {drawCalendar} from "./calendar";
 import {template} from "dot";
+
+import "./date_stalker";
 
 
 interface StalkerBase {
@@ -19,7 +20,11 @@ interface StalkerBase {
 
     // copyToClipboard
     copyToClipboard(text: String);
+
+    // drawCalendar
+    drawCalendar(cid: String, events: []);
 }
+
 
 export class Stalker implements StalkerBase {
 
@@ -103,6 +108,7 @@ export class Stalker implements StalkerBase {
         window.prompt('Copy to clipboard: Ctrl+C, Enter', text);
     };
 
+    drawCalendar = drawCalendar;
 }
 
 export default Stalker;
