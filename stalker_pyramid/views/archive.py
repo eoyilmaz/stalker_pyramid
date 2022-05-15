@@ -9,8 +9,8 @@ logger = logging.getLogger(logger_name)
 
 
 class ArchiverBase(object):
-    """The base class for Archivers
-    """
+    """The base class for Archivers"""
+
     default_project_structure = ""
 
     def __init__(self, exclude_mask=None, recursive_search=False):
@@ -20,7 +20,7 @@ class ArchiverBase(object):
         self.recursive_search = recursive_search
 
     @classmethod
-    def create_default_project(cls, path, name='DefaultProject'):
+    def create_default_project(cls, path, name="DefaultProject"):
         """Creates default project structure.
 
         :param str path: The path that the default project structure will be created.
@@ -29,10 +29,11 @@ class ArchiverBase(object):
         :return:
         """
         import os
+
         project_path = os.path.join(path, name)
 
         # lets create the structure
-        for dir_name in cls.default_project_structure.split('\n'):
+        for dir_name in cls.default_project_structure.split("\n"):
             dir_path = os.path.join(project_path, dir_name.strip())
             try:
                 os.makedirs(dir_path)
@@ -41,7 +42,7 @@ class ArchiverBase(object):
 
         return project_path
 
-    def flatten(self, path, project_name='DefaultProject'):
+    def flatten(self, path, project_name="DefaultProject", tempdir=None):
         """Flattens the given scene in to a new default project.
 
         It will also flatten all the referenced files, textures, image planes,
@@ -49,29 +50,35 @@ class ArchiverBase(object):
 
         :param path: The path to the file which wanted to be flattened.
         :param project_name: The new project name.
+        :param tempdir: The temporary dir to flatten the project to, the default is
+            ``tempfile.gettempdir()``.
         :return:
         """
         # create a new Default Project
         import tempfile
         import os
 
-        tempdir = tempfile.gettempdir()
+        if not tempdir:
+            tempdir = tempfile.gettempdir()
         from stalker import Repository
+
         all_repos = Repository.query.all()
 
-        default_project_path = \
-            self.create_default_project(path=tempdir, name=project_name)
+        default_project_path = self.create_default_project(
+            path=tempdir, name=project_name
+        )
 
-        logger.debug('creating new default project at: %s' % default_project_path)
+        logger.debug("creating new default project at: %s" % default_project_path)
 
-        ref_paths = self._move_file_and_fix_references(path, default_project_path, scenes_folder='scenes')
+        ref_paths = self._move_file_and_fix_references(
+            path, default_project_path, scenes_folder="scenes"
+        )
 
         while len(ref_paths):
             ref_path = ref_paths.pop(0)
 
-            if self.exclude_mask \
-                    and os.path.splitext(ref_path)[1] in self.exclude_mask:
-                logger.debug('skipping: %s' % ref_path)
+            if self.exclude_mask and os.path.splitext(ref_path)[-1] in self.exclude_mask:
+                logger.debug("skipping: %s" % ref_path)
                 continue
 
             # fix different OS paths
@@ -79,8 +86,9 @@ class ArchiverBase(object):
                 if repo.is_in_repo(ref_path):
                     ref_path = repo.to_native_path(ref_path)
 
-            new_ref_paths = \
-                self._move_file_and_fix_references(ref_path, default_project_path, scenes_folder='scenes/refs')
+            new_ref_paths = self._move_file_and_fix_references(
+                ref_path, default_project_path, scenes_folder="scenes/refs"
+            )
 
             # extend ref_paths with new ones
             for new_ref_path in new_ref_paths:
@@ -89,7 +97,9 @@ class ArchiverBase(object):
 
         return default_project_path
 
-    def _move_file_and_fix_references(self, path, project_path, scenes_folder='', refs_folder=''):
+    def _move_file_and_fix_references(
+        self, path, project_path, scenes_folder="", refs_folder=""
+    ):
         """Moves the given file to the given project path and moves any
         references of it too
 
@@ -100,40 +110,49 @@ class ArchiverBase(object):
         :return list: returns a list of paths
         """
         # This needs to be implemented by the environment
-        raise NotImplementedError("This method needs to be implemented by the derived class")
+        raise NotImplementedError(
+            "This method needs to be implemented by the derived class"
+        )
 
     def _extract_references(self):
         """returns the list of references in the given scene
 
         :return:
         """
-        raise NotImplementedError("This method needs to be implemented by the derived class")
+        raise NotImplementedError(
+            "This method needs to be implemented by the derived class"
+        )
 
     @classmethod
-    def archive(cls, path):
+    def archive(cls, path, tempdir=None):
         """Creates a zip file containing the given directory.
 
         :param path: Path to the archived directory.
+        :param tempdir: The temporary dir to use for ZIP creation, the default value is ``tempfile.gettempdir()``.
         :return:
         """
         import zipfile
         import os
         import tempfile
+
+        if not tempdir:
+            tempdir = tempfile.gettempdir()
+
         dir_name = os.path.basename(path)
-        zip_path = os.path.join(tempfile.gettempdir(), '%s.zip' % dir_name)
+        zip_path = os.path.join(tempdir, "%s.zip" % dir_name)
 
-        parent_path = os.path.dirname(path) + '/'
+        parent_path = os.path.dirname(path) + "/"
 
-        with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED, allowZip64=True) as z:
+        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED, allowZip64=True) as z:
             for current_dir_path, dir_names, file_names in os.walk(path):
                 for dir_name in dir_names:
                     dir_path = os.path.join(current_dir_path, dir_name)
-                    arch_path = dir_path[len(parent_path):]
+                    arch_path = dir_path[len(parent_path) :]
                     z.write(dir_path, arch_path)
 
                 for file_name in file_names:
                     file_path = os.path.join(current_dir_path, file_name)
-                    arch_path = file_path[len(parent_path):]
+                    arch_path = file_path[len(parent_path) :]
                     z.write(file_path, arch_path)
 
         return zip_path
@@ -222,7 +241,7 @@ sound
 sourceimages
 sourceimages/3dPaintTextures"""
 
-    def create_default_project(self, path, name='DefaultProject'):
+    def create_default_project(self, path, name="DefaultProject"):
         """Creates default maya project structure along with a suitable
         workspace.mel file.
 
@@ -236,8 +255,8 @@ sourceimages/3dPaintTextures"""
         project_path = super(Archiver, self).create_default_project(path, name)
 
         # create the workspace.mel
-        workspace_mel_path = os.path.join(project_path, 'workspace.mel')
-        with open(workspace_mel_path, 'w+') as f:
+        workspace_mel_path = os.path.join(project_path, "workspace.mel")
+        with open(workspace_mel_path, "w+") as f:
             f.writelines(self.default_workspace_content)
 
         return project_path
@@ -252,25 +271,31 @@ sourceimages/3dPaintTextures"""
         import os
         import re
 
-        path_regex = r'\$REPO[\w\d\/_\.@]+'
+        path_regex = r"\$REPO[\w\d\/_\.@]+"
         # so we have all the data
         # extract references
-        ref_paths = re.findall(path_regex, data)
+        ref_paths = list(set(re.findall(path_regex, data)))
 
         # also check for any paths that is starting with any of the $REPO
         # variable value
         for k in os.environ.keys():
-            if k.startswith('REPO'):
+            if k.startswith("REPO"):
                 # consider this as a repository path and find all of the paths
                 # starting with this value
                 repo_path = os.environ[k]
-                path_regex = r'\%s[\w\d\/_\.@]+' % repo_path
-                temp_ref_paths = re.findall(path_regex, data)
+                path_regex = r"\%s[\w\d\/_\.@]+" % repo_path
+                temp_ref_paths = list(set(re.findall(path_regex, data)))
                 ref_paths += temp_ref_paths
 
-        return filter(lambda x: os.path.splitext(x)[1] not in self.exclude_mask, ref_paths)
+        return list(
+            filter(
+                lambda x: os.path.splitext(x)[-1] not in self.exclude_mask, ref_paths
+            )
+        )
 
-    def _move_file_and_fix_references(self, path, project_path, scenes_folder='', refs_folder=''):
+    def _move_file_and_fix_references(
+        self, path, project_path, scenes_folder="", refs_folder=""
+    ):
         """Moves the given file to the given project path and moves any references of it too
 
         :param str path: The path of the scene file
@@ -292,23 +317,20 @@ sourceimages/3dPaintTextures"""
         logger.debug("new_file_path: %s" % new_file_path)
 
         scenes_folder_lut = {
-            '.ma': 'scenes/refs',
-
+            ".ma": "scenes/refs",
             # alembic cache
-            '.abc': 'scenes/refs',
-
+            ".abc": "scenes/refs",
             # image files
-            '.jpg': 'sourceimages',
-            '.png': 'sourceimages',
-            '.tif': 'sourceimages',
-            '.tiff': 'sourceimages',
-            '.tga': 'sourceimages',
-            '.exr': 'sourceimages',
-            '.hdr': 'sourceimages',
-
+            ".jpg": "sourceimages",
+            ".png": "sourceimages",
+            ".tif": "sourceimages",
+            ".tiff": "sourceimages",
+            ".tga": "sourceimages",
+            ".exr": "sourceimages",
+            ".hdr": "sourceimages",
             # RSProxy and arnold proxies
-            '.rs': 'sourceimages',
-            '.ass': 'sourceimages',
+            ".rs": "sourceimages",
+            ".ass": "sourceimages",
         }
 
         ref_paths = []
@@ -318,7 +340,7 @@ sourceimages/3dPaintTextures"""
             return ref_paths
 
         # only get new ref paths for '.ma' files
-        if path.endswith('.ma'):
+        if path.endswith(".ma"):
             # read the data of the original file
             with open(path) as f:
                 data = f.read()
@@ -329,14 +351,15 @@ sourceimages/3dPaintTextures"""
                 ref_ext = os.path.splitext(ref_path)[-1]
                 data = data.replace(
                     ref_path,
-                    '%s/%s' % (
+                    "%s/%s"
+                    % (
                         scenes_folder_lut.get(ref_ext, refs_folder),
-                        os.path.basename(ref_path)
-                    )
+                        os.path.basename(ref_path),
+                    ),
                 )
 
             # now write all the data back to a new temp scene
-            with open(new_file_path, 'w+') as f:
+            with open(new_file_path, "w+") as f:
                 f.write(data)
         else:
             # fix for UDIM texture paths
@@ -346,27 +369,35 @@ sourceimages/3dPaintTextures"""
             # dirty patch
             # move image files in to the sourceimages folder
             # along with the RedshiftProxy files
-            file_extension = os.path.splitext(path)[1]
+            file_extension = os.path.splitext(path)[-1]
 
-            new_file_path = \
-                os.path.join(
-                    project_path,
-                    scenes_folder_lut.get(
-                        file_extension,
-                        refs_folder
-                    ),
-                    original_file_name
-                )
+            new_file_path = os.path.join(
+                project_path,
+                scenes_folder_lut.get(file_extension, refs_folder),
+                original_file_name,
+            )
 
             import glob
+
             new_file_paths = [new_file_path]
-            if '1001' in new_file_path or 'u1_v1' in new_file_path.lower():
+            texture_file_extensions = [
+                ".jpg",
+                ".png",
+                ".tif",
+                ".tiff",
+                ".tga",
+                ".exr",
+                ".hdr",
+            ]
+
+            if (
+                "1001" in new_file_path or "u1_v1" in new_file_path.lower()
+            ) and file_extension in texture_file_extensions:
                 # get the rest of the textures
                 new_file_paths = glob.glob(
-                    new_file_path
-                    .replace('1001', '*')
-                    .replace('u1_v1', 'u*_v*')
-                    .replace('U1_V1', 'U*_V*')
+                    new_file_path.replace("1001", "*")
+                    .replace("u1_v1", "u*_v*")
+                    .replace("U1_V1", "U*_V*")
                 )
                 if new_file_paths:
                     logger.debug("found UDIM textures:")
@@ -431,9 +462,12 @@ sourceimages/3dPaintTextures"""
 
             if project is not None:
                 # use the given project
-                versions = Version.query.join(Task).filter(
-                    Version.full_path.endswith(ref_file_name)
-                ).filter(Task.project == project).all()
+                versions = (
+                    Version.query.join(Task)
+                    .filter(Version.full_path.endswith(ref_file_name))
+                    .filter(Task.project == project)
+                    .all()
+                )
             else:
                 # search on all projects
                 versions = Version.query.filter(
@@ -449,17 +483,14 @@ sourceimages/3dPaintTextures"""
 
             if version:
                 # replace it
-                data = data.replace(
-                    ref_path,
-                    version.full_path
-                )
+                data = data.replace(ref_path, version.full_path)
             else:
                 # update unknown references
                 unknown_references.append(ref_path)
 
         if len(ref_paths):
             # save the file over itself
-            with open(path, 'w+') as f:
+            with open(path, "w+") as f:
                 f.write(data)
 
         return unknown_references
