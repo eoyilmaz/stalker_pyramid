@@ -2826,7 +2826,7 @@ def get_user_tasks_simple(request):
             'schedule_timing': r["schedule_timing"],
             'schedule_unit': r["schedule_unit"],
             'schedule_model': r["schedule_model"],
-            'total_logged_seconds': r["total_logged_seconds"],
+            'total_logged_seconds': int(r["total_logged_seconds"]),
             'start': milliseconds_since_epoch(r["start"]),
             'end': milliseconds_since_epoch(r["end"])
         }
