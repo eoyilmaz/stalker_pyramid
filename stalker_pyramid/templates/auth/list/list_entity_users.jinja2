@@ -166,7 +166,7 @@
                             available_type_as_list.push(available_type[i].name);
                         }
 
-                        window.jQuery(function(window.jQuery) {
+                        window.jQuery(function() {
                             var grid_selector = "#grid-table";
                             window.jQuery(grid_selector).jqGrid({
                                 //direction: "rtl",
@@ -256,7 +256,7 @@
                                 viewrecords : true,
                                 pager: false,
                                 rowNum:grid_data.length,
-					            rowList:[grid_data.length],
+                                rowList:[grid_data.length],
                                 altRows: true,
                                 multiselect: false,
                                 loadonce: true,
@@ -276,7 +276,7 @@
                                     setTimeout(function(){
         {#                                    styleCheckbox(table);#}
         {#                                    updateActionIcons(table);#}
-                                            updatePagerIcons(table);
+        {#                                    updatePagerIcons(table);#}
 
                                         window.jQuery('#lui_grid-table').hide();
                                     }, 0);

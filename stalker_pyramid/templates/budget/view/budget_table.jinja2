@@ -77,7 +77,7 @@
     <script>
         window.jQuery.jgrid.defaults.autowidth = true;
         window.jQuery.jgrid.defaults.responsive = true;
-{#        window.jQuery.jgrid.defaults.styleUI = 'Bootstrap';#}
+        {#window.jQuery.jgrid.defaults.styleUI = 'Bootstrap';#}
     </script>
     <style>
     .ui-jqgrid .ui-jqgrid-labels th.ui-th-column {
@@ -203,7 +203,7 @@
             function create_discount_report(){
 
                 var report_table = "#report_table";
-                window.jQuery(function(window.jQuery) {
+                window.jQuery(function() {
                         window.jQuery(report_table).jqGrid({
                             //direction: "rtl",
                             data: grid_lists_report,
@@ -484,7 +484,7 @@
 
                     var grid = find_table(prop);
 
-                    window.jQuery(function(window.jQuery) {
+                    window.jQuery(function() {
                         grid.jqGrid({
                             //direction: "rtl",
                             data: grid_lists_data[prop],
