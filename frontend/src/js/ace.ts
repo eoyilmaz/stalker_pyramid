@@ -6,7 +6,6 @@ import 'bootstrap';
 import './jquery_extend';
 import './ace-elements';
 import './additional-methods';
-import 'x-editable/dist/bootstrap-editable/js/bootstrap-editable';
 import 'select2';
 import "datatables.net";
 
@@ -60,6 +59,7 @@ require("../../node_modules/markdown/lib/markdown");
 require("../../node_modules/select2/dist/js/select2")
 require("../../node_modules/fuelux/js/spinbox");
 require("./dataTable_num-html_sort");
+require("../../node_modules/x-editable/dist/bootstrap-editable/js/bootstrap-editable");
 
 //
 // import "moment/dist/moment";

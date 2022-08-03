@@ -79,10 +79,6 @@
 
 
 {% block extrascripts %}
-{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.dataTables.min.js") }}'></script>#}
-{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.dataTables.bootstrap.js") }}'></script>#}
-{#    <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/dataTable_num-html_sort.js") }}'></script>#}
-
     {% raw %}
     <script id="tmpl_sceneColumn" type="text/x-dot-template">
         <th>{{=it.name}}</th>
@@ -228,7 +224,7 @@
 
         window.jQuery(document).ready(function () {
 
-            var icon_name = get_icon('shot');
+            var icon_name = window.get_icon('shot');
             window.jQuery('#items_header').append('<i class=' + icon_name + '></i>');
 
             var types = [];
@@ -289,7 +285,7 @@
                         }
 
                         var scenes_table = window.jQuery('#scenes_table');
-                        var oTable1 = scenes_table.DataTable({
+                        var oTable1 = scenes_table.dataTable({
                             'aLengthMenu': [[-1, 10, 25, 50, 100, 200], ["All", 10, 25, 50, 100, 200]],
                             "iDisplayLength": -1,
                         });

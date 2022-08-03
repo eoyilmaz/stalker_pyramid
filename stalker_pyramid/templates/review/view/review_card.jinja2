@@ -89,7 +89,7 @@
 
 <script type="text/javascript">
     window.jQuery(function () {
-        var icon_name = get_icon('resource');
+        var icon_name = window.get_icon('resource');
         window.jQuery('#responsible_items_header').append('<i class=' + icon_name + '></i>Responsible');
 
         window.jQuery.getJSON('/tasks/{{ entity.id }}/last_reviews/').then(function (data) {

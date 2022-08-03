@@ -4,45 +4,45 @@
 
 <script>
     window.jQuery(function () {
-        page_of('{{ entity.name }}',
+        window.page_of('{{ entity.name }}',
                 '{{ entity.project.name }}',
                 '',
                 '{%- if has_permission('Update_Budget')-%}/budgets/{{ entity.id }}/update/dialog{%- endif -%}'
         )
-        menu_of(
+        window.menu_of(
             'Dashboard',
             "{%- if request.current_route_path() == request.route_path('view_budget', id=entity.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('view_budget', id=entity.id) }}',
-            get_icon('dashboard'),
+            window.get_icon('dashboard'),
             ''
         );
-        menu_of(
+        window.menu_of(
             'Takvim',
             "{%- if request.current_route_path() == request.route_path('view_budget_calendar', id=entity.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('view_budget_calendar', id=entity.id) }}',
-            get_icon('timelog'),
+            window.get_icon('timelog'),
             ''
         );
-        menu_of(
+        window.menu_of(
             'Bütçe',
             "{%- if request.current_route_path() == request.route_path('view_budget_table_summary', id=entity.id, mode='table_summary') -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('view_budget_table_summary', id=entity.id, mode='table_summary') }}',
-            get_icon('budget'),
+            window.get_icon('budget'),
             ''
         );
-{#        menu_of(#}
+{#        window.menu_of(#}
 {#            'Faturalar',#}
 {#            "{%- if request.current_route_path() == request.route_path('list_budget_invoices', id=entity.id) -%}'active',{%- else -%},{%- endif -%}",#}
 {#            '{{ request.route_url('list_budget_invoices', id=entity.id) }}',#}
-{#            get_icon('budget'),#}
+{#            window.get_icon('budget'),#}
 {#            ''#}
 {#        );#}
 {##}
-        menu_of(
+        window.menu_of(
             'Rapor',
             "{%- if request.current_route_path() == request.route_path('view_budget_report', id=entity.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('view_budget_report', id=entity.id) }}',
-            get_icon('budget'),
+            window.get_icon('budget'),
             ''
         );
     });

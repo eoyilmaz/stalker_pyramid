@@ -11,7 +11,7 @@ import interactionPlugin from '@fullcalendar/interaction';
 
 export function drawCalendar(cid, events) {
 
-    console.debug("Code is here A1")
+    console.debug("Code is here A1");
 
     let update_event_action = function (event_type, event_id) {
         let event_dialog = jQuery('#dialog_template');
@@ -19,7 +19,7 @@ export function drawCalendar(cid, events) {
             'remote': "/" + event_type + "/" + event_id + "/update/dialog?came_from={{ request.current_route_path() }}"
         });
     };
-    console.debug("Code is here A2")
+    console.debug("Code is here A2");
 
     let create_event_action = function (start, end, allDay, entity_id, event_type) {
         let event_dialog = jQuery('#dialog_template');
@@ -32,12 +32,12 @@ export function drawCalendar(cid, events) {
             'remote': "/entities/" + entity_id + "/" + event_type +"s/create/dialog?came_from={{ request.current_route_path() }}"
         });
     };
-    console.debug("Code is here A3")
+    console.debug("Code is here A3");
 
     /* initialize the calendar
     -----------------------------------------------------------------*/
     let calendarEl = document.getElementById(cid);
-    console.debug("Code is here A4")
+    console.debug("Code is here A4");
     let calendar = new Calendar(calendarEl, {
         // {% if event_type %}
         //     {% if has_permission('Create_' + event_type) %}

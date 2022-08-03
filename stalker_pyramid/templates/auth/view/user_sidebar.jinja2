@@ -6,123 +6,123 @@
 
 <script>
     window.jQuery(function () {
-        page_of('{{ user.name }}',
+        window.page_of('{{ user.name }}',
                 '{{ user.login }}',
                 '{%- if user.thumbnail -%}/{{ user.thumbnail.full_path }}{%- else -%}{{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_0.png")}}{%- endif -%}',
                 '{%- if has_permission('Update_User') or  user.id==logged_in_user.id -%}/users/{{ user.id }}/update/dialog{%- endif -%}'
 
         );
 
-        menu_of(
+        window.menu_of(
             'Dashboard',
             "{%- if request.current_route_path() == request.route_path('view_user', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('view_user', id=user.id) }}',
-            get_icon('dashboard'),
+            window.get_icon('dashboard'),
             ''
         );
 
-        menu_of(
+        window.menu_of(
             'My Tasks',
             "{%- if request.current_route_path() == request.route_path('list_user_tasks', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('list_user_tasks', id=user.id) }}',
-            get_icon('task'),
+            window.get_icon('task'),
             '/tasks/count/?resource_id={{ entity.id }}&leaf_only=1&has_resource=1&project_status=RTS&project_status=WIP'
         );
 
-        menu_of(
+        window.menu_of(
             'Responsible of',
             "{%- if request.current_route_path() == request.route_path('list_user_tasks_responsible_of', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('list_user_tasks_responsible_of', id=user.id) }}',
-            get_icon('task'),
+            window.get_icon('task'),
             '/tasks/count/?responsible_id={{ entity.id }}&leaf_only=1&project_status=RTS&project_status=WIP'
         );
 
-        menu_of(
+        window.menu_of(
             'Watch List',
             "{%- if request.current_route_path() == request.route_path('list_user_tasks_watching', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('list_user_tasks_watching', id=user.id) }}',
-            get_icon('task'),
+            window.get_icon('task'),
             '/tasks/count/?watcher_id={{ entity.id }}&leaf_only=1'
         );
 
-        menu_of(
+        window.menu_of(
             'Tickets',
             "{%- if request.current_route_path() == request.route_path('list_entity_tickets', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('list_entity_tickets', id=user.id) }}',
-            get_icon('ticket'),
+            window.get_icon('ticket'),
             {{ user.open_tickets | count }}
         );
-        menu_of(
+        window.menu_of(
             'Timelogs',
             "{%- if request.current_route_path() == request.route_path('list_user_timelogs', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('list_user_timelogs', id=user.id) }}',
-            get_icon('timelog'),
+            window.get_icon('timelog'),
             'no_badge'
         );
 
-        menu_of(
+        window.menu_of(
             'Reviews',
             "{%- if request.current_route_path() == request.route_path('list_user_reviews', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('list_user_reviews', id=user.id) }}',
-            get_icon('review'),
+            window.get_icon('review'),
             '/users/{{ user.id }}/reviews/count/'
         );
-        menu_of(
+        window.menu_of(
             'Reports',
             "{%- if request.current_route_path() == request.route_path('view_user_reports', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('view_user_reports', id=user.id) }}',
-            get_icon('report'),
+            window.get_icon('report'),
             'no_badge'
         );
-        menu_of(
+        window.menu_of(
             'Results',
             "{%- if request.current_route_path() == request.route_path('view_entity_result', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('view_entity_result', id=user.id) }}',
-            get_icon('report'),
+            window.get_icon('report'),
             'no_badge'
         );
-        menu_of(
+        window.menu_of(
             'Authlogs',
             "{%- if request.current_route_path() == request.route_path('list_entity_authlogs', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('list_entity_authlogs', id=user.id) }}',
-            get_icon('report'),
+            window.get_icon('report'),
             0
         );
 
-{#        menu_of(#}
+{#        window.menu_of(#}
 {#            'Tasks',#}
 {#            "{%- if request.current_route_path() == request.route_path('list_entity_tasks', id=user.id) -%}'active',{%- else -%},{%- endif -%}",#}
 {#            '{{ request.route_url('list_entity_tasks', id=user.id) }}',#}
-{#            get_icon('task'),#}
+{#            window.get_icon('task'),#}
 {#            '/users/{{ entity.id }}/tasks/count/'#}
 {#        );#}
 
 {#            window.jQuery('#Vacations_count').text(data);#}
-        menu_of('Vacations',
+        window.menu_of('Vacations',
             "{%- if request.current_route_path() == request.route_path('list_entity_vacations', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('list_entity_vacations', id=user.id) }}',
-            get_icon('vacation'),
+            window.get_icon('vacation'),
             '{{ request.route_url('get_user_vacations_count', id=user.id) }}'
         );
 
-        menu_of('Efficiency',
+        window.menu_of('Efficiency',
             "{%- if request.current_route_path() == request.route_path('list_entity_resources', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('list_entity_resources', id=user.id) }}',
-            get_icon('user'),
+            window.get_icon('user'),
             'no_badge'
         );
-        menu_of('Versions',
+        window.menu_of('Versions',
             "{%- if request.current_route_path() == request.route_path('list_user_versions', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('list_user_versions', id=user.id) }}',
-            get_icon('version'),
+            window.get_icon('version'),
             '{{ request.route_url('get_user_versions_count', id=user.id) }}'
         );
 
-        submenu_of('{{ user.id }}', 'Project');
+        window.submenu_of('{{ user.id }}', 'Project');
 
-        submenu_of('{{ user.id }}', 'Department');
+        window.submenu_of('{{ user.id }}', 'Department');
 
-        submenu_of('{{ user.id }}', 'Group');
+        window.submenu_of('{{ user.id }}', 'Group');
 
     });
 </script>

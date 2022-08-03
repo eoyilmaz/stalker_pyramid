@@ -10,73 +10,73 @@
 
 <script type="text/javascript">
     window.jQuery(document).ready(function () {
-        page_of(
+        window.page_of(
             '{{ department.name }}',
             '',
             "{%- if department.thumbnail -%}/{{ department.thumbnail.full_path }}{%- else -%}{{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}{%- endif -%}",
             '{%- if has_permission('Update_Department') -%}/departments/{{ department.id }}/update/dialog{%- endif -%}'
         );
 
-        menu_of(
+        window.menu_of(
             'Dashboard',
             "{%- if request.current_route_path() == request.route_path('view_department', id=department.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('view_department', id=department.id) }}',
-            get_icon('dashboard'),
+            window.get_icon('dashboard'),
             0
         );
 
-        menu_of(
+        window.menu_of(
             'Resources',
             "{%- if request.current_route_path() == request.route_path('list_entity_resources', id=department.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('list_entity_resources', id=department.id) }}',
-            get_icon('resource'),
+            window.get_icon('resource'),
             0
         );
 
-        menu_of(
+        window.menu_of(
             'Tasks',
             "{%- if request.current_route_path() == request.route_path('list_entity_tasks', id=department.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('list_entity_tasks', id=department.id) }}',
-            get_icon('task'),
+            window.get_icon('task'),
             {{ department.tasks | count }}
         );
 
-{#        menu_of('Projects',#}
+{#        window.menu_of('Projects',#}
 {#                "{%- if request.current_route_path() == request.route_path('list_department_projects', id=department.id) -%}'active',{%- else -%},{%- endif -%}",#}
 {#                '{{ request.route_url('list_department_projects', id=department.id) }}',#}
-{#                get_icon('project'),#}
+{#                window.get_icon('project'),#}
 {#                {{ department.projects | count }})#}
 
-        menu_of(
+        window.menu_of(
             'Users',
             "{%- if request.current_route_path() == request.route_path('list_entity_users', id=department.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('list_entity_users', id=department.id) }}',
-            get_icon('user'),
+            window.get_icon('user'),
             {{ department.users | count }}
         );
 
-        menu_of(
+        window.menu_of(
             'Reports',
             "{%- if request.current_route_path() == request.route_path('view_department_reports', id=department.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('view_department_reports', id=department.id) }}',
-            get_icon('report'),
+            window.get_icon('report'),
             ''
         );
 
-        menu_of(
+        window.menu_of(
             'Results',
             "{%- if request.current_route_path() == request.route_path('view_entity_result', id=department.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('view_entity_result', id=department.id) }}',
-            get_icon('report'),
+            window.get_icon('report'),
             ''
         );
 
 
 
-{#        menu_of('Vacations',#}
+{#        window.menu_of('Vacations',#}
 {#                    "{%- if request.current_route_path() == request.route_path('list_entity_vacations', id=department.id) -%}'active',{%- else -%},{%- endif -%}",#}
 {#                    '{{ request.route_url('list_entity_vacations', id=department.id) }}',#}
-{#                    get_icon('vacation'),#}
+{#                    window.get_icon('vacation'),#}
 {#                    {{ department.vacations | count }})#}
 
 

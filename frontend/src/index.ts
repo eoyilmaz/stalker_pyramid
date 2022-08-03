@@ -1,20 +1,21 @@
 import * as jQuery from "jquery";
 import * as $ from "jquery";
 
-// require('../node_modules/x-editable/dist/bootstrap-editable/js/bootstrap-editable');
-// import "x-editable";
-
 import { Calendar } from '@fullcalendar/core';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import listPlugin from '@fullcalendar/list';
 import interactionPlugin from '@fullcalendar/interaction';
-import 'free-jqgrid';
+import "free-jqgrid";
+import "datatables.net";
 
-import 'bootstrap';
-import 'bootstrap-typeahead';
-import 'chosen-js';
-import './less/ace.less';
+import "bootstrap";
+import "bootstrap-typeahead";
+import "chosen-js";
+// import "x-editable";
+
+
+import "./less/ace.less";
 
 import './js/ace-elements';
 import './js/cache_users';
@@ -43,8 +44,9 @@ import {
     page_of
 } from './js/utils';
 
-import {Ace} from './js/ace';
-import {Stalker} from "./js/stalker";
+import * as stalker from "./js/stalker";
+import * as ace from "./js/ace";
+
 
 var dojoConfig = {async: true, parseOnLoad: true}
 // const dojo = require("../node_modules/dojo/dojo");
@@ -95,81 +97,13 @@ declare global {
         moment: any,
 
     }
-
-    // interface XEditableOptions {
-    //     ajaxOptions?: any;
-    //     anim?: string | undefined;
-    //     autotext?: string | undefined;
-    //     defaultValue?: any;
-    //     disabled?: boolean | undefined;
-    //     display?: any;
-    //     emptyclass?: string | undefined;
-    //     emptytext?: string | undefined;
-    //     error?: any;
-    //     highlight?: any;
-    //     mode?: string | undefined;
-    //     name?: string | undefined;
-    //     onblur?: string | undefined;
-    //     params?: any;
-    //     pk?: any;
-    //     placement?: string | undefined;
-    //     savenochange?: boolean | undefined;
-    //     selector?: string | undefined;
-    //     send?: string | undefined;
-    //     showbuttons?: any;
-    //     success?: any;
-    //     toggle?: string | undefined;
-    //     type?: string | undefined;
-    //     unsavedclass?: string | undefined;
-    //     url?: any;
-    //     validate?: any;
-    //     value?: any;
-    // }
-    //
-    // interface XEditableSubmitOptions {
-    //     url?: any;
-    //     data?: any;
-    //     ajaxOptions?: any;
-    //     error(obj: any): void;
-    //     success(obj: any, config: any): void;
-    // }
-    //
-    // interface XEditable {
-    //     options: XEditableOptions;
-    //     activate(): void;
-    //     destroy(): void;
-    //     disable(): void;
-    //     enable(): void;
-    //     getValue(isSingle: boolean): any;
-    //     hide(): void;
-    //     option(key: any, value: any): void;
-    //     setValue(value: any, convertStr: boolean): void;
-    //     show(closeAll: boolean): void;
-    //     submit(options: XEditableSubmitOptions): void;
-    //     toggle(closeAll: boolean): void;
-    //     toggleDisabled(): void;
-    //     validate(): void;
-    // }
-    //
-    // interface JQuery {
-    //     editable(options?: any): XEditable;
-    //     editable(method: string, params?: any): XEditable;
-    //     editableform: any;
-    //     typeahead: any;
-    // }
-    //
-    // interface JQueryStatic {
-    //     gritter: any;
-    //     editableform: any;
-    //     // editable(options?: any): XEditable;
-    // }
 }
 
 // window.$ = jQuery;
 // window.jQuery = jQuery;
 // window.ace = new Ace();
 // window.stalker = stalker;
-window.stalker = new Stalker();
+window.stalker = new stalker.Stalker();
 
 window.get_icon = get_icon;
 window.append_thumbnail = append_thumbnail;
@@ -449,10 +383,7 @@ window.menu_of = function (title, state, address, icon, count) {
 //   calendar.render();
 // });
 
-
-
 jQuery(function() {
-    console.debug("This is working 12");
     let entity_id = 31; // TODO: Fix this with the value of template variable {{ entity.id }}
     jQuery.getJSON('/users/'+ entity_id +'/events/?keys=time_log&keys=vacation').then(function (data) {
         let events = [];
@@ -464,7 +395,7 @@ jQuery(function() {
             let title = data[i].title;
 
             if(data[i].entity_type === 'timelogs'){
-                let timelog_hours = (Number(end_date)- Number(start_date)) / 3600000;
+                let timelog_hours = (Number(end_date) - Number(start_date)) / 3600000;
                 total_timelogs += timelog_hours;
                 title = data[i].title;
             }
@@ -483,8 +414,8 @@ jQuery(function() {
 
             events.push(event);
         }
-        let stalker = new Stalker();
-        stalker.drawCalendar('calendar', events);
+        let stalker_ = new stalker.Stalker();
+        stalker_.drawCalendar('calendar', events);
     });
 });
 
@@ -492,9 +423,9 @@ jQuery(function() {
 jQuery(function() {
     jQuery.getJSON("/get_logged_in_user_id", function(logged_in_user_id){
         jQuery.getJSON("/request_route_path?route_name=list_entity_tickets&id=" + logged_in_user_id, function(notification_url){
-            let stalker = new Stalker();
-            stalker.update_open_ticket_count(logged_in_user_id, notification_url);
-            stalker.update_user_tasks_count(logged_in_user_id);
+            let stalker_ = new stalker.Stalker();
+            stalker_.update_open_ticket_count(logged_in_user_id, notification_url);
+            stalker_.update_user_tasks_count(logged_in_user_id);
         });
     });
 });

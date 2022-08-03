@@ -44,7 +44,7 @@
                     data[i].entity_id = '{{ entity.id }}';
                     data[i].entity_type = '{{ entity.entity_type }}';
                     if(data[i].status_icon == ''){
-                       data[i].status_icon = get_icon(data[i].status_code);
+                       data[i].status_icon = window.get_icon(data[i].status_code);
                     }
 
                     index = sorting_path.indexOf(data[i].status_code.toString());

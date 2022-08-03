@@ -65,10 +65,6 @@
 
 {# EXTRA-SCRIPTS #}
 {% block extrascripts %}
-{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.dataTables.min.js") }}'></script>#}
-{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.dataTables.bootstrap.js") }}'></script>#}
-{#    <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/dataTable_num-html_sort.js") }}'></script>#}
-
     {% raw %}
     <script id="tmpl_assetTypeLink" type="text/x-dot-template">
         <li class="{{=it.class}}">
@@ -264,7 +260,7 @@
                         }
                     }
 
-                    var oTable1 = window.jQuery('#assets_table').DataTable({
+                    var oTable1 = window.jQuery('#assets_table').dataTable({
                         'aLengthMenu': [[-1, 10, 25, 50, 100, 200], ["All", 10, 25, 50, 100, 200]],
                         "iDisplayLength": -1,
                     });

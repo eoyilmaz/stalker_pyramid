@@ -29,11 +29,6 @@
 </div>
 
 
-{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.dataTables.min.js") }}'></script>#}
-{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.dataTables.bootstrap.js") }}'></script>#}
-{#<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/dataTable_num-html_sort.js") }}'></script>#}
-
-
 <script>
     function getTableSelectedIds(){
         var ids = [];
@@ -335,7 +330,7 @@
 {#                table_body.append(rowFooter_template({'total_hours':convert_seconds_to_time_range(total_hours)}));#}
 
 
-                oTable1 = table.DataTable(params);
+                oTable1 = table.dataTable(params);
                 oTable1.show();
                 window.jQuery('#loading_spinner').hide();
 

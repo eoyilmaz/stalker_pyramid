@@ -133,14 +133,6 @@
     </div>
 </div>
 
-{#<script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/i18n/grid.locale-en.js") }}'></script>#}
-{#<script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/window.jQuery.jqGrid.min.js") }}'></script>#}
-{#<script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/window.jQuery.jqGrid.min.js") }}'></script>#}
-{#<script src='{{ request.static_url("stalker_pyramid:static/node_modules/free-jqgrid/dist/plugins/ui.multiselect.js") }}'></script>#}
-{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.dataTables.min.js") }}'></script>#}
-{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.dataTables.bootstrap.js") }}'></script>#}
-{#<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/dataTable_num-html_sort.js") }}'></script>#}
-
 <script>
     var oTable1 = null;
     window.jQuery(document).ready(function () {
@@ -264,7 +256,7 @@
             for (var i = 0; i < data.length; i++) {
 
                 if(data[i].status_icon === ''){
-                   data[i].status_icon = get_icon(data[i].status_code);
+                   data[i].status_icon = window.get_icon(data[i].status_code);
                 }
 
                 index = sorting_path.indexOf(data[i].status_code.toString());
@@ -322,7 +314,7 @@
 
          window.jQuery('#loading_spinner').show();
 {#        if(oTable1){#}
-{#            oTable1.DataTable();#}
+{#            oTable1.dataTable();#}
 {#        }#}
         var tasks_table = window.jQuery('#items_table_wrapper');
         tasks_table.find('thead').remove();
@@ -526,7 +518,7 @@
                 table_body.append(row_template(data[i]));
             }
 
-            oTable1 = table.DataTable({
+            oTable1 = table.dataTable({
                 "aoColumns": [
                     { "bSortable": false },
                     null,

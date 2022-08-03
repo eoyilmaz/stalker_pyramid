@@ -590,7 +590,7 @@
 
     {#window.jQuery(function () {#}
     document.addEventListener("DOMContentLoaded", function() {
-        var icon_name = get_icon('{{ entity.entity_type.lower()}}');
+        var icon_name = window.get_icon('{{ entity.entity_type.lower()}}');
         window.jQuery('#task_header').append('<i class="' + icon_name + ' bigger-125"></i>{{ entity.name }}');
 
         {% if has_permission('Update_Task') and entity.project in logged_in_user.projects %}

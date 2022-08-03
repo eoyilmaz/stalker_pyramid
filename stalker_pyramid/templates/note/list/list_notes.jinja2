@@ -185,7 +185,7 @@
             }
 
             window.jQuery('.date').each(function () {
-                var date = moment(window.jQuery(this).text());
+                let date = moment(window.jQuery(this).text());
                 window.jQuery(this).text(date.fromNow());
             });
         });

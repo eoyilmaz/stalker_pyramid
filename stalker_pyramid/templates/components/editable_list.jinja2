@@ -98,7 +98,7 @@
             buttons.eq(1).append('<i class="icon-chevron-right"></i>');
         }
 
-        var icon_name = get_icon('{{ list_item_type.lower() }}');
+        var icon_name = window.get_icon('{{ list_item_type.lower() }}');
         window.jQuery('#'+'{{ list_item_type.lower() }}'+'_items_header').append('<i class=' + icon_name + '></i>{{ list_item_type }}s');
 
         console.log('{{ address }}');

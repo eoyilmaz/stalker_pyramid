@@ -39,10 +39,6 @@
 
 {# EXTRA-SCRIPTS #}
 {% block extrascripts %}
-{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.dataTables.min.js") }}'></script>#}
-{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.dataTables.bootstrap.js") }}'></script>#}
-{#    <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/dataTable_num-html_sort.js") }}'></script>#}
-
     {% raw %}
     <script id="tmpl_taskColumn" type="text/x-dot-template">
         <th>{{=it.name}}</th>
@@ -128,7 +124,7 @@
 
     <script>
         window.jQuery(document).ready(function () {
-            var icon_name = get_icon('task');
+            var icon_name = window.get_icon('task');
             window.jQuery('#items_header').append('<i class=' + icon_name + '></i>');
             // fill tasks table with dynamic data
             window.jQuery.getJSON('/tasks/{{ task_type }}/children/task_type/').then(function (types_data) {

@@ -58,14 +58,10 @@
 </div>
 
 
-{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.dataTables.min.js") }}'></script>#}
-{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.dataTables.bootstrap.js") }}'></script>#}
-{#<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/dataTable_num-html_sort.js") }}'></script>#}
-
 <script>
     window.jQuery(document).ready(function () {
 
-        var icon_name = get_icon('{{ list_item_type.lower() }}');
+        var icon_name = window.get_icon('{{ list_item_type.lower() }}');
         var items_header = window.jQuery('#items_header');
         items_header.append('<i class="' + icon_name + ' bigger-125"></i> {{ list_item_type }}s');
 
@@ -126,7 +122,7 @@
                     }
 
                     var table_object = window.jQuery('#' + tableId);
-                    var oTable1 = table_object.DataTable(tableParams);
+                    var oTable1 = table_object.dataTable(tableParams);
                     oTable1.fnSort(sortingParams);
 
                     table_object.show();

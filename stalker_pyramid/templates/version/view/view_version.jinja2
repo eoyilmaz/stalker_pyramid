@@ -158,7 +158,7 @@
 {#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.ui.touch-punch.min.js") }}'></script>#}
     <script type="text/javascript">
         window.jQuery(function () {
-            var icon_name = get_icon('version');
+            var icon_name = window.get_icon('version');
             window.jQuery('#version_header').append('<i class="' + icon_name + ' bigger-125"></i>{{ version.take_name }} | {{ "%03i"|format(version.version_number) }}');
 
             window.jQuery('.date').each(function () {

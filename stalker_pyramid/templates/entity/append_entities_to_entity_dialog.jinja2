@@ -43,10 +43,6 @@
 </script>
 {% endraw %}
 
-{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.dataTables.min.js") }}'></script>#}
-{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/window.jQuery.dataTables.bootstrap.js") }}'></script>#}
-{#<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/dataTable_num-html_sort.js") }}'></script>#}
-
 <script type="text/javascript">
 
     function init_dialog() {
@@ -85,7 +81,7 @@
                     table_body.append(item_template(data[i]));
                 }
 
-                var oTable = window.jQuery('#multiple_select_list').DataTable({
+                var oTable = window.jQuery('#multiple_select_list').dataTable({
                     "sScrollY": "400px",
                     "bPaginate": false,
                     "bInfo": false,
