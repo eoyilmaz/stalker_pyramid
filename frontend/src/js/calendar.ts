@@ -55,6 +55,12 @@ export function drawCalendar(cid, events) {
         //     {% endif %}
         // {% endif %}
 
+        plugins: [ interactionPlugin, dayGridPlugin, timeGridPlugin, listPlugin ],
+        navLinks: true, // can click day/week names to navigate views
+        editable: true,
+        // dayHeaderContent(arg: DayHeaderContentArg) {
+        //     return createElement(CustomDayHeader, { text: arg.text })
+        // },
         // eventClick: function ({el, event, jsEvent, view}){
         //     jsEvent.preventDefault();
         //     jsEvent.stopPropagation();
@@ -118,8 +124,8 @@ export function drawCalendar(cid, events) {
         //
         // eventTimeFormat: "H:mm {- H:mm}",
     });
+    calendar.render();
     console.debug("Code is here A5")
 
     console.debug("calendar: ", calendar);
-
 }
