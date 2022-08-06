@@ -1889,10 +1889,10 @@ def cached_query_tasks(limit, offset, order_by_params, where_clause, task_id):
 
             coalesce(
                 -- for parent tasks
-                "Tasks".total_logged_seconds::int,
+                "Tasks".total_logged_seconds,
                 -- for child tasks we need to count the total seconds of related TimeLogs
                 coalesce("Task_TimeLogs".duration, 0.0)
-            ) as total_logged_seconds,
+            )::int as total_logged_seconds,
 
             coalesce(
                 -- for parent tasks
@@ -1912,7 +1912,7 @@ def cached_query_tasks(limit, offset, order_by_params, where_clause, task_id):
                         when 'y' then 9573418
                         else 0
                     end)) * 100.0
-            ) as percent_complete,
+            )::float as percent_complete,
 
             (extract(epoch from coalesce("Tasks".computed_start, "Tasks".end)) * 1000)::bigint as "start",
             (extract(epoch from coalesce("Tasks".computed_end, "Tasks".end)) * 1000)::bigint as "end",
@@ -2040,7 +2040,7 @@ def cached_query_tasks(limit, offset, order_by_params, where_clause, task_id):
 
             project_schedule_info.total_logged_seconds as total_logged_seconds,
 
-            project_schedule_info.total_logged_seconds / total_schedule_seconds * 100 as percent_complete,
+            (project_schedule_info.total_logged_seconds / total_schedule_seconds * 100)::float as percent_complete,
 
             (extract(epoch from coalesce("Projects".computed_start, "Projects".end)) * 1000)::bigint as "start",
             (extract(epoch from coalesce("Projects".computed_end, "Projects".end)) * 1000)::bigint as "end",
@@ -2079,7 +2079,7 @@ def cached_query_tasks(limit, offset, order_by_params, where_clause, task_id):
             left outer join (
                 select
                     "TimeLogs".task_id,
-                    extract(epoch from sum("TimeLogs".end - "TimeLogs".start)) as duration
+                    extract(epoch from sum("TimeLogs".end - "TimeLogs".start))::bigint as duration
                 from "TimeLogs"
                 group by task_id
             ) as "Task_TimeLogs" on "Task_TimeLogs".task_id = "Tasks".id
@@ -2195,6 +2195,8 @@ def get_tasks(request):
     task_count = len(return_data)
     content_range = '%s-%s/%s' % (offset, offset + task_count - 1, task_count)
 
+    # print(return_data)
+
     resp = Response(
         json_body=return_data
     )
@@ -2291,11 +2293,11 @@ def get_cached_tasks_count(entity_type, where_clause, task_id):
                 -- for parent tasks
                 (case "Tasks".schedule_seconds
                     when 0 then 0
-                    else "Tasks".total_logged_seconds::float / "Tasks".schedule_seconds * 100
+                    else "Tasks".total_logged_seconds / "Tasks".schedule_seconds * 100
                  end
                 ),
                 -- for child tasks we need to count the total seconds of related TimeLogs
-                (coalesce("Task_TimeLogs".duration, 0.0))::float /
+                (coalesce("Task_TimeLogs".duration, 0.0)) /
                     ("Tasks".schedule_timing * (case "Tasks".schedule_unit
                         when 'min' then 60
                         when 'h' then 3600
@@ -2305,7 +2307,7 @@ def get_cached_tasks_count(entity_type, where_clause, task_id):
                         when 'y' then 9573418
                         else 0
                     end)) * 100.0
-            ) as percent_complete,
+            )::float as percent_complete,
 
             (extract(epoch from coalesce("Tasks".computed_start, "Tasks".end)) * 1000)::bigint as "start",
             (extract(epoch from coalesce("Tasks".computed_end, "Tasks".end)) * 1000)::bigint as "end",
