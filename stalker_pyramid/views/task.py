@@ -1889,7 +1889,7 @@ def cached_query_tasks(limit, offset, order_by_params, where_clause, task_id):
 
             coalesce(
                 -- for parent tasks
-                "Tasks".total_logged_seconds,
+                "Tasks".total_logged_seconds::int,
                 -- for child tasks we need to count the total seconds of related TimeLogs
                 coalesce("Task_TimeLogs".duration, 0.0)
             ) as total_logged_seconds,
@@ -2282,7 +2282,7 @@ def get_cached_tasks_count(entity_type, where_clause, task_id):
 
             coalesce(
                 -- for parent tasks
-                "Tasks".total_logged_seconds,
+                "Tasks".total_logged_seconds::int,
                 -- for child tasks we need to count the total seconds of related TimeLogs
                 coalesce("Task_TimeLogs".duration, 0.0)
             ) as total_logged_seconds,
@@ -2716,8 +2716,8 @@ def get_user_tasks_simple(request):
         "Tasks".schedule_model,
 
         coalesce(
-            "Tasks".total_logged_seconds,
-            coalesce("Task_TimeLogs".duration, 0.0)
+            "Tasks".total_logged_seconds::int,
+            coalesce("Task_TimeLogs".duration, 0)::int
         ) as total_logged_seconds,
 
         "Tasks".start,
@@ -3573,7 +3573,7 @@ def get_task_leafs_in_hierarchy(request):
             "Tasks".bid_unit,
             "Tasks".schedule_timing,
             "Tasks".schedule_unit,
-            coalesce( extract(epoch from sum("TimeLogs".end - "TimeLogs".start)), 0) as total_logged_seconds,
+            coalesce( extract(epoch from sum("TimeLogs".end - "TimeLogs".start))::int, 0) as total_logged_seconds,
             "Statuses".code
         from (
             %(generate_recursive_task_query)s
@@ -5558,8 +5558,9 @@ def auto_extend_time(task, description, revision_type, logged_in_user):
     # get logged in user as he review requester
     utc_now = datetime.datetime.now(pytz.utc)
 
-    exceeded_time_str = convert_seconds_to_time_range(task.total_logged_seconds
-                                                      - task.schedule_seconds)
+    exceeded_time_str = convert_seconds_to_time_range(
+        task.total_logged_seconds - task.schedule_seconds
+    )
 
     note = create_simple_note('Extending timing of the task <b>'
                                 '%(exceeded_time_str)s</b>.<br/>'
