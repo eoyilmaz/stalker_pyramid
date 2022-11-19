@@ -659,7 +659,6 @@ def main(global_config, **settings):
 
     config.add_route('list_users',            'users/list')  # html
     config.add_route('list_user_tasks',       'users/{id}/tasks/list')  # html
-    config.add_route('list_user_vacations',   'users/{id}/vacations/list')  # html
     config.add_route('list_user_departments', 'users/{id}/departments/list')  # html
     config.add_route('list_user_groups',      'users/{id}/groups/list')  # html
     config.add_route('list_user_projects',    'users/{id}/projects/list')  # html
@@ -669,12 +668,13 @@ def main(global_config, **settings):
     config.add_route('list_user_tasks_watching',       'users/{id}/tasks/list/watching')  # html
     config.add_route('list_user_reviews',              'users/{id}/reviews/list')  # html
     config.add_route('list_resource_rates',    'resources/{id}/rates/list')  # html
+    config.add_route('list_user_vacations',   'users/{id}/vacations/list')  # html
     config.add_route('list_user_versions',       'users/{id}/versions/list')  # html
     # config.add_route('list_user_authlogs',       'users/{id}/authlogs/list')  # html
 
-    config.add_route('view_user_tasks',       'users/{id}/tasks/view')  # html
-    config.add_route('view_user_versions',    'users/{id}/versions/view')
-    config.add_route('view_user_tickets',     'users/{id}/tickets/view')
+    # config.add_route('view_user_tasks',       'users/{id}/tasks/view')  # html
+    # config.add_route('view_user_versions',    'users/{id}/versions/view')
+    # config.add_route('view_user_tickets',     'users/{id}/tickets/view')
 
     config.add_route('delete_user', 'users/{id}/delete')
     config.add_route('delete_user_dialog', 'users/{id}/delete/dialog')
