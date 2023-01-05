@@ -441,6 +441,7 @@ sourceimages/3dPaintTextures"""
             logger.debug(f"ref_file_name: {ref_file_name}")
 
             # try to find a corresponding Stalker Version instance with it
+            versions = []
             if project is not None:
                 # use the given project
                 versions = (
@@ -449,7 +450,8 @@ sourceimages/3dPaintTextures"""
                     .filter(Version.full_path.endswith(ref_file_name))
                     .all()
                 )
-            else:
+
+            if not versions:
                 # try to look in to all projects, order by Project.date_created
                 versions = (
                     Version.query.join(Task, Version.task_id == Task.id)
