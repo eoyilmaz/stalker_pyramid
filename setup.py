@@ -34,7 +34,7 @@ INSTALL_REQUIRES = [
     'pyramid_mailer',
     'zope.sqlalchemy',
     'waitress',
-    'jinja2<3.0.0',
+    'jinja2',
     'pyramid_jinja2',
     'pillow',
     'stalker>=0.2.24.3',

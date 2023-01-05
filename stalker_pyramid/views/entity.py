@@ -700,7 +700,7 @@ def get_entity_events(request):
 
     if not multi_permission_checker(
             request, ['Read_User', 'Read_TimeLog', 'Read_Vacation']):
-        raise HTTPForbidden(headers=request)
+        raise HTTPForbidden(headers=request.session)
 
     keys = get_multi_string(request, 'keys')
     entity_id = request.matchdict.get('id', -1)

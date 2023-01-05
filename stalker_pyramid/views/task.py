@@ -1056,7 +1056,7 @@ def update_task_dependencies(request):
         message = \
             '</div>Parent item can not also be a dependent for the ' \
             'updated item:<br><br>Parent: %s<br>Depends To: %s</div>' % (
-                task.parent.name, map(lambda x: x.name, depends)
+                task.parent.name, list(map(lambda x: x.name, depends))
             )
         transaction.abort()
         return Response(message, 500)
@@ -1288,7 +1288,7 @@ def update_task(request):
             message = \
                 '</div>Parent item can not also be a dependent for the ' \
                 'updated item:<br><br>Parent: %s<br>Depends To: %s</div>' % (
-                    parent.name, map(lambda x: x.name, depends)
+                    parent.name, list(map(lambda x: x.name, depends))
                 )
             transaction.abort()
             return Response(message, 500)
@@ -6013,7 +6013,7 @@ def get_task_parent(task, entity_type):
 def get_task_events(request):
     if not multi_permission_checker(
             request, ['Read_User', 'Read_TimeLog', 'Read_Vacation']):
-        return HTTPForbidden(headers=request)
+        return HTTPForbidden(headers=request.session)
 
     logger.debug('get_task_events is running')
 
@@ -6086,7 +6086,7 @@ where "TimeLogs".task_id in %s
 )
 def get_task_dependency(request):
     if not multi_permission_checker(request, ['Read_User', 'Read_Task']):
-        return HTTPForbidden(headers=request)
+        return HTTPForbidden(headers=request.session)
 
     logger.debug('get_task_dependent_of is running')
 

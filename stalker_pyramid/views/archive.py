@@ -2,7 +2,15 @@
 """This module is a direct copy&paste of anima.dcc.mayaEnv.archive thus the
 copyright information in this file belongs to Anima Istanbul.
 """
+import glob
 import logging
+import os
+import re
+import shutil
+import tempfile
+import zipfile
+
+from stalker import Project, Repository, Task, Version
 
 from stalker_pyramid import logger_name
 logger = logging.getLogger(logger_name)
@@ -28,10 +36,9 @@ class ArchiverBase(object):
 
         :return:
         """
-        import os
         project_path = os.path.join(path, name)
 
-        # lets create the structure
+        # let's create the structure
         for dir_name in cls.default_project_structure.split('\n'):
             dir_path = os.path.join(project_path, dir_name.strip())
             try:
@@ -52,11 +59,8 @@ class ArchiverBase(object):
         :return:
         """
         # create a new Default Project
-        import tempfile
-        import os
 
         tempdir = tempfile.gettempdir()
-        from stalker import Repository
         all_repos = Repository.query.all()
 
         default_project_path = \
@@ -116,9 +120,6 @@ class ArchiverBase(object):
         :param path: Path to the archived directory.
         :return:
         """
-        import zipfile
-        import os
-        import tempfile
         dir_name = os.path.basename(path)
         zip_path = os.path.join(tempfile.gettempdir(), '%s.zip' % dir_name)
 
@@ -232,7 +233,6 @@ sourceimages/3dPaintTextures"""
 
         :return:
         """
-        import os
         project_path = super(Archiver, self).create_default_project(path, name)
 
         # create the workspace.mel
@@ -249,9 +249,6 @@ sourceimages/3dPaintTextures"""
 
         :return:
         """
-        import os
-        import re
-
         path_regex = r'\$REPO[\w\d\/_\.@]+'
         # so we have all the data
         # extract references
@@ -279,9 +276,6 @@ sourceimages/3dPaintTextures"""
         :param str refs_folder: The references folder to replace reference paths with.
         :return list: returns a list of paths
         """
-        import os
-        import shutil
-
         # fix any env vars
         path = os.path.expandvars(path)
 
@@ -358,7 +352,6 @@ sourceimages/3dPaintTextures"""
                     original_file_name
                 )
 
-            import glob
             new_file_paths = [new_file_path]
             if '1001' in new_file_path or 'u1_v1' in new_file_path.lower():
                 # get the rest of the textures
@@ -393,7 +386,6 @@ sourceimages/3dPaintTextures"""
 
         :return:
         """
-        import re
         path_regex = r'(\-typ\s)([\w\"\s]*\s)(")(.*scenes/.*[\w\d\/_\.@]+)'
         # so we have all the data
         # extract references
@@ -414,25 +406,45 @@ sourceimages/3dPaintTextures"""
 
         :return:
         """
-        import os
         # TODO: This will not fix the sound or texture files, that is anything
         #       other than a maya scene file.
         # get all reference paths
-        with open(path) as f:
+        with open(path, "rb") as f:
             data = f.read()
+
+        # replace any non utf-8 compatible characters
+        char_lut = {
+            # ANSI Turkish Characters read as utf-8
+            b"\xe7": b"c",
+            b"\xc7": b"C",
+            b"\xf0": b"g",
+            b"\xd0": b"G",
+            b"\xfd": b"i",
+            b"\xdd": b"I",
+            b"\xf6": b"o",
+            b"\xd6": b"O",
+            b"\xfe": b"s",
+            b"\xde": b"S",
+            b"\xfc": b"u",
+            b"\xdc": b"U",
+        }
+        for char in char_lut:
+            data = data.replace(char, char_lut[char])
+
+        # now encode the data to utf-8
+        data = data.decode("utf-8")
 
         unknown_references = []
         ref_paths = cls._extract_local_references(data)
         for ref_path in ref_paths:
             ref_file_name = os.path.basename(ref_path)
+            logger.debug(f"ref_file_name: {ref_file_name}")
 
             # try to find a corresponding Stalker Version instance with it
-            from stalker import Version, Task, Project
-
             if project is not None:
                 # use the given project
                 versions = (
-                    Version.query.join(Task, Version.task == Task)
+                    Version.query.join(Task, Version.task_id == Task.id)
                     .filter(Task.project == project)
                     .filter(Version.full_path.endswith(ref_file_name))
                     .all()

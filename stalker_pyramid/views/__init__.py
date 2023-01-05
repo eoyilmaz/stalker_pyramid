@@ -8,7 +8,6 @@ import json
 from pyramid.httpexceptions import HTTPServerError, HTTPForbidden
 from pyramid.view import view_config
 from pyramid.response import Response
-from pyramid.security import has_permission, authenticated_userid
 
 from stalker import User, Tag
 from stalker.db.session import DBSession
@@ -143,11 +142,10 @@ class PermissionChecker(object):
     """
 
     def __init__(self, request):
-        self.has_permission = has_permission
         self.request = request
 
     def __call__(self, perm):
-        return self.has_permission(perm, self.request.context, self.request)
+        return self.request.has_permission(perm, self.request.context)
 
 
 def multi_permission_checker(request, permissions):
@@ -299,7 +297,7 @@ def get_logged_in_user(request):
 
     :param request: Request object
     """
-    user = User.query.filter_by(login=authenticated_userid(request)).first()
+    user = User.query.filter_by(login=request.authenticated_userid).first()
     if not user:
         raise HTTPForbidden(request)
     return user

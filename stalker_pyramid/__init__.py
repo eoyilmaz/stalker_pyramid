@@ -44,7 +44,6 @@ cgru_host_mask_alembic = ""
 cgru_host_mask_playblast = ""
 
 
-
 __string_types__ = []
 if sys.version_info[0] >= 3:  # Python 3
     __string_types__ = tuple([str])
