@@ -284,7 +284,7 @@ def submit_alembic_job(path, project_code="", host_mask=""):
     job_name = "{}:{} - Alembic Export".format(project_code, os.path.basename(path))
     block_name = job_name
     command = [
-        "mayapy",
+        "mayapy%s" % os.getenv("MAYA_VERSION", "2022"),
         "-c",
         '"import pymel.core as pm;'
         "from anima.dcc.mayaEnv import afanasy_publisher;"
@@ -302,8 +302,9 @@ def submit_playblast_job(path, project_code="", host_mask=""):
     """
     job_name = "{}:{} - Playblast".format(project_code, os.path.basename(path))
     block_name = job_name
+
     command = [
-        "mayapy",
+        "mayapy%s" % os.getenv("MAYA_VERSION", "2022"),
         "-c",
         '"import pymel.core as pm;'
         "from anima.dcc.mayaEnv import afanasy_publisher;"

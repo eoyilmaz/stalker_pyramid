@@ -42,6 +42,7 @@ cgru_location = None
 cgru_working_directory = None
 cgru_host_mask_alembic = ""
 cgru_host_mask_playblast = ""
+cgru_maya_version = ""
 
 
 __string_types__ = []
@@ -129,11 +130,14 @@ def main(global_config, **settings):
     global cgru_working_directory
     global cgru_host_mask_alembic
     global cgru_host_mask_playblast
+    global cgru_maya_version
     cgru_location = settings.get('cgru.location')
-    cgru_working_directory = settings.get('cgru.working_directory')
-    cgru_host_mask_alembic = settings.get('cgru.host_mask_alembic', "")
-    cgru_host_mask_playblast = settings.get('cgru.host_mask_playblast', "")
+    cgru_working_directory = settings.get("cgru.working_directory")
+    cgru_host_mask_alembic = settings.get("cgru.host_mask_alembic", "")
+    cgru_host_mask_playblast = settings.get("cgru.host_mask_playblast", "")
+    cgru_maya_version = settings.get("cgru.maya_version", "2022")
     os.environ["CGRU_LOCATION"] = cgru_location
+    os.environ["MAYA_VERSION"] = cgru_maya_version
 
     logger.debug('cgru_location: %s' % cgru_location)
     logger.debug('cgru_working_directory: %s' % cgru_working_directory)
