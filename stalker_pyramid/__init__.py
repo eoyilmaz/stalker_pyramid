@@ -141,6 +141,7 @@ def main(global_config, **settings):
 
     logger.debug('cgru_location: %s' % cgru_location)
     logger.debug('cgru_working_directory: %s' % cgru_working_directory)
+    logger.debug('cgru_maya_version: %s' % cgru_maya_version)
 
     # add environment vars
     logger.debug('adding new library paths!')
